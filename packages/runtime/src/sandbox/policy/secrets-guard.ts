@@ -1,7 +1,7 @@
 const DEFAULT_SECRET_PATTERNS: readonly RegExp[] = [
-  /sk-[A-Za-z0-9]{20,}/g,
-  /gh[pousr]_[A-Za-z0-9]{36,}/g,
-  /(?:AKIA|ASIA)[A-Z0-9]{16}/g
+  /sk-[A-Za-z0-9]{20,}/gu,
+  /gh[pousr]_[A-Za-z0-9]{36,}/gu,
+  /(?:AKIA|ASIA)[A-Z0-9]{16}/gu
 ];
 
 export interface SecretsGuardOptions {
@@ -11,8 +11,8 @@ export interface SecretsGuardOptions {
 }
 
 export interface SecretsGuardResult {
-  readonly safe: boolean;
   readonly redacted: string;
+  readonly safe: boolean;
   readonly violations: string[];
 }
 
@@ -26,18 +26,18 @@ export function guardSecrets(input: string, options?: SecretsGuardOptions): Secr
     const re = new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`);
     const matches = [...redacted.matchAll(re)];
     for (const match of matches) {
-      const matched = match[0];
+      const [matched] = match;
       violations.push(matched);
       redacted = redacted.split(matched).join('[SECRET_REDACTED]');
     }
   }
 
-  return { safe: violations.length === 0, redacted, violations };
+  return { redacted, safe: violations.length === 0, violations };
 }
 
 export function assertSecretsGuard(input: string, options?: SecretsGuardOptions): string {
   const result = guardSecrets(input, options);
-  if (result.safe === false && options?.strict !== false) {
+  if (!result.safe && options?.strict !== false) {
     throw new Error(
       `Secrets detected in sandbox input (${result.violations.length} violation(s)). Use environment variables instead.`
     );

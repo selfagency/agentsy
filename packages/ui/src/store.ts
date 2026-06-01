@@ -1,4 +1,4 @@
-import { applyConversationEvent } from './eventSourcing.js';
+import { applyConversationEvent } from './event-sourcing.js';
 import type { ConversationEvent, UIConversation } from './types.js';
 
 /**
@@ -11,17 +11,16 @@ export type StoreListener = (state: UIConversation) => void;
  * State is immutable; listeners are notified on every event.
  */
 export interface ConversationStore {
-  /** Get current conversation state. */
-  getState(): UIConversation;
-
   /** Apply event to store (synchronously updates state, notifies listeners). */
   dispatch(event: ConversationEvent): void;
 
-  /** Subscribe to state changes. Returns unsubscribe function. */
-  subscribe(listener: StoreListener): () => void;
-
   /** Get all events applied since store creation (for debugging/audit). */
   getEventLog(): ConversationEvent[];
+  /** Get current conversation state. */
+  getState(): UIConversation;
+
+  /** Subscribe to state changes. Returns unsubscribe function. */
+  subscribe(listener: StoreListener): () => void;
 }
 
 /**
@@ -59,13 +58,13 @@ export interface ConversationStore {
 export function createConversationStore(conversationId: string): ConversationStore {
   let state: UIConversation = {
     id: conversationId,
-    messages: [],
-    stepIndex: 0,
-    status: 'idle',
     lastEventAt: new Date(),
+    messages: [],
+    metadata: undefined,
+    status: 'idle',
+    stepIndex: 0,
     totalTokens: 0,
-    totalUsage: {},
-    metadata: undefined
+    totalUsage: {}
   };
 
   const listeners = new Set<StoreListener>();
@@ -78,14 +77,6 @@ export function createConversationStore(conversationId: string): ConversationSto
   }
 
   return {
-    getState(): UIConversation {
-      // Return a shallow copy to prevent external mutations
-      return {
-        ...state,
-        messages: [...state.messages]
-      };
-    },
-
     dispatch(event: ConversationEvent): void {
       // Apply event to state
       state = applyConversationEvent(state, event);
@@ -97,6 +88,19 @@ export function createConversationStore(conversationId: string): ConversationSto
       notifyListeners();
     },
 
+    getEventLog(): ConversationEvent[] {
+      // Return copy of event log
+      return [...eventLog];
+    },
+
+    getState(): UIConversation {
+      // Return a shallow copy to prevent external mutations
+      return {
+        ...state,
+        messages: [...state.messages]
+      };
+    },
+
     subscribe(listener: StoreListener): () => void {
       listeners.add(listener);
 
@@ -104,11 +108,6 @@ export function createConversationStore(conversationId: string): ConversationSto
       return () => {
         listeners.delete(listener);
       };
-    },
-
-    getEventLog(): ConversationEvent[] {
-      // Return copy of event log
-      return [...eventLog];
     }
   };
 }

@@ -1,1 +1,1 @@
-export * from './createPipeline.js';
+export * from './create-pipeline.js';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatXmlLikeResponseForDisplay } from './formatXmlLikeResponseForDisplay.js';
-import { sanitizeNonStreamingModelOutput } from './sanitizeNonStreamingModelOutput.js';
+import { formatXmlLikeResponseForDisplay } from './format-xml-like-response-for-display.js';
+import { sanitizeNonStreamingModelOutput } from './sanitize-non-streaming-model-output.js';
 
 describe('formatXmlLikeResponseForDisplay', () => {
   it('formats xml-like blocks as markdown headings', () => {

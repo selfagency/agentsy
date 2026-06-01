@@ -26,14 +26,17 @@ afterAll(() => {
 describe('Phase 3 e2e modes', () => {
   it('supports local-only mode and degraded fallback when remote health fails', async () => {
     const localConfig = createRAGConfig({ localOnly: true });
-    expect(localConfig.localOnly).toBe(true);
+    expect(localConfig.localOnly).toBeTruthy();
 
-    const remoteClient = createRAGServerClient({ baseUrl: BASE_URL, timeoutMs: 500 });
+    const remoteClient = createRAGServerClient({
+      baseUrl: BASE_URL,
+      timeoutMs: 500
+    });
     const healthy = await remoteClient.health();
-    expect(healthy.ok).toBe(true);
+    expect(healthy.ok).toBeTruthy();
 
     state.healthy = false;
     const degraded = await remoteClient.health();
-    expect(degraded.ok).toBe(false);
+    expect(degraded.ok).toBeFalsy();
   });
 });

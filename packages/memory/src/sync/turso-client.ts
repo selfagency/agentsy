@@ -1,16 +1,18 @@
 import type { DatabaseOpts } from '@tursodatabase/sync';
 import { connect } from '@tursodatabase/sync';
 
-import type { SyncSnapshot, TursoClient, TursoSyncConfig, TursoUploadResult } from './types.js';
+import type { SyncRecord, SyncSnapshot, TursoClient, TursoSyncConfig, TursoUploadResult } from './types.js';
 
 class NoopTursoClient implements TursoClient {
+  // biome-ignore lint/suspicious/useAwait: matches TursoClient interface
   async upload(snapshot: SyncSnapshot): Promise<TursoUploadResult> {
     return {
-      uploadedCount: snapshot.records.length,
-      nextCursor: snapshot.cursor
+      nextCursor: snapshot.cursor,
+      uploadedCount: snapshot.records.length
     };
   }
 
+  // biome-ignore lint/suspicious/useAwait: matches TursoClient interface
   async download(cursor: string): Promise<SyncSnapshot> {
     return {
       cursor,
@@ -24,26 +26,31 @@ export function createNoopTursoClient(): TursoClient {
 }
 
 export interface TursoHttpClientConfig {
-  databaseUrl: string;
   authToken: string | (() => Promise<string>);
+  databaseUrl: string;
 }
 
 async function resolveAuthToken(authToken: TursoHttpClientConfig['authToken']): Promise<string> {
-  return typeof authToken === 'function' ? authToken() : authToken;
+  const resolved = typeof authToken === 'function' ? await authToken() : authToken;
+  return resolved;
 }
 
 class TursoHttpClient implements TursoClient {
-  constructor(private readonly config: TursoHttpClientConfig) {}
+  readonly #config: TursoHttpClientConfig;
+
+  constructor(config: TursoHttpClientConfig) {
+    this.#config = config;
+  }
 
   async upload(snapshot: SyncSnapshot): Promise<TursoUploadResult> {
-    const authToken = await resolveAuthToken(this.config.authToken);
-    const response = await fetch(`${this.config.databaseUrl}/sync/upload`, {
-      method: 'POST',
+    const authToken = await resolveAuthToken(this.#config.authToken);
+    const response = await fetch(`${this.#config.databaseUrl}/sync/upload`, {
+      body: JSON.stringify(snapshot),
       headers: {
         authorization: `Bearer ${authToken}`,
         'content-type': 'application/json'
       },
-      body: JSON.stringify(snapshot)
+      method: 'POST'
     });
 
     if (!response.ok) {
@@ -54,8 +61,8 @@ class TursoHttpClient implements TursoClient {
   }
 
   async download(cursor: string): Promise<SyncSnapshot> {
-    const authToken = await resolveAuthToken(this.config.authToken);
-    const response = await fetch(`${this.config.databaseUrl}/sync/download?cursor=${encodeURIComponent(cursor)}`, {
+    const authToken = await resolveAuthToken(this.#config.authToken);
+    const response = await fetch(`${this.#config.databaseUrl}/sync/download?cursor=${encodeURIComponent(cursor)}`, {
       headers: {
         authorization: `Bearer ${authToken}`
       }
@@ -74,25 +81,25 @@ export function createTursoHttpClient(config: TursoHttpClientConfig): TursoClien
 }
 
 export interface TursoSyncClientConfig {
-  path: string;
-  url: string;
   authToken?: string | (() => Promise<string>);
   clientName?: string;
-  longPollTimeoutMs?: number;
-  tracing?: 'error' | 'warn' | 'info' | 'debug' | 'trace';
-  remoteWritesExperimental?: boolean;
   fetch?: typeof fetch;
+  longPollTimeoutMs?: number;
+  path: string;
+  remoteWritesExperimental?: boolean;
+  tracing?: 'error' | 'warn' | 'info' | 'debug' | 'trace';
+  url: string;
 }
 
 interface TursoSyncDatabase {
-  connect(): Promise<void>;
-  run(sql: string, ...bindParameters: unknown[]): Promise<{ changes: number; lastInsertRowid: number }>;
-  get(sql: string, ...bindParameters: unknown[]): Promise<unknown>;
-  push(): Promise<void>;
-  pull(): Promise<boolean>;
   checkpoint(): Promise<void>;
-  stats(): Promise<Record<string, unknown>>;
   close(): Promise<void>;
+  connect(): Promise<void>;
+  get(sql: string, ...bindParameters: unknown[]): Promise<unknown>;
+  pull(): Promise<boolean>;
+  push(): Promise<void>;
+  run(sql: string, ...bindParameters: unknown[]): Promise<{ changes: number; lastInsertRowid: number }>;
+  stats(): Promise<Record<string, unknown>>;
 }
 
 const DEFAULT_BUCKET = 'default';
@@ -131,20 +138,21 @@ function toDatabaseOpts(config: TursoSyncClientConfig): DatabaseOpts {
 
 class TursoSyncClient implements TursoClient {
   #databasePromise: Promise<TursoSyncDatabase> | null = null;
+  readonly #config: TursoSyncClientConfig;
 
-  constructor(private readonly config: TursoSyncClientConfig) {}
+  constructor(config: TursoSyncClientConfig) {
+    this.#config = config;
+  }
 
   async #getDatabase(): Promise<TursoSyncDatabase> {
-    if (!this.#databasePromise) {
-      this.#databasePromise = (async () => {
-        const database = (await connect(toDatabaseOpts(this.config))) as unknown as TursoSyncDatabase;
-        await database.connect();
-        await database.run(SNAPSHOT_TABLE_SQL);
-        return database;
-      })();
-    }
+    this.#databasePromise ??= (async () => {
+      const database = (await connect(toDatabaseOpts(this.#config))) as unknown as TursoSyncDatabase;
+      await database.connect();
+      await database.run(SNAPSHOT_TABLE_SQL);
+      return database;
+    })();
 
-    return this.#databasePromise;
+    return await this.#databasePromise;
   }
 
   async upload(snapshot: SyncSnapshot): Promise<TursoUploadResult> {
@@ -166,8 +174,8 @@ class TursoSyncClient implements TursoClient {
     await database.push();
 
     return {
-      uploadedCount: snapshot.records.length,
-      nextCursor: snapshot.cursor
+      nextCursor: snapshot.cursor,
+      uploadedCount: snapshot.records.length
     };
   }
 
@@ -198,7 +206,13 @@ class TursoSyncClient implements TursoClient {
 
     return {
       cursor: remoteCursor,
-      records: JSON.parse(payload) as SyncSnapshot['records']
+      records: (() => {
+        try {
+          return JSON.parse(payload) as SyncRecord[];
+        } catch {
+          return [] as SyncRecord[];
+        }
+      })()
     };
   }
 
@@ -209,7 +223,7 @@ class TursoSyncClient implements TursoClient {
 
   async stats(): Promise<Record<string, unknown>> {
     const database = await this.#getDatabase();
-    return database.stats();
+    return await database.stats();
   }
 
   async close(): Promise<void> {
@@ -225,9 +239,9 @@ export function createTursoSyncClient(config: TursoSyncClientConfig): TursoClien
 export function createDefaultTursoClient(config: TursoSyncConfig): TursoClient {
   if (config.path) {
     return createTursoSyncClient({
+      authToken: config.authToken,
       path: config.path,
       url: config.databaseUrl,
-      authToken: config.authToken,
       ...(config.clientName === undefined ? {} : { clientName: config.clientName }),
       ...(config.longPollTimeoutMs === undefined ? {} : { longPollTimeoutMs: config.longPollTimeoutMs }),
       ...(config.tracing === undefined ? {} : { tracing: config.tracing }),

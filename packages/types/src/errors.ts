@@ -13,16 +13,27 @@ export class AgentsyError extends Error {
     this.code = code;
     this.details = details ?? {};
 
-    // Maintains proper stack trace
+    // Maintains proper stack trace - error is intentional for custom error classes
     Error.captureStackTrace(this, this.constructor);
   }
 
-  toJSON(): { name: string; message: string; code: string; details: Record<string, unknown> } {
+  /**
+   * Serializes the error to a plain JSON object for structured logging
+   * and wire transfer.
+   *
+   * @returns A JSON-serializable object with `name`, `message`, `code`, and `details`.
+   */
+  toJSON(): {
+    name: string;
+    message: string;
+    code: string;
+    details: Record<string, unknown>;
+  } {
     return {
-      name: this.name,
-      message: this.message,
       code: this.code,
-      details: this.details
+      details: this.details,
+      message: this.message,
+      name: this.name
     };
   }
 }

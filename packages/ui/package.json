@@ -24,8 +24,8 @@
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "oxlint --no-error-on-unmatched-pattern .",
-    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
+    "lint": "biome lint",
+    "format": "biome format",
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage"
   },
@@ -34,7 +34,7 @@
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",

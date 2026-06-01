@@ -1,0 +1,19 @@
+{
+  "$schema": "aImock fixture — OpenAI Chat Completions (streaming)",
+  "name": "openai-streaming-hello",
+  "request": {
+    "model": "gpt-4o",
+    "messages": [{ "role": "user", "content": "hello" }],
+    "stream": true
+  },
+  "response": {
+    "id": "chatcmpl-aimock-001",
+    "model": "gpt-4o",
+    "object": "chat.completion.chunk",
+    "choices": [
+      { "delta": { "content": "Hello" }, "finish_reason": null },
+      { "delta": { "content": ", world!" }, "finish_reason": null },
+      { "delta": {}, "finish_reason": "stop" }
+    ]
+  }
+}

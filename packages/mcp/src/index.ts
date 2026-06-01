@@ -1,10 +1,10 @@
 export type {
-  McpTool,
-  McpResource,
-  McpPrompt,
-  McpServerConfig,
   McpCapabilities,
+  McpPrompt,
+  McpResource,
+  McpResourceResult,
+  McpServerConfig,
+  McpTool,
   McpToolInvocation,
-  McpToolResult,
-  McpResourceResult
+  McpToolResult
 } from './types.js';

@@ -2,7 +2,7 @@
 goal: @agentsy/orchestrator production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-15
+last_updated: 2026-05-25
 owner: orchestrator-maintainers
 status: In progress
 tags: [feature, architecture, orchestrator, planning, autonomy]
@@ -63,11 +63,279 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 
 - GOAL-ORCH-004: Hardening and release gates.
 
-| Task          | Description                                                                     | Completed | Date |
-| ------------- | ------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-ORCH-010 | Add regressions for autonomy safety, persistence recovery, and race conditions. |           |      |
-| TASK-ORCH-011 | Align docs and custom-agent guidance with shipped behavior.                     |           |      |
-| TASK-ORCH-012 | Pass package and monorepo release gates.                                        |           |      |
+| Task          | Description                                                                                                                                       | Completed | Date |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-ORCH-010 | Add regressions for autonomy safety, persistence recovery, and race conditions.                                                                   |           |      |
+| TASK-ORCH-011 | Align docs and custom-agent guidance with shipped behavior.                                                                                       |           |      |
+| TASK-ORCH-012 | Pass package and monorepo release gates.                                                                                                          |           |      |
+| TASK-061      | DOGFOOD Phase 4: Integrate orchestrator entrypoints in CLI/runtime path for multi-step plan→act execution.                                        |           |      |
+| TASK-062      | DOGFOOD Phase 4: Add explicit execution modes in CLI (/mode single, /mode orchestrated, /mode autonomous) backed by orchestrator policy profiles. |           |      |
+
+### Implementation Phase 4.5 — Hook registry and agent session orchestration
+
+- GOAL-ORCH-004.5: Implement named hook registry, compileHooks, and createAgentSession for the skills/instructions/agent system.
+
+| Task          | Description                                                                                                                                                                                                   | Completed | Date |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-ORCH-013 | Define `HookDefinition` type (name, event, handler, priority, enabled) and implement `HookRegistry` class in `src/hooks/` — register, unregister, enable, disable, getHandlersForEvent.                       |           |      |
+| TASK-ORCH-014 | Implement `compileHooks(registry, baseOptions)` in `src/hooks/compile.ts` — iterates all registered hooks, merges handlers into AgentLoopOptions callbacks in priority order.                                 |           |      |
+| TASK-ORCH-015 | Register all first-party builtin hooks in `src/hooks/builtins/` — memory pre-turn retrieval, memory post-turn capture, skills lazy-load, instructions injection, budget enforcement, approval, observability. |           |      |
+| TASK-ORCH-016 | Implement `createAgentSession(agentDef, config)` in `src/session.ts` — loads agent definition, builds hook registry, compiles hooks, returns `AgentLoopHandle`.                                               |           |      |
+| TASK-ORCH-017 | Add integration tests: hook lifecycle (register/unregister/disable), compile merge order, builtin hook coverage, agent session creation with all builtin hooks.                                               |           |      |
+
+### Phase 5: Tier-Based Delegation & Runtime Enforcement
+
+*Inspired by [opencode-model-router](https://github.com/marco-jardim/opencode-model-router) — task-complexity-based delegation with runtime call caps and redundancy detection. Extended with Phase 17 local provider offload for micro-tier exploration tasks.*
+
+**Scope:** Add tier-aware delegation to the orchestrator. When the orchestrator decomposes a plan into subtasks, each subtask is classified by complexity and delegated to the appropriate tier. Read-only exploration tasks go to free local models; implementation tasks go to mid-tier; architecture/debugging to frontier. Runtime enforcement caps tool calls per tier to prevent context burn.
+
+#### Tier-Based Task Delegation
+
+```typescript
+// packages/orchestrator/src/delegation/tier-delegation.ts
+
+import type { TaskComplexityTier, TaskClassification } from '@agentsy/models/tiers';
+import type { TierRoutingDecision } from '@agentsy/models/tiers/tier-router';
+
+/**
+ * Delegation decision: which tier handles this subtask.
+ *
+ * Flow: classifyTask() → routeToTier() → delegate()
+ * The orchestrator's plan decomposition marks each step with a tier annotation,
+ * then delegates execution to the appropriate model via the tier router.
+ */
+export interface DelegationDecision {
+  stepId: string;
+  classification: TaskClassification;
+  routing: TierRoutingDecision;
+  delegateTo: 'subagent' | 'inline';  // subagent for isolated tiers, inline for same-tier
+  costEstimate: number;
+  isLocal: boolean;
+}
+
+/**
+ * Multi-phase decomposition — the core savings pattern from model-router.
+ *
+ * Composite tasks are split into phases:
+ *   Phase 1: Explore (@micro/@small, 1x-5x cost) — search, read, analyze
+ *   Phase 2: Execute (@mid, 20x cost) — implement, refactor, write
+ *
+ * This saves ~36% on ~65% of real tasks by doing cheap exploration locally
+ * before committing expensive cloud tokens for execution.
+ */
+export interface MultiPhasePlan {
+  taskId: string;
+  phases: DelegationPhase[];
+  totalEstimatedCost: number;
+  singlePhaseCost: number;       // what it would cost without decomposition
+  savingsPercent: number;
+}
+
+export interface DelegationPhase {
+  name: string;
+  tier: TaskComplexityTier;
+  steps: DelegatedStep[];
+  estimatedTokens: number;
+  estimatedCost: number;
+}
+
+export interface DelegatedStep {
+  stepId: string;
+  description: string;
+  tools: string[];               // tools this step needs
+  tier: TaskComplexityTier;
+  contextBudget: number;         // max tokens for this step's context
+}
+
+/**
+ * Decompose a plan into tiered delegation phases.
+ *
+ * 1. Classify each plan step via classifyTask()
+ * 2. Group consecutive same-tier steps into phases
+ * 3. Ensure exploration steps precede execution steps
+ * 4. Calculate savings vs single-tier (frontier) execution
+ * 5. For micro-tier steps, check Phase 17 local provider availability
+ */
+export function decomposeForTiers(
+  steps: Array<{ description: string; tools?: string[] }>,
+  options?: {
+    mode?: 'normal' | 'budget' | 'quality' | 'deep';
+    preferLocal?: boolean;         // bias toward local for micro steps
+    platformProfile?: PlatformProfile;  // Phase 17 — local accelerator detection
+  }
+): MultiPhasePlan { /* ... */ }
+```
+
+#### Runtime Call Caps & Redundancy Detection
+
+```typescript
+// packages/orchestrator/src/delegation/call-caps.ts
+
+/**
+ * Per-tier call caps for read-only operations.
+ * Prevents context burn from repeated file reads / grep calls.
+ *
+ * Inspired by opencode-model-router's banner injection approach,
+ * adapted to our orchestrator's hook system.
+ *
+ * Default caps:
+ *   micro: 8 calls   (local model, cheap but limited context)
+ *   small: 5 calls
+ *   mid:   5 calls
+ *   frontier: 3 calls (expensive, every read costs tokens)
+ */
+export interface TierCallCap {
+  tier: TaskComplexityTier;
+  maxReadOnlyCalls: number;
+  cappedTools: string[];   // which tools count against the cap
+}
+
+export const DEFAULT_TIER_CAPS: Record<TaskComplexityTier, TierCallCap> = {
+  micro:    { tier: 'micro',    maxReadOnlyCalls: 8, cappedTools: ['grep', 'read', 'glob', 'ls', 'stat'] },
+  small:    { tier: 'small',    maxReadOnlyCalls: 5, cappedTools: ['grep', 'read', 'glob', 'ls', 'stat'] },
+  mid:      { tier: 'mid',      maxReadOnlyCalls: 5, cappedTools: ['grep', 'read', 'glob', 'ls', 'stat'] },
+  frontier: { tier: 'frontier', maxReadOnlyCalls: 3, cappedTools: ['grep', 'read', 'glob', 'ls', 'stat'] },
+};
+
+/**
+ * Tracks read-only tool calls per subagent session.
+ * Integrated into the orchestrator's hook system as a tool.execute.after hook.
+ */
+export class CallCapTracker {
+  private calls: Map<string, CallRecord[]> = new Map();
+
+  /**
+   * Record a tool call. Returns enforcement status.
+   */
+  record(sessionId: string, tool: string, args: Record<string, unknown>): CapStatus {
+    // 1. Check if tool is in capped list for session's tier
+    // 2. Fingerprint the call (tool + primary arg) for redundancy detection
+    // 3. Check if this is a redundant call (same file/pattern within last N calls)
+    // 4. Return status with current count and cap
+  }
+
+  getStatus(sessionId: string): CapStatus {
+    // Returns: { calls: number, max: number, redundantCalls: number, remaining: number }
+  }
+
+  /**
+   * Generate a banner string for injection into LLM context.
+   * Format: [cap: 5/8] or [⚠ REDUNDANT] or [⚠ CAP REACHED — escalate tier]
+   */
+  getBanner(sessionId: string): string | null { /* ... */ }
+}
+
+export interface CapStatus {
+  calls: number;
+  max: number;
+  remaining: number;
+  redundantCalls: number;
+  capped: boolean;
+  banner: string | null;
+}
+
+export interface CallRecord {
+  tool: string;
+  fingerprint: string;   // e.g. "grep:TODO" or "read:src/index.ts"
+  timestamp: number;
+  isRedundant: boolean;
+}
+
+/**
+ * Fingerprint a tool call for redundancy detection.
+ * Same file/pattern re-read within a session = redundant.
+ */
+export function fingerprintCall(tool: string, args: Record<string, unknown>): string {
+  // grep → "grep:{pattern}:{path}"
+  // read → "read:{filePath}"
+  // glob → "glob:{pattern}"
+  // ls   → "ls:{path}"
+}
+```
+
+#### Plan Annotation
+
+```typescript
+// packages/orchestrator/src/delegation/plan-annotation.ts
+
+/**
+ * Annotate a markdown plan with tier directives.
+ *
+ * Each step in a plan gets tagged with the recommended tier:
+ *   - [tier:micro] for search/read/list steps
+ *   - [tier:small] for implement/test steps
+ *   - [tier:mid] for debug/review steps
+ *   - [tier:frontier] for architecture/design steps
+ *
+ * Example output:
+ *   ## Step 1: Explore the auth module
+ *   [tier:micro] ← local model handles this (free)
+ *   - Search for auth-related files
+ *   - Read key implementations
+ *
+ *   ## Step 2: Implement JWT refresh
+ *   [tier:mid] ← cloud model handles this
+ *   - Write refresh token logic
+ *   - Add tests
+ */
+export function annotatePlan(
+  planMarkdown: string,
+  options?: { mode?: 'normal' | 'budget' | 'quality' | 'deep' }
+): string {
+  // 1. Parse plan into steps (## or ### headings)
+  // 2. classifyTask() for each step's description
+  // 3. Insert tier annotation after each heading
+  // 4. Add total cost estimate at top of plan
+  // 5. Add savings estimate vs all-frontier execution
+}
+
+export interface PlanAnnotation {
+  stepIndex: number;
+  heading: string;
+  tier: TaskComplexityTier;
+  isLocal: boolean;             // true if local provider available for this tier
+  estimatedCost: number;
+  estimatedTokens: number;
+}
+```
+
+#### Implementation Tasks
+
+1. Create `packages/orchestrator/src/delegation/` directory with tier-delegation, call-caps, plan-annotation
+2. Implement `decomposeForTiers()` with multi-phase decomposition
+3. Implement `CallCapTracker` with fingerprinting and banner generation
+4. Implement `annotatePlan()` with step classification
+5. Register call cap tracker as a builtin hook (`tool.execute.after`)
+6. Integrate with `@agentsy/models` tier router (`routeToTier()`)
+7. Integrate with Phase 17 platform profile for local provider detection
+8. Extend `AgentLoopOptions` with tier/delegation config
+9. Add `/annotate-plan` slash command to CLI
+
+#### Testing
+
+- Multi-phase decomposition: explore→execute split on composite tasks
+- Call cap enforcement: tracker fires banner at correct thresholds
+- Redundancy detection: same file/pattern re-read flagged
+- Plan annotation: correct tier tags for each step type
+- Local provider offload: micro steps route to local when available
+- Tier escalation: cap reached → automatic tier bump
+
+#### Deliverables
+
+- `@agentsy/orchestrator/delegation` module
+- `decomposeForTiers()` API for plan-aware tier routing
+- `CallCapTracker` hook for runtime enforcement
+- `annotatePlan()` for markdown plan tier tagging
+- Integration with `@agentsy/models` tier system
+- Integration with Phase 17 local provider offload
+- `/annotate-plan` CLI command
+
+#### Cross-references
+
+- Models Phase 6 (`packages/models/IMPLEMENTATION-PLAN.md`): `classifyTask()`, `routeToTier()`, tier definitions
+- Gateway TASK-LB-022 (`plan/06-PHASE-3.5-LLM-GATEWAY.md`): tier-aware routing strategy
+- Phase 17 (`plan/26-PHASE-17-APFEL-ONDEVICE-OFFLOAD.md`): `PlatformProfile`, local provider detection, micro-tier offload
+- Tokens Phase 3 (`packages/tokens/IMPLEMENTATION-PLAN.md`): mode presets (normal/budget/quality)
 
 ## 3. Acceptance Criteria
 
@@ -100,7 +368,7 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 
 - **REQ-071**: Export three agent mode factories: `createCavemanManager`, `createSuperpowersActivator`, `createGarrysAgent`. Each implements `AgentModeFactory<TOptions, TActivator>`.
 - **REQ-072**: All SKILL.md files bundled directly inside `packages/agents/src/skills/`. No external caveman/superpowers packages.
-- **REQ-073**: Garry's mode bundles nine sprint SKILL.md files: `office-hours`, `plan-ceo-review`, `plan-eng-review`, `review`, `ship`, `qa`, `cso`, `investigate`, `autoplan`. Each includes `source_url`, `version`, `license: "MIT"` frontmatter.
+- **REQ-073**: Garry's mode bundles nine sprint SKILL.md files: `office-hours`, `plan-ceo-review`, `plan-eng-review`, `review`, `ship`, `qa`, `cso`, `investigate`, `autoplan`. Each includes `source_url`, `version`, `license: "GPL-3.0-or-later"` frontmatter.
 - **REQ-074**: `GarrysActivator.detectPhase(context)` infers sprint phase from context signals: PR diff present → `review`, test failures → `test`, open-ended product question → `think`.
 - **REQ-075**: `GarrysActivator.selectSkills(phase)` returns ≤3 `GarrysSkillManifest[]` for the given phase.
 - **REQ-076**: Garry's checkpoint emits `WIP:` prefixed commit after every tool-call turn (when `checkpointMode: true`). Commit body includes `[gstack-context]` block: decisions, remaining work, failed approaches.
@@ -113,7 +381,7 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 - **REQ-109**: Sprint phases implement Gate-Driven pattern: success gates declared in SKILL.md frontmatter as `success_gates: [...]`, verified by deterministic checks (tests, lints, compilation).
 - **SEC-017**: `safetyGuardrails: false` requires `{ override: 'I understand the risks' }` else throws.
 - **SEC-018**: Taste memory stores only `{ approved: boolean, dimensionKey: string, score: number, timestamp: number }` — no LLM free-text.
-- **CON-013**: No gstack source code vendored. SKILL.md files are adapted MIT-licensed content; gstack binary/runtime NOT imported.
+- **CON-013**: No gstack source code vendored. SKILL.md files are adapted GPL-3.0-or-later-licensed content; gstack binary/runtime NOT imported.
 - **CON-014**: No running gstack installation required. Sprint skills are self-contained SKILL.md prompts.
 - **CON-015**: No separate `@agentsy/caveman` or `@agentsy/superpowers` packages. `agentsy-features-v1.md` Phase 6 superseded.
 - **GUD-016**: `autoplan` SKILL.md enforces Discrete Phase Separation: no tool writes during plan phase.
@@ -131,20 +399,20 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 
 ### Phase AG2 — SKILL.md Files
 
-| Task         | Description                                                                                                                                                                                                                                                                          | Completed | Date |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-AG2-001 | Bundle JuliusBrussee/caveman v1.7.0 SKILL.md files: `caveman.md`, `caveman-lite.md`, `caveman-ultra.md`, `wenyan.md`, `cavecrew/investigator.md`, `cavecrew/builder.md`, `cavecrew/reviewer.md`. All include `source_url`, `version: "1.7.0"`, `license: "MIT"`. Add `_manifest.ts`. |           |      |
-| TASK-AG2-002 | Bundle obra/superpowers v5.0.7 SKILL.md files: `brainstorming.md`, `git-worktrees.md`, `writing-plans.md`, `subagent-driven-development.md`, `tdd.md`, `code-review.md`, `finish-branch.md`. All include `source_url`, `version: "5.0.7"`, `license: "MIT"`. Add `_manifest.ts`.     |           |      |
-| TASK-AG2-003 | Add `_manifest.ts` to `garrys/` exporting `GARRYS_SKILLS_VERSION = '1.26.0'` and `GARRYS_SOURCE_URL`.                                                                                                                                                                                |           |      |
-| TASK-AG2-004 | Write `office-hours.md` — YC Office Hours: six forcing questions, three alternatives with effort estimates. `phase: "think"`.                                                                                                                                                        |           |      |
-| TASK-AG2-005 | Write `plan-ceo-review.md` — four modes (Expansion/Hold/Reduction), 10-section review. `phase: "think"`.                                                                                                                                                                             |           |      |
-| TASK-AG2-006 | Write `plan-eng-review.md` — ASCII diagrams, test matrix, edge cases, failure modes, security. `phase: "plan"`.                                                                                                                                                                      |           |      |
-| TASK-AG2-007 | Write `review.md` — staff engineer review, auto-fixes obvious issues. `phase: "review"`.                                                                                                                                                                                             |           |      |
-| TASK-AG2-008 | Write `ship.md` — sync main, run tests, audit coverage, push, open PR. `phase: "ship"`.                                                                                                                                                                                              |           |      |
-| TASK-AG2-009 | Write `qa.md` — systematic test-and-fix loop, auto-generates regression test per bug. `phase: "test"`.                                                                                                                                                                               |           |      |
-| TASK-AG2-010 | Write `cso.md` — OWASP Top 10 + STRIDE, 8/10+ confidence gate, exploit scenario per finding. `phase: "review"`.                                                                                                                                                                      |           |      |
-| TASK-AG2-011 | Write `investigate.md` — Iron Law: no fixes without investigation. Stops after three failed attempts. `phase: "build"`.                                                                                                                                                              |           |      |
-| TASK-AG2-012 | Write `autoplan.md` — pipeline: office-hours → plan-ceo-review → plan-eng-review in sequence. `phase: "think"`.                                                                                                                                                                      |           |      |
+| Task         | Description                                                                                                                                                                                                                                                                                       | Completed | Date |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-AG2-001 | Bundle JuliusBrussee/caveman v1.7.0 SKILL.md files: `caveman.md`, `caveman-lite.md`, `caveman-ultra.md`, `wenyan.md`, `cavecrew/investigator.md`, `cavecrew/builder.md`, `cavecrew/reviewer.md`. All include `source_url`, `version: "1.7.0"`, `license: "GPL-3.0-or-later"`. Add `_manifest.ts`. |           |      |
+| TASK-AG2-002 | Bundle obra/superpowers v5.0.7 SKILL.md files: `brainstorming.md`, `git-worktrees.md`, `writing-plans.md`, `subagent-driven-development.md`, `tdd.md`, `code-review.md`, `finish-branch.md`. All include `source_url`, `version: "5.0.7"`, `license: "GPL-3.0-or-later"`. Add `_manifest.ts`.     |           |      |
+| TASK-AG2-003 | Add `_manifest.ts` to `garrys/` exporting `GARRYS_SKILLS_VERSION = '1.26.0'` and `GARRYS_SOURCE_URL`.                                                                                                                                                                                             |           |      |
+| TASK-AG2-004 | Write `office-hours.md` — YC Office Hours: six forcing questions, three alternatives with effort estimates. `phase: "think"`.                                                                                                                                                                     |           |      |
+| TASK-AG2-005 | Write `plan-ceo-review.md` — four modes (Expansion/Hold/Reduction), 10-section review. `phase: "think"`.                                                                                                                                                                                          |           |      |
+| TASK-AG2-006 | Write `plan-eng-review.md` — ASCII diagrams, test matrix, edge cases, failure modes, security. `phase: "plan"`.                                                                                                                                                                                   |           |      |
+| TASK-AG2-007 | Write `review.md` — staff engineer review, auto-fixes obvious issues. `phase: "review"`.                                                                                                                                                                                                          |           |      |
+| TASK-AG2-008 | Write `ship.md` — sync main, run tests, audit coverage, push, open PR. `phase: "ship"`.                                                                                                                                                                                                           |           |      |
+| TASK-AG2-009 | Write `qa.md` — systematic test-and-fix loop, auto-generates regression test per bug. `phase: "test"`.                                                                                                                                                                                            |           |      |
+| TASK-AG2-010 | Write `cso.md` — OWASP Top 10 + STRIDE, 8/10+ confidence gate, exploit scenario per finding. `phase: "review"`.                                                                                                                                                                                   |           |      |
+| TASK-AG2-011 | Write `investigate.md` — Iron Law: no fixes without investigation. Stops after three failed attempts. `phase: "build"`.                                                                                                                                                                           |           |      |
+| TASK-AG2-012 | Write `autoplan.md` — pipeline: office-hours → plan-ceo-review → plan-eng-review in sequence. `phase: "think"`.                                                                                                                                                                                   |           |      |
 
 ### Phase AG3 — Manager + Activator Implementations
 
@@ -192,9 +460,9 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 
 - **DEP-012**: `@agentsy/core@workspace:*` — only required runtime dep
 - **DEP-013**: `@agentsy/memory@workspace:*` — peer dep for garry's taste memory only
-- **DEP-014**: JuliusBrussee/caveman v1.7.0 — SKILL.md static assets, MIT, no runtime import
-- **DEP-015**: obra/superpowers v5.0.7 — SKILL.md static assets, MIT, no runtime import
-- **DEP-016**: garrytan/gstack v1.26.0 — SKILL.md methodology, MIT, no runtime import
+- **DEP-014**: JuliusBrussee/caveman v1.7.0 — SKILL.md static assets, GPL-3.0-or-later, no runtime import
+- **DEP-015**: obra/superpowers v5.0.7 — SKILL.md static assets, GPL-3.0-or-later, no runtime import
+- **DEP-016**: garrytan/gstack v1.26.0 — SKILL.md methodology, GPL-3.0-or-later, no runtime import
 
 ### Risks
 
@@ -650,30 +918,30 @@ src/
 
 ```typescript
 const workflow = new WorkflowBuilder()
-  .name('Code Review Orchestration')
-  .requireSkill('code-analysis')
-  .requireSkill('security-review')
+  .name("Code Review Orchestration")
+  .requireSkill("code-analysis")
+  .requireSkill("security-review")
 
   .sequence([
-    new TaskNode('analyze', {
-      agent: 'code-analyzer',
-      input: 'code-changes'
+    new TaskNode("analyze", {
+      agent: "code-analyzer",
+      input: "code-changes",
     }),
     new ParallelNode([
-      new TaskNode('security', {
-        agent: 'security-reviewer',
-        input: 'analysis-results'
+      new TaskNode("security", {
+        agent: "security-reviewer",
+        input: "analysis-results",
       }),
-      new TaskNode('quality', {
-        agent: 'quality-reviewer',
-        input: 'analysis-results'
-      })
+      new TaskNode("quality", {
+        agent: "quality-reviewer",
+        input: "analysis-results",
+      }),
     ]),
-    new MergeNode('combine'),
-    new TaskNode('report', {
-      agent: 'report-generator',
-      input: 'combined-results'
-    })
+    new MergeNode("combine"),
+    new TaskNode("report", {
+      agent: "report-generator",
+      input: "combined-results",
+    }),
   ])
 
   .timeout(Duration.minutes(30))
@@ -685,18 +953,18 @@ const workflow = new WorkflowBuilder()
 
 ```typescript
 const registry = new AgentRegistry()
-  .register('code-analyzer', {
-    skills: ['typescript', 'security', 'performance'],
+  .register("code-analyzer", {
+    skills: ["typescript", "security", "performance"],
     capacity: 10,
-    cost: 0.001
+    cost: 0.001,
   })
-  .register('security-reviewer', {
-    skills: ['security', 'vulnerability-scanning'],
+  .register("security-reviewer", {
+    skills: ["security", "vulnerability-scanning"],
     capacity: 5,
-    cost: 0.002
+    cost: 0.002,
   })
-  .discover('local://agents')
-  .discover('remote://production-agents');
+  .discover("local://agents")
+  .discover("remote://production-agents");
 ```
 
 #### 3. Orchestration Execution
@@ -705,14 +973,14 @@ const registry = new AgentRegistry()
 const orchestrator = new OrchestrationEngine({
   registry,
   scheduler: new AdaptiveScheduler(),
-  coordinator: new AsyncCoordinator()
+  coordinator: new AsyncCoordinator(),
 });
 
 const result = await orchestrator.execute(workflow, {
-  context: 'code-review',
+  context: "code-review",
   resourceLimits: { maxAgents: 5, maxCost: 0.01 },
   monitoring: true,
-  recovery: true
+  recovery: true,
 });
 ```
 
@@ -793,8 +1061,8 @@ interface SlashCommandManifest {
 
 - **REQ-028**: `SuperpowersActivator` selects relevant SKILL.md bundles based on project context (test files present → TDD, diff present → code-review, open-ended plan → brainstorming).
 - **GUD-008**: All bundled SKILL.md files must include `source_url`, `version`, `license` frontmatter.
-- **ASSUMPTION-008**: obra/superpowers v5.0.7 SKILL.md files are MIT licensed and redistributable. Verify before TASK-F6-014.
-- **DEP-010**: obra/superpowers v5.0.7 SKILL.md files — bundled as static assets. MIT license.
+- **ASSUMPTION-008**: obra/superpowers v5.0.7 SKILL.md files are GPL-3.0-or-later licensed and redistributable. Verify before TASK-F6-014.
+- **DEP-010**: obra/superpowers v5.0.7 SKILL.md files — bundled as static assets. GPL-3.0-or-later license.
 
 ### Types (`src/types.ts`)
 
@@ -1047,7 +1315,9 @@ type StopConditionState = {
 
 type StopCondition = (state: StopConditionState) => Promise<boolean> | boolean;
 
-type PrepareStepFn = (step: StepState) => Promise<Partial<AgentLoopOptions>> | Partial<AgentLoopOptions>;
+type PrepareStepFn = (
+  step: StepState,
+) => Promise<Partial<AgentLoopOptions>> | Partial<AgentLoopOptions>;
 ```
 
 ### Required built-ins from technical design

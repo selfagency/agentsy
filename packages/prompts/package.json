@@ -9,7 +9,7 @@
     "prompt",
     "reasoning"
   ],
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "author": "Agentsy Contributors",
   "files": [
     "dist",
@@ -21,20 +21,22 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "import": "./dist/index.js"
     }
   },
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
     "test": "vitest --run --passWithNoTests",
-    "coverage": "vitest --run --coverage"
+    "coverage": "vitest --run --coverage",
+    "lint": "biome lint",
+    "format": "biome format"
   },
   "dependencies": {
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",

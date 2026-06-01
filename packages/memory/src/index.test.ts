@@ -1,6 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+
+import { describe, expect, it, vi } from 'vitest';
+
 import {
   createInMemoryPubSubManager,
   createInMemoryScheduler,
@@ -14,16 +16,16 @@ describe('Phase 1: coordination foundations', () => {
   it('returns fallback mode when honker extension is unavailable', async () => {
     const fakeExtensionRoot = join(process.cwd(), '.agentsy-missing-ext', randomUUID());
     const result = await loadHonkerExtension({
+      blake3ExtensionPath: join(fakeExtensionRoot, 'blake3.so'),
       dbPath: 'memory.db',
-      extensionPath: join(fakeExtensionRoot, 'honker.so'),
-      blake3ExtensionPath: join(fakeExtensionRoot, 'blake3.so')
+      extensionPath: join(fakeExtensionRoot, 'honker.so')
     });
 
     expect(result.mode).toBe('fallback');
-    expect(result.features.pubSub).toBe(false);
-    expect(result.features.taskQueue).toBe(false);
-    expect(result.features.scheduler).toBe(false);
-    expect(result.features.blake3).toBe(false);
+    expect(result.features.pubSub).toBeFalsy();
+    expect(result.features.taskQueue).toBeFalsy();
+    expect(result.features.scheduler).toBeFalsy();
+    expect(result.features.blake3).toBeFalsy();
   });
 
   it('publishes messages to subscribed listeners', async () => {
@@ -38,7 +40,7 @@ describe('Phase 1: coordination foundations', () => {
     unsubscribe();
     await pubSub.publish('agent-lifecycle', 'agent-stopped');
 
-    expect(received).toEqual(['agent-started']);
+    expect(received).toStrictEqual(['agent-started']);
   });
 
   it('dequeues tasks in FIFO order', async () => {
@@ -61,15 +63,15 @@ describe('Phase 1: coordination foundations', () => {
     const scheduler = createInMemoryScheduler();
     const calls: string[] = [];
 
-    scheduler.schedule('job-1', 1_000, () => {
+    scheduler.schedule('job-1', 1000, () => {
       calls.push('job-1');
     });
 
-    await vi.advanceTimersByTimeAsync(1_100);
+    await vi.advanceTimersByTimeAsync(1100);
     scheduler.cancel('job-1');
     vi.useRealTimers();
 
-    expect(calls).toEqual(['job-1']);
+    expect(calls).toStrictEqual(['job-1']);
   });
 });
 
@@ -78,16 +80,16 @@ describe('Phase 1: three-tier wiki foundation', () => {
     const wiki = createWikiManager();
 
     const raw = await wiki.captureRaw({
-      sourceId: 'doc-1',
       content: '# OAuth Login\nUse PKCE for public clients.',
+      sourceId: 'doc-1',
       sourceType: 'document'
     });
 
     const page = await wiki.upsertPage({
-      pageId: 'wiki-auth',
-      title: 'OAuth Login',
       body: raw.normalizedContent,
-      tags: ['auth']
+      pageId: 'wiki-auth',
+      tags: ['auth'],
+      title: 'OAuth Login'
     });
 
     await wiki.upsertVector(page.pageId, [0.2, 0.8, 0.1]);
@@ -104,12 +106,12 @@ describe('Phase 1: three-tier wiki foundation', () => {
     const wiki = createWikiManager();
 
     await wiki.upsertPage({
-      pageId: 'wiki-auth-history',
-      title: 'OAuth Login',
-      body: 'Use PKCE',
-      tags: ['auth'],
       actorId: 'owner',
+      body: 'Use PKCE',
       format: 'markdown',
+      pageId: 'wiki-auth-history',
+      tags: ['auth'],
+      title: 'OAuth Login',
       writerIds: ['owner']
     });
 
@@ -127,11 +129,11 @@ describe('Phase 1: three-tier wiki foundation', () => {
     const wiki = createWikiManager();
 
     await wiki.upsertPage({
+      actorId: 'owner',
+      body: 'private',
+      format: 'text',
       pageId: 'wiki-secure',
       title: 'Secure Page',
-      body: 'private',
-      actorId: 'owner',
-      format: 'text',
       writerIds: ['owner']
     });
 
@@ -144,19 +146,19 @@ describe('Phase 1: three-tier wiki foundation', () => {
     const wiki = createWikiManager();
 
     await wiki.upsertPage({
-      pageId: 'wiki-auth-search',
-      title: 'OAuth Search',
+      actorId: 'system',
       body: 'OAuth PKCE refresh token flow',
       format: 'markdown',
-      actorId: 'system'
+      pageId: 'wiki-auth-search',
+      title: 'OAuth Search'
     });
 
     await wiki.upsertPage({
-      pageId: 'wiki-cache-search',
-      title: 'Cache Search',
+      actorId: 'system',
       body: 'Redis eviction policy',
       format: 'text',
-      actorId: 'system'
+      pageId: 'wiki-cache-search',
+      title: 'Cache Search'
     });
 
     await wiki.upsertVector('wiki-auth-search', [0.2, 0.9, 0.1]);
@@ -173,11 +175,11 @@ describe('Phase 1: three-tier wiki foundation', () => {
     const wiki = createWikiManager();
 
     await wiki.upsertPage({
-      pageId: 'wiki-entities',
-      title: 'OAuth and OpenID',
+      actorId: 'system',
       body: 'OAuth works with OpenID Connect and PKCE.',
       format: 'markdown',
-      actorId: 'system'
+      pageId: 'wiki-entities',
+      title: 'OAuth and OpenID'
     });
 
     await wiki.linkConcepts('wiki-entities', 'wiki-auth', 'related');
@@ -187,14 +189,17 @@ describe('Phase 1: three-tier wiki foundation', () => {
 
     expect(entities).toContain('OAuth');
     expect(entities).toContain('OpenID');
-    expect(relations[0]).toEqual({ toPageId: 'wiki-auth', relation: 'related' });
+    expect(relations[0]).toStrictEqual({
+      relation: 'related',
+      toPageId: 'wiki-auth'
+    });
   });
 
-  it('generates local embeddings for vector indexing', async () => {
+  it('generates local embeddings for vector indexing', () => {
     const embeddings = createLocalEmbeddingEngine({ dimensions: 8 });
     const vector = embeddings.embed('OAuth PKCE');
 
     expect(vector).toHaveLength(8);
-    expect(vector.some(value => value !== 0)).toBe(true);
+    expect(vector.some(value => value !== 0)).toBeTruthy();
   });
 });

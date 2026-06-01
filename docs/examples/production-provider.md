@@ -27,7 +27,10 @@ async function runWithRetry(fn: () => Promise<void>) {
 }
 
 // Create VS Code chat renderer to render markdown chat content
-const chatRenderer = createVSCodeChatRenderer({ stream: transport.createStream(), showThinking: true });
+const chatRenderer = createVSCodeChatRenderer({
+  stream: transport.createStream(),
+  showThinking: true
+});
 
 // Agent loop that manages message processing
 const agentLoop = createVSCodeAgentLoop({ chatRenderer, ...yourAgentOptions });

@@ -8,10 +8,10 @@ import type { SyncRecord, SyncSnapshot } from './types.js';
 
 function createRecord(id: string, content: string, updatedAt: string): SyncRecord {
   return {
+    content,
     id,
     tier: 'wiki',
-    updatedAt,
-    content
+    updatedAt
   };
 }
 
@@ -19,19 +19,24 @@ describe('Phase 2 sync integration', () => {
   it('syncs local and remote state end to end', async () => {
     const remoteRecords: SyncRecord[] = [createRecord('remote-1', 'Remote note', '2026-05-15T00:00:00.000Z')];
     const manager = createTursoManager({
-      databaseUrl: 'libsql://agentsy-memory.turso.io',
       authToken: 'token-value',
-      syncIntervalMs: 5_000,
-      maxRetries: 3,
       client: {
-        async upload(snapshot) {
-          remoteRecords.splice(0, remoteRecords.length, ...snapshot.records);
-          return { uploadedCount: snapshot.records.length, nextCursor: 'remote-cursor-2' };
-        },
+        // biome-ignore lint/suspicious/useAwait: must match Promise-returning SyncClient interface
         async download(cursor) {
           return { cursor, records: [...remoteRecords] };
+        },
+        // biome-ignore lint/suspicious/useAwait: must match Promise-returning SyncClient interface
+        async upload(snapshot) {
+          remoteRecords.splice(0, remoteRecords.length, ...snapshot.records);
+          return {
+            nextCursor: 'remote-cursor-2',
+            uploadedCount: snapshot.records.length
+          };
         }
-      }
+      },
+      databaseUrl: 'libsql://agentsy-memory.turso.io',
+      maxRetries: 3,
+      syncIntervalMs: 5000
     });
 
     const result = await manager.sync({
@@ -40,7 +45,7 @@ describe('Phase 2 sync integration', () => {
     });
 
     expect(result.status).toBe('success');
-    expect(remoteRecords).toEqual(
+    expect(remoteRecords).toStrictEqual(
       expect.arrayContaining([expect.objectContaining({ id: 'remote-1' }), expect.objectContaining({ id: 'local-1' })])
     );
   });
@@ -48,23 +53,28 @@ describe('Phase 2 sync integration', () => {
   it('persists unresolved conflicts for manual resolution workflows', async () => {
     const conflictStore = createConflictStore();
     const manager = createTursoManager({
-      databaseUrl: 'libsql://agentsy-memory.turso.io',
       authToken: 'token-value',
-      syncIntervalMs: 5_000,
-      maxRetries: 3,
-      mergePolicy: 'manualRequired',
-      conflictStore,
       client: {
-        async upload(snapshot) {
-          return { uploadedCount: snapshot.records.length, nextCursor: 'remote-cursor-2' };
-        },
+        // biome-ignore lint/suspicious/useAwait: must match Promise-returning SyncClient interface
         async download(cursor) {
           return {
             cursor,
             records: [createRecord('shared-1', 'Remote edit', '2026-05-15T02:00:00.000Z')]
           };
+        },
+        // biome-ignore lint/suspicious/useAwait: must match Promise-returning SyncClient interface
+        async upload(snapshot) {
+          return {
+            nextCursor: 'remote-cursor-2',
+            uploadedCount: snapshot.records.length
+          };
         }
-      }
+      },
+      conflictStore,
+      databaseUrl: 'libsql://agentsy-memory.turso.io',
+      maxRetries: 3,
+      mergePolicy: 'manualRequired',
+      syncIntervalMs: 5000
     });
 
     const result = await manager.sync({
@@ -76,7 +86,7 @@ describe('Phase 2 sync integration', () => {
       status: 'success',
       unresolvedConflicts: 1
     });
-    expect(await conflictStore.pendingCount()).toBe(1);
+    await expect(conflictStore.pendingCount()).resolves.toBe(1);
   });
 
   it('supports backup restore and rollback workflows', async () => {
@@ -85,12 +95,13 @@ describe('Phase 2 sync integration', () => {
       records: [createRecord('record-1', 'before', '2026-05-15T00:00:00.000Z')]
     };
     const backupManager = createBackupManager({
-      databaseId: 'agentsy-memory',
-      schemaVersion: 1,
-      getCurrentState: async () => state,
+      // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
       applySnapshot: async snapshot => {
         state = snapshot;
-      }
+      },
+      databaseId: 'agentsy-memory',
+      getCurrentState: async () => state,
+      schemaVersion: 1
     });
 
     const snapshot = await backupManager.createSnapshot();
@@ -100,10 +111,10 @@ describe('Phase 2 sync integration', () => {
     };
 
     const restore = await backupManager.restoreSnapshot(snapshot.id, {
-      targetDatabaseId: 'agentsy-memory',
-      schemaVersion: 1
+      schemaVersion: 1,
+      targetDatabaseId: 'agentsy-memory'
     });
-    const rollbackSnapshotId = restore.rollbackSnapshotId;
+    const { rollbackSnapshotId } = restore;
 
     expect(state.records[0]?.id).toBe('record-1');
     expect(rollbackSnapshotId).toBeDefined();
@@ -118,27 +129,27 @@ describe('Phase 2 sync integration', () => {
 
   it('keeps local coordination available during offline sync failures', async () => {
     const manager = createTursoManager({
-      databaseUrl: 'libsql://agentsy-memory.turso.io',
       authToken: 'token-value',
-      syncIntervalMs: 5_000,
-      maxRetries: 3,
       client: {
-        async upload() {
+        download() {
           throw new Error('offline');
         },
-        async download() {
+        upload() {
           throw new Error('offline');
         }
-      }
+      },
+      databaseUrl: 'libsql://agentsy-memory.turso.io',
+      maxRetries: 3,
+      syncIntervalMs: 5000
     });
 
     const scheduler = createSyncScheduler(manager, {
-      intervalMs: 1_000,
+      getLocalState: () => ({ cursor: 'cursor-1', records: [] }),
       initialDelayMs: 10,
-      maxDelayMs: 5_000,
-      maxRetries: 2,
+      intervalMs: 1000,
       jitterRatio: 0,
-      getLocalState: () => ({ cursor: 'cursor-1', records: [] })
+      maxDelayMs: 5000,
+      maxRetries: 2
     });
 
     const result = await scheduler.triggerNow();

@@ -1,10 +1,10 @@
 import type { CapturedMemoryRecord } from './memory-capture.js';
 
 export interface MemoryLintIssue {
-  recordId: string;
   code: 'secret-like-pattern' | 'oversized-record';
-  severity: 'warning' | 'error';
   message: string;
+  recordId: string;
+  severity: 'warning' | 'error';
 }
 
 export interface MemoryLintResult {
@@ -35,19 +35,19 @@ export function createMemoryLintTool(deps: MemoryLintToolDeps): MemoryLintTool {
       for (const record of records) {
         if (SECRET_LIKE_PATTERN.test(record.content)) {
           issues.push({
-            recordId: record.id,
             code: 'secret-like-pattern',
-            severity: 'error',
-            message: 'Record content appears to contain secret-like material.'
+            message: 'Record content appears to contain secret-like material.',
+            recordId: record.id,
+            severity: 'error'
           });
         }
 
         if (record.content.length > maxContentLength) {
           issues.push({
-            recordId: record.id,
             code: 'oversized-record',
-            severity: 'warning',
-            message: `Record content length (${record.content.length}) exceeds maxContentLength (${maxContentLength}).`
+            message: `Record content length (${record.content.length}) exceeds maxContentLength (${maxContentLength}).`,
+            recordId: record.id,
+            severity: 'warning'
           });
         }
       }

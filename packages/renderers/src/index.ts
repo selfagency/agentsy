@@ -28,6 +28,7 @@
  * ```
  */
 
+export { createInkRuntimeController, loadInkRenderModules } from './ink/ink-runtime-state.js';
 export { createPlainTextRenderer, type PlainTextRendererOptions } from './plain/index.js';
 export { createSharedRendererHandle, createStepChangeEmitter } from './shared.js';
 export type {

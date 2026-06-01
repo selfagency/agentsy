@@ -1,12 +1,13 @@
-import type { AgentFsEntry, AgentFsManager, AgentFsOptions } from '@agentsy/types';
 import { createHash } from 'node:crypto';
+
+import type { AgentFsEntry, AgentFsManager, AgentFsOptions } from '@agentsy/types';
 
 export type { AgentFsEntry, AgentFsManager, AgentFsOptions };
 
 // SHA-256 is used for legacy compatibility; PHASE 4 implementation switched to BLAKE3/SHA-256
 // but we'll stick to a stable hash function for now as documented in types.
 function hashContent(content: string): string {
-  return `sha256:${createHash('sha256').update(content, 'utf8').digest('hex')}`;
+  return `sha256:${createHash('sha256').update(content, 'utf-8').digest('hex')}`;
 }
 
 /** @internal */
@@ -26,6 +27,28 @@ export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
   }
 
   return {
+    clear() {
+      store.clear();
+    },
+
+    delete(path: string) {
+      return store.delete(path);
+    },
+
+    has(path: string) {
+      return store.has(path);
+    },
+
+    import(entries: AgentFsEntry[]) {
+      for (const entry of entries) {
+        store.set(entry.path, entry);
+      }
+    },
+
+    list() {
+      return [...store.values()];
+    },
+
     get namespace() {
       return namespaceLabel;
     },
@@ -38,36 +61,14 @@ export function createAgentFsManager(options?: AgentFsOptions): AgentFsManager {
       const now = Date.now();
       const existing = store.get(path);
       const entry: AgentFsEntry = {
-        path,
         content,
         contentHash: hashContent(content),
         createdAt: existing?.createdAt ?? now,
+        path,
         updatedAt: now
       };
       store.set(path, entry);
       return entry;
-    },
-
-    delete(path: string) {
-      return store.delete(path);
-    },
-
-    list() {
-      return [...store.values()];
-    },
-
-    has(path: string) {
-      return store.has(path);
-    },
-
-    clear() {
-      store.clear();
-    },
-
-    import(entries: AgentFsEntry[]) {
-      for (const entry of entries) {
-        store.set(entry.path, entry);
-      }
     }
   };
 }

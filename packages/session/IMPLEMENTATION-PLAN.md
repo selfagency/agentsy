@@ -31,21 +31,21 @@ This plan defines the production implementation order for `@agentsy/session` as 
 
 - GOAL-SESSION-001: Contract and store interface stabilization.
 
-| Task             | Description                                                          | Completed | Date |
-| ---------------- | -------------------------------------------------------------------- | --------- | ---- |
-| TASK-SESSION-001 | Stabilize snapshot schema and store interface contract.              |           |      |
-| TASK-SESSION-002 | Add typed tests for deterministic resume and metadata compatibility. |           |      |
-| TASK-SESSION-003 | Document boundaries with runtime/memory/CLI.                         |           |      |
+| Task             | Description                                                          | Completed | Date       |
+| ---------------- | -------------------------------------------------------------------- | --------- | ---------- |
+| TASK-SESSION-001 | Stabilize snapshot schema and store interface contract.              | ✅        | 2026-05-17 |
+| TASK-SESSION-002 | Add typed tests for deterministic resume and metadata compatibility. | ✅        | 2026-05-17 |
+| TASK-SESSION-003 | Document boundaries with runtime/memory/CLI.                         | ✅        | 2026-05-17 |
 
 ### Implementation Phase 2
 
 - GOAL-SESSION-002: Core durability implementation.
 
-| Task             | Description                                                   | Completed | Date |
-| ---------------- | ------------------------------------------------------------- | --------- | ---- |
-| TASK-SESSION-004 | Implement save/resume/checkpoint APIs and backend adapters.   |           |      |
-| TASK-SESSION-005 | Implement integrity checks and stale/crash detection signals. |           |      |
-| TASK-SESSION-006 | Implement metadata pathways for layout/context reuse fields.  |           |      |
+| Task             | Description                                                   | Completed | Date       |
+| ---------------- | ------------------------------------------------------------- | --------- | ---------- |
+| TASK-SESSION-004 | Implement save/resume/checkpoint APIs and backend adapters.   | ✅        | 2026-05-17 |
+| TASK-SESSION-005 | Implement integrity checks and stale/crash detection signals. | ✅        | 2026-05-17 |
+| TASK-SESSION-006 | Implement metadata pathways for layout/context reuse fields.  | ✅        | 2026-05-17 |
 
 ### Implementation Phase 3
 
@@ -228,8 +228,8 @@ export interface SessionSnapshot {
 async function atomicWrite(path: string, content: string) {
   const tmpPath = `${path}.tmp`;
   await fs.writeFile(tmpPath, content);
-  const verify = await fs.readFile(tmpPath, 'utf-8');
-  if (verify !== content) throw new Error('Write verification failed');
+  const verify = await fs.readFile(tmpPath, "utf-8");
+  if (verify !== content) throw new Error("Write verification failed");
   await fs.rename(tmpPath, path);
 }
 ```

@@ -1,18 +1,24 @@
 export interface ReusableMemoryBlock {
   fingerprint: string;
-  reuseClass: 'hot' | 'warm' | 'cold';
   hitCount: number;
   invalidations: string[];
+  reuseClass: 'hot' | 'warm' | 'cold';
 }
 
 function reuseRank(reuseClass: ReusableMemoryBlock['reuseClass']): number {
   switch (reuseClass) {
-    case 'hot':
+    case 'hot': {
       return 0;
-    case 'warm':
+    }
+    case 'warm': {
       return 1;
-    case 'cold':
+    }
+    case 'cold': {
       return 2;
+    }
+    default: {
+      return 2;
+    }
   }
 }
 
@@ -24,7 +30,7 @@ export function rankReusableMemoryBlocks(
   return [...blocks]
     .filter(block => block.reuseClass !== 'cold')
     .filter(block => invalidatedKeys.every(key => !block.invalidations.includes(key)))
-    .sort((left, right) => {
+    .toSorted((left, right) => {
       if (left.fingerprint === fingerprint && right.fingerprint !== fingerprint) {
         return -1;
       }

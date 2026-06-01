@@ -7,13 +7,17 @@ export { computeSyncChecksum, validateRemoteSnapshot, verifySyncChecksum } from 
 export {
   createMemoryStateAdapter,
   deserializeMemoryState,
-  serializeMemoryState,
   type MemoryState,
   type MemoryStateAdapter,
-  type MemoryStateAdapterOptions
+  type MemoryStateAdapterOptions,
+  serializeMemoryState
 } from './memory-state.js';
 export { createSyncMetricsRegistry } from './metrics.js';
-export { createSecureSyncErrorEnvelope, redactSyncSecrets, validateCredentialSource } from './security.js';
+export {
+  createSecureSyncErrorEnvelope,
+  redactSyncSecrets,
+  validateCredentialSource
+} from './security.js';
 export { createSyncScheduler } from './sync-scheduler.js';
 export {
   createDefaultTursoClient,
@@ -24,6 +28,11 @@ export {
   type TursoSyncClientConfig
 } from './turso-client.js';
 export { createTursoManager, TursoManager } from './turso-manager.js';
+export {
+  createTursoSyncEngine,
+  type TursoSyncEngine,
+  type TursoSyncEngineConfig
+} from './turso-sync-engine.js';
 export type {
   BackupManager,
   BackupManagerOptions,

@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+
 import type { AgentCapabilities } from '../types/index.js';
 
 export class AgentRegistry extends EventEmitter {
@@ -21,7 +22,7 @@ export class AgentRegistry extends EventEmitter {
     this.agents.set(agent.id, agent);
 
     // Update skill mapping
-    agent.skills.forEach(skill => {
+    for (const skill of agent.skills) {
       if (!this.skillMap.has(skill.name)) {
         this.skillMap.set(skill.name, new Set());
       }
@@ -29,7 +30,7 @@ export class AgentRegistry extends EventEmitter {
       if (skillAgents) {
         skillAgents.add(agent.id);
       }
-    });
+    }
 
     // Update resource mapping
     agent.maxConcurrency = agent.maxConcurrency || 1;
@@ -43,7 +44,7 @@ export class AgentRegistry extends EventEmitter {
       this.agents.delete(agentId);
 
       // Update skill mapping
-      agent.skills.forEach(skill => {
+      for (const skill of agent.skills) {
         const agents = this.skillMap.get(skill.name);
         if (agents) {
           agents.delete(agentId);
@@ -51,7 +52,7 @@ export class AgentRegistry extends EventEmitter {
             this.skillMap.delete(skill.name);
           }
         }
-      });
+      }
 
       this.emit('agent:unregistered', agentId);
     }
@@ -62,14 +63,16 @@ export class AgentRegistry extends EventEmitter {
   }
 
   getAllAgents(): AgentCapabilities[] {
-    return Array.from(this.agents.values());
+    return [...this.agents.values()];
   }
 
   findAgentsBySkill(skillName: string): AgentCapabilities[] {
     const agentIds = this.skillMap.get(skillName);
-    if (!agentIds) return [];
+    if (!agentIds) {
+      return [];
+    }
 
-    return Array.from(agentIds)
+    return [...agentIds]
       .map(id => this.agents.get(id))
       .filter((agent): agent is AgentCapabilities => !!agent?.available);
   }
@@ -80,7 +83,9 @@ export class AgentRegistry extends EventEmitter {
     }
 
     const firstSkill = requiredSkills[0];
-    if (!firstSkill) return [];
+    if (!firstSkill) {
+      return [];
+    }
 
     const candidateAgents = this.findAgentsBySkill(firstSkill.name);
 

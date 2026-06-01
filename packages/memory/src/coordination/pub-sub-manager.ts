@@ -1,8 +1,8 @@
-export type ChannelListener<TPayload> = (payload: TPayload) => void;
+export type ChannelListener<T> = (payload: T) => void;
 
 export interface PubSubManager {
-  subscribe<TPayload>(channel: string, listener: ChannelListener<TPayload>): () => void;
   publish<TPayload>(channel: string, payload: TPayload): Promise<void>;
+  subscribe<TPayload>(channel: string, listener: ChannelListener<TPayload>): () => void;
   subscriberCount(channel: string): number;
 }
 
@@ -10,6 +10,19 @@ export function createInMemoryPubSubManager(): PubSubManager {
   const listeners = new Map<string, Set<ChannelListener<unknown>>>();
 
   return {
+    publish<TPayload>(channel: string, payload: TPayload): Promise<void> {
+      const channelListeners = listeners.get(channel);
+      if (!channelListeners) {
+        return Promise.resolve();
+      }
+
+      for (const listener of channelListeners) {
+        (listener as ChannelListener<TPayload>)(payload);
+      }
+
+      return Promise.resolve();
+    },
+
     subscribe<TPayload>(channel: string, listener: ChannelListener<TPayload>) {
       const current = listeners.get(channel) ?? new Set<ChannelListener<unknown>>();
       current.add(listener as ChannelListener<unknown>);
@@ -27,17 +40,6 @@ export function createInMemoryPubSubManager(): PubSubManager {
           listeners.delete(channel);
         }
       };
-    },
-
-    async publish<TPayload>(channel: string, payload: TPayload) {
-      const channelListeners = listeners.get(channel);
-      if (!channelListeners) {
-        return;
-      }
-
-      for (const listener of channelListeners) {
-        (listener as ChannelListener<TPayload>)(payload);
-      }
     },
 
     subscriberCount(channel: string) {

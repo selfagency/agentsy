@@ -242,11 +242,24 @@ $RECYCLE.BIN/
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
-.mcpregistry_*
-package-lock.json
 .gh-pages
-.turbo
-test-report.junit.xml
+.hermes/
+.mcpregistry_*
 .rumdl_cache
+.sisyphus/
+.turbo
 build-log*
 coverage_output*
+fallow-dupes*
+package-lock.json
+test-report.junit.xml
+tmp/
+tui-traces/
+tui-results/
+.tmp/
+.tui-test/cache/
+.remindb/memory.*
+.remindb/sessions
+*.db
+*.db-shm
+*.db-wal

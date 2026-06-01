@@ -42,11 +42,11 @@ This plan defines the production implementation order for `@agentsy/tokens` as t
 
 - GOAL-TOKENS-002: Core accounting and compression implementation.
 
-| Task            | Description                                                        | Completed | Date |
-| --------------- | ------------------------------------------------------------------ | --------- | ---- |
-| TASK-TOKENS-004 | Finalize estimators, reconciler, and budget policy engine modules. |           |      |
-| TASK-TOKENS-005 | Implement compression/truncation strategies and validation hooks.  |           |      |
-| TASK-TOKENS-006 | Implement telemetry payload generation and summary adapters.       |           |      |
+| Task            | Description                                                        | Completed | Date       |
+| --------------- | ------------------------------------------------------------------ | --------- | ---------- |
+| TASK-TOKENS-004 | Finalize estimators, reconciler, and budget policy engine modules. | ✅        | 2026-05-17 |
+| TASK-TOKENS-005 | Implement compression/truncation strategies and validation hooks.  | ✅        | 2026-05-17 |
+| TASK-TOKENS-006 | Implement telemetry payload generation and summary adapters.       | ✅        | 2026-05-17 |
 
 ### Implementation Phase 3
 
@@ -158,7 +158,7 @@ This plan defines the production implementation order for `@agentsy/tokens` as t
 ````typescript
 // packages/tokens/src/compression/output-compressor.ts
 export interface CompressionOptions {
-  level: 'lite' | 'full' | 'ultra'; // 40-50%, 65-75%, 75-87% savings
+  level: "lite" | "full" | "ultra"; // 40-50%, 65-75%, 75-87% savings
   preserve: PreservedElements;
   intensity?: number; // 0.0-1.0 for fine-tuning
   autoClarity?: boolean; // Drop for security warnings
@@ -253,7 +253,7 @@ export interface CompressionResult {
 
 export async function compressMemoryFile(
   filePath: string,
-  options: MemoryCompressionOptions
+  options: MemoryCompressionOptions,
 ): Promise<CompressionResult> {
   // 1. Security check - refuse sensitive paths
   if (isSensitivePath(filePath)) {
@@ -262,7 +262,7 @@ export async function compressMemoryFile(
 
   // 2. Detect file type (natural language vs code/config)
   if (!shouldCompressFile(filePath)) {
-    return { skipped: true, reason: 'not natural language' };
+    return { skipped: true, reason: "not natural language" };
   }
 
   // 3. Create backup (.original.md)
@@ -280,7 +280,7 @@ export async function compressMemoryFile(
 
   // 6. Verify backup readback before overwrite
   if (!verifyBackup(backupPath, originalText)) {
-    throw new BackupError('Backup verification failed');
+    throw new BackupError("Backup verification failed");
   }
 
   // 7. Write compressed file
@@ -387,37 +387,41 @@ export function validateCompression(originalPath: Path, compressedText: string):
   const originalHeadings = extractHeadings(original);
   const compressedHeadings = extractHeadings(compressedText);
   if (originalHeadings.length !== compressedHeadings.length) {
-    result.addError(`Heading count mismatch: ${originalHeadings.length} vs ${compressedHeadings.length}`);
+    result.addError(
+      `Heading count mismatch: ${originalHeadings.length} vs ${compressedHeadings.length}`,
+    );
   }
-  if (originalHeadings.some(h => !compressedHeadings.includes(h))) {
-    result.addWarning('Heading text/order changed');
+  if (originalHeadings.some((h) => !compressedHeadings.includes(h))) {
+    result.addWarning("Heading text/order changed");
   }
 
   // 2. Code block validation
   const originalBlocks = extractCodeBlocks(original);
   const compressedBlocks = extractCodeBlocks(compressedText);
   if (originalBlocks.length !== compressedBlocks.length) {
-    result.addError(`Code block count mismatch: ${originalBlocks.length} vs ${compressedBlocks.length}`);
+    result.addError(
+      `Code block count mismatch: ${originalBlocks.length} vs ${compressedBlocks.length}`,
+    );
   }
-  if (originalBlocks.some(b => !compressedBlocks.includes(b))) {
-    result.addError('Code blocks not preserved exactly');
+  if (originalBlocks.some((b) => !compressedBlocks.includes(b))) {
+    result.addError("Code blocks not preserved exactly");
   }
 
   // 3. URL validation
   const originalUrls = extractUrls(original);
   const compressedUrls = extractUrls(compressedText);
-  if (!originalUrls.every(url => compressedUrls.has(url))) {
-    const lost = [...originalUrls].filter(url => !compressedUrls.has(url));
-    result.addError(`URL missing: ${lost.join(', ')}`);
+  if (!originalUrls.every((url) => compressedUrls.has(url))) {
+    const lost = [...originalUrls].filter((url) => !compressedUrls.has(url));
+    result.addError(`URL missing: ${lost.join(", ")}`);
   }
 
   // 4. File path validation
   const originalPaths = extractPaths(original);
   const compressedPaths = extractPaths(compressedText);
   if (originalPaths.size !== compressedPaths.size) {
-    const lost = [...originalPaths].filter(p => !compressedPaths.has(p));
-    const added = [...compressedPaths].filter(p => !originalPaths.has(p));
-    result.addWarning(`Path mismatch: lost=${lost.join(', ')}, added=${added.join(', ')}`);
+    const lost = [...originalPaths].filter((p) => !compressedPaths.has(p));
+    const added = [...compressedPaths].filter((p) => !originalPaths.has(p));
+    result.addWarning(`Path mismatch: lost=${lost.join(", ")}, added=${added.join(", ")}`);
   }
 
   // 5. Bullet validation
@@ -432,8 +436,8 @@ export function validateCompression(originalPath: Path, compressedText: string):
   const originalInline = extractInlineCode(original);
   const compressedInline = extractInlineCode(compressedText);
   if (originalInline.size !== compressedInline.size) {
-    const lost = [...originalInline].filter(code => !compressedInline.has(code));
-    result.addError(`Inline code lost: ${lost.join(', ')}`);
+    const lost = [...originalInline].filter((code) => !compressedInline.has(code));
+    result.addError(`Inline code lost: ${lost.join(", ")}`);
   }
 
   return result;
@@ -483,7 +487,11 @@ function extractInlineCode(text: string): Set<string> {
 **Fix application (targeted, not recompression):**
 
 ```typescript
-export async function applyFixes(original: string, compressed: string, errors: string[]): Promise<string> {
+export async function applyFixes(
+  original: string,
+  compressed: string,
+  errors: string[],
+): Promise<string> {
   const prompt = buildFixPrompt(original, compressed, errors);
 
   // Rules:
@@ -496,7 +504,7 @@ export async function applyFixes(original: string, compressed: string, errors: s
 }
 
 function buildFixPrompt(original: string, compressed: string, errors: string[]): string {
-  const errorsStr = errors.map(e => `- ${e}`).join('\n');
+  const errorsStr = errors.map((e) => `- ${e}`).join("\n");
 
   return `
 CRITICAL RULES:
@@ -547,6 +555,119 @@ Return ONLY the fixed compressed file. No explanation.
 - CLI: `agentsy compress-memory --file CLAUDE.md --backup`
 - Test coverage: 10-task output benchmark + 5-file memory benchmark
 
+### Day 6+: Structure Mask System & Entropy Preservation
+
+**Scope:** Replace regex-only preservation with a boolean mask system aligned to text regions. Add entropy-based auto-preservation for high-signal tokens (UUIDs, hashes, identifiers).
+
+**Inspiration:** Headroom's `StructureMask` / `MaskSpan` / `EntropyScore` architecture — adapted to TypeScript without ML dependencies.
+
+```typescript
+// packages/tokens/src/compression/structure-mask.ts
+
+/** Boolean mask aligned 1:1 to text characters or token boundaries. */
+export class StructureMask {
+  private readonly mask: boolean[];
+  readonly length: number;
+
+  constructor(length: number, initialValue = false) {
+    this.mask = new Array<boolean>(length).fill(initialValue);
+    this.length = length;
+  }
+
+  /** Mark a contiguous region as structural (preserve). */
+  mark(offset: number, span: number): void { /* ... */ }
+
+  /** Combine: structural = this OR other (union preserves more). */
+  union(other: StructureMask): StructureMask { /* ... */ }
+
+  /** Combine: structural = this AND other (intersection preserves less). */
+  intersection(other: StructureMask): StructureMask { /* ... */ }
+
+  /** Invert: structural ↔ non-structural. */
+  invert(): StructureMask { /* ... */ }
+
+  /** Convert to ordered span list for region-based processing. */
+  toSpans(): MaskSpan[] { /* ... */ }
+
+  /** Test a specific offset. */
+  isStructural(offset: number): boolean { /* ... */ }
+}
+
+/** Contiguous region with structural flag. */
+export interface MaskSpan {
+  offset: number;
+  length: number;
+  isStructural: boolean;
+}
+```
+
+```typescript
+// packages/tokens/src/compression/entropy.ts
+
+/** Shannon entropy per token, normalized to 0–1. */
+export interface EntropyScore {
+  token: string;
+  entropy: number;       // raw bits
+  normalized: number;    // 0–1
+}
+
+/**
+ * Compute entropy scores for each token in `tokens`.
+ * High normalized entropy (≥ threshold) indicates self-signal:
+ * UUIDs, hashes, base64 identifiers — no classifier needed.
+ */
+export function computeEntropyScores(
+  tokens: readonly string[],
+  options?: { normalizeBound?: number }
+): EntropyScore[] { /* ... */ }
+
+/**
+ * Build a StructureMask that auto-preserves high-entropy tokens.
+ * Default threshold: 0.75 (preserves most UUIDs, hashes, short IDs).
+ */
+export function computeEntropyMask(
+  text: string,
+  options?: {
+    threshold?: number;        // default 0.75
+    tokenizer?: 'word' | 'char'; // default 'word'
+  }
+): StructureMask { /* ... */ }
+```
+
+**Integration with existing `protectPattern()`**:
+
+The existing placeholder-based preservation (`compressOutput` in `index.ts`) will be refactored to build a `StructureMask` first, then compress only non-structural spans. This replaces the current regex-replace-restore cycle with a more composable pipeline:
+
+```text
+Input → detect structural regions (regex patterns) → build mask
+     → compute entropy mask → union masks
+     → compress only non-structural spans
+     → output
+```
+
+**Implementation Tasks:**
+
+1. Implement `StructureMask` class with union/intersection/invert/toSpans
+2. Implement `computeEntropyScores()` with Shannon entropy calculation
+3. Implement `computeEntropyMask()` with word-level tokenization
+4. Refactor `compressOutput()` to accept and apply a `StructureMask`
+5. Add mask-based preservation tests for UUIDs, hashes, base64, paths
+6. Benchmark: mask-based vs regex-based preservation overhead (<2ms added)
+
+**Testing:**
+
+- `StructureMask` unit tests: mark, union, intersection, invert, toSpans
+- Entropy scoring: known strings (UUIDs → high, common words → low)
+- Mask-based compression preserves high-entropy tokens (100% recall)
+- Performance: mask construction + compression <12ms total (vs 10ms current)
+
+**Deliverables:**
+
+- `@agentsy/tokens/compression/structure-mask` module
+- `@agentsy/tokens/compression/entropy` module
+- Refactored `compressOutput()` using mask pipeline
+- Entropy-based auto-preservation for IDs, hashes, tokens
+
 ## Phase 2: JSON Minification & TOON Format Encoding (Days 7-10)
 
 - **Target:** 40% JSON savings, TOON format 76.4% accuracy with ~40% fewer tokens
@@ -568,10 +689,10 @@ Return ONLY the fixed compressed file. No explanation.
 
 ```typescript
 // packages/tokens/src/encoding/toon-integration.ts
-import { encode, decode, encodeLines } from '@toon-format/toon';
+import { encode, decode, encodeLines } from "@toon-format/toon";
 
 export interface EncodingOptions {
-  format: 'json' | 'json-compact' | 'toon' | 'auto';
+  format: "json" | "json-compact" | "toon" | "auto";
   modelContext?: ModelContext; // For token counting
 }
 
@@ -583,7 +704,7 @@ export interface ModelContext {
 
 export interface EncodingResult {
   encoded: string;
-  formatUsed: 'json' | 'json-compact' | 'toon';
+  formatUsed: "json" | "json-compact" | "toon";
   tokenCount: number;
   savingsPercentage: number;
   accuracy: number; // Estimated accuracy based on format
@@ -610,7 +731,7 @@ export function analyzeStructure(data: any): StructureAnalysis {
       isFlat: false,
       fieldCount: 0,
       itemCount: 0,
-      allPrimitives: false
+      allPrimitives: false,
     };
   }
 
@@ -623,16 +744,20 @@ export function analyzeStructure(data: any): StructureAnalysis {
     const itemKeys = Object.keys(item);
 
     // Check for nested structures
-    if (itemKeys.some(k => typeof item[k] === 'object' && item[k] !== null && !Array.isArray(item[k]))) {
+    if (
+      itemKeys.some(
+        (k) => typeof item[k] === "object" && item[k] !== null && !Array.isArray(item[k]),
+      )
+    ) {
       nestedDetected = true;
     }
 
     // Check uniformity
-    const hasSameKeys = itemKeys.length === keys.length && itemKeys.every(k => keys.includes(k));
+    const hasSameKeys = itemKeys.length === keys.length && itemKeys.every((k) => keys.includes(k));
 
     // Check primitive-only
     const allPrimitives = Object.values(item).every(
-      v => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
+      (v) => typeof v === "string" || typeof v === "number" || typeof v === "boolean",
     );
 
     if (hasSameKeys && allPrimitives) {
@@ -648,7 +773,7 @@ export function analyzeStructure(data: any): StructureAnalysis {
     isFlat: !nestedDetected,
     fieldCount: keys.length,
     itemCount: data.length,
-    allPrimitives
+    allPrimitives,
   };
 }
 ```
@@ -656,27 +781,36 @@ export function analyzeStructure(data: any): StructureAnalysis {
 **Smart format selection:**
 
 ```typescript
-export function selectOptimalFormat(data: unknown, context: ModelContext): 'json' | 'json-compact' | 'toon' {
+export function selectOptimalFormat(
+  data: unknown,
+  context: ModelContext,
+): "json" | "json-compact" | "toon" {
   const analysis = analyzeStructure(data);
 
   // TOON best for highly uniform arrays (60%+ eligibility)
   if (analysis.isUniform && analysis.eligibility > 60) {
-    return 'toon';
+    return "toon";
   }
 
   // JSON-compact for tight budgets on nested data
   if (context.budget < 20000 && analysis.isFlat) {
-    return 'json-compact';
+    return "json-compact";
   }
 
   // Default to pretty JSON for readability
-  return 'json';
+  return "json";
 }
 
 export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingResult {
   const actualFormat =
-    options?.format === 'auto'
-      ? selectOptimalFormat(data, options?.modelContext || { budget: 100000, model: 'claude-3-5-sonnet' })
+    options?.format === "auto"
+      ? selectOptimalFormat(
+          data,
+          options?.modelContext || {
+            budget: 100000,
+            model: "claude-3-5-sonnet",
+          },
+        )
       : options?.format;
 
   let encoded: string;
@@ -685,25 +819,34 @@ export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingR
   let accuracy: number;
 
   switch (actualFormat) {
-    case 'toon':
+    case "toon":
       encoded = encode(data);
       // Estimate token count with o200k_base tokenizer
-      tokenCount = countTokens(encoded, { model: context.model?.model || 'gpt-4o', encoding: 'o200k_base' });
+      tokenCount = countTokens(encoded, {
+        model: context.model?.model || "gpt-4o",
+        encoding: "o200k_base",
+      });
       savingsPercentage = 40; // Estimated 40% savings vs JSON
       accuracy = 0.764; // 76.4% accuracy from benchmarks
       break;
 
-    case 'json-compact':
+    case "json-compact":
       encoded = JSON.stringify(data);
-      tokenCount = countTokens(encoded, { model: context?.model?.model || 'gpt-4o', encoding: 'o200k_base' });
+      tokenCount = countTokens(encoded, {
+        model: context?.model?.model || "gpt-4o",
+        encoding: "o200k_base",
+      });
       savingsPercentage = 15; // Estimated 15% savings vs pretty JSON
       accuracy = 0.75; // 75.0% accuracy baseline
       break;
 
-    case 'json':
+    case "json":
     default:
       encoded = JSON.stringify(data, null, 2);
-      tokenCount = countTokens(encoded, { model: context?.model?.model || 'gpt-4o', encoding: 'o200k_base' });
+      tokenCount = countTokens(encoded, {
+        model: context?.model?.model || "gpt-4o",
+        encoding: "o200k_base",
+      });
       savingsPercentage = 0;
       accuracy = 0.75; // 75.0% accuracy baseline
   }
@@ -713,7 +856,7 @@ export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingR
     formatUsed: actualFormat,
     tokenCount,
     savingsPercentage,
-    accuracy
+    accuracy,
   };
 }
 ```
@@ -745,16 +888,19 @@ export function encodeSmart(data: unknown, options?: EncodingOptions): EncodingR
 export async function encodeLargeDataset(
   data: any[],
   outputPath: string,
-  options?: EncodingOptions
+  options?: EncodingOptions,
 ): Promise<{ file: string; stats: StreamStats }> {
   const fileStream = fs.createWriteStream(outputPath);
 
   const analysis = analyzeStructure(data);
-  const actualFormat = selectOptimalFormat(data, options?.modelContext || { budget: 100000, model: 'gpt-4o' });
+  const actualFormat = selectOptimalFormat(
+    data,
+    options?.modelContext || { budget: 100000, model: "gpt-4o" },
+  );
 
   let lines: Iterable<string>;
 
-  if (actualFormat === 'toon') {
+  if (actualFormat === "toon") {
     // Stream with TOON encodeLines
     lines = encodeLines(data);
   } else {
@@ -767,8 +913,8 @@ export async function encodeLargeDataset(
   }
 
   await new Promise((resolve, reject) => {
-    fileStream.on('end', () => resolve());
-    fileStream.on('error', reject);
+    fileStream.on("end", () => resolve());
+    fileStream.on("error", reject);
     fileStream.end();
   });
 
@@ -776,8 +922,8 @@ export async function encodeLargeDataset(
     itemCount: data.length,
     format: actualFormat,
     estimatedTokens: await estimateTokensFromPath(outputPath, {
-      model: options?.modelContext?.model || 'gpt-4o'
-    })
+      model: options?.modelContext?.model || "gpt-4o",
+    }),
   };
 
   return { file: outputPath, stats };
@@ -789,7 +935,7 @@ export async function encodeLargeDataset(
 ```typescript
 export function decodeSmart(input: string | Buffer, options?: DecodeOptions): any {
   // Auto-detect format from content
-  const isTOON = input.toString().includes('[') && input.toString().includes('{');
+  const isTOON = input.toString().includes("[") && input.toString().includes("{");
 
   try {
     if (isTOON) {
@@ -865,7 +1011,7 @@ agentsy analyze-structure input.json
 // packages/tokens/src/budget/token-counter.ts
 export interface TokenCountOptions {
   model: ModelName;
-  encoding?: 'gpt2' | 'cl100k_base' | 'p50k_base';
+  encoding?: "gpt2" | "cl100k_base" | "p50k_base";
 }
 
 export function countTokens(content: string, options: TokenCountOptions): TokenCountResult {
@@ -879,13 +1025,13 @@ export function countTokens(content: string, options: TokenCountOptions): TokenC
 
 ```typescript
 export enum ModelName {
-  CLAUDE_3_5_SONNET = 'claude-3-5-sonnet', // cl100k_base
-  CLAUDE_3_5_OPUS = 'claude-3-5-opus', // cl100k_base
-  CLAUDE_3_5_HAIKU = 'claude-3-5-haiku', // cl100k_base
-  GPT_4O = 'gpt-4o', // o200k_base (cl100k_base compatible)
-  GPT_4O_MINI = 'gpt-4o-mini', // o200k_base
-  DEEPSEEK_CHAT = 'deepseek-chat', // cl100k_base
-  LLaMA_3 = 'llama-3' // llama-tokenizer
+  CLAUDE_3_5_SONNET = "claude-3-5-sonnet", // cl100k_base
+  CLAUDE_3_5_OPUS = "claude-3-5-opus", // cl100k_base
+  CLAUDE_3_5_HAIKU = "claude-3-5-haiku", // cl100k_base
+  GPT_4O = "gpt-4o", // o200k_base (cl100k_base compatible)
+  GPT_4O_MINI = "gpt-4o-mini", // o200k_base
+  DEEPSEEK_CHAT = "deepseek-chat", // cl100k_base
+  LLaMA_3 = "llama-3", // llama-tokenizer
 }
 ```
 
@@ -904,16 +1050,159 @@ export enum ModelName {
 - Streaming token counting
 - Performance benchmarking
 
+### Day 12+: Content Router & Smart JSON Crusher
+
+**Scope:** Add content-type-aware routing and JSON-structure-aware compression to the compression pipeline. Currently `compressOutput()` treats all input uniformly (regex + word lists). A content router detects the dominant type and dispatches to specialized handlers.
+
+**Inspiration:** Headroom's `ContentRouter` + `SmartCrusher` architecture — adapted to TypeScript with heuristic detection (no ML dependency). The existing regex-based approach remains the prose fallback.
+
+```typescript
+// packages/tokens/src/compression/content-router.ts
+
+export type ContentType = 'json' | 'code' | 'prose' | 'mixed' | 'markdown';
+
+export interface ContentDetectionResult {
+  type: ContentType;
+  confidence: number;       // 0–1
+  indicators: string[];     // why this type was detected
+}
+
+/**
+ * Detect content type using structural heuristics.
+ * No ML dependency — uses JSON parse attempts, bracket ratios,
+ * keyword density, and markdown pattern matching.
+ *
+ * Target: <2ms detection for typical agent outputs.
+ */
+export function detectContentType(content: string): ContentDetectionResult {
+  // 1. Try JSON parse — if succeeds and >60% of content, type = 'json'
+  // 2. Check code indicators: bracket ratio, semicolons, imports, keywords
+  // 3. Check markdown: headings, code fences, lists, links
+  // 4. Check mixed: significant presence of multiple types
+  // 5. Default: prose
+}
+```
+
+```typescript
+// packages/tokens/src/compression/json-crusher.ts
+
+/** Typed token from JSON tokenization. */
+export type JsonTokenType =
+  | 'KEY' | 'STRING_VALUE' | 'NUMBER' | 'BOOLEAN' | 'NULL'
+  | 'BRACKET' | 'COLON' | 'COMMA' | 'WHITESPACE';
+
+export interface JsonToken {
+  type: JsonTokenType;
+  value: string;
+  offset: number;
+}
+
+export interface JsonCrushResult {
+  original: string;
+  compressed: string;
+  tokensBefore: number;
+  tokensAfter: number;
+  compressionRatio: number;     // tokensAfter / tokensBefore
+  preservedKeys: number;
+  compressedValues: number;
+}
+
+/**
+ * JSON-structure-aware compressor.
+ *
+ * Tokenizes JSON into typed tokens, builds a boolean mask over
+ * characters, then compresses only non-structural spans:
+ * - Preserves: keys, brackets, booleans, nulls, short values (<20 chars),
+ *   high-entropy strings (UUIDs, hashes)
+ * - Compresses: long string values (truncation + hash placeholder),
+ *   excessive whitespace, numeric precision (>4 decimal places)
+ * - Array depth tracking: first N items preserved fully, rest summarized
+ */
+export function crushJson(
+  json: string,
+  options?: {
+    maxPreservedArrayItems?: number;  // default 5
+    shortValueThreshold?: number;     // default 20 chars
+    maxDecimalPlaces?: number;        // default 4
+    entropyThreshold?: number;        // default 0.75
+  }
+): JsonCrushResult { /* ... */ }
+```
+
+```typescript
+// packages/tokens/src/compression/compression-router.ts
+
+export interface CompressionHandler {
+  detect(content: string): ContentDetectionResult;
+  compress(content: string, level: CompressionLevel): CompressionResult;
+}
+
+export interface CompressionResult {
+  compressed: string;
+  compressionRatio: number;
+  tokensBefore: number;
+  tokensAfter: number;
+  contentType: ContentType;
+  preservationRatio: number;  // fraction of original preserved
+}
+
+/**
+ * Routes content to the best compression handler based on type detection.
+ * Falls back to prose compression (existing compressOutput) for prose/markdown.
+ */
+export function compressWithRouter(
+  content: string,
+  level: CompressionLevel,
+  options?: {
+    preferHandler?: ContentType;  // hint from caller context
+  }
+): CompressionResult {
+  // 1. detectContentType(content)
+  // 2. Select handler: json → crushJson, code → codeCompress, prose → compressOutput
+  // 3. Compress with selected handler
+  // 4. Return CompressionResult with stats
+}
+```
+
+**Implementation Tasks:**
+
+1. Implement `detectContentType()` with heuristic rules (JSON parse, bracket ratio, keyword density)
+2. Implement JSON tokenizer (`tokenizeJson()`) producing typed `JsonToken[]`
+3. Implement `crushJson()` with boolean mask construction and selective compression
+4. Implement `compressWithRouter()` orchestrator
+5. Integrate with existing `compressOutput()` as prose fallback handler
+6. Add round-trip validation: crushed JSON must be parseable (with `...` placeholders for truncated values)
+
+**Testing:**
+
+- Content type detection accuracy on labeled corpus (≥95% for json/code/prose)
+- JSON crusher preserves all keys and structural tokens (100%)
+- JSON crusher achieves ≥40% token reduction on structured outputs
+- Router selects correct handler based on content type
+- Round-trip: crushed JSON remains valid or clearly marked with truncation
+- Performance: detection <2ms, crush <5ms for 10KB JSON
+
+**Deliverables:**
+
+- `@agentsy/tokens/compression/content-router` module
+- `@agentsy/tokens/compression/json-crusher` module
+- `@agentsy/tokens/compression/compression-router` orchestrator
+- Content-type-aware compression pipeline integrated into Phase 1 output
+
 ### Day 13-14: Cost Estimator
 
 **Scope:** Accurate pricing estimation across model endpoints
+
+Support a separate reasoning budget for the model's internal reasoning/chain-of-thought tokens, which is tracked independently of output tokens. The reasoning budget defaults to 25% of the total output budget.
+
+The token counter tracks instruction overhead separately from task tokens. BASELINE_TOKENS represents the remaining budget after all always-injected instructions are accounted for. Include reporting for overhead-vs-reasoning breakdown.
 
 ```typescript
 // packages/tokens/src/budget/cost-estimator.ts
 export interface CostEstimateOptions {
   model: ModelName;
   region?: string; // AWS Bedrock, GCP Vertex, etc.
-  pricingTier?: 'on-demand' | 'batch' | 'spot';
+  pricingTier?: "on-demand" | "batch" | "spot";
 }
 
 export interface TokenUsage {
@@ -947,16 +1236,16 @@ export interface ModelPricing {
 
 // Example pricing (as of 2026):
 const PRICING: Record<string, ModelPricing> = {
-  'claude-3-5-sonnet': {
+  "claude-3-5-sonnet": {
     modelName: ModelName.CLAUDE_3_5_SONNET,
     inputCostPer1M: 3.0,
-    outputCostPer1M: 15.0
+    outputCostPer1M: 15.0,
   },
-  'gpt-4o': {
+  "gpt-4o": {
     modelName: ModelName.GPT_4O,
     inputCostPer1M: 2.5,
-    outputCostPer1M: 10.0
-  }
+    outputCostPer1M: 10.0,
+  },
   // ... more models
 };
 ```
@@ -984,7 +1273,7 @@ const PRICING: Record<string, ModelPricing> = {
 // packages/tokens/src/budget/budget-manager.ts
 export interface BudgetConfig {
   totalBudget: number; // USD per time period
-  period: 'hour' | 'day' | 'week' | 'month';
+  period: "hour" | "day" | "week" | "month";
   alertThreshold: number; // % of budget before alert
   enforceLimit: boolean; // Restrict when over budget
   modelPreferences?: ModelRouteConfig[];
@@ -1013,7 +1302,7 @@ export class BudgetManager {
 
 ```typescript
 export interface BudgetAlert {
-  level: 'info' | 'warning' | 'critical';
+  level: "info" | "warning" | "critical";
   message: string;
   percentage: number;
   recommendedActions: string[];
@@ -1026,31 +1315,34 @@ export function generateBudgetAlert(status: BudgetStatus): BudgetAlert | null {
 
   if (percentage >= 100) {
     return {
-      level: 'critical',
+      level: "critical",
       message: `Budget exceeded: ${percentage.toFixed(1)}% used`,
       percentage,
       recommendedActions: [
-        'Stop new requests',
-        'Review most expensive operations',
-        'Consider cheaper model alternatives'
-      ]
+        "Stop new requests",
+        "Review most expensive operations",
+        "Consider cheaper model alternatives",
+      ],
     };
   }
 
   if (percentage >= 80) {
     return {
-      level: 'warning',
+      level: "warning",
       message: `Budget warning: ${percentage.toFixed(1)}% used`,
       percentage,
-      recommendedActions: ['Monitor spending closely', 'Consider model routing for expensive operations']
+      recommendedActions: [
+        "Monitor spending closely",
+        "Consider model routing for expensive operations",
+      ],
     };
   }
 
   return {
-    level: 'info',
+    level: "info",
     message: `Budget alert: ${percentage.toFixed(1)}% used`,
     percentage,
-    recommendedActions: ['Continue monitoring']
+    recommendedActions: ["Continue monitoring"],
   };
 }
 ```
@@ -1155,7 +1447,7 @@ export class LRUCache<K, V> {
       createdAt: new Date(),
       lastAccessed: new Date(),
       hits: 0,
-      ttl: ttl || this.defaultTTL
+      ttl: ttl || this.defaultTTL,
     });
   }
 
@@ -1199,7 +1491,7 @@ export class LRUCache<K, V> {
 ```typescript
 // packages/tokens/src/cache/content-addressing.ts
 export interface ContentAddressOptions {
-  algorithm: 'blake3' | 'sha256';
+  algorithm: "blake3" | "sha256";
   cacheEnabled: boolean;
   compressionEnabled: boolean;
 }
@@ -1241,13 +1533,13 @@ export class ContentAddressStore {
 **BLAKE3 integration:**
 
 ```typescript
-import { createHash } from 'crypto';
+import { createHash } from "crypto";
 
 export async function computeBLAKE3(content: string): Promise<string> {
   // Use Node.js crypto API
-  const hash = createHash('blake3');
+  const hash = createHash("blake3");
   hash.update(content);
-  return hash.digest('hex');
+  return hash.digest("hex");
 }
 
 // Alternative: Use native library for performance
@@ -1358,16 +1650,16 @@ export class CompactMemoryManager {
   // Compact a stage's memory
   async compact(
     stage: CompactStage,
-    targetRatio: number // Target concreteness (0.0-1.0)
+    targetRatio: number, // Target concreteness (0.0-1.0)
   ): Promise<CompactResult>;
 }
 
 export enum CompactStage {
-  COLD = 'cold', // Active tasks, 100% concreteness
-  PRECISE = 'precise', // Recent context, 70% concreteness
-  WARM = 'warm', // Historical, 50% concreteness
-  ARCHIVE = 'archive', // Important decisions, structured summary
-  OVERFLOW = 'overflow' // Overflow, delete or archive
+  COLD = "cold", // Active tasks, 100% concreteness
+  PRECISE = "precise", // Recent context, 70% concreteness
+  WARM = "warm", // Historical, 50% concreteness
+  ARCHIVE = "archive", // Important decisions, structured summary
+  OVERFLOW = "overflow", // Overflow, delete or archive
 }
 
 export interface CompactMemory {
@@ -1407,7 +1699,7 @@ COLD: 1.0   - 100% concreteness (Retain complete context and steps)
 ```typescript
 // packages/tokens/src/liveness/priority-segmentation.ts
 export interface SegmentPriority {
-  level: 'critical' | 'high' | 'medium' | 'low';
+  level: "critical" | "high" | "medium" | "low";
   preserve: boolean;
   reasoning: string;
 }
@@ -1415,7 +1707,7 @@ export interface SegmentPriority {
 export interface ContextSegment {
   id: string;
   content: string;
-  type: 'code' | 'error' | 'task' | 'decision' | 'explanation';
+  type: "code" | "error" | "task" | "decision" | "explanation";
   priority: SegmentPriority;
   tokenCount: number;
   createdAt: Date;
@@ -1523,7 +1815,7 @@ export interface PubSubConfig {
 }
 
 export interface MemoryLivenessEvent {
-  type: 'stage_change' | 'compact' | 'advance';
+  type: "stage_change" | "compact" | "advance";
   memoryId: string;
   oldStage?: CompactStage;
   newStage: CompactStage;
@@ -1706,41 +1998,41 @@ Examples:
 // Integration examples
 
 // 1. Simple compression usage
-import { compressOutput } from '@agentsy/tokens/compression';
+import { compressOutput } from "@agentsy/tokens/compression";
 
 const compressed = compressOutput(rawResponse, {
-  level: 'full',
+  level: "full",
   preserve: { codeBlocks: true, urls: true, filePaths: true },
-  autoClarity: true
+  autoClarity: true,
 });
 
 // 2. Budget tracking
-import { BudgetManager } from '@agentsy/tokens/budget';
+import { BudgetManager } from "@agentsy/tokens/budget";
 
 const budget = new BudgetManager({
   totalBudget: 100.0,
-  period: 'day',
-  alertThreshold: 0.8
+  period: "day",
+  alertThreshold: 0.8,
 });
 
-budget.trackUsage({ inputTokens: 1000, outputTokens: 500 }, { model: 'claude-3-5-sonnet' });
+budget.trackUsage({ inputTokens: 1000, outputTokens: 500 }, { model: "claude-3-5-sonnet" });
 const status = budget.getStatus();
 
 // 3. Memory liveness
-import { MemoryCoordinationAPI } from '@agentsy/tokens/liveness';
+import { MemoryCoordinationAPI } from "@agentsy/tokens/liveness";
 
 const coordination = new MemoryCoordinationAPI();
-const memoryId = await coordination.addMemory('Current task context', CompactStage.COLD);
+const memoryId = await coordination.addMemory("Current task context", CompactStage.COLD);
 
 // 4. Cache management
-import { TokenCache } from '@agentsy/tokens/cache';
+import { TokenCache } from "@agentsy/tokens/cache";
 
 const cache = new TokenCache({ maxTokens: 10000, ttl: 3600 });
-cache.setContent('response-123', compressedResponse, 7200);
-const cached = cache.getContent('response-123');
+cache.setContent("response-123", compressedResponse, 7200);
+const cached = cache.getContent("response-123");
 
 // 5. JSON minification
-import { minifyJSON } from '@agentsy/tokens/encoding';
+import { minifyJSON } from "@agentsy/tokens/encoding";
 
 const minified = minifyJSON(rawJSON, { preserveOrder: true, aggressive: true });
 ```
@@ -1833,6 +2125,9 @@ const minified = minifyJSON(rawJSON, { preserveOrder: true, aggressive: true });
 - [ ] 100% technical accuracy maintained
 - [ ] <10ms compression performance
 - [ ] 10-task benchmark passed
+- [ ] StructureMask union/intersection/invert operations correct
+- [ ] Entropy auto-preservation: 100% recall for UUIDs, hashes, base64 IDs
+- [ ] Mask-based compression overhead <2ms vs regex-only baseline
 
 **Phase 2 Gates:**
 
@@ -1847,6 +2142,10 @@ const minified = minifyJSON(rawJSON, { preserveOrder: true, aggressive: true });
 - [ ] TOON encoding reversible
 - [ ] All encoding operations round-trip correctly
 - [ ] <5ms encoding performance
+- [ ] Content type detection ≥95% accuracy on labeled corpus
+- [ ] JSON crusher preserves all keys and structural tokens (100%)
+- [ ] JSON crusher ≥40% token reduction on structured outputs
+- [ ] Content detection <2ms, JSON crush <5ms for 10KB
 
 **Phase 4 Gates:**
 
@@ -1980,22 +2279,24 @@ Tokens package is successful when:
 
 ## Timeline Summary
 
-| Phase   | Days  | Focus                | Target                  |
-| ------- | ----- | -------------------- | ----------------------- |
-| Phase 1 | 1-6   | Core compression     | 75% output / 46% memory |
-| Phase 2 | 7-10  | JSON TOON encoding   | 40% JSON savings        |
-| Phase 3 | 11-16 | Budget management    | Real-time tracking      |
-| Phase 4 | 17-20 | Cache management     | >70% hit rate           |
-| Phase 5 | 21-24 | Multi-stage liveness | Priority segments       |
-| Phase 6 | 25-28 | Honker coordination  | <5ms latency            |
-| Phase 7 | 29-32 | CLI integration      | Production ready        |
+| Phase   | Days   | Focus                             | Target                          |
+| ------- | ------ | --------------------------------- | ------------------------------- |
+| Phase 1 | 1-8    | Core compression + masks/entropy  | 75% output / 46% memory         |
+| Phase 2 | 9-12   | JSON TOON encoding                | 40% JSON savings                |
+| Phase 3 | 13-20  | Budget mgmt + router/JSON crusher | Real-time tracking + type-aware |
+| Phase 4 | 21-24  | Cache management                  | >70% hit rate                   |
+| Phase 5 | 25-28  | Multi-stage liveness              | Priority segments               |
+| Phase 6 | 29-32  | Honker coordination               | <5ms latency                    |
+| Phase 7 | 33-36  | CLI integration                   | Production ready                |
 
-**Total implementation time:** 32 days
+**Total implementation time:** 36 days (extended +4 days for structure mask, entropy, content router, and JSON crusher additions)
 
 **Parallel opportunities:**
 
-- Phase 1-2 can run in parallel with memory Phase 1 (Days 1-8)
-- Phase 3-4 can run in parallel with memory Phase 2 (Days 9-20)
-- Phase 5-6 coordinate with memory Phase 3 (Days 21-32)
+- Phase 1-2 can run in parallel with memory Phase 1 (Days 1-12)
+- Phase 3-4 can run in parallel with memory Phase 2 (Days 13-24)
+- Phase 5-6 coordinate with memory Phase 3 (Days 25-36)
+- Structure mask + entropy (Phase 1 tail) can develop alongside JSON TOON (Phase 2)
+- Content router + JSON crusher (Phase 3 tail) can develop alongside cache management (Phase 4)
 
-**Theoretical acceleration:** With full parallelization, tokens package can complete in ~24 days, enabling early token savings while memory system builds.
+**Theoretical acceleration:** With full parallelization, tokens package can complete in ~28 days, enabling early token savings while memory system builds.

@@ -1,9 +1,10 @@
 {
-  "$schema": "https://turbo.build/json-schema.json",
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "stream",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "*.tgz"],
+      "outputs": ["dist/**", "*.tgz"],
       "cache": true
     },
     "test": {
@@ -17,6 +18,10 @@
     },
     "check-types": {
       "dependsOn": ["^build"],
+      "cache": true
+    },
+    "[^lint_before]:lint": {
+      "dependsOn": ["^lint_before"],
       "cache": true
     },
     "lint": {

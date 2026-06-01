@@ -11,9 +11,12 @@ export function readReleaseState(releaseStatePath: string) {
     return { defaultState: DEFAULT_RELEASE_STATE, packages: {} };
   }
 
-  let raw;
+  let raw: { defaultState?: string; packages?: Record<string, string> } | undefined;
   try {
-    raw = JSON.parse(readFileSync(releaseStatePath, 'utf8'));
+    raw = JSON.parse(readFileSync(releaseStatePath, 'utf-8')) as {
+      defaultState?: string;
+      packages?: Record<string, string>;
+    };
   } catch {
     return { defaultState: DEFAULT_RELEASE_STATE, packages: {} };
   }
@@ -47,7 +50,7 @@ export function writeReleaseState(
   releaseStatePath: string,
   state: { defaultState: string; packages: Record<string, string> }
 ) {
-  const sortedPackages = Object.fromEntries(Object.entries(state.packages).sort(([a], [b]) => a.localeCompare(b)));
+  const sortedPackages = Object.fromEntries(Object.entries(state.packages).toSorted(([a], [b]) => a.localeCompare(b)));
   writeFileSync(
     releaseStatePath,
     `${JSON.stringify({ defaultState: state.defaultState, packages: sortedPackages }, null, 2)}\n`

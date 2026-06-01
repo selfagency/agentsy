@@ -14,16 +14,18 @@
   },
   "scripts": {
     "build": "tsup",
+    "check-types": "tsc --noEmit",
     "dev": "tsup --watch",
-    "test": "vitest --run --passWithNoTests"
+    "test": "vitest --run --passWithNoTests",
+    "lint": "biome lint",
+    "format": "biome format"
   },
   "dependencies": {
     "@agentsy/types": "workspace:*",
-    "node-fetch": "^3.3.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.0",
     "tsup": "^8.3.0",
     "typescript": "6.0.3",
     "vitest": "^4.1.6"

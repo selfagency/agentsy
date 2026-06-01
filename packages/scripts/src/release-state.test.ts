@@ -1,7 +1,9 @@
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
+
 import { DEFAULT_RELEASE_STATE, getPackageReleaseState, readReleaseState, writeReleaseState } from './release-state.ts';
 
 describe('release-state', () => {
@@ -10,8 +12,8 @@ describe('release-state', () => {
     const p = join(base, 'release-state.json');
 
     const state = readReleaseState(p);
-    expect(state.defaultState).toEqual(DEFAULT_RELEASE_STATE);
-    expect(state.packages).toEqual({});
+    expect(state.defaultState).toStrictEqual(DEFAULT_RELEASE_STATE);
+    expect(state.packages).toStrictEqual({});
   });
 
   it('getPackageReleaseState falls back to default', () => {
@@ -22,8 +24,8 @@ describe('release-state', () => {
       }
     };
 
-    expect(getPackageReleaseState(state, '@agentsy/vscode')).toEqual('oidc-ready');
-    expect(getPackageReleaseState(state, '@agentsy/processor')).toEqual('bootstrap-required');
+    expect(getPackageReleaseState(state, '@agentsy/vscode')).toBe('oidc-ready');
+    expect(getPackageReleaseState(state, '@agentsy/processor')).toBe('bootstrap-required');
   });
 
   it('writeReleaseState writes sorted package keys', () => {
@@ -33,13 +35,17 @@ describe('release-state', () => {
     writeReleaseState(p, {
       defaultState: 'bootstrap-required',
       packages: {
-        '@agentsy/z': 'oidc-ready',
-        '@agentsy/a': 'bootstrap-required'
+        '@agentsy/a': 'bootstrap-required',
+        '@agentsy/z': 'oidc-ready'
       }
     });
 
-    const written = JSON.parse(readFileSync(p, 'utf8'));
-    expect(Object.keys(written.packages)).toEqual(['@agentsy/a', '@agentsy/z']);
+    const written = JSON.parse(readFileSync(p, 'utf-8')) as {
+      defaultState: unknown;
+      packages: Record<string, unknown>;
+    };
+    expect(written.packages).toBeDefined();
+    expect(Object.keys(written.packages)).toStrictEqual(['@agentsy/a', '@agentsy/z']);
   });
 
   it('readReleaseState tolerates invalid structure', () => {
@@ -48,8 +54,8 @@ describe('release-state', () => {
     writeFileSync(p, JSON.stringify({ defaultState: 12, packages: [] }));
 
     const state = readReleaseState(p);
-    expect(state.defaultState).toEqual(DEFAULT_RELEASE_STATE);
-    expect(state.packages).toEqual({});
+    expect(state.defaultState).toStrictEqual(DEFAULT_RELEASE_STATE);
+    expect(state.packages).toStrictEqual({});
   });
 
   it('readReleaseState tolerates malformed JSON by returning defaults', () => {
@@ -58,7 +64,7 @@ describe('release-state', () => {
     writeFileSync(p, '{"defaultState":');
 
     const state = readReleaseState(p);
-    expect(state.defaultState).toEqual(DEFAULT_RELEASE_STATE);
-    expect(state.packages).toEqual({});
+    expect(state.defaultState).toStrictEqual(DEFAULT_RELEASE_STATE);
+    expect(state.packages).toStrictEqual({});
   });
 });

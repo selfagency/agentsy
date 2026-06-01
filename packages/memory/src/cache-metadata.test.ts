@@ -7,15 +7,15 @@ describe('cache-aware memory metadata', () => {
     const fingerprint = createContextFingerprint({
       content: 'system prompt',
       modelFamily: 'qwen',
-      templateVersion: 'v3',
-      schemaVersion: 1
+      schemaVersion: 1,
+      templateVersion: 'v3'
     });
 
     const hint = createMemoryReuseHint({
+      invalidationKeys: ['model-family:qwen', 'template:v3'],
       reuseClass: 'hot',
       stablePrefix: true,
-      toolSchema: true,
-      invalidationKeys: ['model-family:qwen', 'template:v3']
+      toolSchema: true
     });
 
     expect(fingerprint.value).toMatch(/^sha256:/);

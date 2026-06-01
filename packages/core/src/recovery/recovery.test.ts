@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
-import { LLMStreamProcessor } from '../processor/processor/LLMStreamProcessor.js';
+import { LLMStreamProcessor } from '../processor/processor/llm-stream-processor.js';
 import { buildContinuationPrompt, captureStreamState } from './index.js';
 
 describe('captureStreamState', () => {
@@ -10,13 +10,16 @@ describe('captureStreamState', () => {
 
     expect(snap.content).toBe('');
     expect(snap.thinking).toBe('');
-    expect(snap.toolCalls).toEqual([]);
-    expect(typeof snap.timestamp).toBe('number');
+    expect(snap.toolCalls).toStrictEqual([]);
+    expectTypeOf(snap.timestamp).toBeNumber();
     expect(snap.timestamp).toBeLessThanOrEqual(Date.now());
   });
 
   it('captures accumulated content after processing chunks', () => {
-    const processor = new LLMStreamProcessor({ parseThinkTags: true, scrubContextTags: false });
+    const processor = new LLMStreamProcessor({
+      parseThinkTags: true,
+      scrubContextTags: false
+    });
     processor.process({ content: '<think>thoughts</think>Hello, ' });
     processor.process({ content: 'world' });
 
@@ -45,11 +48,14 @@ describe('captureStreamState', () => {
 
   it('captures usage when present', () => {
     const processor = new LLMStreamProcessor();
-    processor.process({ content: 'hi', usage: { inputTokens: 10, outputTokens: 20 } });
+    processor.process({
+      content: 'hi',
+      usage: { inputTokens: 10, outputTokens: 20 }
+    });
 
     const snap = captureStreamState(processor);
 
-    expect(snap.usage).toEqual({ inputTokens: 10, outputTokens: 20 });
+    expect(snap.usage).toStrictEqual({ inputTokens: 10, outputTokens: 20 });
   });
 
   it('omits usage field entirely when no usage seen', () => {
@@ -58,7 +64,7 @@ describe('captureStreamState', () => {
 
     const snap = captureStreamState(processor);
 
-    expect('usage' in snap).toBe(false);
+    expect('usage' in snap).toBeFalsy();
   });
 
   it('records provided options in snapshot', () => {
@@ -66,7 +72,7 @@ describe('captureStreamState', () => {
     const opts = { parseThinkTags: false };
     const snap = captureStreamState(processor, opts);
 
-    expect(snap.options).toEqual(opts);
+    expect(snap.options).toStrictEqual(opts);
   });
 });
 
@@ -122,7 +128,7 @@ describe('buildContinuationPrompt', () => {
     const openaiMsgs = buildContinuationPrompt(snap, { provider: 'openai' });
     const ollamaMsgs = buildContinuationPrompt(snap, { provider: 'ollama' });
 
-    expect(ollamaMsgs).toEqual(openaiMsgs);
+    expect(ollamaMsgs).toStrictEqual(openaiMsgs);
   });
 
   it('defaults to openai format when no provider specified', () => {
@@ -133,7 +139,7 @@ describe('buildContinuationPrompt', () => {
     const defaultMsgs = buildContinuationPrompt(snap);
     const openaiMsgs = buildContinuationPrompt(snap, { provider: 'openai' });
 
-    expect(defaultMsgs).toEqual(openaiMsgs);
+    expect(defaultMsgs).toStrictEqual(openaiMsgs);
   });
 
   it('trims whitespace from partial content before including in message', () => {
@@ -149,10 +155,16 @@ describe('buildContinuationPrompt', () => {
   it('includes completed tool calls in continuation context for openai-style prompts', () => {
     const snap = {
       content: 'Working on it',
-      thinking: '',
-      toolCalls: [{ name: 'search', parameters: { query: 'docs' }, format: 'bare-xml' as const }],
       options: {},
-      timestamp: Date.now()
+      thinking: '',
+      timestamp: Date.now(),
+      toolCalls: [
+        {
+          format: 'bare-xml' as const,
+          name: 'search',
+          parameters: { query: 'docs' }
+        }
+      ]
     };
 
     const messages = buildContinuationPrompt(snap, { provider: 'openai' });
@@ -166,10 +178,16 @@ describe('buildContinuationPrompt', () => {
   it('includes completed tool calls before anthropic prefills when available', () => {
     const snap = {
       content: 'The answer is',
-      thinking: '',
-      toolCalls: [{ name: 'lookup', parameters: { id: '123' }, format: 'native-json' as const }],
       options: {},
-      timestamp: Date.now()
+      thinking: '',
+      timestamp: Date.now(),
+      toolCalls: [
+        {
+          format: 'native-json' as const,
+          name: 'lookup',
+          parameters: { id: '123' }
+        }
+      ]
     };
 
     const messages = buildContinuationPrompt(snap, { provider: 'anthropic' });

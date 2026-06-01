@@ -1,9 +1,14 @@
 import { createDedupStore, migrateContentToDedupStore } from '@agentsy/memory';
+
 import type { CliIO } from '../index.js';
 
 const defaultIo = {
-  stdout: (msg: string) => console.log(msg),
-  stderr: (msg: string) => console.error(msg)
+  stderr: (msg: string): void => {
+    console.error(msg);
+  },
+  stdout: (msg: string): void => {
+    console.log(msg);
+  }
 };
 
 export function runContentAddressStatsCommand(argv: readonly string[], io: CliIO = defaultIo): number {
@@ -23,15 +28,15 @@ export function runContentAddressStatsCommand(argv: readonly string[], io: CliIO
     stdout(
       JSON.stringify(
         {
-          total: stats.total,
           deduped: stats.deduped,
-          unique: stats.unique,
           deduplicationRatio: stats.total > 0 ? (stats.deduped / stats.total).toFixed(3) : '0.000',
           entries: store.entries().map((e: { fingerprint: { value: string; size: number }; refCount: number }) => ({
-            value: e.fingerprint.value,
+            refCount: e.refCount,
             size: e.fingerprint.size,
-            refCount: e.refCount
-          }))
+            value: e.fingerprint.value
+          })),
+          total: stats.total,
+          unique: stats.unique
         },
         null,
         2

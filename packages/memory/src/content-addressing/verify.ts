@@ -2,18 +2,18 @@ import type { ContentFingerprint } from './fingerprint.js';
 import { fingerprintContent } from './fingerprint.js';
 
 export interface VerifyResult {
-  readonly ok: boolean;
-  readonly expected: string;
   readonly actual: string;
+  readonly expected: string;
+  readonly ok: boolean;
 }
 
 export function verifyContent(content: string | Uint8Array, expected: ContentFingerprint | string): VerifyResult {
   const actual = fingerprintContent(content);
   const expectedValue = typeof expected === 'string' ? expected : expected.value;
   return {
-    ok: actual.value === expectedValue,
+    actual: actual.value,
     expected: expectedValue,
-    actual: actual.value
+    ok: actual.value === expectedValue
   };
 }
 

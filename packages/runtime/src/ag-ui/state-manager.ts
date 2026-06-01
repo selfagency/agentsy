@@ -89,12 +89,14 @@ export function createStateSnapshotEvent(
   }
 
   const event: StateSnapshotEvent = {
-    type: EventType.STATE_SNAPSHOT,
     runId,
     state: structuredClone(state),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    type: EventType.STATE_SNAPSHOT
   };
-  if (threadId !== undefined) event.threadId = threadId;
+  if (threadId !== undefined) {
+    event.threadId = threadId;
+  }
   return event;
 }
 
@@ -125,7 +127,7 @@ function computeStateDeltaForRemovedAndModified(
     const escapedKey = escapePathSegment(key);
     const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
 
-    if (key in to === false) {
+    if (!(key in to)) {
       patches.push({ op: 'remove', path });
     } else if (JSON.stringify(from[key]) !== JSON.stringify(to[key])) {
       const fromVal = from[key];
@@ -180,7 +182,7 @@ export function computeStateDelta(
   // Handle added properties
   const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype']);
   for (const key of Object.keys(to)) {
-    if (key in from === false && dangerousKeys.has(key) === false) {
+    if (!(key in from || dangerousKeys.has(key))) {
       const escapedKey = escapePathSegment(key);
       const path = basePathPrefix ? `${basePathPrefix}/${escapedKey}` : `/${escapedKey}`;
       patches.push({ op: 'add', path, value: to[key] });
@@ -200,12 +202,14 @@ export function computeStateDelta(
  */
 export function createStateDeltaEvent(patches: JsonPatchOp[], runId: string, threadId?: string): StateDeltaEvent {
   const deltaEvent: StateDeltaEvent = {
-    type: EventType.STATE_DELTA,
-    runId,
     delta: patches,
-    timestamp: new Date().toISOString()
+    runId,
+    timestamp: new Date().toISOString(),
+    type: EventType.STATE_DELTA
   };
-  if (threadId !== undefined) deltaEvent.threadId = threadId;
+  if (threadId !== undefined) {
+    deltaEvent.threadId = threadId;
+  }
   return deltaEvent;
 }
 
@@ -232,7 +236,7 @@ function resolvePatchTarget(
     target = target[part] as Record<string, unknown>;
   }
 
-  return { target, key };
+  return { key, target };
 }
 
 function setPatchValue(
@@ -284,20 +288,24 @@ export function applyJsonPatches(state: Record<string, unknown>, patches: JsonPa
     validatePathParts(parts);
 
     switch (patch.op) {
-      case 'add':
+      case 'add': {
         applyAddPatch(state, parts, patch);
         break;
+      }
 
-      case 'remove':
+      case 'remove': {
         applyRemovePatch(state, parts);
         break;
+      }
 
-      case 'replace':
+      case 'replace': {
         applyReplacePatch(state, parts, patch);
         break;
+      }
 
-      default:
+      default: {
         throw new Error(`Unsupported patch operation: ${patch.op}`);
+      }
     }
   }
 }
@@ -337,7 +345,7 @@ export class StateManager {
     this.currentState = structuredClone(newState);
 
     if (patches.length === 0) {
-      return undefined;
+      return;
     }
 
     return createStateDeltaEvent(patches, runId, threadId);

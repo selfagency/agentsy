@@ -1,12 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { parseArgs as parseNodeArgs } from 'node:util';
+
 import { getPackageReleaseState, readReleaseState } from './release-state.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = resolve(__filename, '..');
-const ROOT = resolve(__dirname, '..');
+const ROOT = process.cwd();
 
 /** @param {unknown} repository */
 export function getRepositoryField(repository: unknown): string {
@@ -45,10 +43,10 @@ export function validateRepositoryMatch(
 
   if (normalizedPkgRepo !== normalizedExpectedRepo) {
     return {
-      ok: false,
       error:
         `Release blocked: package repository.url must match '${normalizedExpectedRepo}' for npm trusted publishing. ` +
-        `Current value resolves to '${normalizedPkgRepo || '(empty)'}'.`
+        `Current value resolves to '${normalizedPkgRepo || '(empty)'}'.`,
+      ok: false
     };
   }
 
@@ -83,19 +81,24 @@ export function checkTrustedPublishReadiness(input: {
   const packageState = getPackageReleaseState(state, input.packageName);
   if (packageState !== expectedState) {
     return {
-      ok: false,
       error:
         `Release blocked: ${input.packageName} is '${packageState}', not '${expectedState}'. ` +
-        `Bootstrap publish once locally, configure npm trusted publisher, then update config/release-state.json.`
+        'Bootstrap publish once locally, configure npm trusted publisher, then update config/release-state.json.',
+      ok: false
     };
   }
 
   const pkgJsonPath = resolve(input.packageDir, 'package.json');
   if (!existsSync(pkgJsonPath)) {
-    return { ok: false, error: `Release blocked: package.json not found at ${pkgJsonPath}` };
+    return {
+      error: `Release blocked: package.json not found at ${pkgJsonPath}`,
+      ok: false
+    };
   }
 
-  const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf8')) as { repository?: unknown };
+  const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf-8')) as {
+    repository?: unknown;
+  };
   const repoCheck = validateRepositoryMatch(getRepositoryField(pkg.repository), input.expectedRepo);
   if (!repoCheck.ok) {
     return repoCheck;
@@ -104,26 +107,26 @@ export function checkTrustedPublishReadiness(input: {
   const workflowPath = resolve(input.rootDir ?? ROOT, '.github', 'workflows', workflowFilename);
   if (!existsSync(workflowPath)) {
     return {
-      ok: false,
-      error: `Release blocked: workflow file '.github/workflows/${workflowFilename}' does not exist.`
+      error: `Release blocked: workflow file '.github/workflows/${workflowFilename}' does not exist.`,
+      ok: false
     };
   }
 
   return { ok: true };
 }
 
-if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filename) {
+if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === resolve(import.meta.filename)) {
   const { values: args } = parseNodeArgs({
+    allowPositionals: false,
     options: {
-      'package-name': { type: 'string' },
-      'package-dir': { type: 'string' },
       'expected-repo': { type: 'string' },
-      'release-state-path': { type: 'string' },
-      'workflow-filename': { type: 'string' },
       'expected-state': { type: 'string' },
-      'root-dir': { type: 'string' }
-    },
-    allowPositionals: false
+      'package-dir': { type: 'string' },
+      'package-name': { type: 'string' },
+      'release-state-path': { type: 'string' },
+      'root-dir': { type: 'string' },
+      'workflow-filename': { type: 'string' }
+    }
   });
 
   const packageName = args['package-name'];
@@ -133,7 +136,7 @@ if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filena
   const workflowFilename = args['workflow-filename'] ?? 'release.yml';
   const expectedState = args['expected-state'] ?? 'oidc-ready';
 
-  if (!packageName || !packageDir || !expectedRepo) {
+  if (!(packageName && packageDir && expectedRepo)) {
     console.error(
       'Usage: node scripts/trusted-publish-readiness.js --package-name <name> --package-dir <dir> --expected-repo <owner/repo> [--release-state-path <path>] [--workflow-filename release.yml] [--expected-state oidc-ready]'
     );
@@ -141,12 +144,12 @@ if (typeof process.argv[1] === 'string' && resolve(process.argv[1]) === __filena
   }
 
   const result = checkTrustedPublishReadiness({
-    packageName,
-    packageDir: resolve(packageDir),
     expectedRepo,
+    expectedState,
+    packageDir: resolve(packageDir),
+    packageName,
     releaseStatePath: resolve(releaseStatePath),
     workflowFilename,
-    expectedState,
     ...(args['root-dir'] === undefined ? {} : { rootDir: resolve(args['root-dir']) })
   });
 

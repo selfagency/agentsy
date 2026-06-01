@@ -46,17 +46,21 @@ function extractErrorString(error: unknown): string {
  * Inspects error messages for common patterns.
  */
 export function errorToProviderCode(error: unknown): ProviderErrorCode {
-  if (error == null) return ProviderErrorCode.InternalError;
+  if (error == null) {
+    return ProviderErrorCode.InternalError;
+  }
 
   if (typeof error === 'object' && 'status' in error) {
-    const status = (error as { status: unknown }).status;
-    if (typeof status === 'number') return httpStatusToErrorCode(status);
+    const { status } = error;
+    if (typeof status === 'number') {
+      return httpStatusToErrorCode(status);
+    }
   }
 
   const message = extractErrorString(error).toLowerCase();
 
   // Pattern-based error matching with early returns to reduce complexity
-  const patterns: Array<[string[], ProviderErrorCode]> = [
+  const patterns: [string[], ProviderErrorCode][] = [
     [['invalid api key', 'unauthorized', 'authentication'], ProviderErrorCode.InvalidApiKey],
     [['rate limit', 'too many requests', '429'], ProviderErrorCode.RateLimited],
     [['model not found', 'no such model'], ProviderErrorCode.ModelNotFound],
@@ -68,7 +72,9 @@ export function errorToProviderCode(error: unknown): ProviderErrorCode {
   ];
 
   for (const [keywords, code] of patterns) {
-    if (keywords.some(kw => message.includes(kw))) return code;
+    if (keywords.some(kw => message.includes(kw))) {
+      return code;
+    }
   }
 
   return ProviderErrorCode.InternalError;
@@ -82,10 +88,10 @@ export function errorCodeToMessage(code: ProviderErrorCode): string {
 }
 
 export interface CreateProviderErrorOptions {
-  /** Include details from the original runtime error message in the returned message. */
-  preserveOriginalMessage?: boolean;
   /** Attach provider error code metadata to the error object and message prefix. */
   attachCode?: boolean;
+  /** Include details from the original runtime error message in the returned message. */
+  preserveOriginalMessage?: boolean;
 }
 
 /**

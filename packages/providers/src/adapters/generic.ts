@@ -1,12 +1,9 @@
-import type { JsonObject } from '@agentsy/types';
-import {
-  LLMStreamProcessor,
-  type ProcessedOutput,
-  type ProcessorOptions,
-  type StreamChunk
-} from '@agentsy/core/processor';
-import { type ValidateJsonSchemaOptions, validateJsonSchema } from '@agentsy/core/structured';
+import type { ProcessedOutput, ProcessorOptions, StreamChunk } from '@agentsy/core/processor';
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { ValidateJsonSchemaOptions } from '@agentsy/core/structured';
+import { validateJsonSchema } from '@agentsy/core/structured';
 import type { XmlToolCall } from '@agentsy/core/tool-calls';
+import type { JsonObject } from '@agentsy/types';
 
 /**
  * Async generator that processes every chunk from a normalised LLM stream
@@ -49,13 +46,13 @@ export async function* processRawStream<TRawChunk>(
 }
 
 export interface RunStructuredDecisionFromRawStreamOptions<TRawChunk> {
-  source: AsyncIterable<TRawChunk>;
   normalize: (_chunk: TRawChunk) => StreamChunk | { chunk: StreamChunk } | null | undefined;
-  schema: JsonObject;
-  processorOptions?: ProcessorOptions;
-  validationOptions?: ValidateJsonSchemaOptions;
   onOutput?: (_output: ProcessedOutput) => void | Promise<void>;
+  processorOptions?: ProcessorOptions;
+  schema: JsonObject;
   selectValidationText?: (_context: { processor: LLMStreamProcessor; finalOutput: ProcessedOutput }) => string;
+  source: AsyncIterable<TRawChunk>;
+  validationOptions?: ValidateJsonSchemaOptions;
 }
 
 export type StructuredDecisionResult<TDecision> =
@@ -96,30 +93,30 @@ export async function runStructuredDecisionFromRawStream<TRawChunk, TDecision = 
   }
 
   const validationText =
-    options.selectValidationText?.({ processor, finalOutput }) ?? processor.accumulatedMessage.content;
+    options.selectValidationText?.({ finalOutput, processor }) ?? processor.accumulatedMessage.content;
 
   const validated = validateJsonSchema<TDecision>(validationText, options.schema, options.validationOptions);
   if (!validated.success) {
     return {
-      success: false,
       errors: validated.errors,
       finalOutput,
+      success: false,
       validationText
     };
   }
 
   return {
-    success: true,
     decision: validated.data,
     finalOutput,
+    success: true,
     validationText
   };
 }
 
 export interface ApplyDecisionActionOptions<TDecision, TResult> {
-  shouldAct: (_decision: TDecision) => boolean;
   action: (_decision: TDecision) => Promise<TResult> | TResult;
   onSkip?: (_decision: TDecision) => void | Promise<void>;
+  shouldAct: (_decision: TDecision) => boolean;
 }
 
 export type ApplyDecisionActionResult<TResult> =
@@ -147,11 +144,11 @@ export async function applyDecisionAction<TDecision, TResult>(
 }
 
 export interface GenericAdapterCallbacks {
-  onThinking?: (_text: string) => void | Promise<void>;
   onContent?: (_text: string) => void | Promise<void>;
-  onToolCall?: (_call: XmlToolCall) => void | Promise<void>;
   onDone?: () => void | Promise<void>;
   onError?: (_error: Error, _context: { type: string; chunk?: StreamChunk }) => void | Promise<void>;
+  onThinking?: (_text: string) => void | Promise<void>;
+  onToolCall?: (_call: XmlToolCall) => void | Promise<void>;
 }
 
 export interface GenericAdapterOptions extends ProcessorOptions {
@@ -163,7 +160,9 @@ async function safeCall<T>(
   fallback: T,
   onError?: (_error: Error) => void
 ): Promise<T> {
-  if (!callback) return fallback;
+  if (!callback) {
+    return fallback;
+  }
   try {
     return await callback();
   } catch (error) {
@@ -189,7 +188,10 @@ export function createGenericAdapter(
         () => callbacks.onThinking?.(output.thinking) ?? Promise.resolve(),
         undefined,
         error => {
-          void callbacks.onError?.(error, { type: 'thinking', ...(chunk !== undefined && { chunk }) });
+          callbacks.onError?.(error, {
+            type: 'thinking',
+            ...(chunk !== undefined && { chunk })
+          });
         }
       );
     }
@@ -199,7 +201,10 @@ export function createGenericAdapter(
         () => callbacks.onContent?.(output.content) ?? Promise.resolve(),
         undefined,
         error => {
-          void callbacks.onError?.(error, { type: 'content', ...(chunk !== undefined && { chunk }) });
+          callbacks.onError?.(error, {
+            type: 'content',
+            ...(chunk !== undefined && { chunk })
+          });
         }
       );
     }
@@ -209,25 +214,28 @@ export function createGenericAdapter(
         () => callbacks.onToolCall?.(toolCall) ?? Promise.resolve(),
         undefined,
         error => {
-          void callbacks.onError?.(error, { type: 'tool_call', ...(chunk !== undefined && { chunk }) });
+          callbacks.onError?.(error, {
+            type: 'tool_call',
+            ...(chunk !== undefined && { chunk })
+          });
         }
       );
     }
   }
 
   return {
-    async write(chunk: StreamChunk): Promise<void> {
-      await emit(processor.process(chunk), chunk);
-    },
     async end(): Promise<void> {
       await emit(processor.flush());
       await safeCall(
-        () => callbacks.onDone?.() ?? Promise.resolve(),
+        async () => callbacks.onDone?.() ?? Promise.resolve(),
         undefined,
         error => {
-          void callbacks.onError?.(error, { type: 'done' });
+          callbacks.onError?.(error, { type: 'done' });
         }
       );
+    },
+    async write(chunk: StreamChunk): Promise<void> {
+      await emit(processor.process(chunk), chunk);
     }
   };
 }

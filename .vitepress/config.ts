@@ -1,159 +1,186 @@
-import { defineConfig } from 'vitepress';
+import { defineConfig } from "vitepress";
 
 const architectureItems = [
-  { text: 'Overview', link: '/architecture/' },
-  { text: 'Package ecosystem', link: '/architecture/package-ecosystem' },
-  { text: 'Stream processing flow', link: '/architecture/stream-processing' },
-  { text: 'Platform evolution', link: '/architecture/platform-evolution' }
+  { link: "/architecture/", text: "Overview" },
+  { link: "/architecture/package-ecosystem", text: "Package ecosystem" },
+  { link: "/architecture/stream-processing", text: "Stream processing flow" },
+  { link: "/architecture/platform-evolution", text: "Platform evolution" },
 ];
 
 export default defineConfig({
-  title: 'Agentsy',
+  base: "/",
   description:
-    'Composable TypeScript infrastructure for stream parsing, agent loops, renderers, and VS Code integrations.',
-  base: '/',
-  srcDir: 'docs',
-  outDir: '.gh-pages',
+    "Composable TypeScript infrastructure for stream parsing, agent loops, renderers, and VS Code integrations.",
   head: [
-    ['link', { rel: 'canonical', href: 'https://agentsy.self.agency/' }],
-    ['meta', { property: 'og:title', content: 'Agentsy documentation' }],
+    ["link", { href: "https://agentsy.self.agency/", rel: "canonical" }],
+    ["meta", { content: "Agentsy documentation", property: "og:title" }],
     [
-      'meta',
+      "meta",
       {
-        property: 'og:description',
         content:
-          'Learn how the @agentsy package ecosystem fits together, from provider normalizers and stream processors to agent loops and VS Code integrations.'
-      }
-    ]
+          "Learn how the @agentsy package ecosystem fits together, from provider normalizers and stream processors to agent loops and VS Code integrations.",
+        property: "og:description",
+      },
+    ],
   ],
+  outDir: ".gh-pages",
+  srcDir: "docs",
   themeConfig: {
-    logo: '🤖',
-    siteTitle: 'Agentsy docs',
-    nav: [
-      { text: 'Home', link: '/' },
-      {
-        text: 'Guide',
-        items: [
-          { text: 'Getting started', link: '/getting-started' },
-          { text: 'Why Agentsy', link: '/why-agentsy' },
-          { text: 'Examples', link: '/examples/' },
-          { text: 'Migration from llm-stream-parser', link: '/migrating-from-llm-stream-parser' }
-        ]
-      },
-      {
-        text: 'Architecture',
-        items: architectureItems
-      },
-      { text: 'Packages', link: '/packages' },
-      {
-        text: 'Reference',
-        items: [
-          { text: 'API index', link: '/api' },
-          { text: 'Package catalog', link: '/packages' },
-          { text: 'Roadmap', link: '/roadmap' }
-        ]
-      },
-      { text: 'Developers', link: '/developers/' }
-    ],
-    sidebar: {
-      '/architecture/': [
-        {
-          text: 'Architecture',
-          items: architectureItems
-        }
-      ],
-      '/packages/': [
-        {
-          text: 'Catalog',
-          items: [
-            { text: 'Package overview', link: '/packages' },
-            { text: '@agentsy/runtime', link: '/packages/runtime' },
-            { text: '@agentsy/orchestrator/agent', link: '/packages/agent' },
-            { text: '@agentsy/adapters', link: '/packages/adapters' },
-            { text: '@agentsy/providers', link: '/packages/providers' },
-            { text: '@agentsy/renderers', link: '/packages/renderers' },
-            { text: '@agentsy/tokens', link: '/packages/tokens' },
-            { text: '@agentsy/vscode', link: '/packages/vscode' }
-          ]
-        },
-        {
-          text: 'Core utilities',
-          items: [
-            { text: '@agentsy/thinking', link: '/packages/thinking' },
-            { text: '@agentsy/tool-calls', link: '/packages/tool-calls' },
-            { text: '@agentsy/structured', link: '/packages/structured' },
-            { text: '@agentsy/context', link: '/packages/context' },
-            { text: '@agentsy/formatting', link: '/packages/formatting' },
-            { text: '@agentsy/recovery', link: '/packages/recovery' },
-            { text: '@agentsy/xml-filter', link: '/packages/xml-filter' },
-            { text: '@agentsy/sse', link: '/packages/sse' },
-            { text: '@agentsy/types', link: '/packages/types' },
-            { text: '@agentsy/ui', link: '/packages/ui' },
-            { text: '@agentsy/runtime/ag-ui', link: '/packages/ag-ui' },
-            { text: '@agentsy/testing', link: '/packages/testing' }
-          ]
-        }
-      ],
-      '/developers/': [
-        { text: 'Developer guide', link: '/developers/' },
-        { text: 'Contributing', link: '/developers/contributing' },
-        { text: 'Copilot integration', link: '/developers/integration-copilot' },
-        { text: 'Releasing', link: '/developers/releasing' }
-      ],
-      '/examples/': [
-        {
-          text: 'Examples',
-          items: [
-            { text: 'Overview', link: '/examples/' },
-            { text: 'CLI log summarizer (easy)', link: '/examples/cli-log-summarizer' },
-            { text: 'Node DNS blocklist workflow', link: '/examples/dns-blocklist' },
-            { text: 'Multi-provider policy gate', link: '/examples/multi-provider-policy-gate' },
-            { text: 'Agent tool loop with retries + continuation', link: '/examples/tool-loop-retries-continuation' },
-            { text: 'Stateful ops copilot backend', link: '/examples/stateful-ops-copilot' },
-            { text: 'All-tooling end-to-end workflow', link: '/examples/all-tooling-end-to-end' }
-          ]
-        }
-      ],
-      '/': [
-        {
-          text: 'Guide',
-          items: [
-            { text: 'Home', link: '/' },
-            { text: 'Getting started', link: '/getting-started' },
-            { text: 'Why Agentsy', link: '/why-agentsy' },
-            { text: 'Examples', link: '/examples/' },
-            { text: 'Migration from llm-stream-parser', link: '/migrating-from-llm-stream-parser' },
-            { text: 'Roadmap', link: '/roadmap' }
-          ]
-        },
-        {
-          text: 'Reference',
-          items: [
-            { text: 'Architecture', link: '/architecture/' },
-            { text: 'Packages', link: '/packages' },
-            { text: 'API index', link: '/api' },
-            { text: 'Developers', link: '/developers/' }
-          ]
-        }
-      ]
-    },
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/selfagency/agentsy' },
-      { icon: 'npm', link: 'https://www.npmjs.com/org/agentsy' }
-    ],
-    search: {
-      provider: 'local'
-    },
-    outline: {
-      level: [2, 3]
-    },
     docFooter: {
-      prev: 'Previous page',
-      next: 'Next page'
+      next: "Next page",
+      prev: "Previous page",
     },
     footer: {
-      message: 'Open source under MIT License',
-      copyright: 'Copyright © 2026 Agentsy Contributors'
-    }
-  }
+      copyright: "Copyright © 2026 Agentsy Contributors",
+      message: "Open source under GPL-3.0-or-later License",
+    },
+    logo: "🤖",
+    nav: [
+      { link: "/", text: "Home" },
+      {
+        items: [
+          { link: "/getting-started", text: "Getting started" },
+          { link: "/why-agentsy", text: "Why Agentsy" },
+          { link: "/examples/", text: "Examples" },
+          {
+            link: "/migrating-from-llm-stream-parser",
+            text: "Migration from llm-stream-parser",
+          },
+        ],
+        text: "Guide",
+      },
+      {
+        items: architectureItems,
+        text: "Architecture",
+      },
+      { link: "/packages", text: "Packages" },
+      {
+        items: [
+          { link: "/api", text: "API index" },
+          { link: "/packages", text: "Package catalog" },
+          { link: "/roadmap", text: "Roadmap" },
+        ],
+        text: "Reference",
+      },
+      { link: "/developers/", text: "Developers" },
+    ],
+    outline: {
+      level: [2, 3],
+    },
+    search: {
+      provider: "local",
+    },
+    sidebar: {
+      "/": [
+        {
+          items: [
+            { link: "/", text: "Home" },
+            { link: "/getting-started", text: "Getting started" },
+            { link: "/why-agentsy", text: "Why Agentsy" },
+            { link: "/examples/", text: "Examples" },
+            {
+              link: "/migrating-from-llm-stream-parser",
+              text: "Migration from llm-stream-parser",
+            },
+            { link: "/roadmap", text: "Roadmap" },
+          ],
+          text: "Guide",
+        },
+        {
+          items: [
+            { link: "/architecture/", text: "Architecture" },
+            { link: "/packages", text: "Packages" },
+            { link: "/api", text: "API index" },
+            { link: "/developers/", text: "Developers" },
+          ],
+          text: "Reference",
+        },
+      ],
+      "/architecture/": [
+        {
+          items: architectureItems,
+          text: "Architecture",
+        },
+      ],
+      "/developers/": [
+        { link: "/developers/", text: "Developer guide" },
+        { link: "/developers/contributing", text: "Contributing" },
+        {
+          link: "/developers/integration-copilot",
+          text: "Copilot integration",
+        },
+        { link: "/developers/releasing", text: "Releasing" },
+      ],
+      "/examples/": [
+        {
+          items: [
+            { link: "/examples/", text: "Overview" },
+            {
+              link: "/examples/cli-log-summarizer",
+              text: "CLI log summarizer (easy)",
+            },
+            {
+              link: "/examples/dns-blocklist",
+              text: "Node DNS blocklist workflow",
+            },
+            {
+              link: "/examples/multi-provider-policy-gate",
+              text: "Multi-provider policy gate",
+            },
+            {
+              link: "/examples/tool-loop-retries-continuation",
+              text: "Agent tool loop with retries + continuation",
+            },
+            {
+              link: "/examples/stateful-ops-copilot",
+              text: "Stateful ops copilot backend",
+            },
+            {
+              link: "/examples/all-tooling-end-to-end",
+              text: "All-tooling end-to-end workflow",
+            },
+          ],
+          text: "Examples",
+        },
+      ],
+      "/packages/": [
+        {
+          items: [
+            { link: "/packages", text: "Package overview" },
+            { link: "/packages/runtime", text: "@agentsy/runtime" },
+            { link: "/packages/agent", text: "@agentsy/orchestrator/agent" },
+            { link: "/packages/adapters", text: "@agentsy/adapters" },
+            { link: "/packages/providers", text: "@agentsy/providers" },
+            { link: "/packages/renderers", text: "@agentsy/renderers" },
+            { link: "/packages/tokens", text: "@agentsy/tokens" },
+            { link: "/packages/vscode", text: "@agentsy/vscode" },
+          ],
+          text: "Catalog",
+        },
+        {
+          items: [
+            { link: "/packages/thinking", text: "@agentsy/thinking" },
+            { link: "/packages/tool-calls", text: "@agentsy/tool-calls" },
+            { link: "/packages/structured", text: "@agentsy/structured" },
+            { link: "/packages/context", text: "@agentsy/context" },
+            { link: "/packages/formatting", text: "@agentsy/formatting" },
+            { link: "/packages/recovery", text: "@agentsy/recovery" },
+            { link: "/packages/xml-filter", text: "@agentsy/xml-filter" },
+            { link: "/packages/sse", text: "@agentsy/sse" },
+            { link: "/packages/types", text: "@agentsy/types" },
+            { link: "/packages/ui", text: "@agentsy/ui" },
+            { link: "/packages/ag-ui", text: "@agentsy/runtime/ag-ui" },
+            { link: "/packages/testing", text: "@agentsy/testing" },
+          ],
+          text: "Core utilities",
+        },
+      ],
+    },
+    siteTitle: "Agentsy docs",
+    socialLinks: [
+      { icon: "github", link: "https://github.com/selfagency/agentsy" },
+      { icon: "npm", link: "https://www.npmjs.com/org/agentsy" },
+    ],
+  },
+  title: "Agentsy",
 });

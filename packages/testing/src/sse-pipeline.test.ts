@@ -1,3 +1,5 @@
+import type { PipelineEvent } from '@agentsy/providers/pipeline';
+import { createPipeline } from '@agentsy/providers/pipeline';
 /**
  * Integration: SSE text → createPipeline → PipelineEvents
  *
@@ -6,13 +8,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { createPipeline, type PipelineEvent } from '@agentsy/providers/pipeline';
-
 // ---------------------------------------------------------------------------
 // Helper: turn a multi-line SSE string into an async iterable of chunks so we
 // can simulate a raw HTTP response body from a real provider.
 // ---------------------------------------------------------------------------
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
 async function* sseSource(text: string): AsyncGenerator<string> {
   // Yield the SSE text one "network chunk" at a time — split at newlines to
   // exercise real incremental SSE parsing.
@@ -76,8 +77,8 @@ describe('createPipeline (openai)', () => {
 
     const events: PipelineEvent[] = [];
     for await (const event of createPipeline(sseSource(sse), {
-      provider: 'openai',
-      knownTools: new Set(['search_files'])
+      knownTools: new Set(['search_files']),
+      provider: 'openai'
     })) {
       events.push(event);
     }
@@ -85,7 +86,9 @@ describe('createPipeline (openai)', () => {
     const toolCalls = events.filter(e => e.type === 'tool_call');
     expect(toolCalls).toHaveLength(1);
     expect(toolCalls[0]?.tool_call?.name).toBe('search_files');
-    expect(toolCalls[0]?.tool_call?.parameters).toEqual({ query: 'cats' });
+    expect(toolCalls[0]?.tool_call?.parameters).toStrictEqual({
+      query: 'cats'
+    });
   });
 
   it('emits thinking event when parseThinkTags=true', async () => {
@@ -95,8 +98,8 @@ describe('createPipeline (openai)', () => {
 
     const events: PipelineEvent[] = [];
     for await (const event of createPipeline(sseSource(sse), {
-      provider: 'openai',
-      parseThinkTags: true
+      parseThinkTags: true,
+      provider: 'openai'
     })) {
       events.push(event);
     }
@@ -125,11 +128,26 @@ describe('createPipeline (openai)', () => {
 describe('createPipeline (anthropic)', () => {
   it('accumulates text delta events and emits message_done', async () => {
     const sse =
-      sseLine({ type: 'message_start', message: { usage: { input_tokens: 10 } } }) +
-      sseLine({ type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } }) +
-      sseLine({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'Hi there' } }) +
-      sseLine({ type: 'content_block_stop', index: 0 }) +
-      sseLine({ type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 3 } }) +
+      sseLine({
+        message: { usage: { input_tokens: 10 } },
+        type: 'message_start'
+      }) +
+      sseLine({
+        content_block: { text: '', type: 'text' },
+        index: 0,
+        type: 'content_block_start'
+      }) +
+      sseLine({
+        delta: { text: 'Hi there', type: 'text_delta' },
+        index: 0,
+        type: 'content_block_delta'
+      }) +
+      sseLine({ index: 0, type: 'content_block_stop' }) +
+      sseLine({
+        delta: { stop_reason: 'end_turn' },
+        type: 'message_delta',
+        usage: { output_tokens: 3 }
+      }) +
       sseLine({ type: 'message_stop' });
 
     const events = await collectPipelineEvents(sseSource(sse), 'anthropic');
@@ -142,12 +160,32 @@ describe('createPipeline (anthropic)', () => {
 
   it('emits thinking events for thinking_delta events', async () => {
     const sse =
-      sseLine({ type: 'content_block_start', index: 0, content_block: { type: 'thinking', thinking: '' } }) +
-      sseLine({ type: 'content_block_delta', index: 0, delta: { type: 'thinking_delta', thinking: 'my reasoning' } }) +
-      sseLine({ type: 'content_block_stop', index: 0 }) +
-      sseLine({ type: 'content_block_start', index: 1, content_block: { type: 'text', text: '' } }) +
-      sseLine({ type: 'content_block_delta', index: 1, delta: { type: 'text_delta', text: 'answer' } }) +
-      sseLine({ type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 3 } });
+      sseLine({
+        content_block: { thinking: '', type: 'thinking' },
+        index: 0,
+        type: 'content_block_start'
+      }) +
+      sseLine({
+        delta: { thinking: 'my reasoning', type: 'thinking_delta' },
+        index: 0,
+        type: 'content_block_delta'
+      }) +
+      sseLine({ index: 0, type: 'content_block_stop' }) +
+      sseLine({
+        content_block: { text: '', type: 'text' },
+        index: 1,
+        type: 'content_block_start'
+      }) +
+      sseLine({
+        delta: { text: 'answer', type: 'text_delta' },
+        index: 1,
+        type: 'content_block_delta'
+      }) +
+      sseLine({
+        delta: { stop_reason: 'end_turn' },
+        type: 'message_delta',
+        usage: { output_tokens: 3 }
+      });
 
     const events = await collectPipelineEvents(sseSource(sse), 'anthropic');
 
@@ -169,10 +207,26 @@ describe('createPipeline (anthropic)', () => {
 describe('createPipeline (gemini)', () => {
   it('accumulates text parts from candidates', async () => {
     const sse =
-      sseLine({ candidates: [{ content: { parts: [{ text: 'Gemini' }], role: 'model' }, finishReason: null }] }) +
       sseLine({
-        candidates: [{ content: { parts: [{ text: ' here' }], role: 'model' }, finishReason: 'STOP' }],
-        usageMetadata: { promptTokenCount: 5, candidatesTokenCount: 2, totalTokenCount: 7 }
+        candidates: [
+          {
+            content: { parts: [{ text: 'Gemini' }], role: 'model' },
+            finishReason: null
+          }
+        ]
+      }) +
+      sseLine({
+        candidates: [
+          {
+            content: { parts: [{ text: ' here' }], role: 'model' },
+            finishReason: 'STOP'
+          }
+        ],
+        usageMetadata: {
+          candidatesTokenCount: 2,
+          promptTokenCount: 5,
+          totalTokenCount: 7
+        }
       });
 
     const events = await collectPipelineEvents(sseSource(sse), 'gemini');
@@ -190,11 +244,12 @@ describe('createPipeline (gemini)', () => {
 // ---------------------------------------------------------------------------
 
 describe('createPipeline (unknown provider)', () => {
-  it('throws synchronously for unknown provider', () => {
+  it('throws synchronously for unknown provider', async () => {
     const gen = createPipeline(sseSource('data: {}\n\n'), {
       provider: 'unknown-provider' as Parameters<typeof createPipeline>[1]['provider']
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     });
     // The error is thrown when the generator function body begins executing
-    return expect(gen.next()).rejects.toThrow('Unknown provider');
+    await expect(gen.next()).rejects.toThrow('Unknown provider: unknown-provider');
   });
 });

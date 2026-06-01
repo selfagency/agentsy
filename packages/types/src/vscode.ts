@@ -8,23 +8,14 @@ import type { AgentId, SessionId } from './brands.js';
  * Extension provider configuration.
  */
 export interface ExtensionProviderConfig {
-  /** Provider identifier. */
-  name: string;
-
-  /** Display name. */
-  displayName: string;
-
-  /** Extension identifier. */
-  extensionId: string;
-
-  /** API endpoint for the extension. */
-  apiUrl: string;
+  /** VSCode activation events. */
+  activationEvents?: string[];
 
   /** API key for authentication. */
   apiKey?: string;
 
-  /** VSCode activation events. */
-  activationEvents?: string[];
+  /** API endpoint for the extension. */
+  apiUrl: string;
 
   /** Commands to register. */
   commands?: {
@@ -41,6 +32,14 @@ export interface ExtensionProviderConfig {
 
   /** Default session ID to use. */
   defaultSessionId?: SessionId;
+
+  /** Display name. */
+  displayName: string;
+
+  /** Extension identifier. */
+  extensionId: string;
+  /** Provider identifier. */
+  name: string;
 }
 
 /**
@@ -50,11 +49,11 @@ export interface IProviderLifecycle {
   /** Called when extension is activated. */
   onActivate(): Promise<void>;
 
-  /** Called when extension is deactivated. */
-  onDeactivate(): Promise<void>;
-
   /** Called when connection to provider is established. */
   onConnect(): Promise<void>;
+
+  /** Called when extension is deactivated. */
+  onDeactivate(): Promise<void>;
 
   /** Called when connection to provider is closed. */
   onDisconnect(): Promise<void>;

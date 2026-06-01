@@ -8,24 +8,27 @@ export type AuditOperation = 'read' | 'write' | 'delete' | 'snapshot' | 'restore
  * Uses a negative lookbehind (or alternative approach since lookbehind support varies)
  * to avoid matching common file or list names like 'author-list' or 'key-count'.
  */
-const SECRET_PATTERN = /\b(?:api[_-]?)?(?:token|secret|password|credential|auth|key)(?![_-])\s*[:=]\s*\S+/gi;
+const SECRET_PATTERN = /\b(?:api[_-]?)?(?:token|secret|password|credential|auth|key)(?![_-])\s*[:=]\s*\S+/giu;
 
 function redactSecrets(value: string): string {
   return value.replace(SECRET_PATTERN, '[REDACTED]');
 }
 
 export interface AuditEvent {
-  readonly id: string;
+  readonly actor?: string;
+  readonly contentHash?: string;
   readonly correlationId: string;
+  readonly id: string;
+  readonly metadata?: Readonly<Record<string, string>>;
   readonly operation: AuditOperation;
   readonly path: string;
-  readonly contentHash?: string;
-  readonly actor?: string;
   readonly timestamp: number;
-  readonly metadata?: Readonly<Record<string, string>>;
 }
 
 export interface AuditTrail {
+  byCorrelation(correlationId: string): AuditEvent[];
+  clear(): void;
+  query(path?: string): AuditEvent[];
   record(
     operation: AuditOperation,
     path: string,
@@ -36,9 +39,6 @@ export interface AuditTrail {
       metadata?: Record<string, string>;
     }
   ): AuditEvent;
-  query(path?: string): AuditEvent[];
-  byCorrelation(correlationId: string): AuditEvent[];
-  clear(): void;
 }
 
 let counter = 0;
@@ -57,6 +57,21 @@ export function createAuditTrail(): AuditTrail {
   const events: AuditEvent[] = [];
 
   return {
+    byCorrelation(correlationId) {
+      return events.filter(e => e.correlationId === correlationId);
+    },
+
+    clear() {
+      events.length = 0;
+    },
+
+    query(path) {
+      if (path === undefined) {
+        return [...events];
+      }
+      return events.filter(e => e.path === path);
+    },
+
     record(operation, path, options) {
       const event: AuditEvent = {
         id: generateId(),
@@ -70,19 +85,6 @@ export function createAuditTrail(): AuditTrail {
       };
       events.push(event);
       return event;
-    },
-
-    query(path) {
-      if (path === undefined) return [...events];
-      return events.filter(e => e.path === path);
-    },
-
-    byCorrelation(correlationId) {
-      return events.filter(e => e.correlationId === correlationId);
-    },
-
-    clear() {
-      events.length = 0;
     }
   };
 }

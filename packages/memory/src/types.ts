@@ -1,31 +1,31 @@
 import { createHash } from 'node:crypto';
 
 export interface ContextFingerprint {
-  value: string;
   modelFamily: string;
-  templateVersion: string;
   schemaVersion: number;
+  templateVersion: string;
+  value: string;
 }
 
 export interface CreateContextFingerprintInput {
   content: string;
   modelFamily: string;
-  templateVersion: string;
   schemaVersion: number;
+  templateVersion: string;
 }
 
 export interface MemoryReuseHint {
+  invalidationKeys: string[];
   reuseClass: 'hot' | 'warm' | 'cold';
   stablePrefix: boolean;
   toolSchema: boolean;
-  invalidationKeys: string[];
 }
 
 export interface CreateMemoryReuseHintInput {
+  invalidationKeys: string[];
   reuseClass: 'hot' | 'warm' | 'cold';
   stablePrefix: boolean;
   toolSchema: boolean;
-  invalidationKeys: string[];
 }
 
 export function createContextFingerprint(input: CreateContextFingerprintInput): ContextFingerprint {
@@ -33,18 +33,18 @@ export function createContextFingerprint(input: CreateContextFingerprintInput): 
   const value = `sha256:${createHash('sha256').update(source).digest('hex')}`;
 
   return {
-    value,
     modelFamily: input.modelFamily,
+    schemaVersion: input.schemaVersion,
     templateVersion: input.templateVersion,
-    schemaVersion: input.schemaVersion
+    value
   };
 }
 
 export function createMemoryReuseHint(input: CreateMemoryReuseHintInput): MemoryReuseHint {
   return {
+    invalidationKeys: [...input.invalidationKeys],
     reuseClass: input.reuseClass,
     stablePrefix: input.stablePrefix,
-    toolSchema: input.toolSchema,
-    invalidationKeys: [...input.invalidationKeys]
+    toolSchema: input.toolSchema
   };
 }

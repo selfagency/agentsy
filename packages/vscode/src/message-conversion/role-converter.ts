@@ -2,20 +2,20 @@
  * Intermediate chat message format used across providers.
  */
 export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant' | 'tool';
   content: string;
+  name?: string;
+  role: 'system' | 'user' | 'assistant' | 'tool';
   toolCallId?: string;
   toolCalls?: ChatToolCall[];
-  name?: string;
 }
 
 /**
  * Intermediate tool call format.
  */
 export interface ChatToolCall {
+  arguments: Record<string, unknown>;
   id: string;
   name: string;
-  arguments: Record<string, unknown>;
 }
 
 /**
@@ -25,7 +25,9 @@ export interface ChatToolCall {
 export function convertRole(role: number): ChatMessage['role'] {
   // vscode.LanguageModelChatMessageRole: User = 1, Assistant = 2
   // Use numeric comparison for test safety (no vscode import required)
-  if (role === 2) return 'assistant';
+  if (role === 2) {
+    return 'assistant';
+  }
   return 'user';
 }
 
@@ -33,10 +35,16 @@ export function convertRole(role: number): ChatMessage['role'] {
  * Extracts text content from a VS Code content part.
  */
 export function extractTextFromPart(part: unknown): string {
-  if (!part || typeof part !== 'object') return '';
+  if (!part || typeof part !== 'object') {
+    return '';
+  }
   const p = part as Record<string, unknown>;
-  if (typeof p.value === 'string') return p.value;
-  if (typeof p.content === 'string') return p.content;
+  if (typeof p.value === 'string') {
+    return p.value;
+  }
+  if (typeof p.content === 'string') {
+    return p.content;
+  }
   return '';
 }
 
@@ -51,13 +59,17 @@ function isValidToolCallPart(p: Record<string, unknown>): boolean {
  * Extracts tool call information from a VS Code LanguageModelToolCallPart.
  */
 export function extractToolCall(part: unknown): ChatToolCall | undefined {
-  if (!part || typeof part !== 'object') return undefined;
+  if (!part || typeof part !== 'object') {
+    return;
+  }
   const p = part as Record<string, unknown>;
 
-  if (!isValidToolCallPart(p)) return undefined;
+  if (!isValidToolCallPart(p)) {
+    return;
+  }
 
   const args = parseToolArguments(p.input);
-  return { id: p.callId as string, name: p.name as string, arguments: args };
+  return { arguments: args, id: p.callId as string, name: p.name as string };
 }
 
 /**
@@ -69,7 +81,7 @@ function parseToolArguments(input: unknown): Record<string, unknown> {
   }
   if (typeof input === 'string') {
     try {
-      const parsed = JSON.parse(input);
+      const parsed = JSON.parse(input) as unknown;
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         return parsed as Record<string, unknown>;
       }
@@ -84,11 +96,15 @@ function parseToolArguments(input: unknown): Record<string, unknown> {
  * Extracts tool result information from a VS Code LanguageModelToolResultPart.
  */
 export function extractToolResult(part: unknown): { callId: string; content: string } | undefined {
-  if (!part || typeof part !== 'object') return undefined;
+  if (!part || typeof part !== 'object') {
+    return;
+  }
   const p = part as Record<string, unknown>;
 
-  const callId = p.callId;
-  if (typeof callId !== 'string') return undefined;
+  const { callId } = p;
+  if (typeof callId !== 'string') {
+    return;
+  }
 
   const content = extractContentFromPart(p.content);
   return { callId, content };

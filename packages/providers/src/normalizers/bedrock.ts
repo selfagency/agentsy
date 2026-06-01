@@ -1,13 +1,26 @@
 import type { FinishReason } from '@agentsy/types';
+
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
 function mapBedrockStopReason(reason: string | undefined): FinishReason | undefined {
-  if (!reason) return undefined;
-  if (reason === 'end_turn') return 'stop';
-  if (reason === 'tool_use') return 'tool-calls';
-  if (reason === 'max_tokens') return 'length';
-  if (reason === 'stop_sequence') return 'stop';
-  if (reason === 'guardrail_intervened' || reason === 'content_filtered') return 'content-filter';
+  if (!reason) {
+    return;
+  }
+  if (reason === 'end_turn') {
+    return 'stop';
+  }
+  if (reason === 'tool_use') {
+    return 'tool-calls';
+  }
+  if (reason === 'max_tokens') {
+    return 'length';
+  }
+  if (reason === 'stop_sequence') {
+    return 'stop';
+  }
+  if (reason === 'guardrail_intervened' || reason === 'content_filtered') {
+    return 'content-filter';
+  }
   return 'other';
 }
 
@@ -60,7 +73,9 @@ const BEDROCK_EVENT_KEYS = new Set([
 ]);
 
 function isBedrockConverseEvent(value: unknown): value is BedrockConverseEvent {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
   return Object.keys(value).some(k => BEDROCK_EVENT_KEYS.has(k));
 }
 
@@ -77,8 +92,8 @@ function handleBedrockContentBlockDelta(raw: BedrockConverseEvent): NormalizerRe
 
   if (delta?.toolUse && typeof delta.toolUse.input === 'string') {
     const tc: NativeToolCallDelta = {
-      index: contentBlockIndex,
-      argumentsDelta: delta.toolUse.input
+      argumentsDelta: delta.toolUse.input,
+      index: contentBlockIndex
     };
     return { chunk: { nativeToolCallDeltas: [tc] }, rawEvent: raw };
   }
@@ -93,21 +108,35 @@ function handleBedrockContentBlockDelta(raw: BedrockConverseEvent): NormalizerRe
 function handleBedrockContentBlockStart(raw: BedrockConverseEvent): NormalizerResult | null {
   const { contentBlockIndex = 0, start } = raw.contentBlockStart ?? {};
   const toolUse = start?.toolUse;
-  if (!toolUse) return null;
+  if (!toolUse) {
+    return null;
+  }
 
   const tc: NativeToolCallDelta = { index: contentBlockIndex };
-  if (typeof toolUse.toolUseId === 'string' && toolUse.toolUseId) tc.id = toolUse.toolUseId;
-  if (typeof toolUse.name === 'string' && toolUse.name) tc.name = toolUse.name;
+  if (typeof toolUse.toolUseId === 'string' && toolUse.toolUseId) {
+    tc.id = toolUse.toolUseId;
+  }
+  if (typeof toolUse.name === 'string' && toolUse.name) {
+    tc.name = toolUse.name;
+  }
   return { chunk: { nativeToolCallDeltas: [tc] }, rawEvent: raw };
 }
 
 function handleBedrockMetadata(raw: BedrockConverseEvent): NormalizerResult | null {
   const { usage } = raw.metadata ?? {};
-  if (!usage) return null;
+  if (!usage) {
+    return null;
+  }
   const usageInfo: UsageInfo = {};
-  if (typeof usage.inputTokens === 'number') usageInfo.inputTokens = usage.inputTokens;
-  if (typeof usage.outputTokens === 'number') usageInfo.outputTokens = usage.outputTokens;
-  if (typeof usage.totalTokens === 'number') usageInfo.totalTokens = usage.totalTokens;
+  if (typeof usage.inputTokens === 'number') {
+    usageInfo.inputTokens = usage.inputTokens;
+  }
+  if (typeof usage.outputTokens === 'number') {
+    usageInfo.outputTokens = usage.outputTokens;
+  }
+  if (typeof usage.totalTokens === 'number') {
+    usageInfo.totalTokens = usage.totalTokens;
+  }
   return { chunk: { usage: usageInfo }, rawEvent: raw };
 }
 
@@ -136,16 +165,30 @@ function handleBedrockMetadata(raw: BedrockConverseEvent): NormalizerResult | nu
  */
 export function normalizeBedrockConverseEvent(raw: unknown): NormalizerResult | null {
   try {
-    if (!isBedrockConverseEvent(raw)) return null;
+    if (!isBedrockConverseEvent(raw)) {
+      return null;
+    }
 
-    if (raw.contentBlockDelta) return handleBedrockContentBlockDelta(raw);
-    if (raw.contentBlockStart) return handleBedrockContentBlockStart(raw);
+    if (raw.contentBlockDelta) {
+      return handleBedrockContentBlockDelta(raw);
+    }
+    if (raw.contentBlockStart) {
+      return handleBedrockContentBlockStart(raw);
+    }
     if (raw.messageStop) {
       const stopReason = typeof raw.messageStop.stopReason === 'string' ? raw.messageStop.stopReason : undefined;
       const finishReason = mapBedrockStopReason(stopReason);
-      return { chunk: { done: true, ...(finishReason !== undefined && { finishReason }) }, rawEvent: raw };
+      return {
+        chunk: {
+          done: true,
+          ...(finishReason !== undefined && { finishReason })
+        },
+        rawEvent: raw
+      };
     }
-    if (raw.metadata) return handleBedrockMetadata(raw);
+    if (raw.metadata) {
+      return handleBedrockMetadata(raw);
+    }
 
     // messageStart, contentBlockStop → no actionable content
     return null;

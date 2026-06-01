@@ -1,0 +1,15 @@
+{
+  "$schema": "aImock fixture — Error scenarios for chaos testing",
+  "name": "error-rate-limit",
+  "request": {
+    "model": "gpt-4o",
+    "messages": [{ "role": "user", "content": "trigger-rate-limit" }]
+  },
+  "response": {
+    "error": {
+      "message": "Rate limit exceeded",
+      "type": "rate_limit_error"
+    },
+    "status": 429
+  }
+}

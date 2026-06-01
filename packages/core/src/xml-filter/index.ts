@@ -1,2 +1,2 @@
-export * from './tagLists.js';
-export * from './XmlStreamFilter.js';
+export * from './tag-lists.js';
+export * from './xml-stream-filter.js';

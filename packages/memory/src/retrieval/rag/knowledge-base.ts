@@ -1,21 +1,35 @@
+import { createRagFsAdapter } from '../../agentfs/rag-adapter.js';
+import type { MemoryDatabase } from '../../database/connection.js';
 import { createDocumentIngestor } from './document-ingest.js';
-import { createHybridRetriever } from './hybrid-retriever.js';
-import { createIndexManager } from './index-manager.js';
+import { createHybridRetriever, type HybridRetrieverOptions } from './hybrid-retriever.js';
+import { createIndexManager, type IndexManagerOptions } from './index-manager.js';
 import { createQueryPlanner } from './query-planner.js';
 import { rerankResults } from './reranker.js';
 import { sanitizeIngestSource } from './sanitization.js';
-import type { IngestSource, IngestSummary, RAGWeightConfig, RAGEvidence } from './types.js';
+import type { IngestSource, IngestSummary, RAGEvidence, RAGWeightConfig } from './types.js';
 
+/** Facade over the RAG knowledge base — ingest, search, and document removal. */
 export interface KnowledgeBaseManager {
   ingest(source: IngestSource): Promise<IngestSummary>;
   remove(documentId: string): Promise<boolean>;
   search(input: { query: string; scope?: string; limit?: number; weights: RAGWeightConfig }): Promise<RAGEvidence[]>;
 }
 
-export function createKnowledgeBaseManager(): KnowledgeBaseManager {
+/** Configuration options for KnowledgeBaseManager construction. */
+export interface KnowledgeBaseManagerOptions extends HybridRetrieverOptions, IndexManagerOptions {
+  db?: MemoryDatabase | undefined;
+  /** Use AgentFS kv_store instead of legacy rag tables when db is present. */
+  useAgentFs?: boolean | undefined;
+}
+
+export function createKnowledgeBaseManager(options: KnowledgeBaseManagerOptions = {}): KnowledgeBaseManager {
+  if (options.db && options.useAgentFs) {
+    return createRagFsAdapter({ db: options.db });
+  }
+
   const ingestor = createDocumentIngestor();
-  const index = createIndexManager();
-  const retriever = createHybridRetriever();
+  const index = createIndexManager({ db: options.db });
+  const retriever = createHybridRetriever({ db: options.db });
   const planner = createQueryPlanner();
 
   return {
@@ -26,11 +40,11 @@ export function createKnowledgeBaseManager(): KnowledgeBaseManager {
 
       for (const document of ingestOutput.documents) {
         retriever.upsert({
+          content: document.content,
           id: document.id,
           sourceId: document.sourceId,
           sourceType: document.sourceType,
           title: document.title,
-          content: document.content,
           updatedAt: document.updatedAt,
           ...(document.metadata === undefined ? {} : { metadata: { ...document.metadata } })
         });
@@ -39,9 +53,9 @@ export function createKnowledgeBaseManager(): KnowledgeBaseManager {
       return summary;
     },
 
-    async remove(documentId) {
+    remove(documentId) {
       retriever.remove(documentId);
-      return index.remove(documentId);
+      return Promise.resolve(index.remove(documentId));
     },
 
     async search(input) {

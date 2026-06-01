@@ -13,10 +13,10 @@ import type {
 } from './types.js';
 
 const INITIAL_SYNC_METRICS: SyncMetrics = {
-  successes: 0,
+  conflicts: 0,
   failures: 0,
   retries: 0,
-  conflicts: 0
+  successes: 0
 };
 
 function createRecordKey(record: Pick<SyncRecord, 'id' | 'tier'>): string {
@@ -83,10 +83,12 @@ function validateSyncConfig(config: TursoSyncConfig): void {
 export class TursoManager {
   readonly #client: TursoClient;
   readonly #metrics: SyncMetrics;
+  readonly #config: TursoSyncConfig;
   #status: SyncStatus;
 
-  constructor(private readonly config: TursoSyncConfig) {
+  constructor(config: TursoSyncConfig) {
     validateSyncConfig(config);
+    this.#config = config;
     this.#client = config.client ?? createDefaultTursoClient(config);
     this.#metrics = { ...INITIAL_SYNC_METRICS };
     this.#status = 'idle';
@@ -109,7 +111,7 @@ export class TursoManager {
   }
 
   async upload(snapshot: SyncSnapshot) {
-    return this.#client.upload(snapshot);
+    return await this.#client.upload(snapshot);
   }
 
   async download(cursor: string) {
@@ -151,12 +153,12 @@ export class TursoManager {
   async sync(localState: SyncSnapshot): Promise<SyncRunResult> {
     if (this.#status === 'paused') {
       return {
-        status: 'paused',
-        uploaded: 0,
         downloaded: 0,
+        nextCursor: localState.cursor,
         resolvedConflicts: 0,
+        status: 'paused',
         unresolvedConflicts: 0,
-        nextCursor: localState.cursor
+        uploaded: 0
       };
     }
 
@@ -164,7 +166,7 @@ export class TursoManager {
 
     try {
       const remoteSnapshot = await this.download(localState.cursor);
-      const mergePolicy = this.config.mergePolicy ?? 'lastWriteWins';
+      const mergePolicy = this.#config.mergePolicy ?? 'lastWriteWins';
       const conflicts = collectConflicts(localState.records, remoteSnapshot.records, {
         policy: mergePolicy
       });
@@ -178,8 +180,8 @@ export class TursoManager {
         if (resolution.status === 'manual') {
           unresolvedConflicts += 1;
           manualConflictIds.add(createRecordKey(conflict.local));
-          if (this.config.conflictStore) {
-            await this.config.conflictStore.save(conflict);
+          if (this.#config.conflictStore) {
+            await this.#config.conflictStore.save(conflict);
           }
           continue;
         }
@@ -199,33 +201,33 @@ export class TursoManager {
       this.#status = 'idle';
 
       return {
-        status: 'success',
-        uploaded: uploadResult.uploadedCount,
         downloaded: remoteSnapshot.records.length,
+        nextCursor: uploadResult.nextCursor,
         resolvedConflicts,
+        status: 'success',
         unresolvedConflicts,
-        nextCursor: uploadResult.nextCursor
+        uploaded: uploadResult.uploadedCount
       };
     } catch (error) {
       const envelope = createSecureSyncErrorEnvelope(error, {
         code: 'SYNC_FAILED',
-        retryable: this.config.maxRetries > 0
+        retryable: this.#config.maxRetries > 0
       });
       this.#metrics.failures += 1;
       this.#status = 'error';
 
       return {
-        status: 'error',
-        uploaded: 0,
         downloaded: 0,
-        resolvedConflicts: 0,
-        unresolvedConflicts: 0,
-        nextCursor: localState.cursor,
         error: {
           code: envelope.code,
           message: envelope.message,
           retryable: envelope.retryable
-        }
+        },
+        nextCursor: localState.cursor,
+        resolvedConflicts: 0,
+        status: 'error',
+        unresolvedConflicts: 0,
+        uploaded: 0
       };
     }
   }

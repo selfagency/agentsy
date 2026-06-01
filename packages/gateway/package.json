@@ -1,0 +1,61 @@
+{
+  "name": "@agentsy/gateway",
+  "version": "0.1.0",
+  "description": "LLM Gateway — multi-provider routing, failover, and health tracking",
+  "keywords": [
+    "agentsy",
+    "gateway",
+    "providers",
+    "typescript"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git",
+    "directory": "packages/gateway"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "biome lint",
+    "format": "biome format",
+    "test": "vitest --run --passWithNoTests",
+    "coverage": "vitest --run --coverage"
+  },
+  "dependencies": {
+    "@agentsy/core": "workspace:*",
+    "@agentsy/guardrails": "workspace:*",
+    "@agentsy/models": "workspace:*",
+    "@agentsy/observability": "workspace:*",
+    "@agentsy/providers": "workspace:*",
+    "@agentsy/secrets": "workspace:*",
+    "@agentsy/types": "workspace:*",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.0",
+    "@vitest/coverage-v8": "^4.1.6",
+    "tsup": "^8.5.1",
+    "typescript": "6.0.3",
+    "vitest": "^4.1.6"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

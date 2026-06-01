@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+
 import { convertMessage, convertMessages } from './message-adapter.js';
 import { convertRole, extractTextFromPart, extractToolCall, extractToolResult } from './role-converter.js';
 
 describe('role-converter', () => {
-  describe('convertRole', () => {
+  describe(convertRole, () => {
     it('maps role 2 to assistant', () => {
       expect(convertRole(2)).toBe('assistant');
     });
@@ -17,7 +18,7 @@ describe('role-converter', () => {
     });
   });
 
-  describe('extractTextFromPart', () => {
+  describe(extractTextFromPart, () => {
     it('extracts value property', () => {
       expect(extractTextFromPart({ value: 'hello' })).toBe('hello');
     });
@@ -35,32 +36,40 @@ describe('role-converter', () => {
     });
   });
 
-  describe('extractToolCall', () => {
+  describe(extractToolCall, () => {
     it('extracts tool call with object arguments', () => {
       const result = extractToolCall({
         callId: 'call-1',
-        name: 'myTool',
-        input: { foo: 'bar' }
+        input: { foo: 'bar' },
+        name: 'myTool'
       });
-      expect(result).toEqual({ id: 'call-1', name: 'myTool', arguments: { foo: 'bar' } });
+      expect(result).toStrictEqual({
+        arguments: { foo: 'bar' },
+        id: 'call-1',
+        name: 'myTool'
+      });
     });
 
     it('parses JSON string arguments', () => {
       const result = extractToolCall({
         callId: 'call-2',
-        name: 'fn',
-        input: '{"x": 42}'
+        input: '{"x": 42}',
+        name: 'fn'
       });
-      expect(result?.arguments).toEqual({ x: 42 });
+      expect(result?.arguments).toStrictEqual({ x: 42 });
     });
 
     it('returns undefined for missing callId', () => {
-      expect(extractToolCall({ name: 'fn', input: {} })).toBeUndefined();
+      expect(extractToolCall({ input: {}, name: 'fn' })).toBeUndefined();
     });
 
     it('returns empty arguments for invalid JSON string', () => {
-      const result = extractToolCall({ callId: 'id', name: 'fn', input: 'invalid json' });
-      expect(result?.arguments).toEqual({});
+      const result = extractToolCall({
+        callId: 'id',
+        input: 'invalid json',
+        name: 'fn'
+      });
+      expect(result?.arguments).toStrictEqual({});
     });
 
     it('returns undefined for non-objects', () => {
@@ -69,18 +78,21 @@ describe('role-converter', () => {
     });
   });
 
-  describe('extractToolResult', () => {
+  describe(extractToolResult, () => {
     it('extracts tool result with array content', () => {
       const result = extractToolResult({
         callId: 'call-1',
         content: [{ value: 'result text' }]
       });
-      expect(result).toEqual({ callId: 'call-1', content: 'result text' });
+      expect(result).toStrictEqual({
+        callId: 'call-1',
+        content: 'result text'
+      });
     });
 
     it('extracts tool result with string content', () => {
       const result = extractToolResult({ callId: 'call-2', content: 'direct' });
-      expect(result).toEqual({ callId: 'call-2', content: 'direct' });
+      expect(result).toStrictEqual({ callId: 'call-2', content: 'direct' });
     });
 
     it('returns undefined for missing callId', () => {
@@ -94,48 +106,48 @@ describe('role-converter', () => {
 });
 
 describe('message-adapter', () => {
-  describe('convertMessage', () => {
+  describe(convertMessage, () => {
     it('converts string content message', () => {
-      const result = convertMessage({ role: 1, content: 'Hello' });
-      expect(result).toEqual({ role: 'user', content: 'Hello' });
+      const result = convertMessage({ content: 'Hello', role: 1 });
+      expect(result).toStrictEqual({ content: 'Hello', role: 'user' });
     });
 
     it('converts assistant message', () => {
-      const result = convertMessage({ role: 2, content: 'Hi there' });
-      expect(result).toEqual({ role: 'assistant', content: 'Hi there' });
+      const result = convertMessage({ content: 'Hi there', role: 2 });
+      expect(result).toStrictEqual({ content: 'Hi there', role: 'assistant' });
     });
 
     it('handles null/undefined message', () => {
-      expect(convertMessage(null)).toEqual({ role: 'user', content: '' });
-      expect(convertMessage(undefined)).toEqual({ role: 'user', content: '' });
+      expect(convertMessage(null)).toStrictEqual({ content: '', role: 'user' });
+      expect(convertMessage(undefined)).toStrictEqual({ content: '', role: 'user' });
     });
 
     it('handles empty content array', () => {
-      const result = convertMessage({ role: 1, content: [] });
-      expect(result).toEqual({ role: 'user', content: '' });
+      const result = convertMessage({ content: [], role: 1 });
+      expect(result).toStrictEqual({ content: '', role: 'user' });
     });
 
     it('concatenates text parts', () => {
       const result = convertMessage({
-        role: 1,
-        content: [{ value: 'Hello ' }, { value: 'world' }]
+        content: [{ value: 'Hello ' }, { value: 'world' }],
+        role: 1
       });
       expect(result.content).toBe('Hello world');
     });
 
     it('extracts tool calls from content parts', () => {
       const result = convertMessage({
-        role: 2,
-        content: [{ callId: 'c1', name: 'myTool', input: { a: 1 } }]
+        content: [{ callId: 'c1', input: { a: 1 }, name: 'myTool' }],
+        role: 2
       });
-      expect(result.toolCalls).toEqual([{ id: 'c1', name: 'myTool', arguments: { a: 1 } }]);
+      expect(result.toolCalls).toStrictEqual([{ arguments: { a: 1 }, id: 'c1', name: 'myTool' }]);
       expect(result.role).toBe('assistant');
     });
 
     it('converts tool result message', () => {
       const result = convertMessage({
-        role: 1,
-        content: [{ callId: 'c1', content: [{ value: 'result' }] }]
+        content: [{ callId: 'c1', content: [{ value: 'result' }] }],
+        role: 1
       });
       expect(result.role).toBe('tool');
       expect(result.toolCallId).toBe('c1');
@@ -143,21 +155,25 @@ describe('message-adapter', () => {
     });
 
     it('includes name if present', () => {
-      const result = convertMessage({ role: 1, content: 'msg', name: 'system' });
+      const result = convertMessage({
+        content: 'msg',
+        name: 'system',
+        role: 1
+      });
       expect(result.name).toBe('system');
     });
   });
 
-  describe('convertMessages', () => {
+  describe(convertMessages, () => {
     it('converts array of messages', () => {
       const msgs = [
-        { role: 1, content: 'Hi' },
-        { role: 2, content: 'Hello' }
+        { content: 'Hi', role: 1 },
+        { content: 'Hello', role: 2 }
       ];
       const result = convertMessages(msgs);
       expect(result).toHaveLength(2);
       const [firstMessage, secondMessage] = result;
-      if (!firstMessage || !secondMessage) {
+      if (!(firstMessage && secondMessage)) {
         throw new Error('Expected two messages to be converted');
       }
       expect(firstMessage.role).toBe('user');
@@ -165,7 +181,7 @@ describe('message-adapter', () => {
     });
 
     it('returns empty array for empty input', () => {
-      expect(convertMessages([])).toEqual([]);
+      expect(convertMessages([])).toStrictEqual([]);
     });
   });
 });
