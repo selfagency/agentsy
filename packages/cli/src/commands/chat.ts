@@ -167,6 +167,19 @@ function createProviderClient(isMock: boolean, argv: readonly string[], options?
 /**
  * Execute the chat command.
  */
+/**
+ * Safely call rl.prompt() — Node 24 throws "readline was closed" after
+ * input stream ends if test code uses setImmediate deferral combined
+ * with stream.end(). Catch and ignore the error.
+ */
+function safePrompt(rl: Interface): void {
+  try {
+    rl.prompt();
+  } catch {
+    // readline was closed — safe to ignore in test/end-of-stream scenarios
+  }
+}
+
 export async function runChatCommand(
   argv: readonly string[],
   io: CliIO,
@@ -197,21 +210,6 @@ export async function runChatCommand(
     output: process.stdout,
     prompt: `${cyan('> ')}`
   });
-
-  // ── Safe prompt wrapper ───────────────────────────────────────────────────────────
-
-  /**
-   * Safely call rl.prompt() — Node 24 throws "readline was closed" after
-   * input stream ends if test code uses setImmediate deferral combined
-   * with stream.end(). Catch and ignore the error.
-   */
-  function safePrompt(rl: Interface): void {
-    try {
-      rl.prompt();
-    } catch {
-      // readline was closed — safe to ignore in test/end-of-stream scenarios
-    }
-  }
 
   safePrompt(rl);
 
