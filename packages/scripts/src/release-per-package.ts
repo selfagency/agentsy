@@ -67,8 +67,9 @@ const version = parseVersionArg(versionArg ?? (typeof argv.version === 'string' 
 const isDryRun = Boolean(argv['dry-run'] ?? argv.dryRun);
 
 function resolvePackageName(argv: Record<string, unknown>): string | null {
-  if (typeof argv._[0] === 'string') {
-    return argv._[0];
+  const positionalArgs = argv._ as unknown[];
+  if (typeof positionalArgs[0] === 'string') {
+    return positionalArgs[0];
   }
   return typeof argv.package === 'string' ? argv.package : null;
 }
