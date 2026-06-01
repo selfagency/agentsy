@@ -424,6 +424,17 @@ Track model capability deprecation (e.g., GPT-4 Vision -> GPT-4o Vision, Claude 
 - implement criteria-driven recommendations API for runtime and CLI
 - add offline fallback when llm-stats unavailable
 
+### Phase 6 (Weeks 29-34): task complexity tiers & cost-ratio routing
+
+- define task complexity tier enum with 4 levels: micro, small, mid, frontier
+- assign cost ratios per tier: micro=1x (local), small=5x (7B cloud), mid=20x (30-70B), frontier=50x (flagship)
+- implement TaskPattern keyword taxonomy: micro→search/grep/read, small→implement/test/refactor, mid→debug/review/integrate, frontier→architect/design/security
+- implement classifyTask(tasks: string) returning tier classification via keyword scoring
+- implement routeToTier(task, providerRegistry, platformProfile) with Phase 17 integration
+- implement MODE_PRESETS: normal, budget, quality, deep — each with tier biases and override rules
+- implement TierDefinition type with per-tier preferred providers and fallback chains
+- add cross-reference documentation for gateway tier-aware strategy and orchestrator delegation
+
 ## Testing Requirements
 
 1. **Unit tests** for profile normalization and scoring.
