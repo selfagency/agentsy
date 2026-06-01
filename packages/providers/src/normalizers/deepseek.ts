@@ -78,7 +78,11 @@ export function normalizeDeepSeekChunk(raw: unknown): NormalizerResult | null {
     return null;
   }
 
-  const choice = choices[0] as Record<string, unknown>;
+  const rawChoice = choices[0];
+  if (rawChoice === null || typeof rawChoice !== 'object') {
+    return null;
+  }
+  const choice = rawChoice as Record<string, unknown>;
   const delta = (choice.delta as Record<string, unknown>) || {};
 
   const content = typeof delta.content === 'string' ? delta.content : undefined;

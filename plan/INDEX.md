@@ -37,6 +37,7 @@
 | **23-PHASE-14-EXTERNAL-ADOPTIONS.md**    | Patterns from 8 external repos (incl. context-mode session continuity) | 33.5 hours  |
 | **24-PHASE-15-COUNCIL-MODE.md**          | Multi-model council collaboration    | 15 hours  |
 | **25-PHASE-16-SMALL-MODEL-PARITY.md**    | Make 7B-14B models rival cloud models | 40 hours  |
+| **26-PHASE-17-MICRO-TIER-LOCAL-OFFLOAD.md** | Route micro-tier calls to available accelerators (Apfel/Ollama/NPU/GPU) | 48 hours  |
 
 ---
 

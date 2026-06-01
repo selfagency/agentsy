@@ -83,6 +83,260 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 | TASK-ORCH-016 | Implement `createAgentSession(agentDef, config)` in `src/session.ts` — loads agent definition, builds hook registry, compiles hooks, returns `AgentLoopHandle`.                                               |           |      |
 | TASK-ORCH-017 | Add integration tests: hook lifecycle (register/unregister/disable), compile merge order, builtin hook coverage, agent session creation with all builtin hooks.                                               |           |      |
 
+### Phase 5: Tier-Based Delegation & Runtime Enforcement
+
+*Inspired by [opencode-model-router](https://github.com/marco-jardim/opencode-model-router) — task-complexity-based delegation with runtime call caps and redundancy detection. Extended with Phase 17 local provider offload for micro-tier exploration tasks.*
+
+**Scope:** Add tier-aware delegation to the orchestrator. When the orchestrator decomposes a plan into subtasks, each subtask is classified by complexity and delegated to the appropriate tier. Read-only exploration tasks go to free local models; implementation tasks go to mid-tier; architecture/debugging to frontier. Runtime enforcement caps tool calls per tier to prevent context burn.
+
+#### Tier-Based Task Delegation
+
+```typescript
+// packages/orchestrator/src/delegation/tier-delegation.ts
+
+import type { TaskComplexityTier, TaskClassification } from '@agentsy/models/tiers';
+import type { TierRoutingDecision } from '@agentsy/models/tiers/tier-router';
+
+/**
+ * Delegation decision: which tier handles this subtask.
+ *
+ * Flow: classifyTask() → routeToTier() → delegate()
+ * The orchestrator's plan decomposition marks each step with a tier annotation,
+ * then delegates execution to the appropriate model via the tier router.
+ */
+export interface DelegationDecision {
+  stepId: string;
+  classification: TaskClassification;
+  routing: TierRoutingDecision;
+  delegateTo: 'subagent' | 'inline';  // subagent for isolated tiers, inline for same-tier
+  costEstimate: number;
+  isLocal: boolean;
+}
+
+/**
+ * Multi-phase decomposition — the core savings pattern from model-router.
+ *
+ * Composite tasks are split into phases:
+ *   Phase 1: Explore (@micro/@small, 1x-5x cost) — search, read, analyze
+ *   Phase 2: Execute (@mid, 20x cost) — implement, refactor, write
+ *
+ * This saves ~36% on ~65% of real tasks by doing cheap exploration locally
+ * before committing expensive cloud tokens for execution.
+ */
+export interface MultiPhasePlan {
+  taskId: string;
+  phases: DelegationPhase[];
+  totalEstimatedCost: number;
+  singlePhaseCost: number;       // what it would cost without decomposition
+  savingsPercent: number;
+}
+
+export interface DelegationPhase {
+  name: string;
+  tier: TaskComplexityTier;
+  steps: DelegatedStep[];
+  estimatedTokens: number;
+  estimatedCost: number;
+}
+
+export interface DelegatedStep {
+  stepId: string;
+  description: string;
+  tools: string[];               // tools this step needs
+  tier: TaskComplexityTier;
+  contextBudget: number;         // max tokens for this step's context
+}
+
+/**
+ * Decompose a plan into tiered delegation phases.
+ *
+ * 1. Classify each plan step via classifyTask()
+ * 2. Group consecutive same-tier steps into phases
+ * 3. Ensure exploration steps precede execution steps
+ * 4. Calculate savings vs single-tier (frontier) execution
+ * 5. For micro-tier steps, check Phase 17 local provider availability
+ */
+export function decomposeForTiers(
+  steps: Array<{ description: string; tools?: string[] }>,
+  options?: {
+    mode?: 'normal' | 'budget' | 'quality' | 'deep';
+    preferLocal?: boolean;         // bias toward local for micro steps
+    platformProfile?: PlatformProfile;  // Phase 17 — local accelerator detection
+  }
+): MultiPhasePlan { /* ... */ }
+```
+
+#### Runtime Call Caps & Redundancy Detection
+
+```typescript
+// packages/orchestrator/src/delegation/call-caps.ts
+
+/**
+ * Per-tier call caps for read-only operations.
+ * Prevents context burn from repeated file reads / grep calls.
+ *
+ * Inspired by opencode-model-router's banner injection approach,
+ * adapted to our orchestrator's hook system.
+ *
+ * Default caps:
+ *   micro: 8 calls   (local model, cheap but limited context)
+ *   small: 5 calls
+ *   mid:   5 calls
+ *   frontier: 3 calls (expensive, every read costs tokens)
+ */
+export interface TierCallCap {
+  tier: TaskComplexityTier;
+  maxReadOnlyCalls: number;
+  cappedTools: string[];   // which tools count against the cap
+}
+
+export const DEFAULT_TIER_CAPS: Record<TaskComplexityTier, TierCallCap> = {
+  micro:    { tier: 'micro',    maxReadOnlyCalls: 8, cappedTools: ['grep', 'read', 'glob', 'ls', 'stat'] },
+  small:    { tier: 'small',    maxReadOnlyCalls: 5, cappedTools: ['grep', 'read', 'glob', 'ls', 'stat'] },
+  mid:      { tier: 'mid',      maxReadOnlyCalls: 5, cappedTools: ['grep', 'read', 'glob', 'ls', 'stat'] },
+  frontier: { tier: 'frontier', maxReadOnlyCalls: 3, cappedTools: ['grep', 'read', 'glob', 'ls', 'stat'] },
+};
+
+/**
+ * Tracks read-only tool calls per subagent session.
+ * Integrated into the orchestrator's hook system as a tool.execute.after hook.
+ */
+export class CallCapTracker {
+  private calls: Map<string, CallRecord[]> = new Map();
+
+  /**
+   * Record a tool call. Returns enforcement status.
+   */
+  record(sessionId: string, tool: string, args: Record<string, unknown>): CapStatus {
+    // 1. Check if tool is in capped list for session's tier
+    // 2. Fingerprint the call (tool + primary arg) for redundancy detection
+    // 3. Check if this is a redundant call (same file/pattern within last N calls)
+    // 4. Return status with current count and cap
+  }
+
+  getStatus(sessionId: string): CapStatus {
+    // Returns: { calls: number, max: number, redundantCalls: number, remaining: number }
+  }
+
+  /**
+   * Generate a banner string for injection into LLM context.
+   * Format: [cap: 5/8] or [⚠ REDUNDANT] or [⚠ CAP REACHED — escalate tier]
+   */
+  getBanner(sessionId: string): string | null { /* ... */ }
+}
+
+export interface CapStatus {
+  calls: number;
+  max: number;
+  remaining: number;
+  redundantCalls: number;
+  capped: boolean;
+  banner: string | null;
+}
+
+export interface CallRecord {
+  tool: string;
+  fingerprint: string;   // e.g. "grep:TODO" or "read:src/index.ts"
+  timestamp: number;
+  isRedundant: boolean;
+}
+
+/**
+ * Fingerprint a tool call for redundancy detection.
+ * Same file/pattern re-read within a session = redundant.
+ */
+export function fingerprintCall(tool: string, args: Record<string, unknown>): string {
+  // grep → "grep:{pattern}:{path}"
+  // read → "read:{filePath}"
+  // glob → "glob:{pattern}"
+  // ls   → "ls:{path}"
+}
+```
+
+#### Plan Annotation
+
+```typescript
+// packages/orchestrator/src/delegation/plan-annotation.ts
+
+/**
+ * Annotate a markdown plan with tier directives.
+ *
+ * Each step in a plan gets tagged with the recommended tier:
+ *   - [tier:micro] for search/read/list steps
+ *   - [tier:small] for implement/test steps
+ *   - [tier:mid] for debug/review steps
+ *   - [tier:frontier] for architecture/design steps
+ *
+ * Example output:
+ *   ## Step 1: Explore the auth module
+ *   [tier:micro] ← local model handles this (free)
+ *   - Search for auth-related files
+ *   - Read key implementations
+ *
+ *   ## Step 2: Implement JWT refresh
+ *   [tier:mid] ← cloud model handles this
+ *   - Write refresh token logic
+ *   - Add tests
+ */
+export function annotatePlan(
+  planMarkdown: string,
+  options?: { mode?: 'normal' | 'budget' | 'quality' | 'deep' }
+): string {
+  // 1. Parse plan into steps (## or ### headings)
+  // 2. classifyTask() for each step's description
+  // 3. Insert tier annotation after each heading
+  // 4. Add total cost estimate at top of plan
+  // 5. Add savings estimate vs all-frontier execution
+}
+
+export interface PlanAnnotation {
+  stepIndex: number;
+  heading: string;
+  tier: TaskComplexityTier;
+  isLocal: boolean;             // true if local provider available for this tier
+  estimatedCost: number;
+  estimatedTokens: number;
+}
+```
+
+#### Implementation Tasks
+
+1. Create `packages/orchestrator/src/delegation/` directory with tier-delegation, call-caps, plan-annotation
+2. Implement `decomposeForTiers()` with multi-phase decomposition
+3. Implement `CallCapTracker` with fingerprinting and banner generation
+4. Implement `annotatePlan()` with step classification
+5. Register call cap tracker as a builtin hook (`tool.execute.after`)
+6. Integrate with `@agentsy/models` tier router (`routeToTier()`)
+7. Integrate with Phase 17 platform profile for local provider detection
+8. Extend `AgentLoopOptions` with tier/delegation config
+9. Add `/annotate-plan` slash command to CLI
+
+#### Testing
+
+- Multi-phase decomposition: explore→execute split on composite tasks
+- Call cap enforcement: tracker fires banner at correct thresholds
+- Redundancy detection: same file/pattern re-read flagged
+- Plan annotation: correct tier tags for each step type
+- Local provider offload: micro steps route to local when available
+- Tier escalation: cap reached → automatic tier bump
+
+#### Deliverables
+
+- `@agentsy/orchestrator/delegation` module
+- `decomposeForTiers()` API for plan-aware tier routing
+- `CallCapTracker` hook for runtime enforcement
+- `annotatePlan()` for markdown plan tier tagging
+- Integration with `@agentsy/models` tier system
+- Integration with Phase 17 local provider offload
+- `/annotate-plan` CLI command
+
+#### Cross-references
+
+- Models Phase 6 (`packages/models/IMPLEMENTATION-PLAN.md`): `classifyTask()`, `routeToTier()`, tier definitions
+- Gateway TASK-LB-022 (`plan/06-PHASE-3.5-LLM-GATEWAY.md`): tier-aware routing strategy
+- Phase 17 (`plan/26-PHASE-17-APFEL-ONDEVICE-OFFLOAD.md`): `PlatformProfile`, local provider detection, micro-tier offload
+- Tokens Phase 3 (`packages/tokens/IMPLEMENTATION-PLAN.md`): mode presets (normal/budget/quality)
+
 ## 3. Acceptance Criteria
 
 - **ACC-ORCH-001**: Execution-mode semantics and planner outcomes are deterministic and test-validated.

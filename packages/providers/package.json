@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/providers",
-  "version": "0.2.0-alpha.0",
+  "version": "0.2.0",
   "description": "Provider abstraction layer for adapters, normalizers, universal clients, and provider capabilities",
   "keywords": [
     "adapters",
@@ -19,7 +19,7 @@
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -71,6 +71,9 @@
     "typescript": "6.0.3",
     "vitest": "^4.1.6"
   },
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=18"
   },

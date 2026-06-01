@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { normalizeAnthropicEvent } from './anthropic.js';
 import { normalizeBedrockConverseEvent } from './bedrock.js';
 import { normalizeCohereEvent } from './cohere.js';
+import { normalizeDeepSeekChunk } from './deepseek.js';
 import { normalizeGeminiChunk } from './gemini.js';
 import { normalizeHuggingFaceTGIChunk } from './hf-tgi.js';
 import { normalizeMistralChunk } from './mistral.js';
@@ -1463,5 +1464,191 @@ describe('normalizeHuggingFaceTGIChunk', () => {
     expect(() => normalizeHuggingFaceTGIChunk({ token: null })).not.toThrow();
     expect(() => normalizeHuggingFaceTGIChunk({ token: { text: null } })).not.toThrow();
     expect(() => normalizeHuggingFaceTGIChunk(undefined)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DeepSeek streaming chunk normalizer
+// ---------------------------------------------------------------------------
+
+describe('normalizeDeepSeekChunk', () => {
+  it('maps content delta to chunk.content', () => {
+    const result = normalizeDeepSeekChunk({
+      choices: [
+        {
+          delta: { content: 'Hello', role: 'assistant' },
+          finish_reason: null,
+          index: 0
+        }
+      ],
+      created: 1_700_000_000,
+      id: 'chatcmpl-ds-abc',
+      model: 'deepseek-chat',
+      object: 'chat.completion.chunk'
+    });
+    expect(result?.chunk.content).toBe('Hello');
+    expect(result?.chunk.done).toBeFalsy();
+  });
+
+  it('maps reasoning_content to chunk.thinking for DeepSeek-R1', () => {
+    const result = normalizeDeepSeekChunk({
+      choices: [
+        {
+          delta: { reasoning_content: 'Thinking step by step...', role: 'assistant' },
+          finish_reason: null,
+          index: 0
+        }
+      ],
+      created: 1_700_000_000,
+      id: 'chatcmpl-ds-r1',
+      model: 'deepseek-reasoner',
+      object: 'chat.completion.chunk'
+    });
+    expect(result?.chunk.thinking).toBe('Thinking step by step...');
+  });
+
+  it('sets done=true and finishReason=stop on finish_reason stop', () => {
+    const result = normalizeDeepSeekChunk({
+      choices: [{ delta: {}, finish_reason: 'stop', index: 0 }],
+      created: 1_700_000_000,
+      id: 'chatcmpl-ds-abc',
+      model: 'deepseek-chat',
+      object: 'chat.completion.chunk'
+    });
+    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.finishReason).toBe('stop');
+  });
+
+  it('maps tool_calls delta to nativeToolCallDeltas', () => {
+    const result = normalizeDeepSeekChunk({
+      choices: [
+        {
+          delta: {
+            tool_calls: [
+              {
+                function: { arguments: '{"location":"', name: 'get_weather' },
+                id: 'call_abc123',
+                index: 0
+              }
+            ]
+          },
+          finish_reason: null,
+          index: 0
+        }
+      ],
+      created: 1_700_000_000,
+      id: 'chatcmpl-ds-abc',
+      model: 'deepseek-chat',
+      object: 'chat.completion.chunk'
+    });
+    expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.id).toBe('call_abc123');
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('get_weather');
+    expect(result?.chunk.nativeToolCallDeltas?.[0]?.argumentsDelta).toBe('{"location":"');
+  });
+
+  it('filters invalid tool calls and preserves valid ones', () => {
+    const result = normalizeDeepSeekChunk({
+      choices: [
+        {
+          delta: {
+            tool_calls: [
+              { function: { arguments: '', name: 'fn' }, id: 'c1', index: 0 },
+              { invalid: true } as never,
+              { function: { arguments: '{}', name: 'fn2' }, id: 'c2', index: 2 }
+            ]
+          },
+          finish_reason: null,
+          index: 0
+        }
+      ],
+      created: 1_700_000_000,
+      id: 'chatcmpl-ds-abc',
+      model: 'deepseek-chat',
+      object: 'chat.completion.chunk'
+    });
+    expect(result?.chunk.nativeToolCallDeltas).toHaveLength(2);
+  });
+
+  it('maps finish_reason length to finishReason length', () => {
+    const result = normalizeDeepSeekChunk({
+      choices: [{ delta: { content: '...' }, finish_reason: 'length', index: 0 }],
+      created: 1_700_000_000,
+      id: 'chatcmpl-ds-abc',
+      model: 'deepseek-chat',
+      object: 'chat.completion.chunk'
+    });
+    expect(result?.chunk.finishReason).toBe('length');
+  });
+
+  it('maps finish_reason content_filter to finishReason content-filter', () => {
+    const result = normalizeDeepSeekChunk({
+      choices: [{ delta: {}, finish_reason: 'content_filter', index: 0 }],
+      created: 1_700_000_000,
+      id: 'chatcmpl-ds-abc',
+      model: 'deepseek-chat',
+      object: 'chat.completion.chunk'
+    });
+    expect(result?.chunk.finishReason).toBe('content-filter');
+  });
+
+  it('maps finish_reason insufficient_balance to finishReason error', () => {
+    const result = normalizeDeepSeekChunk({
+      choices: [{ delta: {}, finish_reason: 'insufficient_balance', index: 0 }],
+      created: 1_700_000_000,
+      id: 'chatcmpl-ds-abc',
+      model: 'deepseek-chat',
+      object: 'chat.completion.chunk'
+    });
+    expect(result?.chunk.finishReason).toBe('error');
+  });
+
+  it('maps finish_reason tool_calls to finishReason tool-calls', () => {
+    const result = normalizeDeepSeekChunk({
+      choices: [{ delta: {}, finish_reason: 'tool_calls', index: 0 }],
+      created: 1_700_000_000,
+      id: 'chatcmpl-ds-abc',
+      model: 'deepseek-chat',
+      object: 'chat.completion.chunk'
+    });
+    expect(result?.chunk.finishReason).toBe('tool-calls');
+  });
+
+  it('extracts usage tokens from top-level usage object', () => {
+    const result = normalizeDeepSeekChunk({
+      choices: [{ delta: {}, finish_reason: 'stop', index: 0 }],
+      created: 1_700_000_000,
+      id: 'chatcmpl-ds-abc',
+      model: 'deepseek-chat',
+      object: 'chat.completion.chunk',
+      usage: { completion_tokens: 42, prompt_tokens: 15, total_tokens: 57 }
+    });
+    expect(result?.chunk.usage?.inputTokens).toBe(15);
+    expect(result?.chunk.usage?.outputTokens).toBe(42);
+    expect(result?.chunk.usage?.totalTokens).toBe(57);
+  });
+
+  it('returns null for non-object input', () => {
+    expect(normalizeDeepSeekChunk(null)).toBeNull();
+    expect(normalizeDeepSeekChunk('string')).toBeNull();
+    expect(normalizeDeepSeekChunk(undefined)).toBeNull();
+  });
+
+  it('returns null for empty choices array', () => {
+    expect(
+      normalizeDeepSeekChunk({
+        choices: [],
+        id: 'chatcmpl-ds-abc',
+        object: 'chat.completion.chunk'
+      })
+    ).toBeNull();
+  });
+
+  it('never throws on adversarial input', () => {
+    expect(() => normalizeDeepSeekChunk({ choices: null })).not.toThrow();
+    expect(() => normalizeDeepSeekChunk({ choices: [null] })).not.toThrow();
+    expect(() => normalizeDeepSeekChunk({ choices: [{ delta: null }] })).not.toThrow();
+    expect(() => normalizeDeepSeekChunk({ choices: [{ delta: { content: null } }] })).not.toThrow();
   });
 });

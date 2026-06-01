@@ -424,6 +424,229 @@ Track model capability deprecation (e.g., GPT-4 Vision -> GPT-4o Vision, Claude 
 - implement criteria-driven recommendations API for runtime and CLI
 - add offline fallback when llm-stats unavailable
 
+### Phase 6 (Weeks 29-34): task complexity tiers & cost-ratio routing
+
+*Inspired by [opencode-model-router](https://github.com/marco-jardim/opencode-model-router) — task-complexity-based delegation with cost-aware tier routing. Extended with local/on-device providers from Phase 17 (APF).*
+
+**Scope:** Add a task-complexity tier system to model selection. Instead of routing purely on capability/price, classify incoming tasks by complexity and route to the cheapest sufficient tier — including local models (Apfel, Ollama, vLLM) for micro-tier work.
+
+```typescript
+// packages/models/src/tiers/task-complexity.ts
+
+/**
+ * Task complexity tiers aligned with Phase 17 CapabilityTier,
+ * extended with cost-ratio semantics for delegation decisions.
+ *
+ * Hierarchy: micro (local, free) → small (7B cloud) → mid (30-70B) → frontier
+ *
+ * Fallback chain: apfel → ollama → vllm → cloud-small → cloud-mid → cloud-frontier
+ */
+export type TaskComplexityTier = 'micro' | 'small' | 'mid' | 'frontier';
+
+export interface TierDefinition {
+  tier: TaskComplexityTier;
+  costRatio: number;           // relative cost: micro=1x, small=5x, mid=20x, frontier=50x
+  maxContextTokens: number;    // safe context budget: micro=3000, small=8k, mid=32k, frontier=200k
+  description: string;
+  providers: string[];         // acceptable provider sources
+}
+
+export const TIER_DEFINITIONS: Record<TaskComplexityTier, TierDefinition> = {
+  micro: {
+    tier: 'micro',
+    costRatio: 1,
+    maxContextTokens: 3000,
+    description: 'Local/on-device — free, low-latency, limited context. Apfel, Ollama, vLLM local.',
+    providers: ['apfel', 'ollama', 'lm-studio', 'localai', 'vllm-local'],
+  },
+  small: {
+    tier: 'small',
+    costRatio: 5,
+    maxContextTokens: 8192,
+    description: 'Small cloud models (7B-14B). Good for classification, extraction, simple transforms.',
+    providers: ['deepinfra', 'groq', 'together'],
+  },
+  mid: {
+    tier: 'mid',
+    costRatio: 20,
+    maxContextTokens: 32768,
+    description: 'Mid-size cloud (30-70B). Implementation, refactoring, test writing.',
+    providers: ['anthropic', 'openai', 'google'],
+  },
+  frontier: {
+    tier: 'frontier',
+    costRatio: 50,
+    maxContextTokens: 200000,
+    description: 'Frontier models. Architecture, complex debugging, security review.',
+    providers: ['anthropic', 'openai', 'google'],
+  },
+};
+```
+
+```typescript
+// packages/models/src/tiers/task-taxonomy.ts
+
+/**
+ * Keyword-based task taxonomy — classifies task intent to a tier.
+ * NOT ML-based — pure keyword matching (fast, deterministic, no model dependency).
+ *
+ * Inspired by opencode-model-router's taskPatterns but integrated with
+ * our existing RecommendationCriteria and local provider profiles.
+ */
+export interface TaskPattern {
+  keywords: string[];          // match against task description
+  tools?: string[];            // match against requested tool names
+  tier: TaskComplexityTier;    // recommended tier for this pattern
+  confidence: number;          // 0-1, how confident the classification
+}
+
+export const DEFAULT_TASK_PATTERNS: TaskPattern[] = [
+  // Micro-tier: local free models handle these
+  { keywords: ['search', 'grep', 'read', 'list', 'glob', 'find', 'status'],
+    tools: ['grep', 'read', 'glob', 'ls', 'stat'],
+    tier: 'micro', confidence: 0.9 },
+  { keywords: ['summarize', 'extract', 'classify', 'label', 'sentiment'],
+    tier: 'micro', confidence: 0.85 },
+  { keywords: ['compress', 'minify', 'format', 'lint', 'tidy'],
+    tier: 'micro', confidence: 0.8 },
+
+  // Small-tier: cheap cloud or capable local
+  { keywords: ['implement', 'write', 'create', 'generate', 'refactor'],
+    tools: ['edit', 'write', 'create'],
+    tier: 'small', confidence: 0.85 },
+  { keywords: ['test', 'spec', 'fixture', 'mock', 'assert'],
+    tier: 'small', confidence: 0.85 },
+  { keywords: ['translate', 'convert', 'migrate', 'port'],
+    tier: 'small', confidence: 0.8 },
+
+  // Mid-tier: capable models
+  { keywords: ['debug', 'fix', 'resolve', 'troubleshoot', 'diagnose'],
+    tier: 'mid', confidence: 0.8 },
+  { keywords: ['review', 'audit', 'analyze', 'evaluate', 'assess'],
+    tier: 'mid', confidence: 0.85 },
+  { keywords: ['security', 'vulnerability', 'exploit', 'compliance'],
+    tier: 'mid', confidence: 0.9 },
+
+  // Frontier: most capable/expensive
+  { keywords: ['architect', 'design', 'plan', 'strategy', 'roadmap'],
+    tier: 'frontier', confidence: 0.9 },
+  { keywords: ['optimize', 'performance', 'bottleneck', 'scale'],
+    tier: 'frontier', confidence: 0.85 },
+];
+
+export interface TaskClassification {
+  tier: TaskComplexityTier;
+  confidence: number;
+  matchedPatterns: TaskPattern[];
+  alternatives: TaskComplexityTier[];  // ordered by cost
+}
+
+/**
+ * Classify a task description + tool list into a tier recommendation.
+ * Uses keyword matching with confidence scoring.
+ */
+export function classifyTask(
+  description: string,
+  options?: {
+    tools?: string[];
+    forceTier?: TaskComplexityTier;    // override from mode/config
+    preferLocal?: boolean;             // bias toward micro when available
+  }
+): TaskClassification { /* ... */ }
+```
+
+```typescript
+// packages/models/src/tiers/tier-router.ts
+
+import type { CapabilityTier } from '@agentsy/gateway';  // Phase 17 compat
+
+/**
+ * Resolve a TaskClassification to a concrete model + provider.
+ *
+ * Integrates with:
+ * - Phase 17 micro-backend detection (PlatformProfile, AcceleratorCapability)
+ * - @agentsy/gateway tier-aware routing (CapabilityTier = micro|small|mid|frontier)
+ * - @agentsy/models recommendation (existing scoring + ranking)
+ */
+export interface TierRoutingDecision {
+  tier: TaskComplexityTier;
+  modelId: string;
+  providerId: string;
+  estimatedCost: number;
+  estimatedLatencyMs: number;
+  isLocal: boolean;
+  fallbackChain: Array<{ modelId: string; providerId: string; tier: TaskComplexityTier }>;
+}
+
+export interface TierRoutingOptions {
+  classification: TaskClassification;
+  platformProfile?: PlatformProfile;   // from Phase 17 — local accelerator detection
+  budgetConstraint?: number;           // max cost in USD
+  latencyConstraint?: number;          // max latency in ms
+  mode?: 'normal' | 'budget' | 'quality' | 'deep';
+}
+
+export function routeToTier(options: TierRoutingOptions): TierRoutingDecision {
+  // 1. Check if local micro-tier is available (Phase 17 platform profile)
+  // 2. If classification.tier = 'micro' and local available → route local
+  // 3. If classification.tier > 'micro' → route to cloud tier
+  // 4. Build fallback chain from TIER_DEFINITIONS.providers
+  // 5. Apply mode overrides (budget=bias cheaper, quality=bias frontier)
+  // 6. Respect budget/latency constraints
+}
+
+/**
+ * Mode presets — override routing behavior per use case.
+ * Maps to opencode-model-router's 4 modes but integrated into our config.
+ */
+export const MODE_PRESETS: Record<string, TierModePreset> = {
+  normal:  { tierBias: 0,    localBias: 0.3, costLimit: undefined },
+  budget:  { tierBias: -1,   localBias: 0.8, costLimit: 0.01 },     // bias cheaper
+  quality: { tierBias: 1,    localBias: 0.0, costLimit: undefined }, // bias frontier
+  deep:    { tierBias: 0,    localBias: 0.0, costLimit: undefined, requireFrontier: true },
+};
+
+export interface TierModePreset {
+  tierBias: number;       // -2..+2, negative=cheaper, positive=more capable
+  localBias: number;      // 0..1, preference for local providers
+  costLimit?: number;     // max cost per task in USD
+  requireFrontier?: boolean;
+}
+```
+
+**Implementation Tasks:**
+
+1. Create `packages/models/src/tiers/` directory with `task-complexity.ts`, `task-taxonomy.ts`, `tier-router.ts`
+2. Implement `classifyTask()` with keyword matching + confidence scoring
+3. Implement `routeToTier()` with local provider detection (Phase 17 integration)
+4. Integrate `TierRoutingDecision` with `@agentsy/gateway` routing strategies
+5. Add mode presets to config schema
+6. Extend existing `RecommendationCriteria.budgetTier` to use `TaskComplexityTier`
+7. Add tier-aware scoring to model ranking (prefer cheaper tier when sufficient)
+8. CLI: `agentsy models route --task "debug auth" --mode budget`
+
+**Testing:**
+
+- Task classification accuracy on labeled corpus (≥90% for micro/small/mid/frontier)
+- Tier routing respects budget/latency constraints
+- Local provider detection works when Phase 17 platform profile present
+- Mode presets produce expected tier biases
+- Fallback chain covers all providers in TIER_DEFINITIONS
+
+**Deliverables:**
+
+- `@agentsy/tiers` subpath export in models package
+- `classifyTask()` + `routeToTier()` APIs
+- Mode presets (normal/budget/quality/deep)
+- Integration with Phase 17 local provider detection
+- CLI tier routing command
+
+**Cross-references:**
+
+- Phase 17 (`plan/26-PHASE-17-APFEL-ONDEVICE-OFFLOAD.md`): `PlatformProfile`, `AcceleratorCapability`, `MicroBackendSelection`
+- Gateway (`plan/06-PHASE-3.5-LLM-GATEWAY.md`): TASK-LB-022 tier-aware routing strategy
+- Orchestrator (`packages/orchestrator/IMPLEMENTATION-PLAN.md`): tier-based delegation, call caps
+
 ## Testing Requirements
 
 1. **Unit tests** for profile normalization and scoring.

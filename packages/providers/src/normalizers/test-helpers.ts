@@ -9,7 +9,7 @@ import type { NormalizerResult } from './types.js';
  * @internal
  */
 export function createFinishReasonTest(
-  normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
+  normalizer: (input: Record<string, unknown>) => NormalizerResult | null,
   createInput: (finishReason: string | null) => Record<string, unknown>,
   testCases: {
     input: string | null;
@@ -31,7 +31,7 @@ export function createFinishReasonTest(
  * @internal
  */
 export function testContentMapping(
-  normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
+  normalizer: (input: Record<string, unknown>) => NormalizerResult | null,
   setupInput: (content: string) => Record<string, unknown>,
   expectedField: 'content' | 'thinking',
   expectedValue: string
@@ -48,7 +48,7 @@ export function testContentMapping(
  * @internal
  */
 export function testMidStreamNoFinishReason(
-  normalizer: (input: Record<string, unknown>) => NormalizerResult | undefined,
+  normalizer: (input: Record<string, unknown>) => NormalizerResult | null,
   setupInput: () => Record<string, unknown>
 ): void {
   const result = normalizer(setupInput());
