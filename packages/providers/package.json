@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/providers",
-  "version": "0.2.0-alpha.0",
+  "version": "0.2.0",
   "description": "Provider abstraction layer for adapters, normalizers, universal clients, and provider capabilities",
   "keywords": [
     "adapters",
