@@ -5,8 +5,7 @@
  */
 
 import { EventType } from '@agentsy/types';
-import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
-
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createInterruptAbortController,
   createInterruptEvent,
@@ -33,7 +32,7 @@ describe('InterruptController', () => {
   });
 
   it('should initialize as not interrupted', () => {
-    expect(controller.isInterrupted()).toBeFalsy();
+    expect(controller.isInterrupted()).toBe(false);
   });
 
   it('should return undefined reason when not interrupted', () => {
@@ -47,7 +46,7 @@ describe('InterruptController', () => {
   it('should interrupt with custom reason', () => {
     controller.interrupt(InterruptReason.USER_REQUEST, 'User cancelled');
 
-    expect(controller.isInterrupted()).toBeTruthy();
+    expect(controller.isInterrupted()).toBe(true);
     expect(controller.getReason()).toBe(InterruptReason.USER_REQUEST);
     expect(controller.getMessage()).toBe('User cancelled');
   });
@@ -55,7 +54,7 @@ describe('InterruptController', () => {
   it('should interrupt with only reason', () => {
     controller.interrupt(InterruptReason.TIMEOUT);
 
-    expect(controller.isInterrupted()).toBeTruthy();
+    expect(controller.isInterrupted()).toBe(true);
     expect(controller.getReason()).toBe(InterruptReason.TIMEOUT);
     expect(controller.getMessage()).toBeUndefined();
   });
@@ -63,7 +62,7 @@ describe('InterruptController', () => {
   it('should interrupt with no arguments (defaults)', () => {
     controller.interrupt();
 
-    expect(controller.isInterrupted()).toBeTruthy();
+    expect(controller.isInterrupted()).toBe(true);
     expect(controller.getReason()).toBe(InterruptReason.USER_REQUEST);
   });
 
@@ -72,22 +71,18 @@ describe('InterruptController', () => {
 
     controller.clear();
 
-    expect(controller.isInterrupted()).toBeFalsy();
+    expect(controller.isInterrupted()).toBe(false);
     expect(controller.getReason()).toBeUndefined();
   });
 
   it('should throw when throwIfInterrupted() called while interrupted', () => {
     controller.interrupt(InterruptReason.SAFETY_CHECK, 'Safety violation');
 
-    expect(() => {
-      controller.throwIfInterrupted();
-    }).toThrow('Safety violation');
+    expect(() => controller.throwIfInterrupted()).toThrow('Safety violation');
   });
 
   it('should not throw when throwIfInterrupted() called while not interrupted', () => {
-    expect(() => {
-      controller.throwIfInterrupted();
-    }).not.toThrow();
+    expect(() => controller.throwIfInterrupted()).not.toThrow();
   });
 });
 
@@ -98,9 +93,9 @@ describe('createInterruptEvent', () => {
     expect(event.type).toBe(EventType.RUN_INTERRUPTED);
     expect(event.runId).toBe('run_123');
     expect(event.interrupts).toBeDefined();
-    expect(event.interrupts?.length).toBeGreaterThan(0);
-    const interrupt = event.interrupts?.[0];
-    expect(interrupt?.reason).toBe(InterruptReason.TIMEOUT);
+    expect(event.interrupts!.length).toBeGreaterThan(0);
+    const interrupt = event.interrupts![0]!;
+    expect(interrupt.reason).toBe(InterruptReason.TIMEOUT);
   });
 
   it('should create interrupt with unique ID', () => {
@@ -121,9 +116,9 @@ describe('createInterruptEvent', () => {
     const event = createInterruptEvent('run_123', InterruptReason.TIMEOUT);
 
     expect(event.interrupts).toBeDefined();
-    expect(event.interrupts?.length).toBeGreaterThan(0);
-    const interrupt = event.interrupts?.[0];
-    expect(interrupt?.reason).toBe(InterruptReason.TIMEOUT);
+    expect(event.interrupts!.length).toBeGreaterThan(0);
+    const interrupt = event.interrupts![0]!;
+    expect(interrupt.reason).toBe(InterruptReason.TIMEOUT);
   });
 
   it('should include message in interrupt event', () => {
@@ -167,21 +162,21 @@ describe('createInterruptEvent', () => {
   it('should not include threadId if undefined', () => {
     const event = createInterruptEvent('run_123');
 
-    expect('threadId' in event).toBeFalsy();
+    expect('threadId' in event).toBe(false);
   });
 
   it('should generate ISO 8601 timestamp', () => {
     const event = createInterruptEvent('run_123');
 
-    expectTypeOf(event.timestamp).toBeString();
-    expect(() => new Date(event.timestamp)).not.toThrow();
+    expect(typeof event.timestamp).toBe('string');
+    expect(() => new Date(event.timestamp as string)).not.toThrow();
     expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
   });
 
   it('should have exactly one interrupt in array', () => {
     const event = createInterruptEvent('run_123', InterruptReason.ERROR, 'Failed');
 
-    expect(Array.isArray(event.interrupts)).toBeTruthy();
+    expect(Array.isArray(event.interrupts)).toBe(true);
     expect(event.interrupts).toHaveLength(1);
   });
 });
@@ -190,14 +185,14 @@ describe('createInterruptAbortController', () => {
   it('should return controller with interrupt function', () => {
     const { interrupt } = createInterruptAbortController();
 
-    expectTypeOf(interrupt).toBeFunction();
+    expect(typeof interrupt).toBe('function');
   });
 
   it('should return isInterrupted function', () => {
     const { isInterrupted } = createInterruptAbortController();
 
-    expectTypeOf(isInterrupted).toBeFunction();
-    expect(isInterrupted()).toBeFalsy();
+    expect(typeof isInterrupted).toBe('function');
+    expect(isInterrupted()).toBe(false);
   });
 
   it('should support interrupting via returned function', () => {
@@ -205,15 +200,15 @@ describe('createInterruptAbortController', () => {
 
     interrupt();
 
-    expect(isInterrupted()).toBeTruthy();
-    expect(controller.signal.aborted).toBeTruthy();
+    expect(isInterrupted()).toBe(true);
+    expect(controller.signal.aborted).toBe(true);
   });
 
   it('should have signal property compatible with AbortController', () => {
     const { controller } = createInterruptAbortController();
 
     expect(controller.signal).toBeDefined();
-    expectTypeOf(controller.signal.addEventListener).toBeFunction();
+    expect(typeof controller.signal.addEventListener).toBe('function');
   });
 
   it('should abort signal when interrupted', () => {
@@ -221,7 +216,7 @@ describe('createInterruptAbortController', () => {
 
     interrupt();
 
-    expect(controller.signal.aborted).toBeTruthy();
+    expect(controller.signal.aborted).toBe(true);
   });
 });
 
@@ -233,7 +228,7 @@ describe('TimeoutInterrupt', () => {
   it('should initialize without triggering interrupt', () => {
     const timeout = new TimeoutInterrupt(1000);
 
-    expect(timeout.isInterrupted()).toBeFalsy();
+    expect(timeout.isInterrupted()).toBe(false);
   });
 
   it('should start countdown on start()', () => {
@@ -242,18 +237,18 @@ describe('TimeoutInterrupt', () => {
     timeout.start();
     vi.advanceTimersByTime(999);
 
-    expect(timeout.isInterrupted()).toBeFalsy();
+    expect(timeout.isInterrupted()).toBe(false);
 
     vi.advanceTimersByTime(2);
 
-    expect(timeout.isInterrupted()).toBeTruthy();
+    expect(timeout.isInterrupted()).toBe(true);
   });
 
   it('should expose controller', () => {
     const timeout = new TimeoutInterrupt(5000);
 
     expect(timeout.getController()).toBeDefined();
-    expectTypeOf(timeout.getController().isInterrupted).toBeFunction();
+    expect(typeof timeout.getController().isInterrupted).toBe('function');
   });
 
   it('should cancel timer', () => {
@@ -264,7 +259,7 @@ describe('TimeoutInterrupt', () => {
 
     vi.advanceTimersByTime(2000);
 
-    expect(timeout.isInterrupted()).toBeFalsy();
+    expect(timeout.isInterrupted()).toBe(false);
   });
 
   it('should not trigger after cancel()', () => {
@@ -276,7 +271,7 @@ describe('TimeoutInterrupt', () => {
 
     vi.advanceTimersByTime(1000);
 
-    expect(timeout.isInterrupted()).toBeFalsy();
+    expect(timeout.isInterrupted()).toBe(false);
   });
 
   it('should use TIMEOUT reason when interrupting', () => {
@@ -306,12 +301,12 @@ describe('TimeoutInterrupt', () => {
     timeout.start();
     vi.advanceTimersByTime(250);
     timeout.cancel();
-    expect(timeout.isInterrupted()).toBeFalsy();
+    expect(timeout.isInterrupted()).toBe(false);
 
     // Second cycle
     timeout.start();
     vi.advanceTimersByTime(501);
-    expect(timeout.isInterrupted()).toBeTruthy();
+    expect(timeout.isInterrupted()).toBe(true);
   });
 
   it('should include timeout message', () => {

@@ -1,7 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-
-import type { SSEEvent } from './index.js';
-import { parseSSEStream, SSEParser } from './index.js';
+import { SSEParser, parseSSEStream } from './index.js';
 
 // Helper to create SSEParser with event collection
 function createParser(onError?: (_error: Error) => void) {
@@ -10,7 +8,7 @@ function createParser(onError?: (_error: Error) => void) {
     onEvent: event => events.push(event),
     ...(onError && { onError })
   });
-  return { events, parser };
+  return { parser, events };
 }
 
 describe('SSEParser', () => {
@@ -21,7 +19,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({ data: 'hello' });
+    expect(events[0]).toEqual({ data: 'hello' });
   });
 
   it('parses multi-line data (multiple data: fields)', () => {
@@ -32,7 +30,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({ data: 'line1\nline2' });
+    expect(events[0]).toEqual({ data: 'line1\nline2' });
   });
 
   it('handles cross-chunk event splits', () => {
@@ -43,7 +41,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({ data: 'hello' });
+    expect(events[0]).toEqual({ data: 'hello' });
   });
 
   it('handles cross-chunk field delimiter splits', () => {
@@ -54,7 +52,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({ data: 'value' });
+    expect(events[0]).toEqual({ data: 'value' });
   });
 
   it('parses event name, id, and retry fields', () => {
@@ -67,9 +65,9 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({
-      data: 'content',
+    expect(events[0]).toEqual({
       event: 'custom',
+      data: 'content',
       id: '123',
       retry: 5000
     });
@@ -83,7 +81,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({ data: 'hello' });
+    expect(events[0]).toEqual({ data: 'hello' });
   });
 
   it('strips leading space after colon', () => {
@@ -93,7 +91,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({ data: 'value' });
+    expect(events[0]).toEqual({ data: 'value' });
   });
 
   it('handles empty data field', () => {
@@ -103,7 +101,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({ data: '' });
+    expect(events[0]).toEqual({ data: '' });
   });
 
   it('parses multiple events in one write', () => {
@@ -113,8 +111,8 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(2);
-    expect(events[0]).toStrictEqual({ data: 'event1' });
-    expect(events[1]).toStrictEqual({ data: 'event2' });
+    expect(events[0]).toEqual({ data: 'event1' });
+    expect(events[1]).toEqual({ data: 'event2' });
   });
 
   it('handles retry field parsing', () => {
@@ -124,7 +122,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({ retry: 10_000 });
+    expect(events[0]).toEqual({ retry: 10000 });
   });
 
   it('ignores invalid retry values', () => {
@@ -144,7 +142,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({
+    expect(events[0]).toEqual({
       data: '{"type":"message","content":"hello"}'
     });
   });
@@ -158,7 +156,7 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({ data: 'complete' });
+    expect(events[0]).toEqual({ data: 'complete' });
   });
 
   it('handles empty writes', () => {
@@ -170,12 +168,12 @@ describe('SSEParser', () => {
     parser.end();
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({ data: 'hello' });
+    expect(events[0]).toEqual({ data: 'hello' });
   });
 });
 
-// Generator fixtures for parseSSEStream tests
-// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
+// Async generator fixtures for parseSSEStream tests
+// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by SSE parser
 async function* basicChunks() {
   yield 'data: hello\n';
   yield '\n';
@@ -183,7 +181,6 @@ async function* basicChunks() {
   yield '\n';
 }
 
-// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
 async function* basicAsyncChunks() {
   yield 'data: chunk1\n';
   yield '\n';
@@ -191,7 +188,7 @@ async function* basicAsyncChunks() {
   yield '\n';
 }
 
-// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
+// biome-ignore lint/performance/noAsyncGeneratorFunctions: Generator pattern required by SSE parser
 async function* crossChunkSplitChunks() {
   yield 'data: hel';
   yield 'lo\n\n';
@@ -203,7 +200,6 @@ async function* emptyChunks() {
   // yield nothing
 }
 
-// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
 async function* complexFieldsChunks() {
   yield 'event: progress\n';
   yield 'id: msg1\n';
@@ -212,7 +208,6 @@ async function* complexFieldsChunks() {
   yield '\n';
 }
 
-// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncIterable
 async function* openaiChunks() {
   yield 'data: {"id":"chatcmpl-123","choices":[{"delta":{"content":"Hello"}}]}\n\n';
   yield 'data: {"id":"chatcmpl-123","choices":[{"delta":{"content":" world"}}]}\n\n';
@@ -221,43 +216,43 @@ async function* openaiChunks() {
 
 describe('parseSSEStream', () => {
   it('parses events from an async iterable', async () => {
-    const events: SSEEvent[] = [];
+    const events = [];
 
     for await (const event of parseSSEStream(basicChunks())) {
       events.push(event);
     }
 
     expect(events).toHaveLength(2);
-    expect(events[0]).toStrictEqual({ data: 'hello' });
-    expect(events[1]).toStrictEqual({ data: 'world' });
+    expect(events[0]).toEqual({ data: 'hello' });
+    expect(events[1]).toEqual({ data: 'world' });
   });
 
   it('parses events from an async iterable (async)', async () => {
-    const events: SSEEvent[] = [];
+    const events = [];
 
     for await (const event of parseSSEStream(basicAsyncChunks())) {
       events.push(event);
     }
 
     expect(events).toHaveLength(2);
-    expect(events[0]).toStrictEqual({ data: 'chunk1' });
-    expect(events[1]).toStrictEqual({ data: 'chunk2' });
+    expect(events[0]).toEqual({ data: 'chunk1' });
+    expect(events[1]).toEqual({ data: 'chunk2' });
   });
 
   it('handles cross-chunk splits in async iterable', async () => {
-    const events: SSEEvent[] = [];
+    const events = [];
 
     for await (const event of parseSSEStream(crossChunkSplitChunks())) {
       events.push(event);
     }
 
     expect(events).toHaveLength(2);
-    expect(events[0]).toStrictEqual({ data: 'hello' });
-    expect(events[1]).toStrictEqual({ data: 'world' });
+    expect(events[0]).toEqual({ data: 'hello' });
+    expect(events[1]).toEqual({ data: 'world' });
   });
 
   it('handles empty stream', async () => {
-    const events: SSEEvent[] = [];
+    const events = [];
 
     for await (const event of parseSSEStream(emptyChunks())) {
       events.push(event);
@@ -267,23 +262,23 @@ describe('parseSSEStream', () => {
   });
 
   it('parses complex events with all fields', async () => {
-    const events: SSEEvent[] = [];
+    const events = [];
 
     for await (const event of parseSSEStream(complexFieldsChunks())) {
       events.push(event);
     }
 
     expect(events).toHaveLength(1);
-    expect(events[0]).toStrictEqual({
-      data: '{"step":1}',
+    expect(events[0]).toEqual({
       event: 'progress',
       id: 'msg1',
+      data: '{"step":1}',
       retry: 5000
     });
   });
 
   it('handles OpenAI-style streaming', async () => {
-    const events: SSEEvent[] = [];
+    const events = [];
 
     for await (const event of parseSSEStream(openaiChunks())) {
       events.push(event);
@@ -292,7 +287,7 @@ describe('parseSSEStream', () => {
     expect(events).toHaveLength(3);
     expect(events[0]?.data).toContain('Hello');
     expect(events[1]?.data).toContain('world');
-    expect(events[2]?.data).toBe('[DONE]');
+    expect(events[2]?.data).toEqual('[DONE]');
   });
 
   it('parses events from a ReadableStream source', async () => {
@@ -303,19 +298,19 @@ describe('parseSSEStream', () => {
       }
     });
 
-    const events: SSEEvent[] = [];
+    const events = [];
     for await (const event of parseSSEStream(stream)) {
       events.push(event);
     }
 
-    expect(events).toStrictEqual([{ data: 'from-stream' }]);
+    expect(events).toEqual([{ data: 'from-stream' }]);
   });
 
   it('propagates readable stream read errors', async () => {
     const releaseLock = vi.fn();
     const badStream = {
       getReader: () => ({
-        read: () => {
+        read: async () => {
           throw new Error('read failed');
         },
         releaseLock
@@ -327,6 +322,6 @@ describe('parseSSEStream', () => {
         // iterate until error
       }
     }).rejects.toThrow('read failed');
-    expect(releaseLock).toHaveBeenCalledOnce();
+    expect(releaseLock).toHaveBeenCalledTimes(1);
   });
 });

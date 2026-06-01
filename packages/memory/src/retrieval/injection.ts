@@ -1,22 +1,19 @@
 export interface MemoryContextCandidate {
-  content: string;
   id: string;
   scope: string;
   score: number;
   title?: string;
+  content: string;
 }
 
 export interface FormatMemoryContextOptions {
-  maxContentChars?: number;
   maxItems?: number;
+  maxContentChars?: number;
 }
 
 export interface XmlContextContracts {
+  splitLeadingXmlContextBlocks(input: string): { contextBlocks: string[]; remaining: string };
   dedupeXmlContextBlocksByTag(blocks: string[]): string[];
-  splitLeadingXmlContextBlocks(input: string): {
-    contextBlocks: string[];
-    remaining: string;
-  };
 }
 
 const DEFAULT_MAX_ITEMS = 8;
@@ -32,7 +29,7 @@ function escapeXml(value: string): string {
 }
 
 function sanitizeText(value: string): string {
-  return Array.from(value)
+  return [...value]
     .filter(character => {
       const codePoint = character.codePointAt(0) ?? 0;
       const isControl =
@@ -45,10 +42,7 @@ function sanitizeText(value: string): string {
     .join('');
 }
 
-function splitLeadingXmlContextBlocks(input: string): {
-  contextBlocks: string[];
-  remaining: string;
-} {
+function splitLeadingXmlContextBlocks(input: string): { contextBlocks: string[]; remaining: string } {
   const blocks: string[] = [];
   let remaining = input.trimStart();
   const blockPattern = /^<(memory_context|[a-z_][a-z0-9_.-]{0,63})[^>]*>[\s\S]*?<\/\1>/iu;
@@ -83,8 +77,8 @@ function dedupeXmlContextBlocksByTag(blocks: string[]): string[] {
 }
 
 const defaultContracts: XmlContextContracts = {
-  dedupeXmlContextBlocksByTag,
-  splitLeadingXmlContextBlocks
+  splitLeadingXmlContextBlocks,
+  dedupeXmlContextBlocksByTag
 };
 
 export function formatMemoryContextXml(

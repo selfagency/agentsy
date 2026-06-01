@@ -64,9 +64,7 @@ async function* executeWithRetries(messages: Array<{ role: string; content: stri
 
       // Recover context from partial stream and ask the model to continue.
       const snapshot = captureStreamState(processor);
-      const continuation = buildContinuationPrompt(snapshot, {
-        provider: 'openai'
-      });
+      const continuation = buildContinuationPrompt(snapshot, { provider: 'openai' });
       workingMessages = [...workingMessages, ...continuation];
     }
   }
@@ -85,12 +83,7 @@ const loop = createAgentLoop({
   }
 });
 
-for await (const part of loop.run([
-  {
-    role: 'user',
-    content: 'Investigate elevated 5xx rates and propose fixes.'
-  }
-])) {
+for await (const part of loop.run([{ role: 'user', content: 'Investigate elevated 5xx rates and propose fixes.' }])) {
   if (part.type === 'text') {
     process.stdout.write(part.text);
   }

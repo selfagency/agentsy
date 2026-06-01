@@ -8,6 +8,6 @@ describe('LocalEmbeddingEngine', () => {
     const vector = engine.embed('oauth pkce refresh token');
 
     expect(vector).toHaveLength(16);
-    expect(vector.some(value => value > 0)).toBeTruthy();
+    expect(vector.some(value => value > 0)).toBe(true);
   });
 });

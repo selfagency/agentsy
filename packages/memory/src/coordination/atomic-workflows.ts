@@ -1,23 +1,23 @@
 export interface AtomicWorkflowContext {
-  metadata: Record<string, unknown>;
-  startedAt: number;
   workflowId: string;
+  startedAt: number;
+  metadata: Record<string, unknown>;
 }
 
 export interface AtomicWorkflowStep {
   name: string;
-  rollback?(context: AtomicWorkflowContext): Promise<void>;
   run(context: AtomicWorkflowContext): Promise<void>;
+  rollback?(context: AtomicWorkflowContext): Promise<void>;
 }
 
 export interface AtomicWorkflowResult {
-  error?: Error;
-  executedSteps: string[];
-  finishedAt: number;
-  rolledBackSteps: string[];
-  startedAt: number;
-  status: 'committed' | 'rolled_back';
   workflowId: string;
+  status: 'committed' | 'rolled_back';
+  startedAt: number;
+  finishedAt: number;
+  executedSteps: string[];
+  rolledBackSteps: string[];
+  error?: Error;
 }
 
 export interface AtomicWorkflowCoordinator {
@@ -60,9 +60,9 @@ export function createAtomicWorkflowCoordinator(): AtomicWorkflowCoordinator {
     async runWorkflow(workflowId, steps, metadata = {}) {
       const startedAt = Date.now();
       const context: AtomicWorkflowContext = {
-        metadata: { ...metadata },
+        workflowId,
         startedAt,
-        workflowId
+        metadata: { ...metadata }
       };
 
       const executedStepDefinitions: AtomicWorkflowStep[] = [];
@@ -76,23 +76,23 @@ export function createAtomicWorkflowCoordinator(): AtomicWorkflowCoordinator {
         }
 
         return {
-          executedSteps,
-          finishedAt: Date.now(),
-          rolledBackSteps: [],
-          startedAt,
+          workflowId,
           status: 'committed',
-          workflowId
+          startedAt,
+          finishedAt: Date.now(),
+          executedSteps,
+          rolledBackSteps: []
         };
       } catch (error) {
         const rolledBackSteps = await rollbackExecutedSteps(context, executedStepDefinitions);
         return {
-          error: toError(error),
-          executedSteps,
-          finishedAt: Date.now(),
-          rolledBackSteps,
-          startedAt,
+          workflowId,
           status: 'rolled_back',
-          workflowId
+          startedAt,
+          finishedAt: Date.now(),
+          executedSteps,
+          rolledBackSteps,
+          error: toError(error)
         };
       }
     }

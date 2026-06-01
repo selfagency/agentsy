@@ -1,5 +1,6 @@
-import { computeSyncChecksum } from './integrity.js';
 import type { BackupManifest, BackupManifestInput, SyncRecord } from './types.js';
+
+import { computeSyncChecksum } from './integrity.js';
 
 function cloneJsonMetadata<T>(metadata: T): T {
   return structuredClone(metadata);
@@ -16,34 +17,34 @@ function cloneRecords(records: SyncRecord[]): SyncRecord[] {
 export function createBackupManifest(input: BackupManifestInput): BackupManifest {
   const records = cloneRecords(input.records);
   const checksum = computeSyncChecksum({
-    createdAt: input.createdAt,
-    records,
-    schemaVersion: input.schemaVersion,
     snapshotId: input.snapshotId,
     sourceVersion: input.sourceVersion,
-    targetDatabaseId: input.targetDatabaseId
+    schemaVersion: input.schemaVersion,
+    targetDatabaseId: input.targetDatabaseId,
+    createdAt: input.createdAt,
+    records
   });
 
   return {
-    checksum,
-    createdAt: input.createdAt,
     id: input.snapshotId,
-    recordCount: records.length,
-    records,
-    schemaVersion: input.schemaVersion,
+    createdAt: input.createdAt,
+    checksum,
     sourceVersion: input.sourceVersion,
-    targetDatabaseId: input.targetDatabaseId
+    schemaVersion: input.schemaVersion,
+    targetDatabaseId: input.targetDatabaseId,
+    recordCount: records.length,
+    records
   };
 }
 
 export function verifyBackupManifest(manifest: BackupManifest, records: SyncRecord[] = manifest.records): boolean {
   const expected = createBackupManifest({
-    createdAt: manifest.createdAt,
-    records,
-    schemaVersion: manifest.schemaVersion,
     snapshotId: manifest.id,
     sourceVersion: manifest.sourceVersion,
-    targetDatabaseId: manifest.targetDatabaseId
+    schemaVersion: manifest.schemaVersion,
+    targetDatabaseId: manifest.targetDatabaseId,
+    records,
+    createdAt: manifest.createdAt
   });
 
   return expected.checksum === manifest.checksum && expected.recordCount === manifest.recordCount;

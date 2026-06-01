@@ -1,18 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import type { McpServerDefinition, McpServerProvider } from '../types/errors.js';
 import { McpServerRegistry } from './mcp-server-registry.js';
 
 function makeServer(overrides: Partial<McpServerDefinition> = {}): McpServerDefinition {
   return {
-    args: ['./mcp-server.js'],
-    command: 'node',
     name: 'test-server',
+    command: 'node',
+    args: ['./mcp-server.js'],
     ...overrides
   };
 }
 
-describe(McpServerRegistry, () => {
+describe('McpServerRegistry', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -20,15 +19,15 @@ describe(McpServerRegistry, () => {
   it('register adds a server', () => {
     const registry = new McpServerRegistry({ namespace: 'ext.mcpServers' });
     const added = registry.register(makeServer());
-    expect(added).toBeTruthy();
-    expect(registry.has('test-server')).toBeTruthy();
+    expect(added).toBe(true);
+    expect(registry.has('test-server')).toBe(true);
   });
 
   it('register returns false for duplicate', () => {
     const registry = new McpServerRegistry({ namespace: 'ext.mcpServers' });
     registry.register(makeServer());
     const second = registry.register(makeServer());
-    expect(second).toBeFalsy();
+    expect(second).toBe(false);
     expect(registry.getAll()).toHaveLength(1);
   });
 
@@ -36,20 +35,20 @@ describe(McpServerRegistry, () => {
     const registry = new McpServerRegistry({ namespace: 'ext.mcpServers' });
     registry.register(makeServer());
     const removed = registry.unregister('test-server');
-    expect(removed).toBeTruthy();
-    expect(registry.has('test-server')).toBeFalsy();
+    expect(removed).toBe(true);
+    expect(registry.has('test-server')).toBe(false);
   });
 
   it('unregister returns false for unknown server', () => {
     const registry = new McpServerRegistry({ namespace: 'ext.mcpServers' });
-    expect(registry.unregister('missing')).toBeFalsy();
+    expect(registry.unregister('missing')).toBe(false);
   });
 
   it('get returns server definition', () => {
     const registry = new McpServerRegistry({ namespace: 'ext.mcpServers' });
     const server = makeServer({ name: 'myServer' });
     registry.register(server);
-    expect(registry.get('myServer')).toStrictEqual(server);
+    expect(registry.get('myServer')).toEqual(server);
   });
 
   it('get returns undefined for unknown server', () => {
@@ -76,8 +75,8 @@ describe(McpServerRegistry, () => {
       providers: [provider]
     });
     await registry.loadFromProviders();
-    expect(registry.has('prov-server-1')).toBeTruthy();
-    expect(registry.has('prov-server-2')).toBeTruthy();
+    expect(registry.has('prov-server-1')).toBe(true);
+    expect(registry.has('prov-server-2')).toBe(true);
   });
 
   it('loadFromProviders is a no-op with no providers', async () => {
@@ -91,12 +90,12 @@ describe(McpServerRegistry, () => {
       provide: vi.fn().mockResolvedValue([makeServer({ name: 'loaded' })])
     };
     const registry = new McpServerRegistry({
-      autoRegister: false,
       namespace: 'ext.mcpServers',
-      providers: [provider]
+      providers: [provider],
+      autoRegister: false
     });
     await registry.activate();
-    expect(registry.has('loaded')).toBeTruthy();
+    expect(registry.has('loaded')).toBe(true);
   });
 
   it('registerWithVscode is a no-op when VS Code unavailable', async () => {
@@ -107,58 +106,44 @@ describe(McpServerRegistry, () => {
 
   it('registerWithVscode serializes and writes server configuration without persisting secrets', async () => {
     vi.resetModules();
-    const update = vi.fn(async () => {
-      /* noop */
-    });
+    const update = vi.fn(async () => undefined);
     const get = vi.fn(() => ({ existing: { command: 'existing-cmd' } }));
 
     vi.doMock('vscode', () => ({
-      ConfigurationTarget: {
-        Workspace: 1
-      },
       workspace: {
         getConfiguration: () => ({ get, update })
+      },
+      ConfigurationTarget: {
+        Workspace: 1
       }
     }));
 
     const { McpServerRegistry: Registry } = await import('./mcp-server-registry.js');
     const registry = new Registry({ namespace: 'ext.mcpServers' });
     registry.register({
-      alwaysAllow: true,
-      args: ['mcp.js'],
+      name: 'zai-server',
       command: 'node',
+      args: ['mcp.js'],
       env: { API_KEY: 'x' },
       headers: { Authorization: 'Bearer x' },
-      name: 'zai-server'
+      alwaysAllow: true
     });
 
     await registry.registerWithVscode();
 
     expect(get).toHaveBeenCalledWith('ext.mcpServers');
-
-    const mcpServerConfig = {
-      existing: { command: 'existing-cmd' },
-      'zai-server': expect.objectContaining({
-        alwaysAllow: true,
-        args: ['mcp.js'],
-        command: 'node'
-      }) as Record<string, unknown>
-    } as Record<string, unknown>;
-
-    expect(update).toHaveBeenCalledWith('ext.mcpServers', mcpServerConfig, 1);
-    // Ensure sensitive data (API_KEY, Authorization) is not persisted
-    const sanitizedConfig = {
-      'zai-server': {
-        env: expect.not.objectContaining({
-          API_KEY: 'x'
-        }),
-        headers: expect.not.objectContaining({
-          Authorization: 'Bearer x'
-        })
-      } as Record<string, unknown> // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-    };
-
-    expect(update).not.toHaveBeenCalledWith(expect.any(String), sanitizedConfig, expect.any(Number));
+    expect(update).toHaveBeenCalledWith(
+      'ext.mcpServers',
+      expect.objectContaining({
+        existing: { command: 'existing-cmd' },
+        'zai-server': {
+          command: 'node',
+          args: ['mcp.js'],
+          alwaysAllow: true
+        }
+      }),
+      1
+    );
   });
 
   it('dispose clears all servers', () => {

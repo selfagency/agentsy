@@ -9,7 +9,7 @@
     "typescript"
   ],
   "homepage": "https://github.com/selfagency/agentsy#readme",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git",
@@ -38,8 +38,8 @@
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage",
     "check-types": "tsc --noEmit",
-    "lint": "biome lint",
-    "format": "biome format"
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write ."
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
@@ -49,9 +49,10 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.9.0",
+    "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.6",
-    "@biomejs/biome": "^2.4.15",
+    "oxfmt": "^0.50.0",
+    "oxlint": "^1.65.0",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"

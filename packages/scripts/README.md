@@ -36,4 +36,4 @@ See [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) for detailed architecture, 
 
 ## License
 
-GPL-3.0-or-later
+MIT

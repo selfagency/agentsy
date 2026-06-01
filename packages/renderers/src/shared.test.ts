@@ -2,10 +2,9 @@ import type { OutputPart } from '@agentsy/core/processor';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
 import type { FinishReason, UsageInfo } from '@agentsy/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { createSharedRendererHandle } from './shared.js';
 
-describe('createSharedRendererHandle' as const, () => {
+describe('createSharedRendererHandle', () => {
   let mockHandlers: {
     onText: (text: string) => Promise<void>;
     onThinking: (text: string) => Promise<void>;
@@ -19,26 +18,24 @@ describe('createSharedRendererHandle' as const, () => {
 
   beforeEach(() => {
     mockHandlers = {
-      onEnd: vi.fn<() => Promise<void>>().mockResolvedValue(),
-      onText: vi.fn<() => Promise<void>>().mockResolvedValue(),
-      onThinking: vi.fn<() => Promise<void>>().mockResolvedValue(),
-      onToolCall: vi.fn<() => Promise<void>>().mockResolvedValue(),
-      onToolCallDelta: vi.fn<() => Promise<void>>().mockResolvedValue()
+      onText: vi.fn().mockResolvedValue(undefined),
+      onThinking: vi.fn().mockResolvedValue(undefined),
+      onToolCall: vi.fn().mockResolvedValue(undefined),
+      onToolCallDelta: vi.fn().mockResolvedValue(undefined),
+      onEnd: vi.fn().mockResolvedValue(undefined)
     };
 
-    mockOnFinish = vi
-      .fn<(finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>>()
-      .mockResolvedValue();
-    mockOnError = vi.fn<(error: Error) => void | Promise<void>>().mockResolvedValue();
+    mockOnFinish = vi.fn().mockResolvedValue(undefined);
+    mockOnError = vi.fn().mockResolvedValue(undefined);
   });
 
   it('creates shared renderer handle with handlers', () => {
     const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
     expect(renderer).toBeDefined();
-    expect(typeof renderer.write).toBe('function');
-    expect(typeof renderer.writeChunk).toBe('function');
-    expect(typeof renderer.end).toBe('function');
+    expect(renderer.write).toBeDefined();
+    expect(renderer.writeChunk).toBeDefined();
+    expect(renderer.end).toBeDefined();
   });
 
   it('accepts handlers and processes via write', async () => {
@@ -81,10 +78,7 @@ describe('createSharedRendererHandle' as const, () => {
       usage: { inputTokens: 10, outputTokens: 20 }
     });
 
-    expect(mockOnFinish).toHaveBeenCalledWith(undefined, {
-      inputTokens: 10,
-      outputTokens: 20
-    });
+    expect(mockOnFinish).toHaveBeenCalledWith(undefined, { inputTokens: 10, outputTokens: 20 });
   });
 
   it('prevents double onFinish invocation', async () => {
@@ -99,7 +93,7 @@ describe('createSharedRendererHandle' as const, () => {
     await renderer.end();
 
     // Should only be called once (in writeChunk), not again in end()
-    expect(mockOnFinish).toHaveBeenCalledOnce();
+    expect(mockOnFinish).toHaveBeenCalledTimes(1);
   });
 
   it('invokes onFinish via end when not already called', async () => {
@@ -109,7 +103,7 @@ describe('createSharedRendererHandle' as const, () => {
     await renderer.end();
 
     // Should be called once in end()
-    expect(mockOnFinish).toHaveBeenCalledOnce();
+    expect(mockOnFinish).toHaveBeenCalledTimes(1);
   });
 
   it('calls onEnd handler when provided', async () => {
@@ -158,24 +152,12 @@ describe('createSharedRendererHandle' as const, () => {
   });
 
   it('invokes onStep when stepIndex changes via writeChunk', async () => {
-    const onStep = vi.fn<(stepIndex: number, usage: unknown) => void>().mockResolvedValue();
+    const onStep = vi.fn().mockResolvedValue(undefined);
     const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, onStep }, mockHandlers);
 
-    await renderer.writeChunk({
-      content: 'Step 0',
-      stepIndex: 0,
-      stepUsage: { outputTokens: 3 }
-    });
-    await renderer.writeChunk({
-      content: 'Still step 0',
-      stepIndex: 0,
-      stepUsage: { outputTokens: 4 }
-    });
-    await renderer.writeChunk({
-      content: 'Step 1',
-      stepIndex: 1,
-      stepUsage: { outputTokens: 5 }
-    });
+    await renderer.writeChunk({ content: 'Step 0', stepIndex: 0, stepUsage: { outputTokens: 3 } });
+    await renderer.writeChunk({ content: 'Still step 0', stepIndex: 0, stepUsage: { outputTokens: 4 } });
+    await renderer.writeChunk({ content: 'Step 1', stepIndex: 1, stepUsage: { outputTokens: 5 } });
 
     expect(onStep).toHaveBeenCalledTimes(2);
     expect(onStep).toHaveBeenNthCalledWith(1, 0, { outputTokens: 3 });
@@ -183,14 +165,10 @@ describe('createSharedRendererHandle' as const, () => {
   });
 
   it('falls back to usage when stepUsage is absent', async () => {
-    const onStep = vi.fn<(stepIndex: number, usage: unknown) => void>().mockResolvedValue();
+    const onStep = vi.fn().mockResolvedValue(undefined);
     const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, onStep }, mockHandlers);
 
-    await renderer.writeChunk({
-      content: 'Step 2',
-      stepIndex: 2,
-      usage: { inputTokens: 9, outputTokens: 6 }
-    });
+    await renderer.writeChunk({ content: 'Step 2', stepIndex: 2, usage: { inputTokens: 9, outputTokens: 6 } });
 
     expect(onStep).toHaveBeenCalledWith(2, { inputTokens: 9, outputTokens: 6 });
   });
@@ -201,7 +179,7 @@ describe('createSharedRendererHandle' as const, () => {
       onThinking: mockHandlers.onThinking
     };
     const processor = new LLMStreamProcessor();
-    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, processor }, handlersWithoutToolCall);
+    const renderer = createSharedRendererHandle({ processor, onFinish: mockOnFinish }, handlersWithoutToolCall);
 
     // Process XML tool call
     await renderer.write(
@@ -227,21 +205,21 @@ describe('createSharedRendererHandle' as const, () => {
     expect(renderer).toBeDefined();
   });
 
-  it('uses provided processor instead of creating internal one', () => {
+  it('uses provided processor instead of creating internal one', async () => {
     const processor = new LLMStreamProcessor();
-    const renderer = createSharedRendererHandle({ onFinish: mockOnFinish, processor }, mockHandlers);
+    const renderer = createSharedRendererHandle({ processor, onFinish: mockOnFinish }, mockHandlers);
 
     // Renderer should be created successfully with provided processor
     expect(renderer).toBeDefined();
-    expect(typeof renderer.write).toBe('function');
+    expect(renderer.write).toBeDefined();
   });
 
-  it('creates internal processor when not provided', () => {
+  it('creates internal processor when not provided', async () => {
     const renderer = createSharedRendererHandle({ onFinish: mockOnFinish }, mockHandlers);
 
     // Renderer should be created successfully with internal processor
     expect(renderer).toBeDefined();
-    expect(typeof renderer.write).toBe('function');
+    expect(renderer.write).toBeDefined();
   });
 
   it('processes parts through handlers via write', async () => {

@@ -2,7 +2,7 @@
 goal: @agentsy/types production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-25
+last_updated: 2026-05-15
 owner: types-maintainers
 status: In progress
 tags: [feature, architecture, types, contracts, semver]
@@ -31,12 +31,11 @@ This plan defines the production implementation order for `@agentsy/types` as th
 
 - GOAL-TYPES-001: Contract inventory and boundary stabilization.
 
-| Task           | Description                                                                                                                                                                  | Completed | Date       |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
-| TASK-TYPES-001 | Audit and stabilize exported type surface and versioning markers.                                                                                                            | ✅        | 2026-05-25 |
-| TASK-067       | DOGFOOD: Types-contract stabilization — 17 modules audited, 0 strict-mode violations, +7 TSDoc annotations, duplicate export removed from index.ts, typo fixed in memory.ts. | ✅        | 2026-05-25 |
-| TASK-TYPES-002 | Add type-level tests for invariants and narrowing guarantees.                                                                                                                |           |            |
-| TASK-TYPES-003 | Document ownership boundaries and semver policy.                                                                                                                             |           |            |
+| Task           | Description                                                       | Completed | Date |
+| -------------- | ----------------------------------------------------------------- | --------- | ---- |
+| TASK-TYPES-001 | Audit and stabilize exported type surface and versioning markers. |           |      |
+| TASK-TYPES-002 | Add type-level tests for invariants and narrowing guarantees.     |           |      |
+| TASK-TYPES-003 | Document ownership boundaries and semver policy.                  |           |      |
 
 ### Implementation Phase 2
 
@@ -123,9 +122,9 @@ To prevent "primitive obsession" and accidental mixing of IDs (e.g., passing a `
 
 ```typescript
 export type Brand<K, T> = K & { __brand: T };
-export type SessionId = Brand<string, "SessionId">;
-export type AgentId = Brand<string, "AgentId">;
-export type TraceId = Brand<string, "TraceId">;
+export type SessionId = Brand<string, 'SessionId'>;
+export type AgentId = Brand<string, 'AgentId'>;
+export type TraceId = Brand<string, 'TraceId'>;
 ```
 
 This forces developers to use explicit factories or type guards, significantly reducing ID-related bugs in complex multi-agent workflows.
@@ -136,14 +135,14 @@ Instead of complex class hierarchies, we use discriminated unions for message co
 
 ```typescript
 export type ContentPart =
-  | { type: "text"; text: string }
-  | { type: "image"; image: { data: string; mimeType: string } }
-  | { type: "tool_call"; toolCall: NormalizedToolCall }
-  | { type: "tool_result"; toolResult: ToolResult }
-  | { type: "thought"; thought: string; internal?: boolean };
+  | { type: 'text'; text: string }
+  | { type: 'image'; image: { data: string; mimeType: string } }
+  | { type: 'tool_call'; toolCall: NormalizedToolCall }
+  | { type: 'tool_result'; toolResult: ToolResult }
+  | { type: 'thought'; thought: string; internal?: boolean };
 
 export interface AgentMessage {
-  role: "user" | "assistant" | "system" | "tool";
+  role: 'user' | 'assistant' | 'system' | 'tool';
   content: ContentPart[];
 }
 ```
@@ -176,7 +175,7 @@ export interface NormalizedChunk {
     thought?: string;
     toolCall?: Partial<NormalizedToolCall>;
   };
-  finishReason?: "stop" | "length" | "tool_calls" | "content_filter" | "error";
+  finishReason?: 'stop' | 'length' | 'tool_calls' | 'content_filter' | 'error';
   usage?: TokenUsage;
 }
 ```

@@ -5,22 +5,22 @@ import type { ConflictRecord, SyncRecord } from './types.js';
 
 function createRecord(id: string, content: string): SyncRecord {
   return {
-    content,
     id,
     tier: 'wiki',
-    updatedAt: '2026-05-15T00:00:00.000Z'
+    updatedAt: '2026-05-15T00:00:00.000Z',
+    content
   };
 }
 
 function createConflict(id: string): ConflictRecord {
   return {
-    detectedAt: '2026-05-15T01:00:00.000Z',
     id,
-    local: createRecord(`record-${id}`, 'local'),
-    policy: 'manualRequired',
     recordId: `record-${id}`,
+    tier: 'wiki',
+    local: createRecord(`record-${id}`, 'local'),
     remote: createRecord(`record-${id}`, 'remote'),
-    tier: 'wiki'
+    detectedAt: '2026-05-15T01:00:00.000Z',
+    policy: 'manualRequired'
   };
 }
 
@@ -33,9 +33,9 @@ describe('createConflictStore', () => {
     await store.save(first);
     await store.save(second);
 
-    await expect(store.list()).resolves.toStrictEqual([first, second]);
-    await expect(store.get('conflict-1')).resolves.toStrictEqual(first);
-    await expect(store.pendingCount()).resolves.toBe(2);
+    expect(await store.list()).toEqual([first, second]);
+    expect(await store.get('conflict-1')).toEqual(first);
+    expect(await store.pendingCount()).toBe(2);
   });
 
   it('marks conflicts as resolved and removes them from pending list', async () => {
@@ -45,7 +45,7 @@ describe('createConflictStore', () => {
     await store.save(conflict);
     await store.resolve('conflict-1');
 
-    await expect(store.get('conflict-1')).resolves.toBeNull();
-    await expect(store.pendingCount()).resolves.toBe(0);
+    expect(await store.get('conflict-1')).toBeNull();
+    expect(await store.pendingCount()).toBe(0);
   });
 });

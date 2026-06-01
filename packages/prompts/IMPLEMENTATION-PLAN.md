@@ -2,7 +2,7 @@
 goal: @agentsy/prompts production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-26
+last_updated: 2026-05-15
 owner: prompts-maintainers
 status: In progress
 tags: [feature, architecture, prompts, policy, composition]
@@ -61,24 +61,11 @@ This plan defines the production implementation order for `@agentsy/prompts` as 
 
 - GOAL-PROMPTS-004: Hardening and release gates.
 
-| Task             | Description                                                                                                                                    | Completed | Date |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-PROMPTS-010 | Add regression suites for composition determinism and safety filters.                                                                          |           |      |
-| TASK-PROMPTS-011 | Update docs/examples for prompt policy operation.                                                                                              |           |      |
-| TASK-PROMPTS-012 | Pass package and monorepo release gates.                                                                                                       |           |      |
-| TASK-064         | DOGFOOD Phase 4: Integrate prompt policy stack for deterministic prompt assembly and token-aware truncation/compression before provider calls. |           |      |
-
-### Implementation Phase 4.5 — Instructions and Skills layer segments
-
-- GOAL-PROMPTS-004.5: Add InstructionsLayer, SkillsLayer, and InstructionsComposer segment types for the skills/instructions/agent system.
-
-| Task             | Description                                                                                                                                                                      | Completed | Date |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-PROMPTS-013 | Define `InstructionsLayer` segment type — position (prefix/suffix/beforeTools), priority, source provenance, content, metadata (origin root, file name, agent scope).            |           |      |
-| TASK-PROMPTS-014 | Define `SkillsLayer` segment type — skill ID, semver, activation match data, content, trigger, resource references.                                                              |           |      |
-| TASK-PROMPTS-015 | Implement `InstructionsComposer` in `src/layers/` — merges InstructionsLayer segments into prompt stack in priority order, deduplicates by content hash, respects budget limits. |           |      |
-| TASK-PROMPTS-016 | Wire `InstructionsComposer` with existing `SegmentComposer` pipeline — inserts instructions before tool definitions, ensures skills segments inject before user messages.        |           |      |
-| TASK-PROMPTS-017 | Add unit tests: layer segment merging, priority ordering, deduplication, budget trimming, source provenance tracking.                                                            |           |      |
+| Task             | Description                                                           | Completed | Date |
+| ---------------- | --------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROMPTS-010 | Add regression suites for composition determinism and safety filters. |           |      |
+| TASK-PROMPTS-011 | Update docs/examples for prompt policy operation.                     |           |      |
+| TASK-PROMPTS-012 | Pass package and monorepo release gates.                              |           |      |
 
 ## 3. Acceptance Criteria
 
@@ -178,7 +165,7 @@ packages/prompts/
 
 ```typescript
 // Token budget aware optimization
-import { TokenBudget, TokenCounter } from "@agentsy/tokens";
+import { TokenBudget, TokenCounter } from '@agentsy/tokens';
 
 interface OptimizedPrompt {
   chunks: PromptChunk[];
@@ -190,7 +177,7 @@ interface OptimizedPrompt {
 class PromptOptimizer {
   constructor(
     private tokenCounter: TokenCounter,
-    private budget: TokenBudget,
+    private budget: TokenBudget
   ) {}
 
   optimize(prompt: string, constraints: OptimizationConstraints): OptimizedPrompt {
@@ -203,12 +190,12 @@ class PromptOptimizer {
 
 ```typescript
 // Persistent prompt storage and retrieval
-import { MemoryStore, MemoryRetrieval } from "@agentsy/memory";
+import { MemoryStore, MemoryRetrieval } from '@agentsy/memory';
 
 class PromptStorage {
   constructor(
     private memoryStore: MemoryStore,
-    private retrieval: MemoryRetrieval,
+    private retrieval: MemoryRetrieval
   ) {}
 
   async storeSystemPrompt(prompt: SystemPrompt): Promise<void> {

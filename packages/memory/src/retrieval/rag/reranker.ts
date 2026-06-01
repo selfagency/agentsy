@@ -11,13 +11,13 @@ export function rerankResults(results: readonly RAGEvidence[], weights: RAGWeigh
 
       return {
         ...item,
-        confidence: Math.max(0, Math.min(1, final)),
         score: final,
+        confidence: Math.max(0, Math.min(1, final)),
         scoreBreakdown: {
           ...item.scoreBreakdown,
           final
         }
       };
     })
-    .toSorted((left, right) => right.score - left.score);
+    .sort((left, right) => right.score - left.score);
 }

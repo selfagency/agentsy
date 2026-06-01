@@ -2,9 +2,9 @@ import type { MemoryScope } from '../scope/scope-manager.js';
 import type { CapturedMemoryRecord } from './memory-capture.js';
 
 export interface MemoryStats {
-  averageContentLength: number;
-  byScope: Record<MemoryScope, number>;
   totalRecords: number;
+  byScope: Record<MemoryScope, number>;
+  averageContentLength: number;
 }
 
 export interface MemoryStatsTool {
@@ -17,11 +17,11 @@ export interface MemoryStatsToolDeps {
 
 function emptyByScope(): Record<MemoryScope, number> {
   return {
-    global: 0,
-    project: 0,
     session: 0,
+    user: 0,
+    project: 0,
     team: 0,
-    user: 0
+    global: 0
   };
 }
 
@@ -38,9 +38,9 @@ export function createMemoryStatsTool(deps: MemoryStatsToolDeps): MemoryStatsToo
       }
 
       return {
-        averageContentLength: records.length === 0 ? 0 : totalContentLength / records.length,
+        totalRecords: records.length,
         byScope,
-        totalRecords: records.length
+        averageContentLength: records.length === 0 ? 0 : totalContentLength / records.length
       };
     }
   };

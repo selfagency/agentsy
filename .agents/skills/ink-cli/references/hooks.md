@@ -7,27 +7,27 @@ Terminal-specific React hooks provided by Ink.
 Handle keyboard input. This hook listens for keyboard events and provides both the character input and key metadata.
 
 ```tsx
-import { useInput } from "ink";
+import {useInput} from 'ink';
 
 function App() {
-  useInput((input, key) => {
-    if (input === "q") {
-      // Handle 'q' key
-      console.log("Quit requested");
-    }
+	useInput((input, key) => {
+		if (input === 'q') {
+			// Handle 'q' key
+			console.log('Quit requested');
+		}
 
-    if (key.return) {
-      // Handle Enter/Return key
-      console.log("Enter pressed");
-    }
+		if (key.return) {
+			// Handle Enter/Return key
+			console.log('Enter pressed');
+		}
 
-    if (key.escape) {
-      // Handle Escape key
-      console.log("Escape pressed");
-    }
-  });
+		if (key.escape) {
+			// Handle Escape key
+			console.log('Escape pressed');
+		}
+	});
 
-  return <Text>Press keys...</Text>;
+	return <Text>Press keys...</Text>;
 }
 ```
 
@@ -80,25 +80,25 @@ The `input` parameter contains:
 ```tsx
 // Arrow key navigation
 useInput((input, key) => {
-  if (key.upArrow) setIndex((i) => i - 1);
-  if (key.downArrow) setIndex((i) => i + 1);
+	if (key.upArrow) setIndex(i => i - 1);
+	if (key.downArrow) setIndex(i => i + 1);
 });
 
 // Ctrl+C handling
 useInput((input, key) => {
-  if (key.ctrl && input === "c") {
-    process.exit(0);
-  }
+	if (key.ctrl && input === 'c') {
+		process.exit(0);
+	}
 });
 
 // Conditional input handling
 useInput(
-  (input, key) => {
-    if (isActive) {
-      // Handle input only when active
-    }
-  },
-  { isActive }
+	(input, key) => {
+		if (isActive) {
+			// Handle input only when active
+		}
+	},
+	{isActive},
 );
 ```
 
@@ -107,16 +107,16 @@ useInput(
 Access the Ink app instance for lifecycle control.
 
 ```tsx
-import { useApp } from "ink";
+import {useApp} from 'ink';
 
 function App() {
-  const { exit, waitUntilExit } = useApp();
+	const {exit, waitUntilExit} = useApp();
 
-  const handleQuit = () => {
-    exit(); // Exit the app
-  };
+	const handleQuit = () => {
+		exit(); // Exit the app
+	};
 
-  return <Text onPress={handleQuit}>Press to quit</Text>;
+	return <Text onPress={handleQuit}>Press to quit</Text>;
 }
 ```
 
@@ -131,14 +131,14 @@ function App() {
 
 ```tsx
 // Graceful exit
-const { exit } = useApp();
+const {exit} = useApp();
 exit(); // Clean exit
 
 // Exit with error
-exit(new Error("Something went wrong"));
+exit(new Error('Something went wrong'));
 
 // Wait for exit
-const { waitUntilExit } = useApp();
+const {waitUntilExit} = useApp();
 await waitUntilExit();
 ```
 
@@ -147,29 +147,29 @@ await waitUntilExit();
 Access raw stdin stream and control raw mode.
 
 ```tsx
-import { useStdin } from "ink";
+import {useStdin} from 'ink';
 
 function App() {
-  const { stdin, setRawMode, isRawModeSupported } = useStdin();
+	const {stdin, setRawMode, isRawModeSupported} = useStdin();
 
-  useEffect(() => {
-    if (isRawModeSupported) {
-      setRawMode(true);
+	useEffect(() => {
+		if (isRawModeSupported) {
+			setRawMode(true);
 
-      const handleData = (data: Buffer) => {
-        // Handle raw input data
-      };
+			const handleData = (data: Buffer) => {
+				// Handle raw input data
+			};
 
-      stdin.on("data", handleData);
+			stdin.on('data', handleData);
 
-      return () => {
-        stdin.off("data", handleData);
-        setRawMode(false);
-      };
-    }
-  }, []);
+			return () => {
+				stdin.off('data', handleData);
+				setRawMode(false);
+			};
+		}
+	}, []);
 
-  return <Text>Reading raw stdin</Text>;
+	return <Text>Reading raw stdin</Text>;
 }
 ```
 
@@ -192,18 +192,18 @@ function App() {
 Access stdout stream for direct output.
 
 ```tsx
-import { useStdout } from "ink";
+import {useStdout} from 'ink';
 
 function App() {
-  const { stdout, write } = useStdout();
+	const {stdout, write} = useStdout();
 
-  useEffect(() => {
-    // Get terminal dimensions
-    const { columns, rows } = stdout;
-    console.log(`Terminal: ${columns}x${rows}`);
-  }, []);
+	useEffect(() => {
+		// Get terminal dimensions
+		const {columns, rows} = stdout;
+		console.log(`Terminal: ${columns}x${rows}`);
+	}, []);
 
-  return <Text>Check console for dimensions</Text>;
+	return <Text>Check console for dimensions</Text>;
 }
 ```
 
@@ -219,16 +219,16 @@ function App() {
 Access stderr stream for error output.
 
 ```tsx
-import { useStderr } from "ink";
+import {useStderr} from 'ink';
 
 function App() {
-  const { stderr, write } = useStderr();
+	const {stderr, write} = useStderr();
 
-  const logError = (message: string) => {
-    write(`Error: ${message}\n`);
-  };
+	const logError = (message: string) => {
+		write(`Error: ${message}\n`);
+	};
 
-  return <Text>Errors logged to stderr</Text>;
+	return <Text>Errors logged to stderr</Text>;
 }
 ```
 
@@ -244,17 +244,17 @@ function App() {
 Manage focus for interactive components.
 
 ```tsx
-import { useFocus } from "ink";
+import {useFocus} from 'ink';
 
-function Button({ label, onPress }: { label: string; onPress: () => void }) {
-  const { isFocused } = useFocus();
+function Button({label, onPress}: {label: string; onPress: () => void}) {
+	const {isFocused} = useFocus();
 
-  return (
-    <Text bold={isFocused} color={isFocused ? "green" : "white"}>
-      {isFocused ? "> " : "  "}
-      {label}
-    </Text>
-  );
+	return (
+		<Text bold={isFocused} color={isFocused ? 'green' : 'white'}>
+			{isFocused ? '> ' : '  '}
+			{label}
+		</Text>
+	);
 }
 ```
 
@@ -282,13 +282,13 @@ useFocus(options?: Options)
 
 ```tsx
 function Menu() {
-  return (
-    <Box flexDirection="column">
-      <Button label="Option 1" />
-      <Button label="Option 2" />
-      <Button label="Option 3" />
-    </Box>
-  );
+	return (
+		<Box flexDirection="column">
+			<Button label="Option 1" />
+			<Button label="Option 2" />
+			<Button label="Option 3" />
+		</Box>
+	);
 }
 ```
 
@@ -297,28 +297,28 @@ function Menu() {
 Programmatically manage focus across components.
 
 ```tsx
-import { useFocusManager } from "ink";
+import {useFocusManager} from 'ink';
 
 function App() {
-  const { focusNext, focusPrevious, focus } = useFocusManager();
+	const {focusNext, focusPrevious, focus} = useFocusManager();
 
-  useInput((input, key) => {
-    if (key.tab) {
-      if (key.shift) {
-        focusPrevious();
-      } else {
-        focusNext();
-      }
-    }
-  });
+	useInput((input, key) => {
+		if (key.tab) {
+			if (key.shift) {
+				focusPrevious();
+			} else {
+				focusNext();
+			}
+		}
+	});
 
-  return (
-    <Box>
-      <Input id="input1" />
-      <Input id="input2" />
-      <Input id="input3" />
-    </Box>
-  );
+	return (
+		<Box>
+			<Input id="input1" />
+			<Input id="input2" />
+			<Input id="input3" />
+		</Box>
+	);
 }
 ```
 
@@ -333,45 +333,45 @@ function App() {
 ### Complete Example
 
 ```tsx
-import React, { useState } from "react";
-import { Box, Text, useInput, useFocus, useFocusManager } from "ink";
+import React, {useState} from 'react';
+import {Box, Text, useInput, useFocus, useFocusManager} from 'ink';
 
-function FocusableInput({ id, label }: { id: string; label: string }) {
-  const { isFocused } = useFocus({ id });
-  const [value, setValue] = useState("");
+function FocusableInput({id, label}: {id: string; label: string}) {
+	const {isFocused} = useFocus({id});
+	const [value, setValue] = useState('');
 
-  useInput((input) => {
-    if (isFocused) {
-      setValue((v) => v + input);
-    }
-  });
+	useInput(input => {
+		if (isFocused) {
+			setValue(v => v + input);
+		}
+	});
 
-  return (
-    <Box>
-      <Text color={isFocused ? "green" : "gray"}>
-        {isFocused ? "> " : "  "}
-        {label}: {value}
-      </Text>
-    </Box>
-  );
+	return (
+		<Box>
+			<Text color={isFocused ? 'green' : 'gray'}>
+				{isFocused ? '> ' : '  '}
+				{label}: {value}
+			</Text>
+		</Box>
+	);
 }
 
 function App() {
-  const { focusNext, focusPrevious } = useFocusManager();
+	const {focusNext, focusPrevious} = useFocusManager();
 
-  useInput((input, key) => {
-    if (key.tab) {
-      key.shift ? focusPrevious() : focusNext();
-    }
-  });
+	useInput((input, key) => {
+		if (key.tab) {
+			key.shift ? focusPrevious() : focusNext();
+		}
+	});
 
-  return (
-    <Box flexDirection="column">
-      <FocusableInput id="name" label="Name" />
-      <FocusableInput id="email" label="Email" />
-      <FocusableInput id="phone" label="Phone" />
-    </Box>
-  );
+	return (
+		<Box flexDirection="column">
+			<FocusableInput id="name" label="Name" />
+			<FocusableInput id="email" label="Email" />
+			<FocusableInput id="phone" label="Phone" />
+		</Box>
+	);
 }
 ```
 
@@ -380,17 +380,17 @@ function App() {
 Control cursor visibility (experimental).
 
 ```tsx
-import { useCursor } from "ink";
+import {useCursor} from 'ink';
 
 function App() {
-  const { showCursor, hideCursor } = useCursor();
+	const {showCursor, hideCursor} = useCursor();
 
-  useEffect(() => {
-    hideCursor();
-    return () => showCursor();
-  }, []);
+	useEffect(() => {
+		hideCursor();
+		return () => showCursor();
+	}, []);
 
-  return <Text>Cursor is hidden</Text>;
+	return <Text>Cursor is hidden</Text>;
 }
 ```
 
@@ -414,12 +414,12 @@ function App() {
 **Exit on Ctrl+C:**
 
 ```tsx
-const { exit } = useApp();
+const {exit} = useApp();
 
 useInput((input, key) => {
-  if (key.ctrl && input === "c") {
-    exit();
-  }
+	if (key.ctrl && input === 'c') {
+		exit();
+	}
 });
 ```
 
@@ -427,45 +427,45 @@ useInput((input, key) => {
 
 ```tsx
 const [selectedIndex, setSelectedIndex] = useState(0);
-const items = ["Item 1", "Item 2", "Item 3"];
+const items = ['Item 1', 'Item 2', 'Item 3'];
 
 useInput((input, key) => {
-  if (key.upArrow) {
-    setSelectedIndex((i) => Math.max(0, i - 1));
-  }
-  if (key.downArrow) {
-    setSelectedIndex((i) => Math.min(items.length - 1, i + 1));
-  }
+	if (key.upArrow) {
+		setSelectedIndex(i => Math.max(0, i - 1));
+	}
+	if (key.downArrow) {
+		setSelectedIndex(i => Math.min(items.length - 1, i + 1));
+	}
 });
 ```
 
 **Form Tab Navigation:**
 
 ```tsx
-const { focusNext, focusPrevious } = useFocusManager();
+const {focusNext, focusPrevious} = useFocusManager();
 
 useInput((input, key) => {
-  if (key.tab) {
-    if (key.shift) {
-      focusPrevious();
-    } else {
-      focusNext();
-    }
-  }
+	if (key.tab) {
+		if (key.shift) {
+			focusPrevious();
+		} else {
+			focusNext();
+		}
+	}
 });
 ```
 
 **Terminal Resize Handling:**
 
 ```tsx
-const { stdout } = useStdout();
+const {stdout} = useStdout();
 
 useEffect(() => {
-  const handleResize = () => {
-    console.log(`Resized: ${stdout.columns}x${stdout.rows}`);
-  };
+	const handleResize = () => {
+		console.log(`Resized: ${stdout.columns}x${stdout.rows}`);
+	};
 
-  stdout.on("resize", handleResize);
-  return () => stdout.off("resize", handleResize);
+	stdout.on('resize', handleResize);
+	return () => stdout.off('resize', handleResize);
 }, []);
 ```

@@ -29,9 +29,9 @@ export interface Observable<T> {
  * Observer interface.
  */
 export interface Observer<T> {
-  complete: () => void;
-  error: (error: unknown) => void;
   next: (value: T) => void;
+  error: (error: unknown) => void;
+  complete: () => void;
 }
 
 /**
@@ -68,41 +68,37 @@ export function toObservable<T>(generator: AsyncGenerator<T>): Observable<T> {
           ...(complete !== null && complete !== undefined && { complete })
         };
       } else {
-        observer = observerOrNext ?? {};
+        observer = observerOrNext || {};
       }
 
       let isCancelled = false;
 
       // Start consuming the generator
-      (async () => {
+      void (async () => {
         try {
           for await (const value of generator) {
-            if (isCancelled) {
-              break;
-            }
+            if (isCancelled) break;
             observer.next?.(value);
           }
-          if (!isCancelled) {
+          if (isCancelled === false) {
             observer.complete?.();
           }
-        } catch (error) {
-          if (!isCancelled) {
-            observer.error?.(error);
+        } catch (err) {
+          if (isCancelled === false) {
+            observer.error?.(err);
           }
         } finally {
           // Clean up generator resources on completion or cancellation
-          if (generator) {
-            generator.return(undefined);
-          }
+          await generator.return?.(undefined);
         }
-      })().catch(() => {
-        // Silently handle async IIFE rejections
-      });
+      })();
 
       // Return subscription
       return {
         unsubscribe() {
           isCancelled = true;
+          // Also clean up generator on early unsubscribe
+          void generator.return?.(undefined);
         }
       };
     }

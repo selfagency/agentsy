@@ -1,12 +1,12 @@
-export { cancellationTokenToAbortSignal } from './cancellation-token-to-abort-signal.js';
-export type { VSCodeAgentLoopOptions } from './create-vs-code-agent-loop.js';
-export { createVSCodeAgentLoop } from './create-vs-code-agent-loop.js';
+export { cancellationTokenToAbortSignal } from './cancellationTokenToAbortSignal.js';
+export { createVSCodeAgentLoop } from './createVSCodeAgentLoop.js';
+export type { VSCodeAgentLoopOptions } from './createVSCodeAgentLoop.js';
+export { createVSCodeChatRenderer } from './createVSCodeChatRenderer.js';
 export type {
   ChatResponseStream,
   MinimalChatResponseStream,
   VSCodeChatRendererOptions
-} from './create-vs-code-chat-renderer.js';
-export { createVSCodeChatRenderer } from './create-vs-code-chat-renderer.js';
+} from './createVSCodeChatRenderer.js';
 export {
   accumulateToolCallDeltas,
   ToolCallDeltaAccumulator,

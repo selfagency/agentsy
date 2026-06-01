@@ -18,21 +18,30 @@ export function isTelegramAdapterAvailable(): boolean {
 }
 
 export class TelegramAdapterNotAvailableError extends Error {
-  name = 'TelegramAdapterNotAvailableError';
-  message = 'TelegramAdapter requires the grammy peer dependency. Install it with pnpm add grammy@^1.';
+  constructor() {
+    super('TelegramAdapter requires the grammy peer dependency. Install it with pnpm add grammy@^1.');
+    Object.defineProperty(this, 'name', {
+      value: 'TelegramAdapterNotAvailableError',
+      configurable: true
+    });
+    Object.defineProperty(this, 'message', {
+      value: 'TelegramAdapter requires the grammy peer dependency. Install it with pnpm add grammy@^1.',
+      configurable: true
+    });
+  }
 }
 
 export const TelegramAdapter = {
-  connect: () => {
+  connect: async () => {
     throw new TelegramAdapterNotAvailableError();
   },
-  disconnect: () => {
+  disconnect: async () => {
+    throw new TelegramAdapterNotAvailableError();
+  },
+  send: async () => {
     throw new TelegramAdapterNotAvailableError();
   },
   onMessage: () => {
-    throw new TelegramAdapterNotAvailableError();
-  },
-  send: () => {
     throw new TelegramAdapterNotAvailableError();
   }
 };

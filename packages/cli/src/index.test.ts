@@ -15,11 +15,11 @@ describe('cli package scaffold', () => {
     const stdout: string[] = [];
 
     const exitCode = await runCli(['compress', '--level', 'full', '--text', 'very very verbose verbose text'], {
-      stderr: () => {
-        // no-op
-      },
       stdout: value => {
         stdout.push(value);
+      },
+      stderr: () => {
+        // no-op
       }
     });
 
@@ -30,22 +30,22 @@ describe('cli package scaffold', () => {
   it('runs compress command for file input', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'agentsy-cli-compress-'));
     const filePath = join(dir, 'response.md');
-    await writeFile(filePath, 'This is basically a simple response with fluff.', 'utf-8');
+    await writeFile(filePath, 'This is basically a simple response with fluff.', 'utf8');
 
     const stdout: string[] = [];
     const stderr: string[] = [];
 
     const code = await runCli(['compress', '--file', filePath, '--level', 'full'], {
-      stderr: (message: string) => {
-        stderr.push(message);
-      },
       stdout: (message: string) => {
         stdout.push(message);
+      },
+      stderr: (message: string) => {
+        stderr.push(message);
       }
     });
 
     expect(code).toBe(0);
-    expect(stderr).toStrictEqual([]);
+    expect(stderr).toEqual([]);
     expect(stdout.join('\n')).toContain('Savings:');
   });
 
@@ -54,45 +54,45 @@ describe('cli package scaffold', () => {
 
     try {
       const filePath = join(dir, 'CLAUDE.md');
-      await writeFile(filePath, 'line\n\nline\n', 'utf-8');
+      await writeFile(filePath, 'line\n\nline\n', 'utf8');
 
       const exitCode = await runCli(['compress-memory', '--file', filePath], {
-        stderr: () => {
+        stdout: () => {
           // no-op
         },
-        stdout: () => {
+        stderr: () => {
           // no-op
         }
       });
-      const backup = await readFile(`${filePath}.original.md`, 'utf-8');
+      const backup = await readFile(`${filePath}.original.md`, 'utf8');
 
       expect(exitCode).toBe(0);
       expect(backup).toBe('line\n\nline\n');
     } finally {
-      await rm(dir, { force: true, recursive: true });
+      await rm(dir, { recursive: true, force: true });
     }
   });
 
   it('runs compress-memory command and writes compressed file with backup', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'agentsy-cli-memory-'));
     const filePath = join(dir, 'CLAUDE.md');
-    await writeFile(filePath, 'This is basically a memory file that is actually verbose.', 'utf-8');
+    await writeFile(filePath, 'This is basically a memory file that is actually verbose.', 'utf8');
 
     const stdout: string[] = [];
 
     const code = await runCli(['compress-memory', '--file', filePath], {
-      stderr: () => {
-        // no-op for test
-      },
       stdout: (message: string) => {
         stdout.push(message);
+      },
+      stderr: () => {
+        // no-op for test
       }
     });
 
     expect(code).toBe(0);
 
-    const updated = await readFile(filePath, 'utf-8');
-    const backup = await readFile(`${filePath}.original.md`, 'utf-8');
+    const updated = await readFile(filePath, 'utf8');
+    const backup = await readFile(`${filePath}.original.md`, 'utf8');
 
     expect(updated.length).toBeLessThanOrEqual(backup.length);
     expect(stdout.join('\n')).toContain('Savings:');
@@ -102,11 +102,11 @@ describe('cli package scaffold', () => {
     const stdout: string[] = [];
 
     const code = await runCli(['memory-sync-dev'], {
-      stderr: () => {
-        // no-op
-      },
       stdout: message => {
         stdout.push(message);
+      },
+      stderr: () => {
+        // no-op
       }
     });
 
@@ -135,23 +135,23 @@ describe('cli package scaffold', () => {
         '1500'
       ],
       {
-        stderr: () => {
-          // no-op
-        },
         stdout: message => {
           stdout.push(message);
+        },
+        stderr: () => {
+          // no-op
         }
       }
     );
 
     expect(code).toBe(0);
     expect(JSON.parse(stdout[0] ?? '{}')).toMatchObject({
-      bindAddress: '127.0.0.1:9090',
-      replicaDbPath: './tmp/replica.db',
       serverDbPath: './tmp/server.db',
+      replicaDbPath: './tmp/replica.db',
+      bindAddress: '127.0.0.1:9090',
       serverUrl: 'http://localhost:9090',
-      startCommand: 'tursodb ./tmp/server.db --sync-server 127.0.0.1:9090',
-      syncIntervalMs: 1500
+      syncIntervalMs: 1500,
+      startCommand: 'tursodb ./tmp/server.db --sync-server 127.0.0.1:9090'
     });
   });
 
@@ -159,11 +159,11 @@ describe('cli package scaffold', () => {
     const stderr: string[] = [];
 
     const code = await runCli(['memory-sync-dev', '--sync-interval-ms', 'nope'], {
-      stderr: message => {
-        stderr.push(message);
-      },
       stdout: () => {
         // no-op
+      },
+      stderr: message => {
+        stderr.push(message);
       }
     });
 
@@ -174,11 +174,11 @@ describe('cli package scaffold', () => {
   it('returns non-zero for unknown command', async () => {
     const stderr: string[] = [];
     const code = await runCli(['unknown-command'], {
-      stderr: (message: string) => {
-        stderr.push(message);
-      },
       stdout: () => {
         // no-op
+      },
+      stderr: (message: string) => {
+        stderr.push(message);
       }
     });
 

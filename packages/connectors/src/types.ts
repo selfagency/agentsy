@@ -2,57 +2,58 @@
  * Inbound message from a platform adapter
  */
 export interface InboundMessage {
-  attachments?: Attachment[];
   channelId: string;
-  rawPayload: unknown;
-  text: string;
-  threadId?: string;
   userId: string;
+  threadId?: string;
+  text: string;
+  attachments?: Attachment[];
+  rawPayload: unknown;
 }
 
 /**
  * Outbound message to send to a platform adapter
  */
 export interface OutboundMessage {
-  attachments?: Attachment[];
   channelId: string;
-  text: string;
-  threadId?: string;
   userId: string;
+  threadId?: string;
+  text: string;
+  attachments?: Attachment[];
 }
 
 /**
  * Attachment metadata
  */
 export interface Attachment {
-  filename?: string;
   id: string;
-  metadata?: Record<string, unknown>;
-  mimeType?: string;
   type: 'image' | 'video' | 'audio' | 'document' | 'other';
   url?: string;
+  filename?: string;
+  mimeType?: string;
+  metadata?: Record<string, unknown>;
 }
 
 /**
  * Channel adapter configuration and interface
  */
 export interface ChannelAdapter<TConfig = unknown> {
+  id: string;
+  type: string;
+
   connect(config: TConfig): Promise<void>;
   disconnect(): Promise<void>;
-  id: string;
-  onMessage(handler: (msg: InboundMessage) => Promise<void>): void;
   send(msg: OutboundMessage): Promise<void>;
-  type: string;
+  onMessage(handler: (msg: InboundMessage) => Promise<void>): void;
 }
 
 /**
  * Session storage interface
  */
 export interface SessionStore {
-  delete(key: string): Promise<void>;
   get(key: string): Promise<string | null>;
-  has(key: string): Promise<boolean>;
   set(key: string, value: string): Promise<void>;
+  delete(key: string): Promise<void>;
+  has(key: string): Promise<boolean>;
 }
 
 /**
@@ -67,7 +68,7 @@ export interface AgentSessionManagerOptions {
  * Connector gateway options
  */
 export interface ConnectorGatewayOptions {
-  adapters: ChannelAdapter[];
+  adapters: ChannelAdapter<unknown>[];
   sessionManager?: AgentSessionManagerOptions;
 }
 
@@ -109,10 +110,10 @@ export function isBuiltInCommand(text: string): text is BuiltInCommandType {
  */
 export function stripXmlContextTags(text: string): string {
   return text
-    .replaceAll(/<SYSTEM>[\s\S]*?<\/SYSTEM>/giu, '')
-    .replaceAll(/<system>[\s\S]*?<\/system>/giu, '')
-    .replaceAll(/<INSTRUCTION>[\s\S]*?<\/INSTRUCTION>/giu, '')
-    .replaceAll(/<instruction>[\s\S]*?<\/instruction>/giu, '')
-    .replaceAll(/<THOUGHT>[\s\S]*?<\/THOUGHT>/giu, '')
-    .replaceAll(/<thought>[\s\S]*?<\/thought>/giu, '');
+    .replace(/<SYSTEM>[\s\S]*?<\/SYSTEM>/gi, '')
+    .replace(/<system>[\s\S]*?<\/system>/gi, '')
+    .replace(/<INSTRUCTION>[\s\S]*?<\/INSTRUCTION>/gi, '')
+    .replace(/<instruction>[\s\S]*?<\/instruction>/gi, '')
+    .replace(/<THOUGHT>[\s\S]*?<\/THOUGHT>/gi, '')
+    .replace(/<thought>[\s\S]*?<\/thought>/gi, '');
 }

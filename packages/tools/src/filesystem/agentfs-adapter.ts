@@ -1,17 +1,17 @@
 /** Minimal structural interface matching AgentFsManager's shape — no import from @agentsy/memory. */
 export interface AgentFsLike {
-  delete(path: string): boolean;
-  list(): { path: string; contentHash: string }[];
   read(path: string): { content: string; contentHash: string } | undefined;
   write(path: string, content: string): { contentHash: string };
+  delete(path: string): boolean;
+  list(): Array<{ path: string; contentHash: string }>;
 }
 
 export interface AgentFsToolResult {
+  readonly ok: boolean;
+  readonly path: string;
   readonly content?: string;
   readonly contentHash?: string;
   readonly error?: string;
-  readonly ok: boolean;
-  readonly path: string;
 }
 
 export interface AgentFsReadInput {
@@ -19,8 +19,8 @@ export interface AgentFsReadInput {
 }
 
 export interface AgentFsWriteInput {
-  readonly content: string;
   readonly path: string;
+  readonly content: string;
 }
 
 export interface AgentFsDeleteInput {
@@ -28,62 +28,49 @@ export interface AgentFsDeleteInput {
 }
 
 export interface AgentFsListResult {
-  readonly entries: { path: string; contentHash: string }[];
   readonly ok: boolean;
+  readonly entries: Array<{ path: string; contentHash: string }>;
 }
 
 export interface AgentFsAdapter {
-  delete(input: AgentFsDeleteInput): AgentFsToolResult;
-  list(): AgentFsListResult;
   readonly name: 'agentfs';
   read(input: AgentFsReadInput): AgentFsToolResult;
   write(input: AgentFsWriteInput): AgentFsToolResult;
+  delete(input: AgentFsDeleteInput): AgentFsToolResult;
+  list(): AgentFsListResult;
 }
 
 export function createAgentFsAdapter(manager: AgentFsLike): AgentFsAdapter {
   return {
-    delete({ path }) {
-      const deleted = manager.delete(path);
-      if (!deleted) {
-        return {
-          error: `Path not found or already deleted: ${path}`,
-          ok: false,
-          path
-        };
-      }
-      return { ok: true, path };
-    },
-
-    list() {
-      return { entries: manager.list(), ok: true };
-    },
-
     name: 'agentfs',
 
     read({ path }) {
       const entry = manager.read(path);
       if (entry === undefined) {
-        return { error: `Path not found: ${path}`, ok: false, path };
+        return { ok: false, path, error: `Path not found: ${path}` };
       }
-      return {
-        content: entry.content,
-        contentHash: entry.contentHash,
-        ok: true,
-        path
-      };
+      return { ok: true, path, content: entry.content, contentHash: entry.contentHash };
     },
 
     write({ path, content }) {
       try {
         const entry = manager.write(path, content);
-        return { contentHash: entry.contentHash, ok: true, path };
-      } catch (error) {
-        return {
-          error: error instanceof Error ? error.message : String(error),
-          ok: false,
-          path
-        };
+        return { ok: true, path, contentHash: entry.contentHash };
+      } catch (err) {
+        return { ok: false, path, error: err instanceof Error ? err.message : String(err) };
       }
+    },
+
+    delete({ path }) {
+      const deleted = manager.delete(path);
+      if (!deleted) {
+        return { ok: false, path, error: `Path not found or already deleted: ${path}` };
+      }
+      return { ok: true, path };
+    },
+
+    list() {
+      return { ok: true, entries: manager.list() };
     }
   };
 }

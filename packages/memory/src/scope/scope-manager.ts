@@ -2,9 +2,9 @@ export type MemoryScope = 'session' | 'user' | 'project' | 'team' | 'global';
 export type ScopeAction = 'read' | 'write';
 
 export interface ScopeGrant {
+  scope: MemoryScope;
   actions: ScopeAction[];
   includeDescendants?: boolean;
-  scope: MemoryScope;
 }
 
 export interface ScopePolicy {
@@ -13,25 +13,25 @@ export interface ScopePolicy {
 }
 
 export interface ScopeAccessRequest {
-  action: ScopeAction;
   actorId: string;
+  action: ScopeAction;
   scope: MemoryScope;
 }
 
 export interface ScopeManager {
-  assertAccess(request: ScopeAccessRequest): void;
-  canAccess(request: ScopeAccessRequest): boolean;
-  filterAccessibleScopes(actorId: string, action: ScopeAction, scopes: MemoryScope[]): MemoryScope[];
-  removePolicy(actorId: string): void;
   setPolicy(policy: ScopePolicy): void;
+  removePolicy(actorId: string): void;
+  canAccess(request: ScopeAccessRequest): boolean;
+  assertAccess(request: ScopeAccessRequest): void;
+  filterAccessibleScopes(actorId: string, action: ScopeAction, scopes: MemoryScope[]): MemoryScope[];
 }
 
 const SCOPE_DESCENDANTS: Record<MemoryScope, readonly MemoryScope[]> = {
   global: ['team', 'project', 'user', 'session'],
-  project: ['user', 'session'],
-  session: [],
   team: ['project', 'user', 'session'],
-  user: ['session']
+  project: ['user', 'session'],
+  user: ['session'],
+  session: []
 };
 
 function grantMatchesScope(grant: ScopeGrant, requestedScope: MemoryScope): boolean {
@@ -50,12 +50,19 @@ export function createScopeManager(): ScopeManager {
   const policies = new Map<string, ScopePolicy>();
 
   return {
-    assertAccess(request) {
-      if (!this.canAccess(request)) {
-        throw new Error(
-          `Access denied: actor=${request.actorId} action=${request.action} scope=${request.scope} (deny-by-default)`
-        );
-      }
+    setPolicy(policy) {
+      policies.set(policy.actorId, {
+        actorId: policy.actorId,
+        grants: policy.grants.map(grant => ({
+          scope: grant.scope,
+          actions: [...grant.actions],
+          includeDescendants: grant.includeDescendants ?? false
+        }))
+      });
+    },
+
+    removePolicy(actorId) {
+      policies.delete(actorId);
     },
 
     canAccess(request) {
@@ -69,23 +76,16 @@ export function createScopeManager(): ScopeManager {
       );
     },
 
+    assertAccess(request) {
+      if (!this.canAccess(request)) {
+        throw new Error(
+          `Access denied: actor=${request.actorId} action=${request.action} scope=${request.scope} (deny-by-default)`
+        );
+      }
+    },
+
     filterAccessibleScopes(actorId, action, scopes) {
-      return scopes.filter(scope => this.canAccess({ action, actorId, scope }));
-    },
-
-    removePolicy(actorId) {
-      policies.delete(actorId);
-    },
-
-    setPolicy(policy) {
-      policies.set(policy.actorId, {
-        actorId: policy.actorId,
-        grants: policy.grants.map(grant => ({
-          actions: [...grant.actions],
-          includeDescendants: grant.includeDescendants ?? false,
-          scope: grant.scope
-        }))
-      });
+      return scopes.filter(scope => this.canAccess({ actorId, action, scope }));
     }
   };
 }

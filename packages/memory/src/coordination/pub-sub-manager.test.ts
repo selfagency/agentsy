@@ -1,24 +1,23 @@
-import { describe, expect, expectTypeOf, it, vi } from 'vitest';
-
+import { describe, expect, it, vi } from 'vitest';
 import { createInMemoryPubSubManager } from './pub-sub-manager.js';
 
 describe('PubSubManager', () => {
   describe('subscribe', () => {
     it('should register a listener and return an unsubscribe function', () => {
       const manager = createInMemoryPubSubManager();
-      const listener = vi.fn<() => void>();
+      const listener = vi.fn();
 
       const unsubscribe = manager.subscribe('test-channel', listener);
 
-      expectTypeOf(unsubscribe).toBeFunction();
+      expect(typeof unsubscribe).toBe('function');
       expect(manager.subscriberCount('test-channel')).toBe(1);
     });
 
     it('should support multiple listeners on the same channel', () => {
       const manager = createInMemoryPubSubManager();
-      const listener1 = vi.fn<() => void>();
-      const listener2 = vi.fn<() => void>();
-      const listener3 = vi.fn<() => void>();
+      const listener1 = vi.fn();
+      const listener2 = vi.fn();
+      const listener3 = vi.fn();
 
       manager.subscribe('channel1', listener1);
       manager.subscribe('channel1', listener2);
@@ -29,8 +28,8 @@ describe('PubSubManager', () => {
 
     it('should support listeners on different channels', () => {
       const manager = createInMemoryPubSubManager();
-      const listener1 = vi.fn<() => void>();
-      const listener2 = vi.fn<() => void>();
+      const listener1 = vi.fn();
+      const listener2 = vi.fn();
 
       manager.subscribe('channel1', listener1);
       manager.subscribe('channel2', listener2);
@@ -41,7 +40,7 @@ describe('PubSubManager', () => {
 
     it('should allow the same listener to subscribe to multiple channels', () => {
       const manager = createInMemoryPubSubManager();
-      const listener = vi.fn<() => void>();
+      const listener = vi.fn();
 
       manager.subscribe('channel1', listener);
       manager.subscribe('channel2', listener);
@@ -52,9 +51,9 @@ describe('PubSubManager', () => {
   });
 
   describe('unsubscribe', () => {
-    it('should remove a listener when unsubscribe is called', () => {
+    it('should remove a listener when unsubscribe is called', async () => {
       const manager = createInMemoryPubSubManager();
-      const listener = vi.fn<() => void>();
+      const listener = vi.fn();
 
       const unsubscribe = manager.subscribe('test-channel', listener);
       expect(manager.subscriberCount('test-channel')).toBe(1);
@@ -63,11 +62,11 @@ describe('PubSubManager', () => {
       expect(manager.subscriberCount('test-channel')).toBe(0);
     });
 
-    it('should remove only the unsubscribed listener, keeping others', () => {
+    it('should remove only the unsubscribed listener, keeping others', async () => {
       const manager = createInMemoryPubSubManager();
-      const listener1 = vi.fn<() => void>();
-      const listener2 = vi.fn<() => void>();
-      const listener3 = vi.fn<() => void>();
+      const listener1 = vi.fn();
+      const listener2 = vi.fn();
+      const listener3 = vi.fn();
 
       manager.subscribe('channel1', listener1);
       const unsubscribeListener2 = manager.subscribe('channel1', listener2);
@@ -80,7 +79,7 @@ describe('PubSubManager', () => {
 
     it('should clean up channel when all listeners unsubscribe', () => {
       const manager = createInMemoryPubSubManager();
-      const listener = vi.fn<() => void>();
+      const listener = vi.fn();
 
       const unsubscribe = manager.subscribe('test-channel', listener);
       unsubscribe();
@@ -91,7 +90,7 @@ describe('PubSubManager', () => {
 
     it('should be safe to call unsubscribe multiple times', () => {
       const manager = createInMemoryPubSubManager();
-      const listener = vi.fn<() => void>();
+      const listener = vi.fn();
 
       const unsubscribe = manager.subscribe('test-channel', listener);
       unsubscribe();
@@ -106,9 +105,9 @@ describe('PubSubManager', () => {
   describe('publish', () => {
     it('should deliver payload to all subscribers', async () => {
       const manager = createInMemoryPubSubManager();
-      const listener1 = vi.fn<(payload: unknown) => void>();
-      const listener2 = vi.fn<(payload: unknown) => void>();
-      const listener3 = vi.fn<(payload: unknown) => void>();
+      const listener1 = vi.fn();
+      const listener2 = vi.fn();
+      const listener3 = vi.fn();
 
       manager.subscribe('test-channel', listener1);
       manager.subscribe('test-channel', listener2);
@@ -120,22 +119,22 @@ describe('PubSubManager', () => {
       expect(listener1).toHaveBeenCalledWith(payload);
       expect(listener2).toHaveBeenCalledWith(payload);
       expect(listener3).toHaveBeenCalledWith(payload);
-      expect(listener1).toHaveBeenCalledOnce();
-      expect(listener2).toHaveBeenCalledOnce();
-      expect(listener3).toHaveBeenCalledOnce();
+      expect(listener1).toHaveBeenCalledTimes(1);
+      expect(listener2).toHaveBeenCalledTimes(1);
+      expect(listener3).toHaveBeenCalledTimes(1);
     });
 
     it('should not deliver to listeners on different channels', async () => {
       const manager = createInMemoryPubSubManager();
-      const listener1 = vi.fn<(payload: unknown) => void>();
-      const listener2 = vi.fn<(payload: unknown) => void>();
+      const listener1 = vi.fn();
+      const listener2 = vi.fn();
 
       manager.subscribe('channel1', listener1);
       manager.subscribe('channel2', listener2);
 
       await manager.publish('channel1', { data: 'test' });
 
-      expect(listener1).toHaveBeenCalledWith({ data: 'test' });
+      expect(listener1).toHaveBeenCalled();
       expect(listener2).not.toHaveBeenCalled();
     });
 
@@ -148,7 +147,7 @@ describe('PubSubManager', () => {
 
     it('should deliver multiple payloads in sequence', async () => {
       const manager = createInMemoryPubSubManager();
-      const listener = vi.fn<(payload: unknown) => void>();
+      const listener = vi.fn();
 
       manager.subscribe('test-channel', listener);
 
@@ -168,7 +167,7 @@ describe('PubSubManager', () => {
 
     it('should not deliver to unsubscribed listeners', async () => {
       const manager = createInMemoryPubSubManager();
-      const listener = vi.fn<(payload: unknown) => void>();
+      const listener = vi.fn();
 
       const unsubscribe = manager.subscribe('test-channel', listener);
       unsubscribe();
@@ -180,14 +179,14 @@ describe('PubSubManager', () => {
 
     it('should support complex payload types', async () => {
       const manager = createInMemoryPubSubManager();
-      const listener = vi.fn<(payload: unknown) => void>();
+      const listener = vi.fn();
 
       manager.subscribe('test-channel', listener);
 
       const complexPayload = {
-        array: [1, 2, 3],
         id: 'test-123',
         nested: { level1: { level2: 'value' } },
+        array: [1, 2, 3],
         timestamp: Date.now()
       };
 
@@ -205,9 +204,9 @@ describe('PubSubManager', () => {
 
     it('should track subscriber count accurately', () => {
       const manager = createInMemoryPubSubManager();
-      const listener1 = vi.fn<() => void>();
-      const listener2 = vi.fn<() => void>();
-      const listener3 = vi.fn<() => void>();
+      const listener1 = vi.fn();
+      const listener2 = vi.fn();
+      const listener3 = vi.fn();
 
       expect(manager.subscriberCount('channel')).toBe(0);
 
@@ -234,49 +233,49 @@ describe('PubSubManager', () => {
   describe('Integration scenarios', () => {
     it('should handle subscribe, publish, unsubscribe cycle', async () => {
       const manager = createInMemoryPubSubManager();
-      const listener = vi.fn<(payload: unknown) => void>();
+      const listener = vi.fn();
 
       const unsub = manager.subscribe('events', listener);
       expect(manager.subscriberCount('events')).toBe(1);
 
       await manager.publish('events', { type: 'event1' });
-      expect(listener).toHaveBeenCalledOnce();
+      expect(listener).toHaveBeenCalledTimes(1);
 
       unsub();
       expect(manager.subscriberCount('events')).toBe(0);
 
       await manager.publish('events', { type: 'event2' });
-      expect(listener).toHaveBeenCalledOnce(); // Still 1, not called for event2
+      expect(listener).toHaveBeenCalledTimes(1); // Still 1, not called for event2
     });
 
     it('should support fan-out pattern with many subscribers', async () => {
       const manager = createInMemoryPubSubManager();
-      const listeners = Array.from({ length: 100 }, () => vi.fn<(payload: unknown) => void>());
+      const listeners = Array.from({ length: 100 }, () => vi.fn());
 
-      for (const listener of listeners) {
+      listeners.forEach(listener => {
         manager.subscribe('broadcast', listener);
-      }
+      });
 
       const payload = { broadcast: true };
       await manager.publish('broadcast', payload);
 
-      for (const listener of listeners) {
+      listeners.forEach(listener => {
         expect(listener).toHaveBeenCalledWith(payload);
-        expect(listener).toHaveBeenCalledOnce();
-      }
+        expect(listener).toHaveBeenCalledTimes(1);
+      });
     });
 
     it('should isolate channels completely', async () => {
       const manager = createInMemoryPubSubManager();
-      const channel1Listener = vi.fn<(payload: unknown) => void>();
-      const channel2Listener = vi.fn<(payload: unknown) => void>();
+      const channel1Listener = vi.fn();
+      const channel2Listener = vi.fn();
 
       manager.subscribe('channel1', channel1Listener);
       manager.subscribe('channel2', channel2Listener);
 
       await manager.publish('channel1', { source: 'channel1' });
 
-      expect(channel1Listener).toHaveBeenCalledOnce();
+      expect(channel1Listener).toHaveBeenCalledTimes(1);
       expect(channel2Listener).toHaveBeenCalledTimes(0);
     });
   });

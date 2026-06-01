@@ -1,3 +1,3 @@
 // fallow-ignore-file unused-file
 
-export { createMCPChatBridge, MCPChatBridge } from './mcp-chat-bridge.js';
+export { MCPChatBridge, createMCPChatBridge } from './mcpChatBridge.js';

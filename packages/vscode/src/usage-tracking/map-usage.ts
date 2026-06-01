@@ -1,9 +1,9 @@
-import type { UsageInfo } from '@agentsy/types';
+import type { UsageInfo } from '@agentsy/providers/normalizers';
 
 export interface VSCodeUsage {
+  promptTokens: number;
   completionTokens: number;
   outputBuffer?: number;
-  promptTokens: number;
 }
 
 /**
@@ -11,11 +11,11 @@ export interface VSCodeUsage {
  */
 export function mapUsageToVSCode(usage: UsageInfo | undefined): VSCodeUsage | undefined {
   if (usage === undefined) {
-    return;
+    return undefined;
   }
 
   return {
-    completionTokens: usage.outputTokens ?? 0,
-    promptTokens: usage.inputTokens ?? 0
+    promptTokens: usage.inputTokens ?? 0,
+    completionTokens: usage.outputTokens ?? 0
   };
 }

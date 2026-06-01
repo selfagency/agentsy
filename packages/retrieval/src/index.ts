@@ -1,5 +1,3 @@
-export { IndexingPipeline } from './indexing/index.js';
-export { RetrievalEngine } from './search/index.js';
 export type {
   Chunk,
   ChunkMetadata,
@@ -10,6 +8,7 @@ export type {
   SearchDocument,
   SearchResult
 } from './types.js';
+
 export {
   _Chunk,
   _ChunkMetadata,
@@ -21,3 +20,6 @@ export {
   _SearchResult,
   ChunkingStrategy
 } from './types.js';
+
+export { IndexingPipeline } from './indexing/index.js';
+export { RetrievalEngine } from './search/index.js';

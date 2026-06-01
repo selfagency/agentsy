@@ -1,5 +1,11 @@
-import type { ChatMessage, ChatToolCall } from './role-converter.js';
-import { convertRole, extractTextFromPart, extractToolCall, extractToolResult } from './role-converter.js';
+import {
+  convertRole,
+  extractTextFromPart,
+  extractToolCall,
+  extractToolResult,
+  type ChatMessage,
+  type ChatToolCall
+} from './role-converter.js';
 
 /**
  * Processes a single content part and accumulates results.
@@ -10,17 +16,13 @@ function processPart(
   toolCalls: ChatToolCall[],
   state: { toolCallId?: string }
 ): void {
-  if (!part || typeof part !== 'object') {
-    return;
-  }
+  if (!part || typeof part !== 'object') return;
   const p = part as Record<string, unknown>;
 
   // LanguageModelToolCallPart: has callId + name + input
   if ('callId' in p && 'name' in p && 'input' in p) {
     const tc = extractToolCall(p);
-    if (tc) {
-      toolCalls.push(tc);
-    }
+    if (tc) toolCalls.push(tc);
     return;
   }
 
@@ -36,9 +38,7 @@ function processPart(
 
   // LanguageModelTextPart: has value
   const text = extractTextFromPart(p);
-  if (text) {
-    textParts.push(text);
-  }
+  if (text) textParts.push(text);
 }
 
 /**
@@ -47,7 +47,7 @@ function processPart(
  */
 export function convertMessage(vsMessage: unknown): ChatMessage {
   if (!vsMessage || typeof vsMessage !== 'object') {
-    return { content: '', role: 'user' };
+    return { role: 'user', content: '' };
   }
 
   const msg = vsMessage as Record<string, unknown>;
@@ -56,11 +56,11 @@ export function convertMessage(vsMessage: unknown): ChatMessage {
   const name = typeof msg.name === 'string' ? msg.name : undefined;
 
   if (typeof rawContent === 'string') {
-    return { content: rawContent, role, ...(name ? { name } : {}) };
+    return { role, content: rawContent, ...(name ? { name } : {}) };
   }
 
   if (!Array.isArray(rawContent)) {
-    return { content: '', role, ...(name ? { name } : {}) };
+    return { role, content: '', ...(name ? { name } : {}) };
   }
 
   const textParts: string[] = [];
@@ -73,8 +73,8 @@ export function convertMessage(vsMessage: unknown): ChatMessage {
 
   const content = textParts.join('');
   const result: ChatMessage = {
-    content,
     role: state.toolCallId ? 'tool' : role,
+    content,
     ...(name ? { name } : {}),
     ...(state.toolCallId ? { toolCallId: state.toolCallId } : {}),
     ...(toolCalls.length > 0 ? { toolCalls } : {})

@@ -30,10 +30,7 @@ Use `@agentsy/runtime/ag-ui` when your application needs to adapt runtime or pro
 ```ts
 import { toAgUiStream } from '@agentsy/runtime/ag-ui';
 
-const agUiEvents = toAgUiStream(processedEventStream, {
-  runId: 'run-1',
-  threadId: 'thread-1'
-});
+const agUiEvents = toAgUiStream(processedEventStream, { runId: 'run-1', threadId: 'thread-1' });
 
 for await (const event of agUiEvents) {
   console.log(event.type);

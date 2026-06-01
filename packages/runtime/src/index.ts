@@ -1,51 +1,12 @@
+import type { SessionStore } from '@agentsy/session';
 import { randomUUID } from 'node:crypto';
 
-import type { SessionStore } from '@agentsy/session';
-import type {
-  RuntimeLoopOptions as BaseRuntimeLoopOptions,
-  RuntimeExecutor,
-  RuntimeLoop,
-  RuntimeOptions,
-  RuntimeSnapshot,
-  RuntimeTask,
-  RuntimeTaskContext,
-  RuntimeTaskResult,
-  RuntimeWorkflowExecutor,
-  RuntimeWorkflowTask
-} from '@agentsy/types';
-
-export type {
-  RuntimeExecutor,
-  RuntimeLoop,
-  RuntimeOptions,
-  RuntimeSnapshot,
-  RuntimeTask,
-  RuntimeTaskContext,
-  RuntimeTaskResult,
-  RuntimeWorkflowExecutor,
-  RuntimeWorkflowTask
-} from '@agentsy/types';
-
 export {
-  type BuildRuntimeContextInput,
   buildRuntimeContext,
+  type BuildRuntimeContextInput,
   type RuntimeContextReuse,
   type RuntimeReusableSegment
 } from './cache-aware-context.js';
-export type { RuntimeCheckpoint } from './checkpoint.js';
-export { checkpoint, clearCheckpoint, loadCheckpoint } from './checkpoint.js';
-export type {
-  GuardrailResult,
-  InputGuardrail,
-  OutputGuardrail,
-  ToolGuardrail
-} from './guardrails/index.js';
-export type { HookHandler, HookRegistry, HookResult, RuntimeHookEvent } from './hooks/index.js';
-// Hook registry and lifecycle events
-export { createRuntimeHookRegistry } from './hooks/index.js';
-export type { InterruptionCheckpoint } from './interruption.js';
-// Interruption and checkpoint
-export { createInterruption, resumeFromCheckpoint } from './interruption.js';
 export {
   buildRuntimeMemoryContextXml,
   injectRuntimeMemoryContext,
@@ -54,9 +15,69 @@ export {
   type RuntimeMemoryInjectionOptions
 } from './memory-injection.js';
 
-export type RuntimeLoopOptions = Omit<BaseRuntimeLoopOptions, 'sessionStore'> & {
+export interface RuntimeTask {
+  id: string;
+  run(signal: AbortSignal, context: RuntimeTaskContext): Promise<void>;
+}
+
+export interface RuntimeWorkflowTask extends RuntimeTask {
+  dependsOn?: string[];
+}
+
+export interface RuntimeTaskResult {
+  taskId: string;
+  status: 'completed' | 'failed' | 'skipped';
+  startedAt: number;
+  finishedAt: number;
+  error?: Error;
+}
+
+export interface RuntimeSnapshot {
+  sessionId: string;
+  depth: number;
+  completedTaskIds: string[];
+  results: RuntimeTaskResult[];
+  childSnapshots: RuntimeSnapshot[];
+  updatedAt: number;
+}
+
+export interface RuntimeTaskContext {
+  sessionId: string;
+  depth: number;
+  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
+}
+
+export interface RuntimeOptions {
+  onError?: (error: Error, task: RuntimeTask) => void;
+  onTaskStart?: (task: RuntimeTask) => void;
+  onTaskComplete?: (result: RuntimeTaskResult, task: RuntimeTask) => void;
+  taskContext?: RuntimeTaskContext;
+}
+
+export interface RuntimeExecutor {
+  execute(this: void, tasks: RuntimeTask[], signal?: AbortSignal): Promise<void>;
+  executeWithResults(this: void, tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeTaskResult[]>;
+}
+
+export interface RuntimeLoopOptions extends RuntimeOptions {
+  sessionId?: string;
+  snapshot?: RuntimeSnapshot;
   sessionStore?: SessionStore;
-};
+  snapshotKey?: string;
+  depth?: number;
+  maxDepth?: number;
+}
+
+export interface RuntimeLoop {
+  execute(tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeSnapshot>;
+  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
+  getSnapshot(): RuntimeSnapshot;
+  getDepth(): number;
+}
+
+export interface RuntimeWorkflowExecutor {
+  execute(tasks: RuntimeWorkflowTask[], signal?: AbortSignal): Promise<RuntimeSnapshot>;
+}
 
 function toError(error: unknown): Error {
   return error instanceof Error ? error : new Error('Runtime task failed');
@@ -64,11 +85,11 @@ function toError(error: unknown): Error {
 
 function createEmptySnapshot(sessionId: string, depth: number): RuntimeSnapshot {
   return {
-    childSnapshots: [],
-    completedTaskIds: [],
-    depth,
-    results: [],
     sessionId,
+    depth,
+    completedTaskIds: [],
+    results: [],
+    childSnapshots: [],
     updatedAt: Date.now()
   };
 }
@@ -112,18 +133,18 @@ function isRuntimeSnapshot(value: unknown): value is RuntimeSnapshot {
 
 function cloneSnapshot(snapshot: RuntimeSnapshot): RuntimeSnapshot {
   return {
-    childSnapshots: snapshot.childSnapshots.map(cloneSnapshot),
-    completedTaskIds: [...snapshot.completedTaskIds],
-    depth: snapshot.depth,
-    results: snapshot.results.map(result => ({ ...result })),
     sessionId: snapshot.sessionId,
+    depth: snapshot.depth,
+    completedTaskIds: [...snapshot.completedTaskIds],
+    results: snapshot.results.map(result => ({ ...result })),
+    childSnapshots: snapshot.childSnapshots.map(cloneSnapshot),
     updatedAt: snapshot.updatedAt
   };
 }
 
 export function loadRuntimeSnapshotFromSession(
   sessionStore: Pick<SessionStore, 'getValue'>,
-  snapshotKey = 'runtimeSnapshot'
+  snapshotKey: string = 'runtimeSnapshot'
 ): RuntimeSnapshot | null {
   const snapshot = sessionStore.getValue(snapshotKey);
   return isRuntimeSnapshot(snapshot) ? cloneSnapshot(snapshot) : null;
@@ -132,7 +153,7 @@ export function loadRuntimeSnapshotFromSession(
 export function saveRuntimeSnapshotToSession(
   sessionStore: Pick<SessionStore, 'setValue'>,
   snapshot: RuntimeSnapshot,
-  snapshotKey = 'runtimeSnapshot'
+  snapshotKey: string = 'runtimeSnapshot'
 ): void {
   sessionStore.setValue(snapshotKey, cloneSnapshot(snapshot));
 }
@@ -192,10 +213,10 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
       try {
         await task.run(signal, options.taskContext ?? createDetachedRuntimeTaskContext());
         const result: RuntimeTaskResult = {
-          finishedAt: Date.now(),
-          startedAt,
+          taskId: task.id,
           status: 'completed',
-          taskId: task.id
+          startedAt,
+          finishedAt: Date.now()
         };
         results.push(result);
         options.onTaskComplete?.(result, task);
@@ -203,11 +224,11 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
         const runtimeError = toError(error);
         options.onError?.(runtimeError, task);
         const result: RuntimeTaskResult = {
-          error: runtimeError,
-          finishedAt: Date.now(),
-          startedAt,
+          taskId: task.id,
           status: 'failed',
-          taskId: task.id
+          startedAt,
+          finishedAt: Date.now(),
+          error: runtimeError
         };
         results.push(result);
         options.onTaskComplete?.(result, task);
@@ -229,9 +250,9 @@ export const createRuntimeExecutor = (options: RuntimeOptions = {}): RuntimeExec
 
 function createDetachedRuntimeTaskContext(): RuntimeTaskContext {
   return {
-    depth: 0,
     sessionId: 'runtime-detached',
-    spawn() {
+    depth: 0,
+    async spawn() {
       throw new Error('Runtime spawning is unavailable without an attached runtime loop context');
     }
   };
@@ -260,9 +281,9 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
     const nextChildSessionId = childSessionId ?? `${sessionId}:child:${snapshot.childSnapshots.length + 1}`;
     const childLoop = createRuntimeLoop({
       ...options,
+      sessionId: nextChildSessionId,
       depth: depth + 1,
-      maxDepth,
-      sessionId: nextChildSessionId
+      maxDepth
     });
     const childSnapshot = await childLoop.execute(tasks, signal);
     snapshot = {
@@ -281,8 +302,8 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
   const executor = createRuntimeExecutor({
     ...options,
     taskContext: {
-      depth,
       sessionId,
+      depth,
       spawn
     }
   });
@@ -302,11 +323,11 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
       }
 
       snapshot = {
-        childSnapshots: snapshot.childSnapshots,
-        completedTaskIds: nextCompletedTaskIds,
-        depth,
-        results: [...snapshot.results, ...results],
         sessionId,
+        depth,
+        completedTaskIds: nextCompletedTaskIds,
+        results: [...snapshot.results, ...results],
+        childSnapshots: snapshot.childSnapshots,
         updatedAt: Date.now()
       };
 
@@ -317,15 +338,15 @@ export function createRuntimeLoop(options: RuntimeLoopOptions = {}): RuntimeLoop
       return cloneSnapshot(snapshot);
     },
 
-    getDepth() {
-      return depth;
-    },
+    spawn,
 
     getSnapshot() {
       return cloneSnapshot(snapshot);
     },
 
-    spawn
+    getDepth() {
+      return depth;
+    }
   };
 }
 
@@ -335,7 +356,7 @@ export function createRuntimeWorkflowExecutor(options: RuntimeLoopOptions = {}):
   return {
     async execute(tasks, signal) {
       const orderedTasks = getExecutionOrder(tasks);
-      return await loop.execute(orderedTasks, signal);
+      return loop.execute(orderedTasks, signal);
     }
   };
 }

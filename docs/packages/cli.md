@@ -24,23 +24,6 @@ The package now also exposes a local Turso sync server development helper comman
 - matching environment variable wiring for `@agentsy/memory`
 - an example `createTursoManager(...)` snippet for a local replica setup
 
-## Testing
-
-### Unit tests (Vitest)
-
-Colocated `.test.ts` files alongside source code cover function-level behavior (compress, compress-memory, memory-sync-dev, chat). Run with `pnpm test`.
-
-### E2E tests (tui-test)
-
-[`@microsoft/tui-test`](https://github.com/microsoft/tui-test) provides real-PTY terminal testing for all CLI commands. Specs live in `src/e2e/*.spec.ts` and are configured via `tui-test.config.ts`.
-
-```bash
-pnpm test:e2e     # Build + run E2E
-pnpm test:e2e:dev # Run E2E only (assumes dist/ built)
-```
-
-E2E specs are required for each CLI command and are enforced in CI.
-
 ## Notes
 
 This package is currently in active development. API surface is subject to change.

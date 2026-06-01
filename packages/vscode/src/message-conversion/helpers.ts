@@ -1,5 +1,4 @@
 import type { StreamChunk } from '@agentsy/core/processor';
-
 import type { LanguageModelChatResponseChunk } from '../provider/index.js';
 
 /**
@@ -35,11 +34,11 @@ export function mapStreamChunkToVsCode(chunk: StreamChunk): LanguageModelChatRes
     for (const delta of chunk.nativeToolCallDeltas) {
       parts.push({
         part: {
-          callId: delta.id,
+          type: 'tool-call',
           index: delta.index,
-          input: delta.argumentsDelta,
+          callId: delta.id,
           name: delta.name,
-          type: 'tool-call'
+          input: delta.argumentsDelta
         }
       });
     }

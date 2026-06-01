@@ -1,40 +1,40 @@
 export interface RetrievalMetricsInput {
-  hitCount: number;
   latencyMs: number;
+  hitCount: number;
   topScore?: number;
 }
 
 export interface InjectionMetricsInput {
-  budgetTokens: number;
   usedTokens: number;
+  budgetTokens: number;
 }
 
 export interface CoordinationLatencyStats {
-  avgMs: number;
   count: number;
-  maxMs: number;
   totalMs: number;
+  avgMs: number;
+  maxMs: number;
 }
 
 export interface MemoryMetricsSnapshot {
   coordination: Record<string, CoordinationLatencyStats>;
-  injection: {
-    usedTokens: number;
-    budgetTokens: number;
-    budgetRatio: number;
-  };
   retrieval: {
     queries: number;
     totalHits: number;
     averageLatencyMs: number;
     averageTopScore: number;
   };
+  injection: {
+    usedTokens: number;
+    budgetTokens: number;
+    budgetRatio: number;
+  };
 }
 
 export interface MemoryMetrics {
   recordCoordinationLatency(operation: string, latencyMs: number): void;
-  recordInjection(input: InjectionMetricsInput): void;
   recordRetrieval(query: string, input: RetrievalMetricsInput): void;
+  recordInjection(input: InjectionMetricsInput): void;
   snapshot(): MemoryMetricsSnapshot;
 }
 
@@ -46,8 +46,8 @@ export function redactSecretLikeValues(value: string): string {
 
 interface MutableCoordinationStat {
   count: number;
-  maxMs: number;
   totalMs: number;
+  maxMs: number;
 }
 
 export function createMemoryMetrics(): MemoryMetrics {
@@ -62,20 +62,11 @@ export function createMemoryMetrics(): MemoryMetrics {
   return {
     recordCoordinationLatency(operation, latencyMs) {
       const normalizedOperation = redactSecretLikeValues(operation);
-      const stat = coordination.get(normalizedOperation) ?? {
-        count: 0,
-        maxMs: 0,
-        totalMs: 0
-      };
+      const stat = coordination.get(normalizedOperation) ?? { count: 0, totalMs: 0, maxMs: 0 };
       stat.count += 1;
       stat.totalMs += latencyMs;
       stat.maxMs = Math.max(stat.maxMs, latencyMs);
       coordination.set(normalizedOperation, stat);
-    },
-
-    recordInjection(input) {
-      injectionUsedTokens += Math.max(0, input.usedTokens);
-      injectionBudgetTokens += Math.max(0, input.budgetTokens);
     },
 
     recordRetrieval(_query, input) {
@@ -86,29 +77,34 @@ export function createMemoryMetrics(): MemoryMetrics {
       retrievalTopScoreSum += Math.max(0, Math.min(1, input.topScore ?? 0));
     },
 
+    recordInjection(input) {
+      injectionUsedTokens += Math.max(0, input.usedTokens);
+      injectionBudgetTokens += Math.max(0, input.budgetTokens);
+    },
+
     snapshot() {
       const coordinationSnapshot: Record<string, CoordinationLatencyStats> = {};
       for (const [operation, stat] of coordination.entries()) {
         coordinationSnapshot[operation] = {
-          avgMs: stat.count === 0 ? 0 : stat.totalMs / stat.count,
           count: stat.count,
-          maxMs: stat.maxMs,
-          totalMs: stat.totalMs
+          totalMs: stat.totalMs,
+          avgMs: stat.count === 0 ? 0 : stat.totalMs / stat.count,
+          maxMs: stat.maxMs
         };
       }
 
       return {
         coordination: coordinationSnapshot,
-        injection: {
-          budgetRatio: injectionBudgetTokens === 0 ? 0 : injectionUsedTokens / injectionBudgetTokens,
-          budgetTokens: injectionBudgetTokens,
-          usedTokens: injectionUsedTokens
-        },
         retrieval: {
-          averageLatencyMs: retrievalQueries === 0 ? 0 : retrievalTotalLatency / retrievalQueries,
-          averageTopScore: retrievalQueries === 0 ? 0 : retrievalTopScoreSum / retrievalQueries,
           queries: retrievalQueries,
-          totalHits: retrievalTotalHits
+          totalHits: retrievalTotalHits,
+          averageLatencyMs: retrievalQueries === 0 ? 0 : retrievalTotalLatency / retrievalQueries,
+          averageTopScore: retrievalQueries === 0 ? 0 : retrievalTopScoreSum / retrievalQueries
+        },
+        injection: {
+          usedTokens: injectionUsedTokens,
+          budgetTokens: injectionBudgetTokens,
+          budgetRatio: injectionBudgetTokens === 0 ? 0 : injectionUsedTokens / injectionBudgetTokens
         }
       };
     }

@@ -50,10 +50,7 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createVSCodeChatRenderer } from '@agentsy/vscode';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
-const renderer = createVSCodeChatRenderer({
-  stream: responseStream,
-  showThinking: true
-});
+const renderer = createVSCodeChatRenderer({ stream: responseStream, showThinking: true });
 
 processor.on('text', text => void renderer.markdown(text));
 

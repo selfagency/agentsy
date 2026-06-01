@@ -6,37 +6,35 @@
 
 import type { Logger } from '../core/types.js';
 
-export const LogLevel = {
-  DEBUG: 0,
-  INFO: 1,
-  WARN: 2,
-  ERROR: 3
-} as const;
-
-export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
+export enum LogLevel {
+  DEBUG = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3
+}
 
 /**
  * Logger configuration
  */
 export interface LoggerConfig {
+  /** Minimum log level to output */
+  minLevel?: LogLevel;
   /** Whether to include timestamps */
   includeTimestamp?: boolean;
   /** Optional custom log level names */
   levelNames?: Record<LogLevel, string>;
-  /** Minimum log level to output */
-  minLevel?: LogLevel;
 }
 
 /**
  * Log entry with metadata
  */
 export interface LogEntry {
-  attributes?: Record<string, unknown>;
-  error?: unknown;
   level: LogLevel;
   levelName: string;
   message: string;
   timestamp: number;
+  attributes?: Record<string, unknown>;
+  error?: unknown;
 }
 
 /**
@@ -54,9 +52,9 @@ export class LoggerImpl implements Logger {
 
   constructor(config?: LoggerConfig) {
     this.config = {
+      minLevel: config?.minLevel ?? LogLevel.INFO,
       includeTimestamp: config?.includeTimestamp ?? true,
-      levelNames: { ...this.DEFAULT_LEVEL_NAMES, ...config?.levelNames },
-      minLevel: config?.minLevel ?? LogLevel.INFO
+      levelNames: { ...this.DEFAULT_LEVEL_NAMES, ...config?.levelNames }
     };
   }
 
@@ -91,21 +89,15 @@ export class LoggerImpl implements Logger {
       timestamp
     };
 
-    if (attributes) {
-      entry.attributes = attributes;
-    }
-    if (error) {
-      entry.error = error;
-    }
+    if (attributes) entry.attributes = attributes;
+    if (error) entry.error = error;
 
     this._buffer.push(entry);
 
     // For now, just output to console
     const timestampStr = this.config.includeTimestamp ? new Date(timestamp).toISOString() : '';
     const prefix = levelName.padEnd(5);
-    const suffix = timestampStr ? ` ${timestampStr}` : '';
-    const logPrefix = `[${prefix}${suffix}]`;
-    console.log(logPrefix, message, attributes ?? '', entry.error ?? '');
+    console.log(`[${prefix}${timestampStr ? ' ' + timestampStr : ''}] ${message}`, attributes ?? '', entry.error ?? '');
   }
 
   /**

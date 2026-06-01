@@ -1,38 +1,29 @@
 export type MistralContentPart = { type: 'text'; text: string } | { type: 'image_url'; imageUrl: string };
 
-export interface MistralToolCall {
+export type MistralToolCall = {
+  id: string;
+  type: 'function';
   function: {
     name: string;
     arguments: string;
   };
-  id: string;
-  type: 'function';
-}
+};
 
 export type MistralMessage =
   | { role: 'system'; content: string }
   | { role: 'user'; content: string | MistralContentPart[] }
-  | {
-      role: 'assistant';
-      content: string | MistralContentPart[] | null;
-      toolCalls?: MistralToolCall[];
-    }
+  | { role: 'assistant'; content: string | MistralContentPart[] | null; toolCalls?: MistralToolCall[] }
   | { role: 'tool'; content: string | null; toolCallId: string; name?: string };
 
 export type MistralOutboundPart =
   | { type: 'text'; text: string }
   | { type: 'image'; mimeType: string; data: Uint8Array | string }
-  | {
-      type: 'tool-call';
-      callId: string;
-      name: string;
-      input?: Record<string, unknown>;
-    }
+  | { type: 'tool-call'; callId: string; name: string; input?: Record<string, unknown> }
   | { type: 'tool-result'; callId: string; content: string };
 
 export interface MistralOutboundMessage {
-  parts: MistralOutboundPart[];
   role: 'system' | 'user' | 'assistant';
+  parts: MistralOutboundPart[];
 }
 
 export interface MistralOutboundAdapterOptions {
@@ -43,13 +34,13 @@ export interface MistralOutboundAdapterOptions {
 }
 
 interface CollectedMessageParts {
-  imageParts: MistralContentPart[];
   text: string;
+  imageParts: MistralContentPart[];
   toolCalls: MistralToolCall[];
-  toolResults: { callId: string; content: string }[];
+  toolResults: Array<{ callId: string; content: string }>;
 }
 
-const VALID_MISTRAL_TOOL_CALL_ID = /^[A-Za-z0-9]{9}$/u;
+const VALID_MISTRAL_TOOL_CALL_ID = /^[A-Za-z0-9]{9}$/;
 
 function defaultNormalizeToolCallIdFactory(): (originalId: string) => string {
   let next = 0;
@@ -75,9 +66,7 @@ function defaultNormalizeToolCallIdFactory(): (originalId: string) => string {
 
 function toImageDataUri(mimeType: string, data: Uint8Array | string): string {
   if (typeof data === 'string') {
-    if (data.startsWith('data:')) {
-      return data;
-    }
+    if (data.startsWith('data:')) return data;
     return `data:${mimeType};base64,${data}`;
   }
   const base64 = Buffer.from(data).toString('base64');
@@ -93,7 +82,7 @@ function collectMessageParts(
   const textParts: string[] = [];
   const imageParts: MistralContentPart[] = [];
   const toolCalls: MistralToolCall[] = [];
-  const toolResults: { callId: string; content: string }[] = [];
+  const toolResults: Array<{ callId: string; content: string }> = [];
 
   for (const part of message.parts) {
     if (part.type === 'text') {
@@ -104,15 +93,15 @@ function collectMessageParts(
     if (part.type === 'image') {
       if (message.role === 'system') {
         onWarning?.('Dropping non-text system image part for Mistral message.', {
-          mimeType: part.mimeType,
-          role: message.role
+          role: message.role,
+          mimeType: part.mimeType
         });
         continue;
       }
 
       imageParts.push({
-        imageUrl: toImageDataUri(part.mimeType, part.data),
-        type: 'image_url'
+        type: 'image_url',
+        imageUrl: toImageDataUri(part.mimeType, part.data)
       });
       continue;
     }
@@ -121,12 +110,12 @@ function collectMessageParts(
       const normalizedCallId = normalizeToolCallId(part.callId);
       toolNameById.set(normalizedCallId, part.name);
       toolCalls.push({
-        function: {
-          arguments: JSON.stringify(part.input ?? {}),
-          name: part.name
-        },
         id: normalizedCallId,
-        type: 'function'
+        type: 'function',
+        function: {
+          name: part.name,
+          arguments: JSON.stringify(part.input ?? {})
+        }
       });
       continue;
     }
@@ -139,8 +128,8 @@ function collectMessageParts(
   }
 
   return {
-    imageParts,
     text: textParts.join(''),
+    imageParts,
     toolCalls,
     toolResults
   };
@@ -158,7 +147,7 @@ function buildContentForMistralMessage(
   if (hasImages) {
     const multimodal: MistralContentPart[] = [];
     if (hasText) {
-      multimodal.push({ text, type: 'text' });
+      multimodal.push({ type: 'text', text });
     }
     multimodal.push(...imageParts);
     return multimodal;
@@ -171,6 +160,8 @@ function buildContentForMistralMessage(
   if (role === 'assistant' && hasToolCalls) {
     return null;
   }
+
+  return undefined;
 }
 
 function emitSystemMessage(
@@ -182,7 +173,7 @@ function emitSystemMessage(
   onWarning?: (message: string, context?: Record<string, unknown>) => void
 ): void {
   if (text.length > 0) {
-    out.push({ content: text, role: 'system' });
+    out.push({ role: 'system', content: text });
   }
 
   if (imageCount > 0 || toolCallCount > 0 || toolResultCount > 0) {
@@ -203,8 +194,8 @@ function emitNonSystemMessage(
   if (role === 'assistant') {
     if (content !== undefined || toolCalls.length > 0) {
       out.push({
-        content: content ?? null,
         role: 'assistant',
+        content: content ?? null,
         ...(toolCalls.length > 0 ? { toolCalls } : {})
       });
     }
@@ -212,20 +203,20 @@ function emitNonSystemMessage(
   }
 
   if (content !== undefined && content !== null) {
-    out.push({ content, role: 'user' });
+    out.push({ role: 'user', content });
   }
 }
 
 function emitToolResults(
   out: MistralMessage[],
-  toolResults: { callId: string; content: string }[],
+  toolResults: Array<{ callId: string; content: string }>,
   toolNameById: Map<string, string>
 ): void {
   for (const result of toolResults) {
     const toolName = toolNameById.get(result.callId);
     out.push({
-      content: result.content,
       role: 'tool',
+      content: result.content,
       toolCallId: result.callId,
       ...(typeof toolName === 'string' ? { name: toolName } : {})
     });

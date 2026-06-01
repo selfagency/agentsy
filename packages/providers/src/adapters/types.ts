@@ -5,20 +5,15 @@
 export type OutboundPart =
   | { type: 'text'; text: string }
   | { type: 'image'; mimeType: string; data: Uint8Array | string }
-  | {
-      type: 'tool-call';
-      callId: string;
-      name: string;
-      input?: Record<string, unknown>;
-    }
+  | { type: 'tool-call'; callId: string; name: string; input?: Record<string, unknown> }
   | { type: 'tool-result'; callId: string; content: string };
 
 /**
  * Common message type for outbound messages across adapters.
  */
 export interface OutboundMessage {
-  parts: OutboundPart[];
   role: 'system' | 'user' | 'assistant';
+  parts: OutboundPart[];
 }
 
 /**

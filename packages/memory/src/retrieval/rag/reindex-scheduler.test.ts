@@ -5,23 +5,21 @@ import { createReindexScheduler } from './reindex-scheduler.js';
 describe('ReindexScheduler', () => {
   it('starts, triggers, and stops without duplicate intervals', async () => {
     vi.useFakeTimers();
-    const run = vi.fn<() => Promise<void>>(async () => {
-      /* no-op */
-    });
+    const run = vi.fn(async () => {});
     const scheduler = createReindexScheduler({ intervalMs: 300, run });
 
     scheduler.start();
     scheduler.start();
-    expect(scheduler.isRunning()).toBeTruthy();
+    expect(scheduler.isRunning()).toBe(true);
 
     await scheduler.triggerNow();
-    expect(run).toHaveBeenCalledOnce();
+    expect(run).toHaveBeenCalledTimes(1);
 
     vi.advanceTimersByTime(650);
     expect(run).toHaveBeenCalledTimes(3);
 
     scheduler.stop();
-    expect(scheduler.isRunning()).toBeFalsy();
+    expect(scheduler.isRunning()).toBe(false);
     vi.useRealTimers();
   });
 });

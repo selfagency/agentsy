@@ -46,27 +46,27 @@ import {Text} from 'ink';
 
 ```tsx
 {
-  /* Default - wrap at terminal width */
+	/* Default - wrap at terminal width */
 }
 <Text>Long text that wraps automatically</Text>;
 
 {
-  /* Truncate with ellipsis */
+	/* Truncate with ellipsis */
 }
 <Text wrap="truncate">Very long text...</Text>;
 
 {
-  /* Truncate at start */
+	/* Truncate at start */
 }
 <Text wrap="truncate-start">...end of long text</Text>;
 
 {
-  /* Truncate in middle */
+	/* Truncate in middle */
 }
 <Text wrap="truncate-middle">Start...end</Text>;
 
 {
-  /* Truncate at end */
+	/* Truncate at end */
 }
 <Text wrap="end">Text with no ellipsis</Text>;
 ```
@@ -76,10 +76,10 @@ import {Text} from 'ink';
 Container component using Flexbox layout. Similar to `<div>` in the browser.
 
 ```tsx
-import { Box, Text } from "ink";
+import {Box, Text} from 'ink';
 
 <Box>
-  <Text>Content</Text>
+	<Text>Content</Text>
 </Box>;
 ```
 
@@ -157,48 +157,48 @@ import { Box, Text } from "ink";
 
 ```tsx
 {
-  /* Centered content */
+	/* Centered content */
 }
 <Box justifyContent="center" alignItems="center" height="100%">
-  <Text>Centered</Text>
+	<Text>Centered</Text>
 </Box>;
 
 {
-  /* Sidebar layout */
+	/* Sidebar layout */
 }
 <Box flexDirection="row" height="100%">
-  <Box width={20} borderStyle="single">
-    <Text>Sidebar</Text>
-  </Box>
-  <Box flexGrow={1}>
-    <Text>Main content</Text>
-  </Box>
+	<Box width={20} borderStyle="single">
+		<Text>Sidebar</Text>
+	</Box>
+	<Box flexGrow={1}>
+		<Text>Main content</Text>
+	</Box>
 </Box>;
 
 {
-  /* Grid-like layout */
+	/* Grid-like layout */
 }
 <Box flexDirection="row" gap={2}>
-  <Box width="50%">
-    <Text>Left</Text>
-  </Box>
-  <Box width="50%">
-    <Text>Right</Text>
-  </Box>
+	<Box width="50%">
+		<Text>Left</Text>
+	</Box>
+	<Box width="50%">
+		<Text>Right</Text>
+	</Box>
 </Box>;
 
 {
-  /* Bordered box with padding */
+	/* Bordered box with padding */
 }
 <Box borderStyle="round" borderColor="green" padding={1}>
-  <Text>Content with border</Text>
+	<Text>Content with border</Text>
 </Box>;
 
 {
-  /* Scrollable area */
+	/* Scrollable area */
 }
 <Box height={10} overflow="hidden">
-  <Text>{longContent}</Text>
+	<Text>{longContent}</Text>
 </Box>;
 ```
 
@@ -207,12 +207,12 @@ import { Box, Text } from "ink";
 Fill available space in a Flexbox container.
 
 ```tsx
-import { Box, Spacer, Text } from "ink";
+import {Box, Spacer, Text} from 'ink';
 
 <Box>
-  <Text>Left</Text>
-  <Spacer />
-  <Text>Right (pushed to edge)</Text>
+	<Text>Left</Text>
+	<Spacer />
+	<Text>Right (pushed to edge)</Text>
 </Box>;
 ```
 
@@ -223,22 +223,22 @@ import { Box, Spacer, Text } from "ink";
 Render content only once. Useful for logs or output that shouldn't re-render.
 
 ```tsx
-import { Static, Text } from "ink";
-import { useState, useEffect } from "react";
+import {Static, Text} from 'ink';
+import {useState, useEffect} from 'react';
 
 function LogOutput() {
-  const [logs, setLogs] = useState<string[]>([]);
+	const [logs, setLogs] = useState<string[]>([]);
 
-  useEffect(() => {
-    // Add logs over time
-    const interval = setInterval(() => {
-      setLogs((prev) => [...prev, `Log entry ${prev.length + 1}`]);
-    }, 1000);
+	useEffect(() => {
+		// Add logs over time
+		const interval = setInterval(() => {
+			setLogs(prev => [...prev, `Log entry ${prev.length + 1}`]);
+		}, 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+		return () => clearInterval(interval);
+	}, []);
 
-  return <Static items={logs}>{(log) => <Text key={log}>{log}</Text>}</Static>;
+	return <Static items={logs}>{log => <Text key={log}>{log}</Text>}</Static>;
 }
 ```
 
@@ -256,14 +256,14 @@ function LogOutput() {
 Add line breaks.
 
 ```tsx
-import { Newline, Text } from "ink";
+import {Newline, Text} from 'ink';
 
 <Text>
-  Line 1
-  <Newline />
-  Line 2
-  <Newline count={2} />
-  Line 3 (with extra spacing)
+	Line 1
+	<Newline />
+	Line 2
+	<Newline count={2} />
+	Line 3 (with extra spacing)
 </Text>;
 ```
 
@@ -279,18 +279,18 @@ React Fragment works as expected for grouping elements without adding layout:
 
 ```tsx
 <>
-  <Text>Line 1</Text>
-  <Text>Line 2</Text>
+	<Text>Line 1</Text>
+	<Text>Line 2</Text>
 </>
 ```
 
 Or use the explicit `Fragment` import:
 
 ```tsx
-import { Fragment } from "react";
+import {Fragment} from 'react';
 
 <Fragment>
-  <Text>Line 1</Text>
-  <Text>Line 2</Text>
+	<Text>Line 1</Text>
+	<Text>Line 2</Text>
 </Fragment>;
 ```

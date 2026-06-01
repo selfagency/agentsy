@@ -29,13 +29,13 @@ function isAccessible(path: string): boolean {
 
 export function detectContainerRuntime(): ContainerDetection {
   for (const socketPath of DOCKER_SOCKETS()) {
-    if (socketPath !== undefined && isAccessible(socketPath)) {
+    if (socketPath !== undefined && isAccessible(socketPath) === true) {
       return { available: true, runtime: 'docker', socketPath };
     }
   }
 
   for (const socketPath of PODMAN_SOCKETS()) {
-    if (socketPath !== undefined && isAccessible(socketPath)) {
+    if (socketPath !== undefined && isAccessible(socketPath) === true) {
       return { available: true, runtime: 'podman', socketPath };
     }
   }

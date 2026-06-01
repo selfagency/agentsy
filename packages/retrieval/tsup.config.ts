@@ -1,16 +1,16 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  clean: true,
-  dts: true,
   entry: {
     index: 'src/index.ts'
   },
-  external: ['@agentsy/core', '@agentsy/types', 'zod'],
   format: ['esm', 'cjs'],
-  minify: false,
+  dts: true,
+  clean: true,
   sourcemap: true,
+  external: ['@agentsy/core', '@agentsy/types', 'zod'],
   splitting: false,
-  target: 'node18',
-  treeshake: true
+  treeshake: true,
+  minify: false,
+  target: 'node18'
 });

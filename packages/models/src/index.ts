@@ -5,10 +5,10 @@ import type {
   LLMStatsLocalModel,
   LocalModelRecommendation,
   LocalRecommendationCriteria,
-  ModelSelectionResult,
   ModelsDevAPI,
   ModelsDevModel,
   ModelsDevProvider,
+  ModelSelectionResult,
   SystemCapabilities,
   TaskRequirements
 } from './types.js';
@@ -17,42 +17,21 @@ export type {
   LLMStatsLocalModel,
   LocalModelRecommendation,
   LocalRecommendationCriteria,
-  ModelSelectionResult,
   ModelsDevAPI,
   ModelsDevModel,
   ModelsDevProvider,
+  ModelSelectionResult,
   SystemCapabilities,
   TaskRequirements
 };
 
 // Cache structure
 interface CacheData {
-  data: ModelsDevAPI;
   timestamp: number;
+  data: ModelsDevAPI;
 }
 
-function isCacheData(value: unknown): value is CacheData {
-  return typeof value === 'object' && value !== null && 'timestamp' in value && 'data' in value;
-}
-
-function isModelsDevAPI(value: unknown): value is ModelsDevAPI {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-  const record = value as Record<string, unknown>;
-  return Object.values(record).every(
-    provider =>
-      typeof provider === 'object' &&
-      provider !== null &&
-      typeof (provider as Record<string, unknown>).id === 'string' &&
-      typeof (provider as Record<string, unknown>).models === 'object'
-  );
-}
-
-// nosemgrep: regex-dos-model-params
-// Pattern only matches short model-ID strings with bounded length (e.g. "70b", "13.5b").
-// No alternation or nested quantifiers; input is always a known model identifier.
-const PARAMS_B_PATTERN = /(\d+(?:\.\d+)?)\s*b\b/iu;
+const PARAMS_B_PATTERN = /(\d+(?:\.\d+)?)\s*b\b/i;
 
 const FORBIDDEN_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 
@@ -74,7 +53,7 @@ function clamp01(value: number): number {
 function parseParamsBillionsFromId(modelId: string): number | undefined {
   const match = PARAMS_B_PATTERN.exec(modelId);
   if (!match?.[1]) {
-    return;
+    return undefined;
   }
 
   const parsed = Number(match[1]);
@@ -88,27 +67,13 @@ function quantizationFactor(quantization?: string): number {
 
   const q = quantization.toLowerCase();
 
-  if (q.includes('q2')) {
-    return 0.2;
-  }
-  if (q.includes('q3')) {
-    return 0.28;
-  }
-  if (q.includes('q4')) {
-    return 0.36;
-  }
-  if (q.includes('q5')) {
-    return 0.45;
-  }
-  if (q.includes('q6')) {
-    return 0.56;
-  }
-  if (q.includes('q8')) {
-    return 0.7;
-  }
-  if (q.includes('f16')) {
-    return 1;
-  }
+  if (q.includes('q2')) return 0.2;
+  if (q.includes('q3')) return 0.28;
+  if (q.includes('q4')) return 0.36;
+  if (q.includes('q5')) return 0.45;
+  if (q.includes('q6')) return 0.56;
+  if (q.includes('q8')) return 0.7;
+  if (q.includes('f16')) return 1;
 
   return 0.5;
 }
@@ -143,10 +108,12 @@ function resolveModelsDevModel(
 
       const candidateIds = [normalizedModelId, normalizedModelKey, normalizedProviderModel];
       if (candidateIds.includes(normalizedTarget)) {
-        return { model, provider: providerId };
+        return { provider: providerId, model };
       }
     }
   }
+
+  return undefined;
 }
 
 function getCategoryBenchmarkScore(
@@ -174,12 +141,12 @@ function getAvailableVram(systemCapabilities: SystemCapabilities): number {
 }
 
 interface RecommendationInputs {
-  availableVram: number;
-  category: NonNullable<LocalRecommendationCriteria['taskCategory']>;
-  criteria: LocalRecommendationCriteria;
   entry: LLMStatsLocalModel;
+  criteria: LocalRecommendationCriteria;
+  category: NonNullable<LocalRecommendationCriteria['taskCategory']>;
   modelsDevData: ModelsDevAPI;
   systemCapabilities: SystemCapabilities;
+  availableVram: number;
 }
 
 function isEligibleForCriteria(model: ModelsDevModel, criteria: LocalRecommendationCriteria): boolean {
@@ -190,20 +157,6 @@ function isEligibleForCriteria(model: ModelsDevModel, criteria: LocalRecommendat
     return false;
   }
   return true;
-}
-
-function getMemoryRequirements(entry: LLMStatsLocalModel): {
-  requiredRamGb: number;
-  requiredVramGb: number;
-} {
-  if (entry.minRamGb !== undefined || entry.minVramGb !== undefined) {
-    return {
-      requiredRamGb: entry.minRamGb ?? entry.recommendedRamGb ?? 0,
-      requiredVramGb: entry.minVramGb ?? entry.recommendedVramGb ?? 0
-    };
-  }
-
-  return estimateMemoryRequirementsFromModelId(entry.modelId, entry.quantization);
 }
 
 function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommendation | null {
@@ -229,7 +182,7 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
   const ramFits = requiredRamGb <= systemCapabilities.ramGb;
   const vramFits = requiredVramGb <= availableVram || availableVram === 0;
 
-  if (!(ramFits && vramFits)) {
+  if (!ramFits || !vramFits) {
     return null;
   }
 
@@ -244,7 +197,7 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
   const rawCost = (model.cost.input ?? 0) + (model.cost.output ?? 0);
   const costScore = clamp01(1 / (1 + rawCost * 50));
 
-  const contextScore = clamp01(model.limit.context / 256_000);
+  const contextScore = clamp01(model.limit.context / 256000);
   const capabilityScore = criteria.requireToolCalling ? Number(model.tool_call) : 0.8;
 
   const fitWeight = 0.4;
@@ -263,22 +216,22 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
     costWeight * costScore;
 
   const recommendation: LocalModelRecommendation = {
-    benchmarkScore,
-    capabilities: {
-      reasoning: model.reasoning,
-      tool_calling: model.tool_call
-    },
-    compositeScore,
-    confidence: clamp01(compositeScore),
-    costScore,
-    estimatedCost: rawCost,
-    fitScore,
     model: model.id,
     provider,
+    confidence: clamp01(compositeScore),
+    estimatedCost: rawCost,
+    capabilities: {
+      tool_calling: model.tool_call,
+      reasoning: model.reasoning
+    },
     reasoning: `Fit ${fitScore.toFixed(2)}, benchmark ${benchmarkScore.toFixed(2)}, cost ${costScore.toFixed(2)} for ${category}`,
+    fitScore,
+    benchmarkScore,
+    speedScore,
+    costScore,
+    compositeScore,
     requiredRamGb,
-    requiredVramGb,
-    speedScore
+    requiredVramGb
   };
 
   if (entry.runtime !== undefined) {
@@ -290,6 +243,17 @@ function buildRecommendation(inputs: RecommendationInputs): LocalModelRecommenda
   }
 
   return recommendation;
+}
+
+function getMemoryRequirements(entry: LLMStatsLocalModel): { requiredRamGb: number; requiredVramGb: number } {
+  if (entry.minRamGb !== undefined || entry.minVramGb !== undefined) {
+    return {
+      requiredRamGb: entry.minRamGb ?? entry.recommendedRamGb ?? 0,
+      requiredVramGb: entry.minVramGb ?? entry.recommendedVramGb ?? 0
+    };
+  }
+
+  return estimateMemoryRequirementsFromModelId(entry.modelId, entry.quantization);
 }
 
 /**
@@ -309,12 +273,12 @@ export function recommendLocalModelsBySystemCapabilities(
 
   for (const entry of llmStatsLocalModels) {
     const recommendation = buildRecommendation({
-      availableVram,
-      category,
-      criteria,
       entry,
+      criteria,
+      category,
       modelsDevData,
-      systemCapabilities
+      systemCapabilities,
+      availableVram
     });
 
     if (recommendation) {
@@ -348,11 +312,7 @@ export class ModelsDevClient {
     try {
       const fs = await import('node:fs/promises');
       const cacheData = await fs.readFile(this.CACHE_FILE, 'utf-8');
-      const parsed: unknown = JSON.parse(cacheData);
-      if (!isCacheData(parsed)) {
-        throw new Error('Invalid cache data');
-      }
-      const cached = parsed;
+      const cached = JSON.parse(cacheData) as CacheData;
       if (cached.timestamp && Date.now() - cached.timestamp < this.CACHE_TTL) {
         this.cache = cached.data;
         this.lastFetched = new Date(cached.timestamp);
@@ -364,18 +324,14 @@ export class ModelsDevClient {
 
     // Fetch from API
     const response = await fetch('https://models.dev/api.json');
-    const json = await response.json();
-    if (!isModelsDevAPI(json)) {
-      throw new Error('Invalid API response');
-    }
-    const data = json;
+    const data = (await response.json()) as ModelsDevAPI;
 
     // Save to cache
     try {
       const fs = await import('node:fs/promises');
       const cacheDir = os.tmpdir();
       await fs.mkdir(cacheDir, { recursive: true });
-      await fs.writeFile(this.CACHE_FILE, JSON.stringify({ data, timestamp: Date.now() }), 'utf-8');
+      await fs.writeFile(this.CACHE_FILE, JSON.stringify({ timestamp: Date.now(), data }), 'utf-8');
     } catch {
       // Failed to save cache, ignore
     }
@@ -394,12 +350,12 @@ export class ModelsDevClient {
    */
   getProvider(providerId: string): ModelsDevProvider | undefined {
     if (!isSafeLookupKey(providerId)) {
-      return;
+      return undefined;
     }
 
-    const { cache } = this;
-    if (!(cache && Object.hasOwn(cache, providerId))) {
-      return;
+    const cache = this.cache;
+    if (!cache || !Object.hasOwn(cache, providerId)) {
+      return undefined;
     }
 
     return cache[providerId];
@@ -426,7 +382,7 @@ export class ModelsDevClient {
 
     // Search for model ID across all providers
     if (!isSafeLookupKey(modelId)) {
-      return;
+      return undefined;
     }
 
     for (const provider of Object.values(this.cache ?? {})) {
@@ -434,16 +390,17 @@ export class ModelsDevClient {
         return provider.models[modelId];
       }
     }
+    return undefined;
   }
 
   private getModelFromProvider(providerId: string, modelName: string): ModelsDevModel | undefined {
-    if (!(isSafeLookupKey(providerId) && isSafeLookupKey(modelName))) {
-      return;
+    if (!isSafeLookupKey(providerId) || !isSafeLookupKey(modelName)) {
+      return undefined;
     }
 
     const provider = this.getProvider(providerId);
-    if (!(provider && Object.hasOwn(provider.models, modelName))) {
-      return;
+    if (!provider || !Object.hasOwn(provider.models, modelName)) {
+      return undefined;
     }
 
     return provider.models[modelName];
@@ -481,7 +438,10 @@ export class ModelSelector {
   }
 
   private getClient(): ModelsDevClient {
-    this.client ??= new ModelsDevClient();
+    if (!this.client) {
+      this.client = new ModelsDevClient();
+    }
+
     return this.client;
   }
 
@@ -558,11 +518,11 @@ export class ModelSelector {
 
   private scoreModels(models: ModelsDevModel[], requirements: TaskRequirements): ModelSelectionResult[] {
     return models.map(model => ({
-      capabilities: requirements.capabilities ?? {},
-      confidence: this.calculateConfidence(model, requirements),
-      estimatedCost: this.estimateModelCost(model),
       model: model.id,
       provider: this.findProviderForModel(model.id),
+      confidence: this.calculateConfidence(model, requirements),
+      estimatedCost: this.estimateModelCost(model),
+      capabilities: requirements.capabilities ?? {},
       reasoning: this.generateReasoning(model, requirements)
     }));
   }
@@ -573,7 +533,7 @@ export class ModelSelector {
     }
 
     scoredModels.sort((a: ModelSelectionResult, b: ModelSelectionResult) => b.confidence - a.confidence);
-    const [bestModel] = scoredModels;
+    const bestModel = scoredModels[0];
 
     if (!bestModel) {
       throw new Error('No model could be ranked after filtering');
@@ -598,19 +558,19 @@ export class ModelSelector {
     }
 
     // Simple estimation: assume 2 tokens per word for input, 1 per word for output
-    const inputTokens = options?.estimatedInputTokens ?? prompt.split(/\s+/u).length * 2;
-    const outputTokens = options?.estimatedOutputTokens ?? Math.floor(prompt.split(/\s+/u).length * 0.5);
+    const inputTokens = options?.estimatedInputTokens ?? prompt.split(/\s+/).length * 2;
+    const outputTokens = options?.estimatedOutputTokens ?? Math.floor(prompt.split(/\s+/).length * 0.5);
 
-    const { cost } = model;
+    const cost = model.cost;
     const inputCost = (inputTokens / 1000) * cost.input;
     const outputCost = (outputTokens / 1000) * cost.output;
 
     return {
-      capabilities: {},
-      confidence: 0.8,
-      estimatedCost: inputCost + outputCost,
       model: modelId,
       provider: this.findProviderForModel(model.id),
+      confidence: 0.8,
+      estimatedCost: inputCost + outputCost,
+      capabilities: {},
       reasoning: `Estimated cost based on ${inputTokens} input tokens and ${outputTokens} output tokens`
     };
   }
@@ -737,7 +697,7 @@ export class ModelSelector {
 
     // Consider specialization
     if (requirements.specialization && model.knowledge) {
-      const { knowledge } = model;
+      const knowledge = model.knowledge;
       if (knowledge.toLowerCase().includes(requirements.specialization.toLowerCase())) {
         confidence += 0.2;
       }
@@ -750,7 +710,7 @@ export class ModelSelector {
    * Estimate model cost based on cost per thousand tokens
    */
   private estimateModelCost(model: ModelsDevModel): number {
-    const { cost } = model;
+    const cost = model.cost;
     // Rough estimate assuming 1000 input and 1000 output tokens
     return (cost?.input ?? 0) + (cost?.output ?? 0) * 10;
   }
@@ -765,18 +725,21 @@ export class ModelSelector {
       reasons.push('Supports tool calling');
     }
 
-    const { limit } = model;
-    if (limit?.context && limit.context > 200_000) {
+    const limit = model.limit;
+    if (limit?.context && limit.context > 200000) {
       reasons.push('Large context window');
     }
 
-    const { cost } = model;
+    const cost = model.cost;
     if (cost && cost.input + cost.output < 0.01) {
       reasons.push('Cost-effective');
     }
 
     return reasons.join(', ') || 'Selected based on requirements';
   }
-}
 
-export * from './local-providers/index.js';
+  // Helper method to get cache for findProviderForModel
+  private get cache(): ModelsDevAPI | undefined {
+    return this.getClient().getCachedData();
+  }
+}

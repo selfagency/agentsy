@@ -6,18 +6,18 @@ describe('createSessionSnapshot', () => {
   it('persists reusable context metadata for resume', () => {
     const snapshot = createSessionSnapshot({
       id: 'session-1',
+      values: { modelFamily: 'qwen' },
       reusableSegments: [
         {
           fingerprint: 'systemPrompt:qwen:v3',
-          invalidations: ['model-family:qwen', 'template:v3'],
-          reuseClass: 'hot'
+          reuseClass: 'hot',
+          invalidations: ['model-family:qwen', 'template:v3']
         }
-      ],
-      values: { modelFamily: 'qwen' }
+      ]
     });
 
     expect(snapshot.state.reusableSegments?.[0]?.reuseClass).toBe('hot');
     expect(snapshot.state.modelFamily).toBe('qwen');
-    expect(snapshot.checksum).toMatch(/^sha256:/u);
+    expect(snapshot.checksum).toMatch(/^sha256:/);
   });
 });

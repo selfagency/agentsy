@@ -2,8 +2,8 @@ packages:
   - 'packages/*'
 
 allowBuilds:
+  '@go-task/cli': true
   es5-ext: true
   esbuild: true
   fallow: true
-  msw: true
 strictPeerDependencies: true

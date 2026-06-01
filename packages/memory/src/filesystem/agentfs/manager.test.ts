@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from 'vitest';
-
 import { __globalStoreForTests, createAgentFsManager } from './manager.js';
 
 describe('createAgentFsManager', () => {
@@ -23,7 +22,7 @@ describe('createAgentFsManager', () => {
     expect(entry.path).toBe('/a.txt');
     expect(entry.content).toBe('hello');
     expect(entry.contentHash).toMatch(/^sha256:[a-f0-9]{64}$/);
-    expect(mgr.read('/a.txt')).toStrictEqual(entry);
+    expect(mgr.read('/a.txt')).toEqual(entry);
   });
 
   it('returns undefined for missing path', () => {
@@ -50,13 +49,13 @@ describe('createAgentFsManager', () => {
   it('deletes an entry', () => {
     const mgr = createAgentFsManager();
     mgr.write('/del.txt', 'bye');
-    expect(mgr.delete('/del.txt')).toBeTruthy();
+    expect(mgr.delete('/del.txt')).toBe(true);
     expect(mgr.read('/del.txt')).toBeUndefined();
   });
 
   it('returns false when deleting non-existent path', () => {
     const mgr = createAgentFsManager();
-    expect(mgr.delete('/ghost.txt')).toBeFalsy();
+    expect(mgr.delete('/ghost.txt')).toBe(false);
   });
 
   it('lists all entries', () => {
@@ -66,15 +65,15 @@ describe('createAgentFsManager', () => {
     const paths = mgr
       .list()
       .map(e => e.path)
-      .toSorted((a, b) => a.localeCompare(b));
-    expect(paths).toStrictEqual(['/a', '/b']);
+      .sort((a, b) => a.localeCompare(b));
+    expect(paths).toEqual(['/a', '/b']);
   });
 
   it('has() returns correct values', () => {
     const mgr = createAgentFsManager();
     mgr.write('/c', 'c');
-    expect(mgr.has('/c')).toBeTruthy();
-    expect(mgr.has('/missing')).toBeFalsy();
+    expect(mgr.has('/c')).toBe(true);
+    expect(mgr.has('/missing')).toBe(false);
   });
 
   it('clear() removes all entries', () => {

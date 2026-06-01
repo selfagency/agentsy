@@ -10,7 +10,7 @@
     "typescript"
   ],
   "homepage": "https://github.com/selfagency/agentsy#readme",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git",
@@ -30,18 +30,13 @@
       "types": "./dist/agents.d.ts",
       "import": "./dist/agents.js",
       "require": "./dist/agents.cjs"
-    },
-    "./manifest": {
-      "types": "./dist/manifest.d.ts",
-      "import": "./dist/manifest.js",
-      "require": "./dist/manifest.cjs"
     }
   },
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "biome lint",
-    "format": "biome format",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage"
   },
@@ -49,7 +44,7 @@
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.9.0",
+    "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",

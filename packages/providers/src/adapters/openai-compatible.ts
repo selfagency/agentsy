@@ -9,22 +9,18 @@ export function isOpenAICompatibleProvider(value: string): value is OpenAICompat
 }
 
 export interface OpenAICompatibleToolCall {
+  id: string;
+  type: 'function';
   function: {
     name: string;
     arguments: string;
   };
-  id: string;
-  type: 'function';
 }
 
 export type OpenAICompatibleMessage =
   | { role: 'system'; content: string }
   | { role: 'user'; content: string }
-  | {
-      role: 'assistant';
-      content: string | null;
-      tool_calls?: OpenAICompatibleToolCall[];
-    }
+  | { role: 'assistant'; content: string | null; tool_calls?: OpenAICompatibleToolCall[] }
   | { role: 'tool'; content: string; tool_call_id: string };
 
 /**
@@ -45,37 +41,33 @@ export function toOpenAICompatibleMessages(
 
     if (toolResultPart?.type === 'tool-result') {
       return {
-        content: toolResultPart.content,
         role: 'tool',
+        content: toolResultPart.content,
         tool_call_id: toolResultPart.callId
       };
     }
 
-    if (msg.role === 'system') {
-      return { content: text, role: 'system' };
-    }
-    if (msg.role === 'user') {
-      return { content: text, role: 'user' };
-    }
+    if (msg.role === 'system') return { role: 'system', content: text };
+    if (msg.role === 'user') return { role: 'user', content: text };
 
     if (toolCallPart?.type === 'tool-call') {
       return {
-        content: text || null,
         role: 'assistant',
+        content: text || null,
         tool_calls: [
           {
-            function: {
-              arguments: JSON.stringify(toolCallPart.input ?? {}),
-              name: toolCallPart.name
-            },
             id: toolCallPart.callId,
-            type: 'function'
+            type: 'function',
+            function: {
+              name: toolCallPart.name,
+              arguments: JSON.stringify(toolCallPart.input ?? {})
+            }
           }
         ]
       };
     }
 
-    return { content: text, role: 'assistant' };
+    return { role: 'assistant', content: text };
   });
 }
 

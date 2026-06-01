@@ -31,21 +31,21 @@ This plan defines the production implementation order for `@agentsy/ui` as share
 
 - GOAL-UI-001: Contract stabilization.
 
-| Task        | Description                                                             | Completed | Date       |
-| ----------- | ----------------------------------------------------------------------- | --------- | ---------- |
-| TASK-UI-001 | Stabilize UI message/event/store contracts and reducer semantics.       | ✅        | 2026-05-17 |
-| TASK-UI-002 | Add typed tests for event ordering and deterministic state transitions. | ✅        | 2026-05-17 |
-| TASK-UI-003 | Document boundary ownership vs renderers/runtime packages.              | ✅        | 2026-05-17 |
+| Task        | Description                                                             | Completed | Date |
+| ----------- | ----------------------------------------------------------------------- | --------- | ---- |
+| TASK-UI-001 | Stabilize UI message/event/store contracts and reducer semantics.       |           |      |
+| TASK-UI-002 | Add typed tests for event ordering and deterministic state transitions. |           |      |
+| TASK-UI-003 | Document boundary ownership vs renderers/runtime packages.              |           |      |
 
 ### Implementation Phase 2
 
 - GOAL-UI-002: Core store implementation completion.
 
-| Task        | Description                                                     | Completed | Date       |
-| ----------- | --------------------------------------------------------------- | --------- | ---------- |
-| TASK-UI-004 | Finalize event helpers, immutable store updates, and selectors. | ✅        | 2026-05-17 |
-| TASK-UI-005 | Implement performance-safe derived state for streaming updates. | ✅        | 2026-05-17 |
-| TASK-UI-006 | Implement adapter helpers for cross-surface consumption.        | ✅        | 2026-05-17 |
+| Task        | Description                                                     | Completed | Date |
+| ----------- | --------------------------------------------------------------- | --------- | ---- |
+| TASK-UI-004 | Finalize event helpers, immutable store updates, and selectors. |           |      |
+| TASK-UI-005 | Implement performance-safe derived state for streaming updates. |           |      |
+| TASK-UI-006 | Implement adapter helpers for cross-surface consumption.        |           |      |
 
 ### Implementation Phase 3
 
@@ -187,14 +187,6 @@ Add framework-specific wrappers as subpath exports:
 - `isStreaming` flag on `UIStore` — `true` while a processor stream is active
 - Tracks pending tool calls
 
-### AG-UI Events
-
-Support AG-UI event protocol for real-time UI updates. Events include: session_start, chunk_received, tool_call_start, tool_call_end, session_end, error. Each event has typed payloads that UI components can react to.
-
-### Optimistic Streaming
-
-UI should render responses optimistically during streaming — show the response container immediately on first token, show tool calls as they execute (not after completion), and show skeleton states during loading. StreamEvent stream drives this.
-
 ## Testing
 
 - `src/ui.test.ts` — unit tests for event sourcing and store
@@ -204,9 +196,9 @@ UI should render responses optimistically during streaming — show the response
 
 ```ts
 // packages/ui/src/index.ts
-export { createUIStore } from "./store.js";
-export { bridgeProcessorToStore } from "./processorBridge.js";
-export { applyEvent } from "./eventSourcing.js";
-export * from "./types.js";
-export * from "./eventHelpers.js";
+export { createUIStore } from './store.js';
+export { bridgeProcessorToStore } from './processorBridge.js';
+export { applyEvent } from './eventSourcing.js';
+export * from './types.js';
+export * from './eventHelpers.js';
 ```

@@ -18,21 +18,30 @@ export function isSlackAdapterAvailable(): boolean {
 }
 
 export class SlackAdapterNotAvailableError extends Error {
-  name = 'SlackAdapterNotAvailableError';
-  message = 'SlackAdapter requires the @slack/bolt peer dependency. Install it with pnpm add @slack/bolt@^4.';
+  constructor() {
+    super('SlackAdapter requires the @slack/bolt peer dependency. Install it with pnpm add @slack/bolt@^4.');
+    Object.defineProperty(this, 'name', {
+      value: 'SlackAdapterNotAvailableError',
+      configurable: true
+    });
+    Object.defineProperty(this, 'message', {
+      value: 'SlackAdapter requires the @slack/bolt peer dependency. Install it with pnpm add @slack/bolt@^4.',
+      configurable: true
+    });
+  }
 }
 
 export const SlackAdapter = {
-  connect: () => {
+  connect: async () => {
     throw new SlackAdapterNotAvailableError();
   },
-  disconnect: () => {
+  disconnect: async () => {
+    throw new SlackAdapterNotAvailableError();
+  },
+  send: async () => {
     throw new SlackAdapterNotAvailableError();
   },
   onMessage: () => {
-    throw new SlackAdapterNotAvailableError();
-  },
-  send: () => {
     throw new SlackAdapterNotAvailableError();
   }
 };

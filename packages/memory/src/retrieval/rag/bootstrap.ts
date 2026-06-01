@@ -26,10 +26,10 @@ export function createRAGBootstrapper(deps: RAGBootstrapperDeps): RAGBootstrappe
       }
 
       return {
-        totalInserted,
-        totalSkipped,
         totalSources: sources.length,
-        totalUpdated
+        totalInserted,
+        totalUpdated,
+        totalSkipped
       };
     }
   };

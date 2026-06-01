@@ -1,10 +1,3 @@
-import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from '@agentsy/core/context';
-import {
-  appendToBlockquote,
-  formatXmlLikeResponseForDisplay,
-  sanitizeNonStreamingModelOutput
-} from '@agentsy/core/formatting';
-import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/core/structured';
 /**
  * Integration: structured output + formatting + context utilities
  *
@@ -13,26 +6,34 @@ import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/core/
  */
 import { describe, expect, it } from 'vitest';
 
+import { dedupeXmlContextBlocksByTag, splitLeadingXmlContextBlocks, stripXmlContextTags } from '@agentsy/core/context';
+import {
+  appendToBlockquote,
+  formatXmlLikeResponseForDisplay,
+  sanitizeNonStreamingModelOutput
+} from '@agentsy/core/formatting';
+import { buildRepairPrompt, parseJson, validateJsonSchema } from '@agentsy/core/structured';
+
 // ---------------------------------------------------------------------------
 // parseJson
 // ---------------------------------------------------------------------------
 
-describe('parseJson' as const, () => {
+describe('parseJson', () => {
   it('parses a plain JSON object string', () => {
     const result = parseJson<{ name: string }>('{"name":"Alice"}');
-    expect(result).toStrictEqual({ name: 'Alice' });
+    expect(result).toEqual({ name: 'Alice' });
   });
 
   it('parses JSON wrapped in markdown code fences', () => {
     const input = '```json\n{"value":42}\n```';
     const result = parseJson<{ value: number }>(input);
-    expect(result).toStrictEqual({ value: 42 });
+    expect(result).toEqual({ value: 42 });
   });
 
   it('parses JSON embedded in surrounding prose (selectMostComprehensive=false)', () => {
     const input = 'Sure! Here it is: {"status":"ok"} — hope that helps.';
     const result = parseJson<{ status: string }>(input);
-    expect(result).toStrictEqual({ status: 'ok' });
+    expect(result).toEqual({ status: 'ok' });
   });
 
   it('returns null for non-JSON text', () => {
@@ -43,7 +44,7 @@ describe('parseJson' as const, () => {
   it('handles nested objects and arrays', () => {
     const json = '{"items":[1,2,3],"meta":{"total":3}}';
     const result = parseJson<{ items: number[]; meta: { total: number } }>(json);
-    expect(result?.items).toStrictEqual([1, 2, 3]);
+    expect(result?.items).toEqual([1, 2, 3]);
     expect(result?.meta.total).toBe(3);
   });
 });
@@ -52,35 +53,35 @@ describe('parseJson' as const, () => {
 // validateJsonSchema
 // ---------------------------------------------------------------------------
 
-describe('validateJsonSchema' as const, () => {
+describe('validateJsonSchema', () => {
   const schema = {
-    properties: {
-      age: { type: 'number' },
-      name: { type: 'string' }
-    },
+    type: 'object',
     required: ['name', 'age'],
-    type: 'object'
+    properties: {
+      name: { type: 'string' },
+      age: { type: 'number' }
+    }
   };
 
   it('returns no errors for a valid object', () => {
     const result = validateJsonSchema('{"name":"Bob","age":30}', schema);
-    expect(result.success).toBeTruthy();
+    expect(result.success).toBe(true);
   });
 
   it('reports missing required fields', () => {
     const result = validateJsonSchema('{"name":"Bob"}', schema);
-    expect(result.success).toBeFalsy();
-    expect(!result.success && result.errors.some(e => e.includes('age'))).toBeTruthy();
+    expect(result.success).toBe(false);
+    expect(!result.success && result.errors.some(e => e.includes('age'))).toBe(true);
   });
 
   it('reports type mismatches', () => {
     const result = validateJsonSchema('{"name":"Bob","age":"thirty"}', schema);
-    expect(result.success).toBeFalsy();
+    expect(result.success).toBe(false);
   });
 
   it('returns no errors for an empty schema (any value allowed)', () => {
     const result = validateJsonSchema('{"anything":true}', {});
-    expect(result.success).toBeTruthy();
+    expect(result.success).toBe(true);
   });
 });
 
@@ -88,11 +89,11 @@ describe('validateJsonSchema' as const, () => {
 // buildRepairPrompt
 // ---------------------------------------------------------------------------
 
-describe('buildRepairPrompt' as const, () => {
+describe('buildRepairPrompt', () => {
   it('includes the parse error in the output', () => {
     const prompt = buildRepairPrompt({
-      error: 'Unexpected end of JSON input',
-      failedOutput: '{broken json'
+      failedOutput: '{broken json',
+      error: 'Unexpected end of JSON input'
     });
 
     expect(prompt).toContain('Unexpected end of JSON input');
@@ -100,10 +101,10 @@ describe('buildRepairPrompt' as const, () => {
   });
 
   it('includes the JSON schema when provided', () => {
-    const schema = { required: ['id'], type: 'object' };
+    const schema = { type: 'object', required: ['id'] };
     const prompt = buildRepairPrompt({
-      error: 'Missing required field: id',
       failedOutput: '{}',
+      error: 'Missing required field: id',
       schema
     });
 
@@ -112,8 +113,8 @@ describe('buildRepairPrompt' as const, () => {
 
   it('includes the original prompt when provided', () => {
     const prompt = buildRepairPrompt({
-      error: 'err',
       failedOutput: '{}',
+      error: 'err',
       originalPrompt: 'Return a user object'
     });
 
@@ -125,7 +126,7 @@ describe('buildRepairPrompt' as const, () => {
 // formatXmlLikeResponseForDisplay
 // ---------------------------------------------------------------------------
 
-describe('formatXmlLikeResponseForDisplay' as const, () => {
+describe('formatXmlLikeResponseForDisplay', () => {
   it('converts XML-like blocks to bold markdown titles + content', () => {
     const input = '<analysis>The code looks good.</analysis>';
     const out = formatXmlLikeResponseForDisplay(input);
@@ -151,7 +152,7 @@ describe('formatXmlLikeResponseForDisplay' as const, () => {
 // sanitizeNonStreamingModelOutput
 // ---------------------------------------------------------------------------
 
-describe('sanitizeNonStreamingModelOutput' as const, () => {
+describe('sanitizeNonStreamingModelOutput', () => {
   it('strips context tags and formats display XML in one pass', () => {
     const input = '<context>hidden info</context><analysis>visible content</analysis>';
     const out = sanitizeNonStreamingModelOutput(input);
@@ -171,7 +172,7 @@ describe('sanitizeNonStreamingModelOutput' as const, () => {
 // appendToBlockquote
 // ---------------------------------------------------------------------------
 
-describe('appendToBlockquote' as const, () => {
+describe('appendToBlockquote', () => {
   it('prefixes each line with "> "', () => {
     const out = appendToBlockquote('line one\nline two', true);
     expect(out).toBe('> line one\n> line two');
@@ -186,7 +187,7 @@ describe('appendToBlockquote' as const, () => {
 // stripXmlContextTags (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
-describe('stripXmlContextTags' as const, () => {
+describe('stripXmlContextTags', () => {
   it('removes context-tagged blocks from text', () => {
     const out = stripXmlContextTags('<context>this is private</context>visible');
     expect(out).toBe('visible');
@@ -201,7 +202,7 @@ describe('stripXmlContextTags' as const, () => {
 // splitLeadingXmlContextBlocks (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
-describe('splitLeadingXmlContextBlocks' as const, () => {
+describe('splitLeadingXmlContextBlocks', () => {
   it('separates leading XML blocks from trailing non-XML content', () => {
     const input = '<environment_info>meta info</environment_info>actual response here';
     const { contextBlocks, remaining } = splitLeadingXmlContextBlocks(input);
@@ -221,7 +222,7 @@ describe('splitLeadingXmlContextBlocks' as const, () => {
 // dedupeXmlContextBlocksByTag (@agentsy/core/context)
 // ---------------------------------------------------------------------------
 
-describe('dedupeXmlContextBlocksByTag' as const, () => {
+describe('dedupeXmlContextBlocksByTag', () => {
   it('removes duplicate context blocks with the same tag name', () => {
     const blocks = ['<memory>first</memory>', '<memory>second</memory>'];
 

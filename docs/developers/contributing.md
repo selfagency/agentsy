@@ -45,7 +45,8 @@ pnpm lint:fix && pnpm format
 
 Tools used:
 
-- **Linting/Formatting**: Biome (via ultracite preset)
+- **Linting**: oxlint (and oxlint-tsgolint for TypeScript)
+- **Formatting**: oxfmt
 - **Type checking**: TypeScript
 
 ### Testing
@@ -53,44 +54,19 @@ Tools used:
 All changes must include tests:
 
 ```bash
-# Run unit tests
+# Run tests
 pnpm test
 
 # Run with coverage
 pnpm test:coverage
-
-# Run CLI E2E terminal tests (if CLI package changed)
-pnpm --filter @agentsy/cli test:e2e
 ```
 
 Test structure:
 
-- Colocate unit tests with source files (`.test.ts`)
+- Colocate tests with source files (`.test.ts`)
 - Test streaming behavior with partial chunks
 - Verify safety rails (limits, scrubbing)
 - Test error cases and edge cases
-
-### CLI E2E tests
-
-The `@agentsy/cli` package uses [`@microsoft/tui-test`](https://github.com/microsoft/tui-test) for real-PTY E2E tests. These tests run the CLI as a real subprocess, validating terminal output and interactive behavior.
-
-**When adding a new CLI command**, you must also add a tui-test spec:
-
-1. Create `packages/cli/src/e2e/<command>.spec.ts`
-2. Import `{ test, expect }` from `@microsoft/tui-test`
-3. Write tests using `terminal.submit()`, `terminal.write()`, and `expect().toBeVisible()`
-4. Run `pnpm --filter @agentsy/cli test:e2e` to verify
-5. Update the spec table in `packages/cli/README.md`
-
-**Existing E2E specs** in `packages/cli/src/e2e/`:
-
-| Spec | Covers |
-|---|---|
-| `compress.spec.ts` | `compress --text`, `--file`, invalid level, missing input |
-| `compress-memory.spec.ts` | `compress-memory --file`, `--no-backup`, missing flag |
-| `memory-sync-dev.spec.ts` | `memory-sync-dev`, `--json`, custom flags, invalid args |
-| `chat.spec.ts` | `/exit`, message send, `/help` |
-| `cli-basics.spec.ts` | Unknown command, default entry |
 
 ## Submitting Changes
 

@@ -4,37 +4,29 @@ import type { Event, ExtensionContext, Memento, SecretStorage, SecretStorageChan
  * Mock Event implementation for testing.
  */
 function createMockEvent<T>(): Event<T> {
-  return (_listener: (e: T) => void) => ({
-    dispose: () => {
-      /* noop */
-    }
-  });
+  return (_listener: (e: T) => void) => ({ dispose: () => {} });
 }
 
 /**
  * Mock SecretStorage for testing.
  */
 export class MockSecretStorage implements SecretStorage {
-  private readonly storage = new Map<string, string>();
+  private readonly storage: Map<string, string> = new Map();
 
-  // biome-ignore lint/suspicious/useAwait: implements SecretStorage interface
   async get(key: string): Promise<string | undefined> {
     return this.storage.get(key);
   }
 
-  // biome-ignore lint/suspicious/useAwait: implements SecretStorage interface
   async store(key: string, value: string): Promise<void> {
     this.storage.set(key, value);
   }
 
-  // biome-ignore lint/suspicious/useAwait: implements SecretStorage interface
   async delete(key: string): Promise<void> {
     this.storage.delete(key);
   }
 
-  // biome-ignore lint/suspicious/useAwait: implements SecretStorage interface
   async keys(): Promise<string[]> {
-    return [...this.storage.keys()];
+    return Array.from(this.storage.keys());
   }
 
   onDidChange: Event<SecretStorageChangeEvent> = createMockEvent();
@@ -49,10 +41,10 @@ export class MockSecretStorage implements SecretStorage {
  * Mock Memento for testing.
  */
 export class MockMemento implements Memento {
-  private readonly storage = new Map<string, unknown>();
+  private readonly storage: Map<string, unknown> = new Map();
 
   keys(): readonly string[] {
-    return [...this.storage.keys()];
+    return Array.from(this.storage.keys());
   }
 
   get<T>(key: string): T | undefined;
@@ -61,9 +53,9 @@ export class MockMemento implements Memento {
     return (this.storage.get(key) as T) ?? defaultValue;
   }
 
-  // biome-ignore lint/suspicious/useAwait: implements Memento interface
-  async update(key: string, value: unknown): Promise<void> {
+  update(key: string, value: unknown): Promise<void> {
     this.storage.set(key, value);
+    return Promise.resolve();
   }
 
   clear(): void {
@@ -76,59 +68,57 @@ export class MockMemento implements Memento {
  */
 export function createMockExtensionContext(): ExtensionContext {
   const mockUri = {
+    scheme: 'file',
     authority: '',
-    fragment: '',
-    fsPath: '/mock/path',
     path: '/mock/path',
     query: '',
-    scheme: 'file',
-    toJSON: () => ({}),
+    fragment: '',
+    fsPath: '/mock/path',
     with: () =>
       ({
+        scheme: 'file',
         authority: '',
-        fragment: '',
-        fsPath: '/mock/path',
         path: '/mock/path',
         query: '',
-        scheme: 'file',
-        toJSON: () => ({}),
-        with: () => ({})
-      }) as unknown
+        fragment: '',
+        fsPath: '/mock/path',
+        with: () => ({}),
+        toJSON: () => ({})
+      }) as unknown,
+    toJSON: () => ({})
   } as unknown;
 
   return {
-    asAbsolutePath: (relativePath: string) => `/mock/path/${relativePath}`,
-    environmentVariableCollection: {} as unknown,
-    extension: {
-      activate: async () => {
-        /* noop */
-      },
-      exports: undefined,
-      extensionPath: '/mock/path',
-      extensionUri: mockUri,
-      id: 'mock-extension',
-      isActive: true,
-      packageJSON: {}
-    } as unknown,
-    extensionMode: 0 as unknown,
+    subscriptions: [],
     extensionPath: '/mock/path',
     extensionUri: mockUri,
-    globalState: new MockMemento(),
     globalStoragePath: '/mock/global',
     globalStorageUri: mockUri,
-    languageModelAccessInformation: {
-      models: [],
-      onDidChange: createMockEvent()
-    } as unknown,
+    workspaceStoragePath: '/mock/workspace',
+    workspaceStorageUri: mockUri,
     logPath: '/mock/log',
     logUri: mockUri,
     logsPath: '/mock/logs',
     secrets: new MockSecretStorage(),
-    storagePath: '/mock/storage',
-    storageUri: mockUri,
-    subscriptions: [],
+    globalState: new MockMemento(),
     workspaceState: new MockMemento(),
-    workspaceStoragePath: '/mock/workspace',
-    workspaceStorageUri: mockUri
+    extensionMode: 0 as unknown,
+    environmentVariableCollection: {} as unknown,
+    asAbsolutePath: (relativePath: string) => `/mock/path/${relativePath}`,
+    storageUri: mockUri,
+    storagePath: '/mock/storage',
+    extension: {
+      id: 'mock-extension',
+      extensionPath: '/mock/path',
+      extensionUri: mockUri,
+      packageJSON: {},
+      isActive: true,
+      exports: undefined,
+      activate: async () => undefined
+    } as unknown,
+    languageModelAccessInformation: {
+      models: [],
+      onDidChange: createMockEvent()
+    } as unknown
   } as unknown as ExtensionContext;
 }

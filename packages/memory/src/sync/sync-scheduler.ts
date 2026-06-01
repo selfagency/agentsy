@@ -28,10 +28,10 @@ export function createSyncScheduler(manager: SyncManagerLike, options: SyncSched
     clearScheduled();
     const clampedDelay = Math.max(0, delayMs);
     nextRunAt = new Date(now().getTime() + clampedDelay);
-    timeout = setTimeout(() => {
-      executeRun().catch(() => {
-        // Sync execution errors are handled internally
-      });
+    timeout = setTimeout(async () => {
+      timeout = null;
+      nextRunAt = null;
+      await executeRun();
     }, clampedDelay);
   }
 
@@ -53,10 +53,6 @@ export function createSyncScheduler(manager: SyncManagerLike, options: SyncSched
   }
 
   return {
-    getNextRunAt() {
-      return nextRunAt;
-    },
-
     start() {
       schedule(options.initialDelayMs);
     },
@@ -66,8 +62,12 @@ export function createSyncScheduler(manager: SyncManagerLike, options: SyncSched
       consecutiveErrors = 0;
     },
 
-    async triggerNow() {
-      return await executeRun();
+    triggerNow() {
+      return executeRun();
+    },
+
+    getNextRunAt() {
+      return nextRunAt;
     }
   };
 }

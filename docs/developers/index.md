@@ -9,10 +9,6 @@ This document covers local development, testing, and release operations for the 
 
 ## Quick Start
 
-### Primary implementation order
-
-The active CLI-first execution order is tracked in [`plan/DOGFOOD-PLAN.md`](../../plan/DOGFOOD-PLAN.md). Use it for phase sequencing, package promotion order, and cross-package dependencies.
-
 ### 1. Install dependencies
 
 ```bash
@@ -59,9 +55,9 @@ pnpm precommit
 | Script               | Purpose                             |
 | -------------------- | ----------------------------------- |
 | `pnpm check-types`   | Run TypeScript type checker         |
-| `pnpm lint`          | Run linter (Biome)                  |
+| `pnpm lint`          | Run linter (oxlint)                 |
 | `pnpm lint:fix`      | Auto-fix linting issues             |
-| `pnpm format`        | Auto-format code (Biome)            |
+| `pnpm format`        | Auto-format code (oxfmt)            |
 | `pnpm build`         | Build distribution (tsup via turbo) |
 | `pnpm test`          | Run all tests                       |
 | `pnpm test:coverage` | Run tests with coverage report      |
@@ -195,8 +191,8 @@ pnpm check-types && pnpm lint && pnpm format
 This runs:
 
 1. Type checking (TypeScript)
-2. Linting (Biome)
-3. Formatting checks (Biome)
+2. Linting (oxlint)
+3. Formatting checks (oxfmt)
 
 ### Auto-fix issues
 

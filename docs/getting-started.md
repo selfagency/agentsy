@@ -387,7 +387,7 @@ const processor = new LLMStreamProcessor({
 
 ## Troubleshooting
 
-## Q: ThinkingParser not extracting thinking sections
+**Q: ThinkingParser not extracting thinking sections**
 
 - Verify tag names match the model output:
 
@@ -395,7 +395,7 @@ const processor = new LLMStreamProcessor({
   parser = ThinkingParser.forModel('deepseek'); // Auto-detect
   ```
 
-## Q: JSON parsing returns null
+**Q: JSON parsing returns null**
 
 - Check for code fences and formatting:
 
@@ -403,7 +403,7 @@ const processor = new LLMStreamProcessor({
   const data = parseJson(response, { selectMostComprehensive: true });
   ```
 
-## Q: Tool calls not extracting
+**Q: Tool calls not extracting**
 
 - Ensure tool names are in the known tools set:
 
@@ -411,7 +411,7 @@ const processor = new LLMStreamProcessor({
   extractXmlToolCalls(response, new Set(['search', 'edit_file']));
   ```
 
-## Q: Performance issues with large responses
+**Q: Performance issues with large responses**
 
 - Use streaming chunking instead of buffering:
 

@@ -162,7 +162,6 @@ Preferred external bridge targets:
 - **A2UI** for declarative rich response payloads and approval surfaces
 - **Skills Protocol** for compact, on-demand skill loading instead of dumping long instructions into chat text
 - **Ratify-compatible metadata** when a host application wants verifiable delegation or approval receipts
-- **AG-UI protocol** for agent-generated user interfaces. Connectors that surface agent interactions (Discord, Slack, Telegram) should render AG-UI screens as native platform messages (embeds for Discord, blocks for Slack, markdown for Telegram) rather than raw JSON.
 
 ## Logic & Data Flow
 

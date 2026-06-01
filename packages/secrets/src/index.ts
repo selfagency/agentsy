@@ -2,23 +2,23 @@
 // Initial API scaffold. For broader roadmap context, see plan/MASTER-IMPLEMENTATION-PLAN.md.
 
 export interface SecretStore {
-  deleteSecret(key: string): boolean;
-  getSecret(key: string): string | undefined;
   setSecret(key: string, value: string): void;
+  getSecret(key: string): string | undefined;
+  deleteSecret(key: string): boolean;
 }
 
 export const createSecretStore = (): SecretStore => {
   const secrets = new Map<string, string>();
 
   return {
-    deleteSecret(key) {
-      return secrets.delete(key);
+    setSecret(key, value) {
+      secrets.set(key, value);
     },
     getSecret(key) {
       return secrets.get(key);
     },
-    setSecret(key, value) {
-      secrets.set(key, value);
+    deleteSecret(key) {
+      return secrets.delete(key);
     }
   };
 };

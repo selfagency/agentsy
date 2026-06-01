@@ -7,16 +7,16 @@ export type MemorySyncTier = 'raw' | 'wiki' | 'vector';
 export type MergePolicy = 'lastWriteWins' | 'localWins' | 'remoteWins' | 'fieldMerge' | 'manualRequired';
 
 export interface SyncMetrics {
-  conflicts: number;
+  successes: number;
   failures: number;
   retries: number;
-  successes: number;
+  conflicts: number;
 }
 
 export interface ConflictResolutionResult {
+  status: 'resolved' | 'manual';
   policy: MergePolicy;
   record: SyncRecord | null;
-  status: 'resolved' | 'manual';
 }
 
 export interface SyncError {
@@ -26,12 +26,12 @@ export interface SyncError {
 }
 
 export interface SyncRecord {
-  content: string;
   id: string;
-  metadata?: Record<string, unknown>;
-  relationships?: string[];
   tier: MemorySyncTier;
   updatedAt: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+  relationships?: string[];
   vectorFingerprint?: string;
 }
 
@@ -41,89 +41,89 @@ export interface SyncSnapshot {
 }
 
 export interface ConflictRecord {
-  detectedAt: string;
   id: string;
-  local: SyncRecord;
-  policy: MergePolicy;
   recordId: string;
-  remote: SyncRecord;
   tier: MemorySyncTier;
+  local: SyncRecord;
+  remote: SyncRecord;
+  detectedAt: string;
+  policy: MergePolicy;
 }
 
 export interface ConflictStore {
+  save(conflict: ConflictRecord): Promise<void>;
   get(id: string): Promise<ConflictRecord | null>;
   list(): Promise<ConflictRecord[]>;
-  pendingCount(): Promise<number>;
   resolve(id: string): Promise<void>;
-  save(conflict: ConflictRecord): Promise<void>;
+  pendingCount(): Promise<number>;
 }
 
 export interface BackupSnapshot {
-  checksum: string;
-  createdAt: string;
   id: string;
-  recordCount: number;
+  createdAt: string;
+  checksum: string;
   sourceVersion: number;
+  recordCount: number;
 }
 
 export interface BackupManifest extends BackupSnapshot {
-  records: SyncRecord[];
   schemaVersion: number;
   targetDatabaseId: string;
+  records: SyncRecord[];
 }
 
 export interface RestoreResult {
-  restoredAt: string;
-  restoredCount: number;
-  rollbackSnapshotId?: string;
   snapshotId: string;
+  restoredCount: number;
+  restoredAt: string;
+  rollbackSnapshotId?: string;
 }
 
 export interface RemoteValidationResult {
-  errors: string[];
   valid: boolean;
+  errors: string[];
 }
 
 export interface SyncRunResult {
-  downloaded: number;
-  error?: SyncError;
-  nextCursor: string;
-  resolvedConflicts: number;
   status: 'success' | 'error' | 'paused';
-  unresolvedConflicts: number;
   uploaded: number;
+  downloaded: number;
+  resolvedConflicts: number;
+  unresolvedConflicts: number;
+  nextCursor: string;
+  error?: SyncError;
 }
 
 export interface TursoUploadResult {
-  nextCursor: string;
   uploadedCount: number;
+  nextCursor: string;
 }
 
 export interface TursoSyncConfig {
+  path?: string;
+  databaseUrl: string;
   authToken: string | (() => Promise<string>);
-  client?: TursoClient;
-  clientName?: string;
+  syncIntervalMs: number;
+  maxRetries: number;
+  mode?: SyncMode;
+  mergePolicy?: MergePolicy;
   conflictStore?: ConflictStore;
   credentialSource?: CredentialSource;
-  databaseUrl: string;
-  fetch?: typeof fetch;
+  clientName?: string;
   longPollTimeoutMs?: number;
-  maxRetries: number;
-  mergePolicy?: MergePolicy;
-  mode?: SyncMode;
-  path?: string;
-  remoteWritesExperimental?: boolean;
-  syncIntervalMs: number;
   tracing?: 'error' | 'warn' | 'info' | 'debug' | 'trace';
+  remoteWritesExperimental?: boolean;
+  fetch?: typeof fetch;
+  client?: TursoClient;
 }
 
 export type CredentialSource = 'environment' | 'injected' | 'config-file' | 'source-code';
 
 export interface SyncScheduler {
-  getNextRunAt(): Date | null;
   start(): void;
   stop(): void;
   triggerNow(): Promise<SyncRunResult>;
+  getNextRunAt(): Date | null;
 }
 
 export interface SyncManagerLike {
@@ -131,82 +131,80 @@ export interface SyncManagerLike {
 }
 
 export interface SyncSchedulerOptions {
-  getLocalState(): SyncSnapshot | Promise<SyncSnapshot>;
-  initialDelayMs: number;
   intervalMs: number;
-  jitterRatio?: number;
+  initialDelayMs: number;
   maxDelayMs: number;
   maxRetries: number;
+  jitterRatio?: number;
+  getLocalState(): SyncSnapshot | Promise<SyncSnapshot>;
   now?: () => Date;
   random?: () => number;
 }
 
 export interface RestoreSnapshotOptions {
-  force?: boolean;
-  schemaVersion: number;
   targetDatabaseId: string;
+  schemaVersion: number;
+  force?: boolean;
 }
 
 export interface BackupManager {
   createSnapshot(): Promise<BackupManifest>;
+  verifySnapshot(snapshotId: string): Promise<boolean>;
   restoreSnapshot(snapshotId: string, options: RestoreSnapshotOptions): Promise<RestoreResult>;
   rollback(restorePointId: string): Promise<RestoreResult>;
-  verifySnapshot(snapshotId: string): Promise<boolean>;
 }
 
 export interface BackupManagerOptions {
-  applySnapshot(snapshot: SyncSnapshot): Promise<void>;
-  createId?: () => string;
   databaseId: string;
-  getCurrentState(): Promise<SyncSnapshot>;
-  now?: () => Date;
   schemaVersion: number;
+  getCurrentState(): Promise<SyncSnapshot>;
+  applySnapshot(snapshot: SyncSnapshot): Promise<void>;
+  now?: () => Date;
+  createId?: () => string;
 }
 
 export interface BackupManifestInput {
-  createdAt: string;
-  records: SyncRecord[];
-  schemaVersion: number;
   snapshotId: string;
   sourceVersion: number;
+  schemaVersion: number;
   targetDatabaseId: string;
+  records: SyncRecord[];
+  createdAt: string;
 }
 
 export interface SecureSyncErrorEnvelope {
   code: string;
-  diagnosticContext?: string;
   message: string;
   retryable: boolean;
+  diagnosticContext?: string;
 }
 
 export interface SecureSyncErrorOptions {
+  retryable: boolean;
   code?: string;
   diagnosticContext?: string;
-  retryable: boolean;
 }
 
 export interface SyncMetricsRegistrySnapshot {
-  backup_restore_total: number;
-  backup_runs_total: number;
-  backup_success_rate: number;
-  queue_depth: {
-    average: number;
-    max: number;
-  };
-  restore_success_rate: number;
-  retries_total: number;
+  sync_runs_total: number;
+  sync_failures_total: number;
   sync_conflicts_total: number;
+  backup_runs_total: number;
+  backup_restore_total: number;
   sync_duration_ms: {
     average: number;
     max: number;
   };
-  sync_failures_total: number;
-  sync_runs_total: number;
+  queue_depth: {
+    average: number;
+    max: number;
+  };
+  retries_total: number;
+  backup_success_rate: number;
+  restore_success_rate: number;
 }
 
 export interface SyncMetricsRegistry {
-  recordBackupRun(input: { success: boolean; durationMs: number }): void;
-  recordRestoreRun(input: { success: boolean; durationMs: number }): void;
   recordSyncRun(input: {
     status: SyncRunResult['status'];
     durationMs: number;
@@ -214,13 +212,15 @@ export interface SyncMetricsRegistry {
     conflicts: number;
     retries: number;
   }): void;
+  recordBackupRun(input: { success: boolean; durationMs: number }): void;
+  recordRestoreRun(input: { success: boolean; durationMs: number }): void;
   snapshot(): SyncMetricsRegistrySnapshot;
 }
 
 export interface TursoClient {
-  checkpoint?(): Promise<void>;
-  close?(): Promise<void>;
-  download(cursor: string): Promise<SyncSnapshot>;
-  stats?(): Promise<Record<string, unknown>>;
   upload(snapshot: SyncSnapshot): Promise<TursoUploadResult>;
+  download(cursor: string): Promise<SyncSnapshot>;
+  checkpoint?(): Promise<void>;
+  stats?(): Promise<Record<string, unknown>>;
+  close?(): Promise<void>;
 }

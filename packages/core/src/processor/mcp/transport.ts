@@ -7,11 +7,7 @@ import { ReadableStream } from 'node:stream/web';
  */
 export type MCPTransport =
   | { type: 'http'; stream: ReadableStream<string> }
-  | {
-      type: 'stdio';
-      readable: NodeJS.ReadableStream;
-      writable: NodeJS.WritableStream;
-    };
+  | { type: 'stdio'; readable: NodeJS.ReadableStream; writable: NodeJS.WritableStream };
 
 import { Readable } from 'node:stream';
 
@@ -38,9 +34,7 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
         try {
           while (true) {
             const { done, value } = await reader.read();
-            if (done) {
-              break;
-            }
+            if (done) break;
             controller.enqueue(decoder.decode(value, { stream: true }));
           }
           const flushed = decoder.decode();
@@ -48,8 +42,8 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
             controller.enqueue(flushed);
           }
           controller.close();
-        } catch (error) {
-          controller.error(error);
+        } catch (err) {
+          controller.error(err);
         } finally {
           reader.releaseLock();
         }
@@ -79,27 +73,27 @@ export function adaptTransportToStream(transport: MCPTransport): ReadableStream<
   }
 
   return new ReadableStream<string>({
-    async cancel() {
-      finished = true;
-      await iterator.return?.();
-      readableStream.destroy();
-    },
     async pull(controller) {
       if (finished) {
         return;
       }
       try {
-        const { done, value } = (await iterator.next()) as { done: boolean; value: unknown };
+        const { done, value } = await iterator.next();
         if (done) {
           finished = true;
           controller.close();
           return;
         }
         controller.enqueue(convertChunkToString(value));
-      } catch (error) {
+      } catch (err) {
         finished = true;
-        controller.error(error);
+        controller.error(err);
       }
+    },
+    async cancel() {
+      finished = true;
+      await iterator.return?.();
+      readableStream.destroy();
     }
   });
 }

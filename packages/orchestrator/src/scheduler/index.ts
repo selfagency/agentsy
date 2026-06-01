@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto';
 export type SchedulerTaskStatus = 'pending' | 'scheduled' | 'cancelled';
 
 export interface SchedulerTaskRequest {
-  agents: unknown[];
   taskInfo: unknown;
+  agents: unknown[];
 }
 
 export type SchedulerExecutionInput<T> = (() => Promise<T>) | SchedulerTaskRequest;
@@ -22,10 +22,10 @@ export interface SchedulerAssignment {
 
 export interface SchedulerTaskDefinition {
   id: string;
-  lane?: string;
-  metadata?: Record<string, unknown>;
   prompt: string;
   runAt?: number;
+  lane?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SchedulerTaskRecord extends SchedulerTaskDefinition {
@@ -35,21 +35,21 @@ export interface SchedulerTaskRecord extends SchedulerTaskDefinition {
 
 interface SchedulerTaskInfo {
   id?: string;
-  input?: unknown;
   name?: string;
+  input?: unknown;
   runAt?: number;
 }
 
 interface SchedulableAgent {
-  available?: boolean;
   id: string;
+  available?: boolean;
 }
 
 export interface SchedulerRegistry {
+  register(task: SchedulerTaskDefinition): SchedulerTaskRecord;
   cancel(taskId: string): SchedulerTaskRecord | null;
   get(taskId: string): SchedulerTaskRecord | null;
   list(options?: { lane?: string; status?: SchedulerTaskStatus }): SchedulerTaskRecord[];
-  register(task: SchedulerTaskDefinition): SchedulerTaskRecord;
 }
 
 function createScheduledTaskId(): string {
@@ -74,6 +74,8 @@ export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] 
   }
 
   return {
+    register,
+
     cancel(taskId) {
       const record = tasks.get(taskId);
       if (!record) {
@@ -97,17 +99,16 @@ export function createSchedulerRegistry(initialTasks: SchedulerTaskDefinition[] 
       return [...tasks.values()]
         .filter(task => (options.lane ? task.lane === options.lane : true))
         .filter(task => (options.status ? task.status === options.status : true))
-        .toSorted((left, right) => left.createdAt - right.createdAt)
+        .sort((left, right) => left.createdAt - right.createdAt)
         .map(task => ({ ...task }));
-    },
-
-    register
+    }
   };
 }
 
 export function createTaskScheduler(registry: SchedulerRegistry = createSchedulerRegistry()): TaskScheduler {
-  const isSchedulableAgent = (agent: unknown): agent is SchedulableAgent =>
-    typeof agent === 'object' && agent !== null && 'id' in agent && typeof agent.id === 'string';
+  const isSchedulableAgent = (agent: unknown): agent is SchedulableAgent => {
+    return typeof agent === 'object' && agent !== null && 'id' in agent && typeof agent.id === 'string';
+  };
 
   const toSchedulerTaskInfo = (taskInfo: unknown): SchedulerTaskInfo => {
     if (typeof taskInfo !== 'object' || taskInfo === null) {
@@ -126,7 +127,7 @@ export function createTaskScheduler(registry: SchedulerRegistry = createSchedule
   return {
     async schedule<T>(task: SchedulerExecutionInput<T>): Promise<SchedulerAssignment | T | null> {
       if (typeof task === 'function') {
-        return await task();
+        return task();
       }
 
       const schedulerTask = toSchedulerTaskInfo(task.taskInfo);
@@ -142,8 +143,8 @@ export function createTaskScheduler(registry: SchedulerRegistry = createSchedule
         prompt: schedulerTask.name ?? schedulerTask.id ?? 'scheduled task',
         ...(typeof schedulerTask.runAt === 'number' ? { runAt: schedulerTask.runAt } : {}),
         metadata: {
-          assignedAgentId: selectedAgent.id,
-          input: schedulerTask.input
+          input: schedulerTask.input,
+          assignedAgentId: selectedAgent.id
         }
       });
 

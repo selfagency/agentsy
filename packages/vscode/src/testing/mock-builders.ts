@@ -1,15 +1,14 @@
 import type { StreamChunk } from '@agentsy/core/processor';
 import type { RendererHandle } from '@agentsy/renderers';
-
 import type { ApiKeyChangeListener } from '../types/index.js';
 
 export interface MockApiKeyManager {
-  deleteApiKey(): Promise<void>;
-  getApiKey(): Promise<string | undefined>;
-  hasApiKey(): Promise<boolean>;
   initialize(): Promise<void>;
-  onDidChangeApiKey(listener: ApiKeyChangeListener): { dispose(): void };
+  getApiKey(): Promise<string | undefined>;
   setApiKey(key?: string): Promise<void>;
+  deleteApiKey(): Promise<void>;
+  onDidChangeApiKey(listener: ApiKeyChangeListener): { dispose(): void };
+  hasApiKey(): Promise<boolean>;
 }
 
 /**
@@ -19,28 +18,26 @@ export function createMockApiKeyManager(initialKey?: string): MockApiKeyManager 
   let key = initialKey;
   const listeners = new Set<ApiKeyChangeListener>();
 
-  function emit(event: 'updated' | 'deleted', nextKey?: string): void {
+  function emit(event: 'updated' | 'deleted', nextKey: string | undefined): void {
     for (const listener of listeners) {
       listener(event, nextKey);
     }
   }
 
   return {
-    // biome-ignore lint/suspicious/useAwait: implements MockApiKeyManager interface
-    async deleteApiKey(): Promise<void> {
-      key = undefined;
-      emit('deleted');
+    async initialize(): Promise<void> {
+      // no-op
     },
-    // biome-ignore lint/suspicious/useAwait: implements MockApiKeyManager interface
     async getApiKey(): Promise<string | undefined> {
       return key;
     },
-    // biome-ignore lint/suspicious/useAwait: implements MockApiKeyManager interface
-    async hasApiKey(): Promise<boolean> {
-      return key !== undefined && key.length > 0;
+    async setApiKey(nextKey?: string): Promise<void> {
+      key = nextKey;
+      emit('updated', key);
     },
-    async initialize(): Promise<void> {
-      // no-op
+    async deleteApiKey(): Promise<void> {
+      key = undefined;
+      emit('deleted', undefined);
     },
     onDidChangeApiKey(listener: ApiKeyChangeListener): { dispose(): void } {
       listeners.add(listener);
@@ -50,18 +47,16 @@ export function createMockApiKeyManager(initialKey?: string): MockApiKeyManager 
         }
       };
     },
-    // biome-ignore lint/suspicious/useAwait: implements MockApiKeyManager interface
-    async setApiKey(nextKey?: string): Promise<void> {
-      key = nextKey;
-      emit('updated', key);
+    async hasApiKey(): Promise<boolean> {
+      return key !== undefined && key.length > 0;
     }
   };
 }
 
 export interface MockRendererHandle extends RendererHandle {
+  writes: string[];
   chunks: StreamChunk[];
   ended: boolean;
-  writes: string[];
 }
 
 /**
@@ -73,23 +68,20 @@ export function createMockRendererHandle(): MockRendererHandle {
   let ended = false;
 
   return {
+    writes,
     chunks,
-    // biome-ignore lint/suspicious/useAwait: implements MockRendererHandle interface
-    async end(): Promise<void> {
-      ended = true;
-    },
     get ended() {
       return ended;
     },
-    // biome-ignore lint/suspicious/useAwait: implements MockRendererHandle interface
     async write(chunk: string): Promise<void> {
       writes.push(chunk);
     },
-    // biome-ignore lint/suspicious/useAwait: implements MockRendererHandle interface
     async writeChunk(chunk: StreamChunk): Promise<void> {
       chunks.push(chunk);
     },
-    writes
+    async end(): Promise<void> {
+      ended = true;
+    }
   };
 }
 

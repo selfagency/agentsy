@@ -18,29 +18,24 @@
       "require": "./dist/index.cjs"
     },
     "./ink": {
-      "types": "./dist/ink.d.ts",
-      "import": "./dist/ink.js",
-      "require": "./dist/ink.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./cli": {
-      "types": "./dist/cli.d.ts",
-      "import": "./dist/cli.js",
-      "require": "./dist/cli.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./streaming-md": {
-      "types": "./dist/streaming-md.d.ts",
-      "import": "./dist/streaming-md.js",
-      "require": "./dist/streaming-md.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./plain": {
-      "types": "./dist/plain.d.ts",
-      "import": "./dist/plain.js",
-      "require": "./dist/plain.cjs"
-    },
-    "./adapters": {
-      "types": "./dist/adapters.d.ts",
-      "import": "./dist/adapters.js",
-      "require": "./dist/adapters.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "publishConfig": {
@@ -49,8 +44,8 @@
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "biome lint",
-    "format": "biome format",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage"
   },
@@ -59,7 +54,7 @@
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.9.0",
+    "@types/node": "^25.8.0",
     "@types/react": "^19.2.14",
     "@vitest/coverage-v8": "^4.1.6",
     "ink-testing-library": "^4.0.0",

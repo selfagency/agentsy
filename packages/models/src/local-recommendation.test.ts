@@ -1,111 +1,116 @@
 import { describe, expect, it } from 'vitest';
-import type { LLMStatsLocalModel, ModelsDevAPI, SystemCapabilities } from './index.js';
-import { recommendLocalModelsBySystemCapabilities } from './index.js';
+
+import {
+  recommendLocalModelsBySystemCapabilities,
+  type LLMStatsLocalModel,
+  type ModelsDevAPI,
+  type SystemCapabilities
+} from './index.js';
 
 const modelsDevFixture: ModelsDevAPI = {
   openai: {
-    doc: 'https://example.com/openai',
-    env: [],
     id: 'openai',
+    env: [],
+    npm: 'openai',
+    name: 'OpenAI',
+    doc: 'https://example.com/openai',
     models: {
       'gpt-4o-mini': {
-        cost: { input: 0.3, output: 0.6 },
-        family: 'gpt-4o',
         id: 'gpt-4o-mini',
-        knowledge: 'general coding',
-        last_updated: '2026-01-01',
-        limit: { context: 128_000, output: 8192 },
-        modalities: { input: ['text'], output: ['text'] },
         name: 'GPT-4o mini',
-        open_weights: false,
+        family: 'gpt-4o',
         reasoning: true,
-        release_date: '2026-01-01',
+        tool_call: true,
         temperature: true,
-        tool_call: true
+        knowledge: 'general coding',
+        release_date: '2026-01-01',
+        last_updated: '2026-01-01',
+        modalities: { input: ['text'], output: ['text'] },
+        open_weights: false,
+        limit: { context: 128000, output: 8192 },
+        cost: { input: 0.3, output: 0.6 }
       }
-    },
-    name: 'OpenAI',
-    npm: 'openai'
+    }
   },
   qwen: {
-    doc: 'https://example.com/qwen',
-    env: [],
     id: 'qwen',
-    models: {
-      'qwen2.5-coder-32b': {
-        cost: { input: 0.2, output: 0.4 },
-        family: 'qwen',
-        id: 'qwen2.5-coder-32b',
-        knowledge: 'coding',
-        last_updated: '2026-01-01',
-        limit: { context: 262_144, output: 8192 },
-        modalities: { input: ['text'], output: ['text'] },
-        name: 'Qwen2.5 Coder 32B',
-        open_weights: true,
-        reasoning: true,
-        release_date: '2026-01-01',
-        temperature: true,
-        tool_call: true
-      },
-      'qwen2.5-coder-7b': {
-        cost: { input: 0.05, output: 0.1 },
-        family: 'qwen',
-        id: 'qwen2.5-coder-7b',
-        knowledge: 'coding',
-        last_updated: '2026-01-01',
-        limit: { context: 131_072, output: 8192 },
-        modalities: { input: ['text'], output: ['text'] },
-        name: 'Qwen2.5 Coder 7B',
-        open_weights: true,
-        reasoning: true,
-        release_date: '2026-01-01',
-        temperature: true,
-        tool_call: true
-      }
-    },
+    env: [],
+    npm: '@qwen/sdk',
     name: 'Qwen',
-    npm: '@qwen/sdk'
+    doc: 'https://example.com/qwen',
+    models: {
+      'qwen2.5-coder-7b': {
+        id: 'qwen2.5-coder-7b',
+        name: 'Qwen2.5 Coder 7B',
+        family: 'qwen',
+        reasoning: true,
+        tool_call: true,
+        temperature: true,
+        knowledge: 'coding',
+        release_date: '2026-01-01',
+        last_updated: '2026-01-01',
+        modalities: { input: ['text'], output: ['text'] },
+        open_weights: true,
+        limit: { context: 131072, output: 8192 },
+        cost: { input: 0.05, output: 0.1 }
+      },
+      'qwen2.5-coder-32b': {
+        id: 'qwen2.5-coder-32b',
+        name: 'Qwen2.5 Coder 32B',
+        family: 'qwen',
+        reasoning: true,
+        tool_call: true,
+        temperature: true,
+        knowledge: 'coding',
+        release_date: '2026-01-01',
+        last_updated: '2026-01-01',
+        modalities: { input: ['text'], output: ['text'] },
+        open_weights: true,
+        limit: { context: 262144, output: 8192 },
+        cost: { input: 0.2, output: 0.4 }
+      }
+    }
   }
 };
 
 const llmStatsFixture: LLMStatsLocalModel[] = [
   {
+    modelId: 'qwen2.5-coder-7b',
     categoryScores: { coding: 86, general: 80 },
-    estimatedTokensPerSecond: 44,
-    isLocalCompatible: true,
     minRamGb: 12,
     minVramGb: 8,
-    modelId: 'qwen2.5-coder-7b',
+    estimatedTokensPerSecond: 44,
+    runtime: 'llama.cpp',
     quantization: 'q4_k_m',
-    runtime: 'llama.cpp'
+    isLocalCompatible: true
   },
   {
+    modelId: 'qwen2.5-coder-32b',
     categoryScores: { coding: 95, general: 90 },
-    estimatedTokensPerSecond: 18,
-    isLocalCompatible: true,
     minRamGb: 48,
     minVramGb: 24,
-    modelId: 'qwen2.5-coder-32b',
+    estimatedTokensPerSecond: 18,
+    runtime: 'llama.cpp',
     quantization: 'q4_k_m',
-    runtime: 'llama.cpp'
+    isLocalCompatible: true
   },
   {
+    modelId: 'gpt-4o-mini',
     categoryScores: { coding: 78, general: 84 },
-    estimatedTokensPerSecond: 60,
-    isLocalCompatible: true,
     minRamGb: 4,
     minVramGb: 0,
-    modelId: 'gpt-4o-mini',
+    estimatedTokensPerSecond: 60,
+    runtime: 'ollama',
     quantization: 'q8_0',
-    runtime: 'ollama'
+    isLocalCompatible: true
   }
 ];
 
 const systemCapabilities: SystemCapabilities = {
-  backend: 'cuda',
-  cpuCores: 8,
   ramGb: 32,
-  vramGb: 12
+  vramGb: 12,
+  cpuCores: 8,
+  backend: 'cuda'
 };
 
 describe('recommendLocalModelsBySystemCapabilities', () => {
@@ -143,7 +148,7 @@ describe('recommendLocalModelsBySystemCapabilities', () => {
       modelsDevFixture,
       llmStatsFixture,
       systemCapabilities,
-      { preferLowCost: true, taskCategory: 'coding', topN: 1 }
+      { taskCategory: 'coding', preferLowCost: true, topN: 1 }
     );
 
     expect(recommendations).toHaveLength(1);
@@ -178,7 +183,7 @@ describe('recommendLocalModelsBySystemCapabilities', () => {
       noToolModelData,
       llmStatsFixture,
       systemCapabilities,
-      { requireToolCalling: true, taskCategory: 'coding' }
+      { taskCategory: 'coding', requireToolCalling: true }
     );
 
     const ids = recommendations.map(entry => entry.model);

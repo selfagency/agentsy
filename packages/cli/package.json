@@ -7,7 +7,7 @@
     "typescript"
   ],
   "homepage": "https://github.com/selfagency/agentsy#readme",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git"
@@ -16,45 +16,30 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "agentsy": "./dist/cli.js"
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    },
-    "./cli": {
-      "types": "./dist/cli.d.ts",
-      "import": "./dist/cli.js",
-      "require": "./dist/cli.cjs"
     }
   },
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "biome lint",
-    "format": "biome format",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest --run --passWithNoTests",
-    "coverage": "vitest --run --coverage",
-    "test:e2e": "pnpm build && npx @microsoft/tui-test",
-    "test:e2e:dev": "npx @microsoft/tui-test"
+    "coverage": "vitest --run --coverage"
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
-    "@agentsy/gateway": "workspace:*",
     "@agentsy/memory": "workspace:*",
-    "@agentsy/models": "workspace:*",
-    "@agentsy/providers": "workspace:*",
-    "@agentsy/renderers": "workspace:*",
     "@agentsy/runtime": "workspace:*",
     "@agentsy/tokens": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@microsoft/tui-test": "^0.0.4",
-    "@types/node": "^25.9.0",
+    "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",

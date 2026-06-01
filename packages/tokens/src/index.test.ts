@@ -1,26 +1,25 @@
 import { describe, expect, it } from 'vitest';
-
 import {
+  PacingController,
   compressConversation,
   compressOutput,
   createInMemoryTokenManager,
-  createTokenLedger,
-  PacingController
+  createTokenLedger
 } from './index.js';
 
 describe('createTokenLedger', () => {
   it('consumes tokens within budget', () => {
     const ledger = createTokenLedger({ limit: 10 });
 
-    expect(ledger.consume(4)).toBeTruthy();
+    expect(ledger.consume(4)).toBe(true);
     expect(ledger.remaining()).toBe(6);
   });
 
   it('rejects negative and over-budget token usage', () => {
     const ledger = createTokenLedger({ limit: 5 });
 
-    expect(ledger.consume(-1)).toBeFalsy();
-    expect(ledger.consume(6)).toBeFalsy();
+    expect(ledger.consume(-1)).toBe(false);
+    expect(ledger.consume(6)).toBe(false);
     expect(ledger.remaining()).toBe(5);
   });
 });
@@ -29,22 +28,22 @@ describe('createInMemoryTokenManager', () => {
   it('creates budgets, allocates tokens, and records released usage', async () => {
     const manager = createInMemoryTokenManager();
     const budget = await manager.createBudget({
-      maxCost: 5,
-      maxTokens: 100,
-      model: 'gpt-4.1-mini',
       name: 'default',
-      periodMs: 60_000,
-      priority: 'high',
       provider: 'openai',
-      resetStrategy: 'rolling'
+      model: 'gpt-4.1-mini',
+      maxTokens: 100,
+      maxCost: 5,
+      periodMs: 60_000,
+      resetStrategy: 'rolling',
+      priority: 'high'
     });
 
     const allocation = await manager.requestTokens({
       budgetId: budget.id,
-      estimatedCost: 1.5,
-      estimatedTokens: 40,
-      model: 'gpt-4.1-mini',
       provider: 'openai',
+      model: 'gpt-4.1-mini',
+      estimatedTokens: 40,
+      estimatedCost: 1.5,
       requestType: 'completion'
     });
 
@@ -63,31 +62,31 @@ describe('createInMemoryTokenManager', () => {
     const manager = createInMemoryTokenManager();
 
     const low = await manager.createBudget({
-      maxCost: 10,
-      maxTokens: 100,
-      model: 'gpt-4.1-mini',
       name: 'low',
-      periodMs: 60_000,
-      priority: 'low',
       provider: 'openai',
-      resetStrategy: 'rolling'
+      model: 'gpt-4.1-mini',
+      maxTokens: 100,
+      maxCost: 10,
+      periodMs: 60_000,
+      resetStrategy: 'rolling',
+      priority: 'low'
     });
 
     const high = await manager.createBudget({
-      maxCost: 10,
-      maxTokens: 100,
-      model: 'gpt-4.1-mini',
       name: 'high',
-      periodMs: 60_000,
-      priority: 'high',
       provider: 'openai',
-      resetStrategy: 'rolling'
+      model: 'gpt-4.1-mini',
+      maxTokens: 100,
+      maxCost: 10,
+      periodMs: 60_000,
+      resetStrategy: 'rolling',
+      priority: 'high'
     });
 
     const allocation = await manager.requestTokens({
-      estimatedTokens: 10,
-      model: 'gpt-4.1-mini',
       provider: 'openai',
+      model: 'gpt-4.1-mini',
+      estimatedTokens: 10,
       requestType: 'completion'
     });
 
@@ -98,22 +97,22 @@ describe('createInMemoryTokenManager', () => {
   it('rejects requests that exceed the remaining budget', async () => {
     const manager = createInMemoryTokenManager();
     const budget = await manager.createBudget({
-      maxCost: 1,
-      maxTokens: 10,
-      model: 'gpt-4.1-mini',
       name: 'tiny',
-      periodMs: 60_000,
-      priority: 'medium',
       provider: 'openai',
-      resetStrategy: 'rolling'
+      model: 'gpt-4.1-mini',
+      maxTokens: 10,
+      maxCost: 1,
+      periodMs: 60_000,
+      resetStrategy: 'rolling',
+      priority: 'medium'
     });
 
     await expect(
       manager.requestTokens({
         budgetId: budget.id,
-        estimatedTokens: 11,
-        model: 'gpt-4.1-mini',
         provider: 'openai',
+        model: 'gpt-4.1-mini',
+        estimatedTokens: 11,
         requestType: 'completion'
       })
     ).rejects.toThrow('exceeds the remaining token budget');
@@ -122,24 +121,24 @@ describe('createInMemoryTokenManager', () => {
   it('produces basic cost analysis and optimization suggestions', async () => {
     const manager = createInMemoryTokenManager();
     const budget = await manager.createBudget({
-      maxCost: 10,
-      maxTokens: 100,
-      model: 'gpt-4.1-mini',
       name: 'analysis',
-      periodMs: 60_000,
-      priority: 'medium',
       provider: 'openai',
-      resetStrategy: 'rolling'
+      model: 'gpt-4.1-mini',
+      maxTokens: 100,
+      maxCost: 10,
+      periodMs: 60_000,
+      resetStrategy: 'rolling',
+      priority: 'medium'
     });
 
     await manager.recordUsage({
       budgetId: budget.id,
-      cost: 8.5,
-      model: 'gpt-4.1-mini',
       provider: 'openai',
-      requestType: 'completion',
+      model: 'gpt-4.1-mini',
+      tokensUsed: 85,
+      cost: 8.5,
       timestamp: new Date(),
-      tokensUsed: 85
+      requestType: 'completion'
     });
 
     const analysis = await manager.getCostAnalysis(60_000);
@@ -153,80 +152,80 @@ describe('createInMemoryTokenManager', () => {
   it('supports budget CRUD, filtering, and wildcard model selection', async () => {
     const manager = createInMemoryTokenManager();
     const budget = await manager.createBudget({
-      maxCost: 4,
-      maxTokens: 200,
-      metadata: { team: 'agents' },
-      model: '*',
       name: 'wildcard',
-      periodMs: 60_000,
-      priority: 'medium',
       provider: 'anthropic',
-      resetStrategy: 'manual'
+      model: '*',
+      maxTokens: 200,
+      maxCost: 4,
+      periodMs: 60_000,
+      resetStrategy: 'manual',
+      priority: 'medium',
+      metadata: { team: 'agents' }
     });
 
     const updated = await manager.updateBudget(budget.id, {
-      metadata: { team: 'runtime' },
-      name: 'wildcard-updated'
+      name: 'wildcard-updated',
+      metadata: { team: 'runtime' }
     });
     const fetched = await manager.getBudget(budget.id);
     const filtered = await manager.listBudgets({ provider: 'anthropic' });
     const allocation = await manager.requestTokens({
-      estimatedCost: 0.5,
-      estimatedTokens: 20,
-      model: 'claude-3-7-sonnet',
       provider: 'anthropic',
+      model: 'claude-3-7-sonnet',
+      estimatedTokens: 20,
+      estimatedCost: 0.5,
       requestType: 'completion'
     });
 
     expect(updated.name).toBe('wildcard-updated');
-    expect(fetched?.metadata).toStrictEqual({ team: 'runtime' });
+    expect(fetched?.metadata).toEqual({ team: 'runtime' });
     expect(filtered).toHaveLength(1);
     expect(allocation.budgetId).toBe(budget.id);
 
     await manager.deleteBudget(budget.id);
 
-    await expect(manager.getBudget(budget.id)).resolves.toBeNull();
+    expect(await manager.getBudget(budget.id)).toBeNull();
     await expect(manager.releaseTokens(allocation.id, 10, 0.25)).rejects.toThrow('Unknown token allocation');
   });
 
   it('counts manual-reset usage across older timestamps and rejects unmatched requests', async () => {
     const manager = createInMemoryTokenManager();
     const budget = await manager.createBudget({
-      maxCost: 10,
-      maxTokens: 100,
-      model: 'gpt-4.1-mini',
       name: 'manual',
-      periodMs: 1,
-      priority: 'medium',
       provider: 'openai',
-      resetStrategy: 'manual'
+      model: 'gpt-4.1-mini',
+      maxTokens: 100,
+      maxCost: 10,
+      periodMs: 1,
+      resetStrategy: 'manual',
+      priority: 'medium'
     });
 
     await manager.recordUsage({
       budgetId: budget.id,
-      cost: 1,
-      model: 'gpt-4.1-mini',
       provider: 'openai',
-      requestType: 'completion',
+      model: 'gpt-4.1-mini',
+      tokensUsed: 95,
+      cost: 1,
       timestamp: new Date(Date.now() - 10_000),
-      tokensUsed: 95
+      requestType: 'completion'
     });
 
     await expect(
       manager.requestTokens({
         budgetId: budget.id,
-        estimatedTokens: 10,
-        model: 'gpt-4.1-mini',
         provider: 'openai',
+        model: 'gpt-4.1-mini',
+        estimatedTokens: 10,
         requestType: 'completion'
       })
     ).rejects.toThrow('exceeds the remaining token budget');
 
     await expect(
       manager.requestTokens({
-        estimatedTokens: 1,
-        model: 'missing',
         provider: 'missing',
+        model: 'missing',
+        estimatedTokens: 1,
         requestType: 'completion'
       })
     ).rejects.toThrow('No matching token budget found');
@@ -236,13 +235,13 @@ describe('createInMemoryTokenManager', () => {
 describe('compressConversation', () => {
   it('drops the oldest messages until the estimated token budget fits', () => {
     const result = compressConversation(['aaaa', 'bbbb', 'cccc', 'dddd'], {
-      estimateTokens: (value: string) => value.length,
       maxTokens: 8,
+      estimateTokens: (value: string) => value.length,
       preserveLast: 1
     });
 
-    expect(result.compressed).toBeTruthy();
-    expect(result.messages).toStrictEqual(['cccc', 'dddd']);
+    expect(result.compressed).toBe(true);
+    expect(result.messages).toEqual(['cccc', 'dddd']);
     expect(result.droppedCount).toBe(2);
     expect(result.estimatedTokens).toBe(8);
   });
@@ -282,43 +281,39 @@ describe('compressOutput', () => {
 describe('PacingController', () => {
   it('enforces provider rate limits and exposes wait time', async () => {
     const controller = new PacingController(createInMemoryTokenManager());
-    controller.updateRateLimits('openai', [{ maxRequests: 1, windowMs: 1000 }]);
+    await controller.updateRateLimits('openai', [{ windowMs: 1_000, maxRequests: 1 }]);
 
-    await expect(
-      controller.throttleRequest({
-        estimatedTokens: 10,
-        model: 'gpt-4.1-mini',
+    expect(
+      await controller.throttleRequest({
         provider: 'openai',
+        model: 'gpt-4.1-mini',
+        estimatedTokens: 10,
         requestType: 'completion'
       })
-    ).resolves.toBeTruthy();
+    ).toBe(true);
 
-    await expect(
-      controller.throttleRequest({
-        estimatedTokens: 10,
-        model: 'gpt-4.1-mini',
+    expect(
+      await controller.throttleRequest({
         provider: 'openai',
+        model: 'gpt-4.1-mini',
+        estimatedTokens: 10,
         requestType: 'completion'
       })
-    ).resolves.toBeFalsy();
+    ).toBe(false);
 
-    const status = controller.checkRateLimit('openai');
-    expect(status.allowed).toBeFalsy();
+    const status = await controller.checkRateLimit('openai');
+    expect(status.allowed).toBe(false);
     expect(status.retryAfterMs).toBeGreaterThan(0);
   });
 
-  it('applies adaptive cooldown feedback', () => {
+  it('applies adaptive cooldown feedback', async () => {
     const controller = new PacingController(createInMemoryTokenManager());
-    controller.adjustPacing({
-      overloaded: true,
-      provider: 'openai',
-      retryAfterMs: 250
-    });
+    await controller.adjustPacing({ provider: 'openai', overloaded: true, retryAfterMs: 250 });
 
-    const wait = controller.getWaitTime({
-      estimatedTokens: 10,
-      model: 'gpt-4.1-mini',
+    const wait = await controller.getWaitTime({
       provider: 'openai',
+      model: 'gpt-4.1-mini',
+      estimatedTokens: 10,
       requestType: 'completion'
     });
 
@@ -327,52 +322,44 @@ describe('PacingController', () => {
 
   it('evaluates each rate-limit window against the original timestamp history', async () => {
     const controller = new PacingController(createInMemoryTokenManager());
-    controller.updateRateLimits('openai', [
-      { maxRequests: 10, windowMs: 1000 },
-      { maxRequests: 2, windowMs: 10_000 }
+    await controller.updateRateLimits('openai', [
+      { windowMs: 1_000, maxRequests: 10 },
+      { windowMs: 10_000, maxRequests: 2 }
     ]);
 
-    await expect(
-      controller.throttleRequest({
-        estimatedTokens: 10,
-        model: 'gpt-4.1-mini',
+    expect(
+      await controller.throttleRequest({
         provider: 'openai',
+        model: 'gpt-4.1-mini',
+        estimatedTokens: 10,
         requestType: 'completion'
       })
-    ).resolves.toBeTruthy();
-    await expect(
-      controller.throttleRequest({
-        estimatedTokens: 10,
-        model: 'gpt-4.1-mini',
+    ).toBe(true);
+    expect(
+      await controller.throttleRequest({
         provider: 'openai',
+        model: 'gpt-4.1-mini',
+        estimatedTokens: 10,
         requestType: 'completion'
       })
-    ).resolves.toBeTruthy();
+    ).toBe(true);
 
-    const status = controller.checkRateLimit('openai');
+    const status = await controller.checkRateLimit('openai');
 
-    expect(status.allowed).toBeFalsy();
+    expect(status.allowed).toBe(false);
     expect(status.limit).toBe(2);
     expect(status.retryAfterMs).toBeGreaterThan(0);
   });
 
-  it('clears cooldowns when overload feedback is resolved', () => {
+  it('clears cooldowns when overload feedback is resolved', async () => {
     const controller = new PacingController(createInMemoryTokenManager());
-    controller.adjustPacing({
-      overloaded: true,
-      provider: 'openai',
-      retryAfterMs: 250
-    });
-    controller.adjustPacing({
-      overloaded: false,
-      provider: 'openai',
-      retryAfterMs: 0
-    });
+    await controller.adjustPacing({ provider: 'openai', overloaded: true, retryAfterMs: 250 });
+    await controller.adjustPacing({ provider: 'openai', overloaded: false, retryAfterMs: 0 });
 
-    const wait = controller.getWaitTime({
-      estimatedTokens: 10,
-      model: 'gpt-4.1-mini',
+    const wait = await controller.getWaitTime({
       provider: 'openai',
+      model: 'gpt-4.1-mini',
+      estimatedTokens: 10,
       requestType: 'completion'
     });
 

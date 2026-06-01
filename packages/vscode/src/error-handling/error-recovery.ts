@@ -5,13 +5,14 @@ import { errorToProviderCode } from './error-mapper.js';
  * Options for retryable operations.
  */
 export interface RetryOptions {
-  /** Backoff multiplier (default: 2) */
-  backoffMultiplier?: number;
+  /** Maximum number of attempts (default: 3) */
+  maxAttempts?: number;
 
   /** Initial delay in milliseconds (default: 1000) */
   initialDelayMs?: number;
-  /** Maximum number of attempts (default: 3) */
-  maxAttempts?: number;
+
+  /** Backoff multiplier (default: 2) */
+  backoffMultiplier?: number;
 
   /** Maximum delay in milliseconds (default: 30000) */
   maxDelayMs?: number;
@@ -53,7 +54,7 @@ export function calculateRetryDelay(
  * Executes an operation with automatic retry on retryable errors.
  */
 export async function withRetry<T>(operation: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
-  const { maxAttempts = 3, initialDelayMs = 1000, backoffMultiplier = 2, maxDelayMs = 30_000, signal } = options;
+  const { maxAttempts = 3, initialDelayMs = 1000, backoffMultiplier = 2, maxDelayMs = 30000, signal } = options;
 
   let lastError: unknown;
 
@@ -72,11 +73,7 @@ export async function withRetry<T>(operation: () => Promise<T>, options: RetryOp
         throw error;
       }
 
-      const delay = calculateRetryDelay(attempt, {
-        backoffMultiplier,
-        initialDelayMs,
-        maxDelayMs
-      });
+      const delay = calculateRetryDelay(attempt, { initialDelayMs, backoffMultiplier, maxDelayMs });
       await sleep(delay, signal);
     }
   }
@@ -84,12 +81,10 @@ export async function withRetry<T>(operation: () => Promise<T>, options: RetryOp
   throw lastError;
 }
 
-async function sleep(ms: number, signal?: AbortSignal): Promise<void> {
-  return await new Promise((resolve, reject) => {
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, ms);
-    if (!signal) {
-      return;
-    }
+    if (!signal) return;
 
     const abortHandler = () => {
       clearTimeout(timer);

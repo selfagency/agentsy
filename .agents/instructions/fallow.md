@@ -102,11 +102,11 @@ The MCP server uses <Tooltip tip="Communication via standard input/output stream
 
 ```json theme={null}
 {
-  "mcpServers": {
-    "fallow": {
-      "command": "fallow-mcp"
-    }
-  }
+"mcpServers": {
+"fallow": {
+"command": "fallow-mcp"
+}
+}
 }
 ```
 
@@ -117,11 +117,11 @@ The MCP server uses <Tooltip tip="Communication via standard input/output stream
 
 ```json theme={null}
 {
-  "mcpServers": {
-    "fallow": {
-      "command": "fallow-mcp"
-    }
-  }
+"mcpServers": {
+"fallow": {
+"command": "fallow-mcp"
+}
+}
 }
 ```
 

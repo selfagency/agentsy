@@ -1,37 +1,36 @@
-import type { StreamChunk } from '@agentsy/core/processor';
 import { describe, expect, it } from 'vitest';
-
+import type { StreamChunk } from '@agentsy/core/processor';
 import { mapStreamChunkToVsCode } from './helpers.js';
 
-describe(mapStreamChunkToVsCode, () => {
+describe('mapStreamChunkToVsCode', () => {
   it('maps content, thinking and native tool deltas into VS Code parts', () => {
     const chunk: StreamChunk = {
       content: 'Hello',
-      nativeToolCallDeltas: [{ argumentsDelta: '{"q":"x"}', id: 'call-1', index: 0, name: 'search' }],
-      thinking: 'reason'
+      thinking: 'reason',
+      nativeToolCallDeltas: [{ index: 0, id: 'call-1', name: 'search', argumentsDelta: '{"q":"x"}' }]
     };
 
-    expect(mapStreamChunkToVsCode(chunk)).toStrictEqual([
+    expect(mapStreamChunkToVsCode(chunk)).toEqual([
       { part: { type: 'text', value: 'Hello' } },
       { part: { type: 'text', value: '<think>reason</think>\n' } },
       {
         part: {
-          callId: 'call-1',
+          type: 'tool-call',
           index: 0,
-          input: '{"q":"x"}',
+          callId: 'call-1',
           name: 'search',
-          type: 'tool-call'
+          input: '{"q":"x"}'
         }
       }
     ]);
   });
 
   it('returns empty list for empty chunks', () => {
-    expect(mapStreamChunkToVsCode({})).toStrictEqual([]);
+    expect(mapStreamChunkToVsCode({})).toEqual([]);
   });
 
   it('skips falsy content/thinking values', () => {
     const out = mapStreamChunkToVsCode({ content: '', thinking: '' });
-    expect(out).toStrictEqual([]);
+    expect(out).toEqual([]);
   });
 });

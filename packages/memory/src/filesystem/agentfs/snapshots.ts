@@ -1,18 +1,18 @@
 import type { AgentFsEntry, AgentFsManager } from './manager.js';
 
 export interface Snapshot {
-  readonly entries: readonly AgentFsEntry[];
   readonly id: string;
   readonly label?: string;
   readonly timestamp: number;
+  readonly entries: readonly AgentFsEntry[];
 }
 
 export interface SnapshotStore {
   capture(manager: AgentFsManager, label?: string): Snapshot;
-  delete(snapshotId: string): boolean;
-  get(snapshotId: string): Snapshot | undefined;
-  list(): Snapshot[];
   restore(snapshotId: string, manager: AgentFsManager): boolean;
+  list(): Snapshot[];
+  get(snapshotId: string): Snapshot | undefined;
+  delete(snapshotId: string): boolean;
 }
 
 let snapCounter = 0;
@@ -36,23 +36,9 @@ export function createSnapshotStore(): SnapshotStore {
       return snapshot;
     },
 
-    delete(snapshotId) {
-      return snapshots.delete(snapshotId);
-    },
-
-    get(snapshotId) {
-      return snapshots.get(snapshotId);
-    },
-
-    list() {
-      return [...snapshots.values()].toSorted((a, b) => b.timestamp - a.timestamp);
-    },
-
     restore(snapshotId, manager) {
       const snapshot = snapshots.get(snapshotId);
-      if (snapshot === undefined) {
-        return false;
-      }
+      if (snapshot === undefined) return false;
       manager.clear();
 
       // Use manager.import() if available to preserve full entry metadata (timestamps)
@@ -65,6 +51,18 @@ export function createSnapshotStore(): SnapshotStore {
         }
       }
       return true;
+    },
+
+    list() {
+      return [...snapshots.values()].sort((a, b) => b.timestamp - a.timestamp);
+    },
+
+    get(snapshotId) {
+      return snapshots.get(snapshotId);
+    },
+
+    delete(snapshotId) {
+      return snapshots.delete(snapshotId);
     }
   };
 }

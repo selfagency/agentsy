@@ -10,6 +10,6 @@ describe('VersionTracker', () => {
     expect(tracker.bump('page')).toBe(1);
     expect(tracker.bump('page')).toBe(2);
     expect(tracker.current('page')).toBe(2);
-    expect(tracker.history('page')).toStrictEqual([1, 2]);
+    expect(tracker.history('page')).toEqual([1, 2]);
   });
 });

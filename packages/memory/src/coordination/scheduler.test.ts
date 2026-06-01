@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { createInMemoryScheduler } from './scheduler.js';
 
 describe('Scheduler', () => {
@@ -11,7 +10,7 @@ describe('Scheduler', () => {
 
   describe('schedule', () => {
     it('should schedule a job with jobId and delay', async () => {
-      const job = vi.fn<() => void>();
+      const job = vi.fn();
 
       scheduler.schedule('job-1', 50, job);
 
@@ -21,11 +20,11 @@ describe('Scheduler', () => {
       // Wait for the job to execute
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      expect(job).toHaveBeenCalledWith();
+      expect(job).toHaveBeenCalled();
     });
 
     it('should execute job after specified delay', async () => {
-      const job = vi.fn<() => void>();
+      const job = vi.fn();
 
       scheduler.schedule('delayed-job', 50, job);
 
@@ -35,35 +34,35 @@ describe('Scheduler', () => {
       // Wait for the job to execute
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      expect(job).toHaveBeenCalledOnce();
+      expect(job).toHaveBeenCalledTimes(1);
     });
 
     it('should handle jobs with zero delay', async () => {
-      const job = vi.fn<() => void>();
+      const job = vi.fn();
 
       scheduler.schedule('zero-delay-job', 0, job);
 
       // Should execute almost immediately
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      expect(job).toHaveBeenCalledWith();
+      expect(job).toHaveBeenCalled();
     });
 
     it('should handle jobs with negative delay (converted to 0)', async () => {
-      const job = vi.fn<() => void>();
+      const job = vi.fn();
 
       scheduler.schedule('negative-delay-job', -100, job);
 
       // Should execute almost immediately
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      expect(job).toHaveBeenCalledWith();
+      expect(job).toHaveBeenCalled();
     });
 
     it('should schedule multiple independent jobs', async () => {
-      const job1 = vi.fn<() => void>();
-      const job2 = vi.fn<() => void>();
-      const job3 = vi.fn<() => void>();
+      const job1 = vi.fn();
+      const job2 = vi.fn();
+      const job3 = vi.fn();
 
       scheduler.schedule('job-1', 30, job1);
       scheduler.schedule('job-2', 60, job2);
@@ -71,14 +70,14 @@ describe('Scheduler', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      expect(job1).toHaveBeenCalledWith();
-      expect(job2).toHaveBeenCalledWith();
-      expect(job3).toHaveBeenCalledWith();
+      expect(job1).toHaveBeenCalled();
+      expect(job2).toHaveBeenCalled();
+      expect(job3).toHaveBeenCalled();
     });
 
     it('should replace a previously scheduled job with the same ID', async () => {
-      const job1 = vi.fn<() => void>();
-      const job2 = vi.fn<() => void>();
+      const job1 = vi.fn();
+      const job2 = vi.fn();
 
       scheduler.schedule('replacement-job', 50, job1);
       scheduler.schedule('replacement-job', 50, job2); // Replace with job2
@@ -87,13 +86,13 @@ describe('Scheduler', () => {
 
       // Only job2 should have been called, not job1
       expect(job1).not.toHaveBeenCalled();
-      expect(job2).toHaveBeenCalledWith();
+      expect(job2).toHaveBeenCalled();
     });
 
     it('should support various jobId formats', async () => {
-      const job1 = vi.fn<() => void>();
-      const job2 = vi.fn<() => void>();
-      const job3 = vi.fn<() => void>();
+      const job1 = vi.fn();
+      const job2 = vi.fn();
+      const job3 = vi.fn();
 
       scheduler.schedule('simple-id', 30, job1);
       scheduler.schedule('uuid-123e4567-e89b-12d3-a456-426614174000', 30, job2);
@@ -101,13 +100,13 @@ describe('Scheduler', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      expect(job1).toHaveBeenCalledWith();
-      expect(job2).toHaveBeenCalledWith();
-      expect(job3).toHaveBeenCalledWith();
+      expect(job1).toHaveBeenCalled();
+      expect(job2).toHaveBeenCalled();
+      expect(job3).toHaveBeenCalled();
     });
 
     it('should handle large delay values', async () => {
-      const job = vi.fn<() => void>();
+      const job = vi.fn();
 
       scheduler.schedule('large-delay-job', 5000, job);
 
@@ -124,7 +123,7 @@ describe('Scheduler', () => {
 
   describe('cancel', () => {
     it('should cancel a scheduled job', async () => {
-      const job = vi.fn<() => void>();
+      const job = vi.fn();
 
       scheduler.schedule('job-to-cancel', 50, job);
       scheduler.cancel('job-to-cancel');
@@ -135,8 +134,8 @@ describe('Scheduler', () => {
     });
 
     it('should not affect other jobs when cancelling one', async () => {
-      const job1 = vi.fn<() => void>();
-      const job2 = vi.fn<() => void>();
+      const job1 = vi.fn();
+      const job2 = vi.fn();
 
       scheduler.schedule('job-1', 50, job1);
       scheduler.schedule('job-2', 60, job2);
@@ -146,7 +145,7 @@ describe('Scheduler', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(job1).not.toHaveBeenCalled();
-      expect(job2).toHaveBeenCalledWith();
+      expect(job2).toHaveBeenCalled();
     });
 
     it('should be safe to cancel a non-existent job', () => {
@@ -156,7 +155,7 @@ describe('Scheduler', () => {
     });
 
     it('should be safe to cancel the same job multiple times', async () => {
-      const job = vi.fn<() => void>();
+      const job = vi.fn();
 
       scheduler.schedule('job-to-cancel-twice', 50, job);
 
@@ -170,7 +169,7 @@ describe('Scheduler', () => {
     });
 
     it('should prevent execution after cancellation', async () => {
-      const job = vi.fn<() => void>();
+      const job = vi.fn();
 
       scheduler.schedule('delayed-cancel', 100, job);
 
@@ -184,7 +183,7 @@ describe('Scheduler', () => {
     });
 
     it('should cancel job even after partial delay', async () => {
-      const job = vi.fn<() => void>();
+      const job = vi.fn();
 
       scheduler.schedule('partial-delay-cancel', 100, job);
 
@@ -205,9 +204,9 @@ describe('Scheduler', () => {
     });
 
     it('should count scheduled jobs', () => {
-      const job1 = vi.fn<() => void>();
-      const job2 = vi.fn<() => void>();
-      const job3 = vi.fn<() => void>();
+      const job1 = vi.fn();
+      const job2 = vi.fn();
+      const job3 = vi.fn();
 
       scheduler.schedule('job-1', 100, job1);
       scheduler.schedule('job-2', 100, job2);
@@ -217,8 +216,8 @@ describe('Scheduler', () => {
     });
 
     it('should decrement count when job is cancelled', () => {
-      const job1 = vi.fn<() => void>();
-      const job2 = vi.fn<() => void>();
+      const job1 = vi.fn();
+      const job2 = vi.fn();
 
       scheduler.schedule('job-1', 100, job1);
       scheduler.schedule('job-2', 100, job2);
@@ -233,7 +232,7 @@ describe('Scheduler', () => {
     });
 
     it('should decrement count when job executes', async () => {
-      const job = vi.fn<() => void>();
+      const job = vi.fn();
 
       scheduler.schedule('job-to-execute', 30, job);
       expect(scheduler.pendingCount()).toBe(1);
@@ -244,11 +243,11 @@ describe('Scheduler', () => {
       expect(scheduler.pendingCount()).toBe(0);
     });
 
-    it('should track pending count accurately with multiple operations', () => {
-      const job1 = vi.fn<() => void>();
-      const job2 = vi.fn<() => void>();
-      const job3 = vi.fn<() => void>();
-      const job4 = vi.fn<() => void>();
+    it('should track pending count accurately with multiple operations', async () => {
+      const job1 = vi.fn();
+      const job2 = vi.fn();
+      const job3 = vi.fn();
+      const job4 = vi.fn();
 
       scheduler.schedule('job-1', 100, job1);
       scheduler.schedule('job-2', 100, job2);
@@ -261,7 +260,7 @@ describe('Scheduler', () => {
       scheduler.cancel('job-2');
       expect(scheduler.pendingCount()).toBe(3);
 
-      scheduler.schedule('job-2', 100, vi.fn<() => void>()); // Re-add with same ID
+      scheduler.schedule('job-2', 100, vi.fn()); // Re-add with same ID
       expect(scheduler.pendingCount()).toBe(4);
 
       scheduler.cancel('job-1');
@@ -274,8 +273,8 @@ describe('Scheduler', () => {
     });
 
     it('should return 0 after all jobs execute', async () => {
-      const job1 = vi.fn<() => void>();
-      const job2 = vi.fn<() => void>();
+      const job1 = vi.fn();
+      const job2 = vi.fn();
 
       scheduler.schedule('job-1', 30, job1);
       scheduler.schedule('job-2', 40, job2);
@@ -291,9 +290,9 @@ describe('Scheduler', () => {
 
   describe('Job replacement', () => {
     it('should replace a job when scheduling with the same ID', async () => {
-      const job1 = vi.fn<() => void>();
-      const job2 = vi.fn<() => void>();
-      const job3 = vi.fn<() => void>();
+      const job1 = vi.fn();
+      const job2 = vi.fn();
+      const job3 = vi.fn();
 
       scheduler.schedule('replace-me', 50, job1);
       scheduler.schedule('replace-me', 50, job2);
@@ -304,57 +303,54 @@ describe('Scheduler', () => {
       // Only job3 should be called
       expect(job1).not.toHaveBeenCalled();
       expect(job2).not.toHaveBeenCalled();
-      expect(job3).toHaveBeenCalledWith();
+      expect(job3).toHaveBeenCalled();
       expect(scheduler.pendingCount()).toBe(0);
     });
 
     it('should preserve pending count when replacing jobs', () => {
-      const job1 = vi.fn<() => void>();
-      const job2 = vi.fn<() => void>();
+      const job1 = vi.fn();
+      const job2 = vi.fn();
 
       scheduler.schedule('job-1', 100, job1);
       scheduler.schedule('job-2', 100, job2);
       expect(scheduler.pendingCount()).toBe(2);
 
-      scheduler.schedule('job-1', 100, vi.fn<() => void>()); // Replace job-1
+      scheduler.schedule('job-1', 100, vi.fn()); // Replace job-1
       expect(scheduler.pendingCount()).toBe(2); // Count should not change
 
-      scheduler.schedule('job-3', 100, vi.fn<() => void>()); // Add new
+      scheduler.schedule('job-3', 100, vi.fn()); // Add new
       expect(scheduler.pendingCount()).toBe(3);
     });
   });
 
   describe('Integration scenarios', () => {
     it('should handle concurrent jobs with different timings', async () => {
-      const jobs = Array.from({ length: 5 }, () => vi.fn<() => void>());
+      const jobs = Array.from({ length: 5 }, () => vi.fn());
 
-      for (const [index, job] of jobs.entries()) {
+      jobs.forEach((job, index) => {
         scheduler.schedule(`job-${index}`, 30 + index * 20, job);
-      }
+      });
 
       expect(scheduler.pendingCount()).toBe(5);
 
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      for (const job of jobs) {
-        expect(job).toHaveBeenCalledWith();
-      }
+      jobs.forEach(job => {
+        expect(job).toHaveBeenCalled();
+      });
       expect(scheduler.pendingCount()).toBe(0);
     });
 
     it('should manage lifecycle of many jobs', async () => {
-      const jobs: { id: string; fn: ReturnType<typeof vi.fn<() => void>> }[] = Array.from({ length: 50 }, (_, i) => ({
-        fn: vi.fn<() => void>(),
-        id: `job-${i}`
+      const jobs: Array<{ id: string; fn: ReturnType<typeof vi.fn> }> = Array.from({ length: 50 }, (_, i) => ({
+        id: `job-${i}`,
+        fn: vi.fn()
       }));
 
       // Schedule all jobs
-      for (const { id, fn } of jobs) {
-        // nosemgrep: insecure-randomness-test-jitter
-        // Math.random() is used only for scheduling jitter in unit tests;
-        // no security-sensitive operation depends on this value.
-        scheduler.schedule(id, 100 + Math.random() * 50, fn);
-      }
+      jobs.forEach(({ id, fn }) => {
+        scheduler.schedule(id, 100 + Math.random() * 50, fn as () => void);
+      });
 
       expect(scheduler.pendingCount()).toBe(50);
 
@@ -374,15 +370,13 @@ describe('Scheduler', () => {
       // Check results
       let cancelledCount = 0;
       let executedCount = 0;
-      for (const [index, { fn }] of jobs.entries()) {
+      jobs.forEach(({ fn }, index) => {
         if (index % 2 === 0) {
-          if (fn.mock.calls.length === 0) {
-            cancelledCount++;
-          }
+          if (fn.mock.calls.length === 0) cancelledCount++;
         } else if (fn.mock.calls.length > 0) {
           executedCount++;
         }
-      }
+      });
 
       expect(cancelledCount).toBe(25);
       expect(executedCount).toBe(25);
@@ -390,10 +384,10 @@ describe('Scheduler', () => {
     });
 
     it('should handle error in job without affecting scheduler', async () => {
-      const errorJob = vi.fn<() => void>(() => {
+      const errorJob = vi.fn(() => {
         throw new Error('Job error');
       });
-      const normalJob = vi.fn<() => void>();
+      const normalJob = vi.fn();
 
       scheduler.schedule('error-job', 30, errorJob);
       scheduler.schedule('normal-job', 40, normalJob);
@@ -401,15 +395,15 @@ describe('Scheduler', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // errorJob threw but normalJob should still execute
-      expect(errorJob).toHaveBeenCalledWith();
-      expect(normalJob).toHaveBeenCalledWith();
+      expect(errorJob).toHaveBeenCalled();
+      expect(normalJob).toHaveBeenCalled();
       expect(scheduler.pendingCount()).toBe(0);
     });
 
     it('should handle rapid schedule/cancel operations', () => {
       expect(() => {
         for (let i = 0; i < 100; i++) {
-          scheduler.schedule(`rapid-job-${i}`, 1000, vi.fn<() => void>());
+          scheduler.schedule(`rapid-job-${i}`, 1000, vi.fn());
           if (i % 3 === 0) {
             scheduler.cancel(`rapid-job-${i}`);
           }

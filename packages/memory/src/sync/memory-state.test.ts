@@ -5,32 +5,32 @@ import { createMemoryStateAdapter, deserializeMemoryState, serializeMemoryState 
 
 function createState(): MemoryState {
   return {
-    pages: [
-      {
-        body: 'World',
-        format: 'markdown',
-        pageId: 'page-1',
-        tags: ['intro'],
-        title: 'Hello',
-        updatedAt: new Date('2026-05-15T10:05:00.000Z'),
-        version: 2,
-        writerIds: ['writer-1']
-      }
-    ],
     rawCaptures: [
       {
-        content: 'hello',
-        createdAt: new Date('2026-05-15T10:00:00.000Z'),
         id: 'raw-1',
-        normalizedContent: 'hello',
         sourceId: 'source-1',
-        sourceType: 'conversation'
+        sourceType: 'conversation',
+        content: 'hello',
+        normalizedContent: 'hello',
+        createdAt: new Date('2026-05-15T10:00:00.000Z')
+      }
+    ],
+    pages: [
+      {
+        pageId: 'page-1',
+        title: 'Hello',
+        body: 'World',
+        tags: ['intro'],
+        version: 2,
+        format: 'markdown',
+        writerIds: ['writer-1'],
+        updatedAt: new Date('2026-05-15T10:05:00.000Z')
       }
     ],
     vectors: [
       {
-        embedding: [0.1, 0.2, 0.3],
-        pageId: 'page-1'
+        pageId: 'page-1',
+        embedding: [0.1, 0.2, 0.3]
       }
     ]
   };
@@ -55,47 +55,29 @@ describe('memory state serialization', () => {
     const snapshot = serializeMemoryState(createState(), 'cursor-1');
 
     expect(deserializeMemoryState(snapshot)).toMatchObject({
-      pages: [
-        {
-          body: 'World',
-          pageId: 'page-1',
-          tags: ['intro'],
-          title: 'Hello',
-          version: 2
-        }
-      ],
-      rawCaptures: [
-        {
-          content: 'hello',
-          id: 'raw-1',
-          sourceId: 'source-1',
-          sourceType: 'conversation'
-        }
-      ],
-      vectors: [{ embedding: [0.1, 0.2, 0.3], pageId: 'page-1' }]
+      rawCaptures: [{ id: 'raw-1', sourceId: 'source-1', sourceType: 'conversation', content: 'hello' }],
+      pages: [{ pageId: 'page-1', title: 'Hello', body: 'World', tags: ['intro'], version: 2 }],
+      vectors: [{ pageId: 'page-1', embedding: [0.1, 0.2, 0.3] }]
     });
   });
 
   it('creates an adapter that bridges memory state and sync snapshots', async () => {
     const state = createState();
-    const applyState = vi.fn(async () => {
-      /* no-op */
-    });
+    const applyState = vi.fn(async () => {});
     const adapter = createMemoryStateAdapter({
+      getState: async () => state,
       applyState,
-      getCursor: () => 'cursor-2',
-      getState: async () => state
+      getCursor: () => 'cursor-2'
     });
 
     const snapshot = await adapter.getCurrentState();
     await adapter.applySnapshot(snapshot);
 
     expect(snapshot.cursor).toBe('cursor-2');
-
     expect(applyState).toHaveBeenCalledWith(
       expect.objectContaining({
-        pages: expect.arrayContaining([expect.objectContaining({ pageId: 'page-1' })]),
         rawCaptures: expect.arrayContaining([expect.objectContaining({ id: 'raw-1' })]),
+        pages: expect.arrayContaining([expect.objectContaining({ pageId: 'page-1' })]),
         vectors: expect.arrayContaining([expect.objectContaining({ pageId: 'page-1' })])
       })
     );

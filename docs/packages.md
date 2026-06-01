@@ -32,12 +32,6 @@ For the high-level architecture behind these packages, start with the [Architect
 | `@agentsy/providers/adapters`    | Integration-oriented wrappers around the stream-processing pipeline | Published | [Package page](./packages/adapters.md)    |
 | `@agentsy/renderers`             | Plain-text rendering plus shared renderer primitives                | Published | [Package page](./packages/renderers.md)   |
 
-## Routing and provider operations packages
-
-| Package            | Role                                                  | Status   | Docs                                  |
-| ------------------ | ----------------------------------------------------- | -------- | ------------------------------------- |
-| `@agentsy/gateway` | Multi-provider routing, failover, and health tracking | Internal | [Package page](./packages/gateway.md) |
-
 ## Core parsing and shaping utilities
 
 | Package                    | Role                                                       | Status    | Docs                                     |

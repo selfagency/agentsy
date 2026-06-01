@@ -1,10 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-
-import { createPlainTextRenderer } from './create-plain-text-renderer.js';
+import { createPlainTextRenderer } from './createPlainTextRenderer.js';
 
 describe('Plain Text Renderer', () => {
   it('renders text on flush', async () => {
-    const output = vi.fn<(data: string) => void>();
+    const output = vi.fn();
     const renderer = createPlainTextRenderer({ output });
 
     await renderer.write('Hello ');
@@ -19,11 +18,11 @@ describe('Plain Text Renderer', () => {
   });
 
   it('calls onError callback on processing errors', async () => {
-    const onError = vi.fn<(error: Error) => void>();
-    const output = vi.fn<(data: string) => void>();
+    const onError = vi.fn();
+    const output = vi.fn();
     const renderer = createPlainTextRenderer({
-      onError,
-      output
+      output,
+      onError
     });
 
     // Process normal data first
@@ -37,8 +36,8 @@ describe('Plain Text Renderer', () => {
 
   it('handles writable stream output', async () => {
     const mockStream = {
-      end: vi.fn<() => void>(),
-      write: vi.fn<(data: string) => void>()
+      write: vi.fn(),
+      end: vi.fn()
     };
 
     const renderer = createPlainTextRenderer({
@@ -58,17 +57,17 @@ describe('Plain Text Renderer', () => {
     expect(allContent).toContain('stream');
   });
 
-  it('defaults to process.stdout when no output specified', () => {
+  it('defaults to process.stdout when no output specified', async () => {
     const renderer = createPlainTextRenderer();
 
     // Should not throw; just verify the factory works with defaults
     expect(renderer).toBeDefined();
-    expect(typeof renderer.write).toBe('function');
-    expect(typeof renderer.end).toBe('function');
+    expect(renderer.write).toBeDefined();
+    expect(renderer.end).toBeDefined();
   });
 
   it('processes multiple chunks correctly', async () => {
-    const output = vi.fn<(data: string) => void>();
+    const output = vi.fn();
     const renderer = createPlainTextRenderer({ output });
 
     await renderer.write('Chunk 1 ');
@@ -84,7 +83,7 @@ describe('Plain Text Renderer', () => {
   });
 
   it('respects showThinking flag', async () => {
-    const output = vi.fn<(data: string) => void>();
+    const output = vi.fn();
     const renderer = createPlainTextRenderer({
       output,
       showThinking: true
@@ -98,7 +97,7 @@ describe('Plain Text Renderer', () => {
   });
 
   it('uses custom thinking prefix when provided', async () => {
-    const output = vi.fn<(data: string) => void>();
+    const output = vi.fn();
     const renderer = createPlainTextRenderer({
       output,
       showThinking: true,
@@ -114,11 +113,11 @@ describe('Plain Text Renderer', () => {
 
   describe('onFinish callback', () => {
     it('calls onFinish via writeChunk when done=true', async () => {
-      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
-      const output = vi.fn<(data: string) => void>();
+      const onFinish = vi.fn();
+      const output = vi.fn();
       const renderer = createPlainTextRenderer({
-        onFinish,
-        output
+        output,
+        onFinish
       });
 
       await renderer.writeChunk({
@@ -131,11 +130,11 @@ describe('Plain Text Renderer', () => {
     });
 
     it('passes usage data to onFinish', async () => {
-      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
-      const output = vi.fn<(data: string) => void>();
+      const onFinish = vi.fn();
+      const output = vi.fn();
       const renderer = createPlainTextRenderer({
-        onFinish,
-        output
+        output,
+        onFinish
       });
 
       await renderer.writeChunk({
@@ -145,35 +144,32 @@ describe('Plain Text Renderer', () => {
         usage: { inputTokens: 10, outputTokens: 20 }
       });
 
-      expect(onFinish).toHaveBeenCalledWith('length', {
-        inputTokens: 10,
-        outputTokens: 20
-      });
+      expect(onFinish).toHaveBeenCalledWith('length', { inputTokens: 10, outputTokens: 20 });
     });
 
     it('calls onFinish in end() if not already called', async () => {
-      const onFinish = vi.fn<(reason: string | undefined, usage: unknown) => void>();
-      const output = vi.fn<(data: string) => void>();
+      const onFinish = vi.fn();
+      const output = vi.fn();
       const renderer = createPlainTextRenderer({
-        onFinish,
-        output
+        output,
+        onFinish
       });
 
       await renderer.write('Content');
       await renderer.end();
 
       // Should be called once in end()
-      expect(onFinish).toHaveBeenCalledOnce();
+      expect(onFinish).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('Tool call callbacks', () => {
     it('accepts onToolCall callback', async () => {
-      const onToolCall = vi.fn<(part: unknown) => void>();
-      const output = vi.fn<(data: string) => void>();
+      const onToolCall = vi.fn();
+      const output = vi.fn();
       const renderer = createPlainTextRenderer({
-        onToolCall,
-        output
+        output,
+        onToolCall
       });
 
       await renderer.write('Content');
@@ -183,11 +179,11 @@ describe('Plain Text Renderer', () => {
     });
 
     it('accepts onToolCallDelta callback', async () => {
-      const onToolCallDelta = vi.fn<(part: unknown) => void>();
-      const output = vi.fn<(data: string) => void>();
+      const onToolCallDelta = vi.fn();
+      const output = vi.fn();
       const renderer = createPlainTextRenderer({
-        onToolCallDelta,
-        output
+        output,
+        onToolCallDelta
       });
 
       await renderer.write('Content');

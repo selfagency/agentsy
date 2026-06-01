@@ -1,1 +1,1 @@
-export * from './thinking-parser.js';
+export * from './ThinkingParser.js';

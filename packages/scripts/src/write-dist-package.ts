@@ -1,64 +1,18 @@
 // fallow-ignore-file unused-file
 import { access, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = process.cwd();
-
-function rewriteDistExports(
-  rootExports: Record<string, unknown>
-): Record<string, { types?: string; import?: string; require?: string }> {
-  const distExports: Record<string, { types?: string; import?: string; require?: string }> = {};
-  for (const [key, value] of Object.entries(rootExports)) {
-    if (!key || key === '__proto__' || key === 'constructor' || key === 'prototype') {
-      continue;
-    }
-    const entry: { types?: string; import?: string; require?: string } = {};
-    if (typeof value === 'object' && value !== null) {
-      const obj = value as Record<string, unknown>;
-      for (const field of ['types', 'import', 'require'] as const) {
-        if (field in obj) {
-          const fieldValue = obj[field] as string | undefined;
-          if (fieldValue !== undefined) {
-            entry[field] = fieldValue.replace('./dist/', './');
-          }
-        }
-      }
-    }
-    distExports[key] = entry;
-  }
-  return distExports;
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 async function main() {
   // If a package path is provided as an argument, use it; otherwise use root
-  const packagePath = process.argv[2] ? resolve(process.argv[2]) : ROOT;
+  const packagePath = process.argv[2] ? resolve(process.argv[2]) : resolve(__dirname, '..');
   const rootPkgPath = resolve(packagePath, 'package.json');
   const outDir = resolve(packagePath, 'dist');
-  const raw = await readFile(rootPkgPath, 'utf-8');
-  const pkg = JSON.parse(raw) as {
-    name: string;
-    version: string;
-    description: string;
-    keywords: string[];
-    homepage: string;
-    bugs?: {
-      url?: string;
-    };
-    repository?: {
-      url?: string;
-    };
-    license: string;
-    author?:
-      | string
-      | {
-          name?: string;
-          email?: string;
-          url?: string;
-        };
-    private?: boolean;
-    publishConfig?: Record<string, unknown>;
-    exports?: Record<string, unknown>;
-  };
+  const raw = await readFile(rootPkgPath, 'utf8');
+  const pkg = JSON.parse(raw);
   const {
     name,
     version,
@@ -73,33 +27,42 @@ async function main() {
     publishConfig
   } = pkg;
 
-  const distExports = rewriteDistExports(pkg.exports as Record<string, unknown>);
+  // Strip the leading './dist' prefix from all export paths so they are relative to the dist/ folder.
+  /** @type {Record<string, Record<string, string>>} */
+  const rootExports = pkg.exports as Record<string, { types?: string; import?: string; require?: string }>;
+  const distExports: Record<string, { types?: string; import?: string; require?: string }> = {};
+  for (const [key, value] of Object.entries(rootExports)) {
+    distExports[key] = {};
+    if (value.types) distExports[key].types = value.types.replace('./dist/', './');
+    if (value.import) distExports[key].import = value.import.replace('./dist/', './');
+    if (value.require) distExports[key].require = value.require.replace('./dist/', './');
+  }
 
   const distPkg = {
-    author,
-    bugs,
-    description,
-    exports: distExports,
-    homepage,
-    keywords,
-    license,
-    main: './index.cjs',
-    module: './index.js',
     name,
+    version,
     private: isPrivate,
     publishConfig,
+    description,
+    keywords,
+    homepage,
+    bugs,
     repository,
+    license,
+    author,
     type: 'module',
+    main: './index.cjs',
+    module: './index.js',
     types: './index.d.ts',
-    version
+    exports: distExports
   };
 
   await mkdir(outDir, { recursive: true });
-  await writeFile(resolve(outDir, 'package.json'), `${JSON.stringify(distPkg, null, 2)}\n`, 'utf-8');
+  await writeFile(resolve(outDir, 'package.json'), `${JSON.stringify(distPkg, null, 2)}\n`, 'utf8');
   console.log('Wrote', resolve(outDir, 'package.json'));
 
   const pkgReadme = resolve(packagePath, 'README.md');
-  const rootReadme = resolve(ROOT, 'README.md');
+  const rootReadme = resolve(__dirname, '..', 'README.md');
   const readmeSrc = await access(pkgReadme)
     .then(() => pkgReadme)
     .catch(() => rootReadme);
@@ -110,7 +73,7 @@ async function main() {
 
 try {
   await main();
-} catch (error) {
-  console.error(error);
+} catch (err) {
+  console.error(err);
   process.exitCode = 1;
 }

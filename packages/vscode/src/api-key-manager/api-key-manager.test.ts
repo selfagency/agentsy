@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { createMockExtensionContext } from '../test/fixtures/mock-vscode.js';
 import type { ApiKeyManagerConfig } from '../types/index.js';
 import { ApiKeyManager } from './api-key-manager.js';
 
-describe(ApiKeyManager, () => {
+describe('ApiKeyManager', () => {
   let mockContext: ReturnType<typeof createMockExtensionContext>;
   let config: ApiKeyManagerConfig;
   let manager: ApiKeyManager;
@@ -12,9 +11,9 @@ describe(ApiKeyManager, () => {
   beforeEach(() => {
     mockContext = createMockExtensionContext();
     config = {
+      secretKey: 'TEST_API_KEY',
       contextKey: 'test.hasApiKey',
-      displayName: 'Test API Key',
-      secretKey: 'TEST_API_KEY'
+      displayName: 'Test API Key'
     };
     manager = new ApiKeyManager(mockContext, config);
   });
@@ -64,13 +63,13 @@ describe(ApiKeyManager, () => {
   describe('hasApiKey', () => {
     it('should return false when no key is stored', async () => {
       const has = await manager.hasApiKey();
-      expect(has).toBeFalsy();
+      expect(has).toBe(false);
     });
 
     it('should return true when key is stored', async () => {
       await manager.setApiKey('test-key');
       const has = await manager.hasApiKey();
-      expect(has).toBeTruthy();
+      expect(has).toBe(true);
     });
   });
 
@@ -112,8 +111,8 @@ describe(ApiKeyManager, () => {
       const onError = vi.fn();
       const configWithValidator: ApiKeyManagerConfig = {
         ...config,
-        onError,
-        validateBeforeStore: () => false
+        validateBeforeStore: () => false,
+        onError
       };
       const validatingManager = new ApiKeyManager(mockContext, configWithValidator);
       try {
@@ -187,7 +186,7 @@ describe(ApiKeyManager, () => {
       manager.onDidChangeApiKey(errorListener);
       manager.onDidChangeApiKey(goodListener);
       await expect(manager.setApiKey('test-key')).resolves.not.toThrow();
-      expect(errorListener).toHaveBeenCalled(); // Should be called
+      expect(errorListener).toHaveBeenCalled();
       expect(goodListener).toHaveBeenCalled(); // Should still be called
     });
   });

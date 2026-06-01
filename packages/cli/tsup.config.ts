@@ -1,12 +1,11 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  clean: true,
-  dts: true,
-  entry: { index: 'src/index.ts', cli: 'src/cli.ts' },
-  external: ['@agentsy/core', '@agentsy/models', '@agentsy/providers', '@agentsy/tokens'],
+  entry: { index: 'src/index.ts' },
   format: ['esm', 'cjs'],
+  dts: true,
   sourcemap: true,
+  clean: true,
   splitting: false,
   target: 'es2022'
 });

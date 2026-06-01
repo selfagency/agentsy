@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-
 import { ModelSelector, ModelsDevClient } from './index.js';
 
 describe('models.dev integration', () => {
-  describe(ModelsDevClient, () => {
+  describe('ModelsDevClient', () => {
     it('should fetch models.dev data', async () => {
       const modelsDevClient = new ModelsDevClient();
       const data = await modelsDevClient.fetchModelsDevData();
@@ -19,8 +18,8 @@ describe('models.dev integration', () => {
       const model = modelsDevClient.getModel('anthropic:claude-sonnet-4-6');
       expect(model).toBeDefined();
       expect(model?.family).toBe('claude-sonnet');
-      expect(model?.reasoning).toBeTruthy();
-      expect(model?.tool_call).toBeTruthy();
+      expect(model?.reasoning).toBe(true);
+      expect(model?.tool_call).toBe(true);
     });
 
     it('should list models', async () => {
@@ -32,15 +31,15 @@ describe('models.dev integration', () => {
     });
   });
 
-  describe(ModelSelector, () => {
+  describe('ModelSelector', () => {
     it('should select model for text task', async () => {
       const selector = new ModelSelector();
 
       const result = await selector.selectModel({
+        modality: 'text',
         capabilities: {
           tool_calling: true
-        },
-        modality: 'text'
+        }
       });
 
       expect(result.model).toBeDefined();
@@ -52,11 +51,11 @@ describe('models.dev integration', () => {
       const selector = new ModelSelector();
 
       const result = await selector.selectModel({
+        modality: 'multimodal',
         capabilities: {
           image_input: true,
           tool_calling: true
-        },
-        modality: 'multimodal'
+        }
       });
 
       expect(result.model).toBeDefined();
@@ -67,10 +66,10 @@ describe('models.dev integration', () => {
       const selector = new ModelSelector();
 
       const result = await selector.selectModel({
+        modality: 'text',
         capabilities: {
           tool_calling: true
         },
-        modality: 'text',
         specialization: 'reasoning'
       });
 
@@ -82,10 +81,10 @@ describe('models.dev integration', () => {
       const selector = new ModelSelector();
 
       const result = await selector.selectModel({
+        modality: 'text',
         constraints: {
           max_cost: 0.02 // Very low budget
-        },
-        modality: 'text'
+        }
       });
 
       expect(result.estimatedCost).toBeLessThanOrEqual(0.02);
@@ -95,10 +94,10 @@ describe('models.dev integration', () => {
       const selector = new ModelSelector();
 
       const result = await selector.selectModel({
+        modality: 'text',
         constraints: {
-          max_context: 256_000 // Large context window
-        },
-        modality: 'text'
+          max_context: 256000 // Large context window
+        }
       });
 
       expect(result.confidence).toBeGreaterThan(0);
@@ -134,7 +133,7 @@ describe('models.dev integration', () => {
       const selector = new ModelSelector();
 
       const result = await selector.estimateTask('Analyze code', 'anthropic:claude-sonnet-4-6', {
-        estimatedInputTokens: 25_000,
+        estimatedInputTokens: 25000,
         estimatedOutputTokens: 5000
       });
 

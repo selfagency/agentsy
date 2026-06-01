@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { createKvStore } from './kv-store.js';
 
 describe('createKvStore', () => {
@@ -12,20 +11,20 @@ describe('createKvStore', () => {
   });
 
   it('should store and retrieve values', () => {
-    const store = createKvStore();
+    const store = createKvStore<string>();
     store.set('foo', 'bar');
     expect(store.get('foo')).toBe('bar');
-    expect(store.has('foo')).toBeTruthy();
+    expect(store.has('foo')).toBe(true);
   });
 
   it('should return undefined for missing keys', () => {
-    const store = createKvStore();
+    const store = createKvStore<string>();
     expect(store.get('missing')).toBeUndefined();
-    expect(store.has('missing')).toBeFalsy();
+    expect(store.has('missing')).toBe(false);
   });
 
   it('should handle expiration with ttlMs', () => {
-    const store = createKvStore();
+    const store = createKvStore<string>();
 
     store.set('ephemeral', 'val', 100);
     expect(store.get('ephemeral')).toBe('val');
@@ -34,15 +33,15 @@ describe('createKvStore', () => {
     vi.advanceTimersByTime(101);
 
     expect(store.get('ephemeral')).toBeUndefined();
-    expect(store.has('ephemeral')).toBeFalsy();
+    expect(store.has('ephemeral')).toBe(false);
   });
 
   it('should delete keys', () => {
-    const store = createKvStore();
+    const store = createKvStore<string>();
     store.set('foo', 'bar');
-    expect(store.delete('foo')).toBeTruthy();
-    expect(store.has('foo')).toBeFalsy();
-    expect(store.delete('nonexistent')).toBeFalsy();
+    expect(store.delete('foo')).toBe(true);
+    expect(store.has('foo')).toBe(false);
+    expect(store.delete('nonexistent')).toBe(false);
   });
 
   it('should return non-expired keys', () => {
@@ -54,7 +53,7 @@ describe('createKvStore', () => {
     expect(store.keys()).toContain('b');
 
     vi.advanceTimersByTime(51);
-    expect(store.keys()).toStrictEqual(['a']);
+    expect(store.keys()).toEqual(['a']);
   });
 
   it('should return non-expired entries', () => {
@@ -62,11 +61,11 @@ describe('createKvStore', () => {
     store.set('a', 1);
     store.set('b', 2, 50);
 
-    expect(store.entries()).toHaveLength(2);
+    expect(store.entries().length).toBe(2);
 
     vi.advanceTimersByTime(51);
     const entries = store.entries();
-    expect(entries).toHaveLength(1);
+    expect(entries.length).toBe(1);
     expect(entries[0]).toBeDefined();
     expect(entries[0]?.key).toBe('a');
     expect(entries[0]?.value).toBe(1);
@@ -76,11 +75,11 @@ describe('createKvStore', () => {
     const store = createKvStore();
     store.set('a', '1');
     store.clear();
-    expect(store.keys()).toHaveLength(0);
+    expect(store.keys().length).toBe(0);
   });
 
   it('should purge only expired entries', () => {
-    const store = createKvStore();
+    const store = createKvStore<string>();
     store.set('keep1', 'ok');
     store.set('expire1', 'bye', 10);
     store.set('expire2', 'bye', 20);
@@ -88,11 +87,11 @@ describe('createKvStore', () => {
     vi.advanceTimersByTime(15);
     const count = store.purgeExpired();
     expect(count).toBe(1);
-    expect(store.has('keep1')).toBeTruthy();
-    expect(store.has('expire2')).toBeTruthy();
+    expect(store.has('keep1')).toBe(true);
+    expect(store.has('expire2')).toBe(true);
 
     vi.advanceTimersByTime(10);
     expect(store.purgeExpired()).toBe(1);
-    expect(store.has('expire2')).toBeFalsy();
+    expect(store.has('expire2')).toBe(false);
   });
 });

@@ -40,15 +40,11 @@ export function createMemoryListTool(deps: MemoryListToolDeps): MemoryListTool {
           return false;
         }
 
-        if (!(input.actorId && deps.scopeManager)) {
+        if (!input.actorId || !deps.scopeManager) {
           return true;
         }
 
-        return deps.scopeManager.canAccess({
-          action: 'read',
-          actorId: input.actorId,
-          scope: record.scope
-        });
+        return deps.scopeManager.canAccess({ actorId: input.actorId, action: 'read', scope: record.scope });
       });
 
       return {

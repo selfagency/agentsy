@@ -6,14 +6,8 @@ describe('buildRuntimeContext', () => {
   it('reuses cached segments when fingerprints still match', () => {
     const context = buildRuntimeContext({
       modelFamily: 'qwen',
-      reusableSegments: [
-        {
-          fingerprint: 'systemPrompt:qwen:v3',
-          invalidations: [],
-          reuseClass: 'hot'
-        }
-      ],
-      templateVersion: 'v3'
+      templateVersion: 'v3',
+      reusableSegments: [{ fingerprint: 'systemPrompt:qwen:v3', reuseClass: 'hot', invalidations: [] }]
     });
 
     expect(context.reusedSegments).toContain('systemPrompt:qwen:v3');
@@ -21,21 +15,21 @@ describe('buildRuntimeContext', () => {
 
   it('filters by explicit invalidation keys only', () => {
     const context = buildRuntimeContext({
-      invalidatedKeys: ['memory-summary'],
       modelFamily: 'qwen',
+      templateVersion: 'v3',
+      invalidatedKeys: ['memory-summary'],
       reusableSegments: [
         {
           fingerprint: 'systemPrompt:qwen:v3',
-          invalidations: ['model-family:qwen', 'template:v3'],
-          reuseClass: 'hot'
+          reuseClass: 'hot',
+          invalidations: ['model-family:qwen', 'template:v3']
         },
         {
           fingerprint: 'memorySummary:qwen:v3',
-          invalidations: ['memory-summary'],
-          reuseClass: 'warm'
+          reuseClass: 'warm',
+          invalidations: ['memory-summary']
         }
-      ],
-      templateVersion: 'v3'
+      ]
     });
 
     expect(context.reusedSegments).toContain('systemPrompt:qwen:v3');

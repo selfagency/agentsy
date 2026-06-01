@@ -1,12 +1,12 @@
 export interface CoordinationTask {
   id: string;
-  payload?: Record<string, unknown>;
   type: string;
+  payload?: Record<string, unknown>;
 }
 
 export interface TaskQueue {
-  dequeue(): Promise<CoordinationTask | null>;
   enqueue(task: CoordinationTask): Promise<void>;
+  dequeue(): Promise<CoordinationTask | null>;
   size(): number;
 }
 
@@ -14,14 +14,13 @@ export function createInMemoryTaskQueue(): TaskQueue {
   const queue: CoordinationTask[] = [];
 
   return {
-    dequeue() {
-      const task = queue.shift();
-      return Promise.resolve(task ?? null);
+    async enqueue(task: CoordinationTask) {
+      queue.push(task);
     },
 
-    enqueue(task: CoordinationTask) {
-      queue.push(task);
-      return Promise.resolve();
+    async dequeue() {
+      const task = queue.shift();
+      return task ?? null;
     },
 
     size() {

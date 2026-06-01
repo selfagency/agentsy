@@ -8,21 +8,20 @@ describe('RAG bootstrapper', () => {
     const bootstrapper = createRAGBootstrapper({
       collectSources: async () => [
         {
-          content: 'OAuth refresh flow and token lifetime docs.',
           sourceId: 'docs:README',
-          sourceType: 'file'
+          sourceType: 'file',
+          content: 'OAuth refresh flow and token lifetime docs.'
         }
       ],
-      // biome-ignore lint/suspicious/useAwait: callback matches Promise<IngestSummary> interface
       ingest: async input => {
         calls.push(input.sourceId);
-        return { inserted: 1, skipped: 0, updated: 0 };
+        return { inserted: 1, updated: 0, skipped: 0 };
       }
     });
 
     const result = await bootstrapper.initialize();
 
-    expect(calls).toStrictEqual(['docs:README']);
+    expect(calls).toEqual(['docs:README']);
     expect(result.totalSources).toBe(1);
     expect(result.totalInserted).toBe(1);
   });

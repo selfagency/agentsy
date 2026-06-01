@@ -1,8 +1,8 @@
 import type { Document, RetrievalQuery, SearchResult } from '../types.js';
 
 export interface RetrievalEngineOptions {
-  minSimilarity?: number;
   topK?: number;
+  minSimilarity?: number;
 }
 
 export class RetrievalEngine {
@@ -14,81 +14,67 @@ export class RetrievalEngine {
     this.documents = new Map();
     this.embeddings = new Map();
     this.options = {
-      minSimilarity: options.minSimilarity ?? 0.7,
-      topK: options.topK ?? 10
+      topK: options.topK ?? 10,
+      minSimilarity: options.minSimilarity ?? 0.7
     };
   }
 
-  index(documents: Document[]): void {
+  async index(documents: Document[]): Promise<void> {
     for (const document of documents) {
       this.documents.set(document.id, document);
 
       for (const chunk of document.chunks) {
-        const embedding = this.generateEmbedding(chunk.content);
+        const embedding = await this.generateEmbedding(chunk.content);
         this.embeddings.set(chunk.id, embedding);
       }
     }
   }
 
-  keywordSearch(query: RetrievalQuery): SearchResult {
+  async keywordSearch(query: RetrievalQuery): Promise<SearchResult> {
     const startTime = Date.now();
-    const results: { document: Document; score: number }[] = [];
-    const queryLower = query.query.toLowerCase();
-    const queryWords = queryLower.split(/\s+/u);
+    const topK = query.topK ?? this.options.topK;
 
-    for (const [, document] of this.documents) {
-      for (const chunk of document.chunks) {
-        const contentLower = chunk.content.toLowerCase();
-        let score = 0;
+    const results: Array<{ document: Document; score: number }> = [];
 
-        for (const word of queryWords) {
-          if (contentLower.includes(word)) {
-            score += 0.1;
-          }
-        }
-
-        if (score > 0) {
-          results.push({
-            document,
-            score
-          });
-        }
-      }
+    for (const doc of this.documents.values()) {
+      const docSearchResults = this.searchWithinDocument(query.query, doc);
+      results.push(...docSearchResults);
     }
 
     results.sort((a, b) => b.score - a.score);
+    const topResults = results.slice(0, topK);
 
     const queryTime = Date.now() - startTime;
 
     return {
-      documents: results.slice(0, query.topK ?? 10).map(r => this.toSearchResultDocument(r.document, r.score)),
-      queryTime,
-      total: results.length
+      documents: topResults.map(r => this.toSearchResultDocument(r.document, r.score)),
+      total: topResults.length,
+      queryTime
     };
   }
 
-  vectorSearch(query: RetrievalQuery): SearchResult {
-    const startTime = Date.now();
-    const results: { document: Document; similarity: number }[] = [];
-
-    if (!query.embedding || query.embedding.length === 0) {
-      return {
-        documents: [],
-        queryTime: Date.now() - startTime,
-        total: 0
-      };
+  async vectorSearch(query: RetrievalQuery): Promise<SearchResult> {
+    if (!query.embedding) {
+      return { documents: [], total: 0, queryTime: 0 };
     }
 
-    for (const [, document] of this.documents) {
-      for (const chunk of document.chunks) {
+    const startTime = Date.now();
+    const topK = query.topK ?? this.options.topK;
+    const minSimilarity = query.minSimilarity ?? this.options.minSimilarity;
+
+    const results: Array<{ document: Document; similarity: number }> = [];
+
+    for (const doc of this.documents.values()) {
+      for (const chunk of doc.chunks) {
         const chunkEmbedding = this.embeddings.get(chunk.id);
+
         if (chunkEmbedding) {
           const similarity = this.calculateCosineSimilarity(query.embedding, chunkEmbedding);
+          const threshold = minSimilarity ?? 0;
 
-          const minSimilarity = query.minSimilarity ?? this.options.minSimilarity ?? 0.7;
-          if (similarity >= minSimilarity) {
+          if (similarity >= threshold) {
             results.push({
-              document,
+              document: doc,
               similarity
             });
           }
@@ -97,23 +83,32 @@ export class RetrievalEngine {
     }
 
     results.sort((a, b) => b.similarity - a.similarity);
+    const uniqueResults = this.deduplicateResults(results);
+    const topResults = uniqueResults.slice(0, topK);
+
     const queryTime = Date.now() - startTime;
 
     return {
-      documents: results.slice(0, query.topK ?? 10).map(r => this.toSearchResultDocument(r.document, r.similarity)),
-      queryTime,
-      total: results.length
+      documents: topResults.map(r => this.toSearchResultDocument(r.document, r.similarity)),
+      total: topResults.length,
+      queryTime
     };
   }
 
-  hasDoc(docId: string): boolean {
-    return this.documents.has(docId);
-  }
-
-  search(query: RetrievalQuery): SearchResult {
+  async search(query: RetrievalQuery): Promise<SearchResult> {
     const startTime = Date.now();
-    const keywordResult = this.keywordSearch(query);
-    const vectorResult = this.vectorSearch(query);
+    const keywordResult = await this.keywordSearch(query);
+
+    if (!query.embedding) {
+      const totalTime = Date.now() - startTime;
+      return {
+        documents: keywordResult.documents,
+        total: keywordResult.total,
+        queryTime: totalTime
+      };
+    }
+
+    const vectorResult = await this.vectorSearch(query);
 
     const results = new Map<string, { document: Document; keywordScore: number; vectorScore: number }>();
 
@@ -125,7 +120,7 @@ export class RetrievalEngine {
 
       results.set(doc.id, {
         document: storedDocument,
-        keywordScore: doc.score ?? 0,
+        keywordScore: doc.score || 0,
         vectorScore: 0
       });
     }
@@ -139,29 +134,29 @@ export class RetrievalEngine {
       const existing = results.get(doc.id);
       results.set(doc.id, {
         document: storedDocument,
-        keywordScore: existing?.keywordScore ?? 0,
-        vectorScore: doc.similarity ?? 0
+        keywordScore: existing?.keywordScore || 0,
+        vectorScore: doc.similarity || 0
       });
     }
 
-    const combinedResults = [...results.values()]
+    const combinedResults = Array.from(results.values())
       .map(r => ({
         document: r.document,
         score: r.keywordScore * 0.3 + r.vectorScore * 0.7
       }))
-      .toSorted((a, b) => b.score - a.score)
+      .sort((a, b) => b.score - a.score)
       .slice(0, query.topK ?? 10);
 
     const queryTime = Date.now() - startTime;
 
     return {
       documents: combinedResults.map(r => this.toSearchResultDocument(r.document, r.score)),
-      queryTime,
-      total: combinedResults.length
+      total: combinedResults.length,
+      queryTime
     };
   }
 
-  delete(docId: string): void {
+  async delete(docId: string): Promise<void> {
     const doc = this.documents.get(docId);
     if (doc) {
       for (const chunk of doc.chunks) {
@@ -171,18 +166,22 @@ export class RetrievalEngine {
     }
   }
 
-  clear(): void {
+  async clear(): Promise<void> {
     this.documents.clear();
     this.embeddings.clear();
   }
 
-  count(): number {
+  async hasDoc(docId: string): Promise<boolean> {
+    return this.documents.has(docId);
+  }
+
+  async count(): Promise<number> {
     return this.documents.size;
   }
 
-  private generateEmbedding(text: string): number[] {
-    const words = text.toLowerCase().split(/\s+/u);
-    const embedding = Array.from({ length: 32 }, () => 0);
+  private async generateEmbedding(text: string): Promise<number[]> {
+    const words = text.toLowerCase().split(/\s+/);
+    const embedding = Array.from({ length: 32 }).fill(0) as number[];
 
     for (const word of words) {
       const wordHash = this.hashWord(word);
@@ -190,7 +189,7 @@ export class RetrievalEngine {
       embedding[index] = (embedding[index] ?? 0) + 1;
     }
 
-    const magnitude = Math.sqrt(embedding.reduce((sum: number, val: number) => sum + val * val, 0));
+    const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
 
     if (magnitude > 0) {
       return embedding.map(val => val / magnitude);
@@ -201,9 +200,9 @@ export class RetrievalEngine {
 
   private hashWord(word: string): number {
     let hash = 0;
-    for (let i = 0; i < word.length; i++) {
-      const charCode = word.codePointAt(i) ?? 0;
-      hash = Math.floor(hash * 31 + charCode);
+    for (const char of word) {
+      hash = (hash << 5) - hash + (char.codePointAt(0) || 0);
+      hash = hash & hash;
     }
     return Math.abs(hash);
   }
@@ -226,11 +225,69 @@ export class RetrievalEngine {
     return magnitude > 0 ? dotProduct / magnitude : 0;
   }
 
+  private searchWithinDocument(query: string, document: Document): Array<{ document: Document; score: number }> {
+    const results: Array<{ document: Document; score: number }> = [];
+    const queryLower = query.toLowerCase();
+
+    for (const chunk of document.chunks) {
+      const contentLower = chunk.content.toLowerCase();
+      let score = 0;
+
+      if (contentLower.includes(queryLower)) {
+        score += this.calculateKeywordMatch(query, contentLower);
+      }
+
+      for (const word of queryLower.split(/\s+/)) {
+        if (contentLower.includes(word)) {
+          score += 0.1;
+        }
+      }
+
+      if (score > 0) {
+        results.push({
+          document,
+          score
+        });
+      }
+    }
+
+    return results;
+  }
+
+  private calculateKeywordMatch(query: string, content: string): number {
+    const queryLower = query.toLowerCase();
+    const contentLower = content.toLowerCase();
+    const exactMatch = contentLower.includes(queryLower);
+    const wordMatches = queryLower.split(/\s+/).filter(word => contentLower.includes(word)).length;
+
+    if (exactMatch) {
+      return 1;
+    }
+
+    return wordMatches / Math.max(queryLower.split(/\s+/).length, 1);
+  }
+
+  private deduplicateResults(
+    results: Array<{ document: Document; similarity: number }>
+  ): Array<{ document: Document; similarity: number }> {
+    const seen = new Set<string>();
+    const unique: Array<{ document: Document; similarity: number }> = [];
+
+    for (const result of results) {
+      if (!seen.has(result.document.id)) {
+        seen.add(result.document.id);
+        unique.push(result);
+      }
+    }
+
+    return unique;
+  }
+
   private toSearchResultDocument(document: Document, score: number): SearchResult['documents'][number] {
-    const [firstChunk] = document.chunks;
+    const firstChunk = document.chunks[0];
     const result: SearchResult['documents'][number] = {
-      content: document.content,
       id: document.id,
+      content: document.content,
       score,
       similarity: score
     };

@@ -55,10 +55,7 @@ Process chunks immediately without buffering:
 import { ThinkingParser } from '@agentsy/core/thinking';
 import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 
-const thinking = new ThinkingParser({
-  openingTag: '<think>',
-  closingTag: '</think>'
-});
+const thinking = new ThinkingParser({ openingTag: '<think>', closingTag: '</think>' });
 const filter = createXmlStreamFilter({ enforcePrivacyTags: true });
 
 for await (const chunk of chatStream) {
@@ -103,10 +100,7 @@ for (const call of toolCalls) {
   const result = await executeToolInHost(call.name, call.parameters);
 
   // Feed result back to chat context
-  messages.push({
-    role: 'user',
-    content: `Tool ${call.name} returned: ${result}`
-  });
+  messages.push({ role: 'user', content: `Tool ${call.name} returned: ${result}` });
 }
 ```
 

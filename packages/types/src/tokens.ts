@@ -6,10 +6,11 @@
  * Token usage breakdown.
  */
 export interface TokenUsage {
-  /** Output/completion tokens consumed. */
-  completion: number;
   /** Input/prompt tokens consumed. */
   prompt: number;
+
+  /** Output/completion tokens consumed. */
+  completion: number;
 
   /** Total tokens used. */
   total: number;
@@ -22,25 +23,34 @@ export interface TokenBudget {
   /** Maximum budget in tokens. */
   limit: number;
 
-  /** Percentage of budget used. */
-  percentUsed: number;
+  /** Current usage against budget. */
+  used: number;
 
   /** Remaining budget. */
   remaining: number;
 
-  /** Current usage against budget. */
-  used: number;
+  /** Percentage of budget used. */
+  percentUsed: number;
 }
 
 /**
  * Ledger entry for token consumption.
  */
 export interface TokenLedger {
-  /** Current budget status. */
-  budget: TokenBudget;
+  /** Identifier for the tracked resource/agent. */
+  id: string;
+
+  /** Total tokens consumed. */
+  totalTokens: number;
+
+  /** Prompt tokens consumed. */
+  promptTokens: number;
 
   /** Completion tokens consumed. */
   completionTokens: number;
+
+  /** Current budget status. */
+  budget: TokenBudget;
 
   /** Ledger entries by timestamp. */
   entries: {
@@ -49,12 +59,4 @@ export interface TokenLedger {
     completion: number;
     context?: string;
   }[];
-  /** Identifier for the tracked resource/agent. */
-  id: string;
-
-  /** Prompt tokens consumed. */
-  promptTokens: number;
-
-  /** Total tokens consumed. */
-  totalTokens: number;
 }

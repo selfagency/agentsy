@@ -51,14 +51,10 @@ async function collectOffenders(root: string, packagesDir: string, entries: Dire
   const offenders: string[] = [];
 
   for (const ent of entries) {
-    if (!ent.isDirectory()) {
-      continue;
-    }
+    if (!ent.isDirectory()) continue;
 
-    const { name } = ent;
-    if (shouldIgnorePackageDir(name)) {
-      continue;
-    }
+    const name = ent.name;
+    if (shouldIgnorePackageDir(name)) continue;
 
     const full = path.join(packagesDir, name);
     const pkgJson = path.join(full, 'package.json');
@@ -80,13 +76,13 @@ async function main(packagesDir?: string): Promise<void> {
     if (!packagesDirExists) {
       try {
         await stat(PACKAGES_DIR);
-      } catch (error: unknown) {
+      } catch (err: unknown) {
         if (
-          typeof error === 'object' &&
-          error !== null &&
-          'code' in error &&
-          typeof error.code === 'string' &&
-          error.code === 'ENOENT'
+          typeof err === 'object' &&
+          err !== null &&
+          'code' in err &&
+          typeof err.code === 'string' &&
+          err.code === 'ENOENT'
         ) {
           console.log('No packages/ directory found. Skipping workspace validation.');
           process.exitCode = 0;
@@ -103,8 +99,8 @@ async function main(packagesDir?: string): Promise<void> {
     const offenders = await collectOffenders(ROOT, PACKAGES_DIR, entries);
     formatOffenders(offenders);
     process.exitCode = offenders.length > 0 ? 1 : 0;
-  } catch (error) {
-    console.error('validate-workspace failed:', error);
+  } catch (err) {
+    console.error('validate-workspace failed:', err);
     process.exitCode = 1;
     return;
   }
@@ -117,8 +113,8 @@ export { main };
 if (process.argv[1]?.endsWith('validate-workspace.js')) {
   try {
     await main();
-  } catch (error) {
-    console.error('validate-workspace failed:', error);
+  } catch (err) {
+    console.error('validate-workspace failed:', err);
     process.exitCode = 1;
   }
 }

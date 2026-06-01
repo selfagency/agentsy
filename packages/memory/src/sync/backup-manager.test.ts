@@ -13,104 +13,78 @@ function createState(records: SyncRecord[]) {
 describe('createBackupManager', () => {
   it('creates and verifies snapshots', async () => {
     const state = createState([
-      {
-        content: 'value-1',
-        id: 'record-1',
-        tier: 'wiki',
-        updatedAt: '2026-05-15T00:00:00.000Z'
-      }
+      { id: 'record-1', tier: 'wiki', updatedAt: '2026-05-15T00:00:00.000Z', content: 'value-1' }
     ]);
     const manager = createBackupManager({
-      applySnapshot: async () => {
-        /* no-op */
-      },
       databaseId: 'agentsy-memory',
+      schemaVersion: 1,
       getCurrentState: async () => state,
-      schemaVersion: 1
+      applySnapshot: async () => {}
     });
 
     const snapshot = await manager.createSnapshot();
 
-    await expect(manager.verifySnapshot(snapshot.id)).resolves.toBeTruthy();
+    expect(await manager.verifySnapshot(snapshot.id)).toBe(true);
     expect(snapshot.recordCount).toBe(1);
   });
 
   it('requires explicit force for mismatched restore targets', async () => {
     let restored = createState([]);
     const initial = createState([
-      {
-        content: 'value-1',
-        id: 'record-1',
-        tier: 'wiki',
-        updatedAt: '2026-05-15T00:00:00.000Z'
-      }
+      { id: 'record-1', tier: 'wiki', updatedAt: '2026-05-15T00:00:00.000Z', content: 'value-1' }
     ]);
     const manager = createBackupManager({
-      // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+      databaseId: 'agentsy-memory',
+      schemaVersion: 1,
+      getCurrentState: async () => initial,
       applySnapshot: async snapshot => {
         restored = snapshot;
-      },
-      databaseId: 'agentsy-memory',
-      getCurrentState: async () => initial,
-      schemaVersion: 1
+      }
     });
 
     const snapshot = await manager.createSnapshot();
 
     await expect(
       manager.restoreSnapshot(snapshot.id, {
-        schemaVersion: 1,
-        targetDatabaseId: 'other-memory'
+        targetDatabaseId: 'other-memory',
+        schemaVersion: 1
       })
     ).rejects.toThrow(/target database identity/u);
 
     await expect(
       manager.restoreSnapshot(snapshot.id, {
-        force: true,
+        targetDatabaseId: 'other-memory',
         schemaVersion: 1,
-        targetDatabaseId: 'other-memory'
+        force: true
       })
     ).resolves.toMatchObject({
-      restoredCount: 1,
-      snapshotId: snapshot.id
+      snapshotId: snapshot.id,
+      restoredCount: 1
     });
     expect(restored.records).toHaveLength(1);
   });
 
   it('creates rollback restore points', async () => {
     let current = createState([
-      {
-        content: 'old',
-        id: 'record-old',
-        tier: 'wiki',
-        updatedAt: '2026-05-15T00:00:00.000Z'
-      }
+      { id: 'record-old', tier: 'wiki', updatedAt: '2026-05-15T00:00:00.000Z', content: 'old' }
     ]);
     const manager = createBackupManager({
-      // biome-ignore lint/suspicious/useAwait: callback matches Promise<void> interface
+      databaseId: 'agentsy-memory',
+      schemaVersion: 1,
+      getCurrentState: async () => current,
       applySnapshot: async snapshot => {
         current = snapshot;
-      },
-      databaseId: 'agentsy-memory',
-      getCurrentState: async () => current,
-      schemaVersion: 1
+      }
     });
 
     const freshSnapshot = await manager.createSnapshot();
-    current = createState([
-      {
-        content: 'new',
-        id: 'record-new',
-        tier: 'wiki',
-        updatedAt: '2026-05-16T00:00:00.000Z'
-      }
-    ]);
+    current = createState([{ id: 'record-new', tier: 'wiki', updatedAt: '2026-05-16T00:00:00.000Z', content: 'new' }]);
 
     const restore = await manager.restoreSnapshot(freshSnapshot.id, {
-      schemaVersion: 1,
-      targetDatabaseId: 'agentsy-memory'
+      targetDatabaseId: 'agentsy-memory',
+      schemaVersion: 1
     });
-    const { rollbackSnapshotId } = restore;
+    const rollbackSnapshotId = restore.rollbackSnapshotId;
 
     expect(current.records[0]?.id).toBe('record-old');
     expect(rollbackSnapshotId).toBeDefined();

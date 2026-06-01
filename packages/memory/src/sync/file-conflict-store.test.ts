@@ -11,23 +11,23 @@ const temporaryDirectories: string[] = [];
 
 function createConflict(id: string, detectedAt: string): ConflictRecord {
   return {
-    detectedAt,
     id,
-    local: {
-      content: 'local',
-      id: 'record-1',
-      tier: 'wiki',
-      updatedAt: '2026-05-15T10:00:00.000Z'
-    },
-    policy: 'manualRequired',
     recordId: 'record-1',
-    remote: {
-      content: 'remote',
+    tier: 'wiki',
+    detectedAt,
+    policy: 'manualRequired',
+    local: {
       id: 'record-1',
       tier: 'wiki',
-      updatedAt: '2026-05-15T10:05:00.000Z'
+      updatedAt: '2026-05-15T10:00:00.000Z',
+      content: 'local'
     },
-    tier: 'wiki'
+    remote: {
+      id: 'record-1',
+      tier: 'wiki',
+      updatedAt: '2026-05-15T10:05:00.000Z',
+      content: 'remote'
+    }
   };
 }
 
@@ -38,9 +38,7 @@ async function createStorePath(): Promise<string> {
 }
 
 afterEach(async () => {
-  await Promise.all(
-    temporaryDirectories.splice(0).map(async directory => await rm(directory, { force: true, recursive: true }))
-  );
+  await Promise.all(temporaryDirectories.splice(0).map(directory => rm(directory, { recursive: true, force: true })));
 });
 
 describe('createFileConflictStore', () => {
@@ -73,10 +71,10 @@ describe('createFileConflictStore', () => {
 
     await store.save(createConflict('conflict-1', '2026-05-15T10:01:00.000Z'));
 
-    const content = await readFile(filePath, 'utf-8');
+    const content = await readFile(filePath, 'utf8');
     expect(JSON.parse(content)).toMatchObject({
-      conflicts: [{ id: 'conflict-1' }],
-      version: 1
+      version: 1,
+      conflicts: [{ id: 'conflict-1' }]
     });
   });
 

@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/providers",
-  "version": "0.2.0",
+  "version": "0.2.0-alpha.0",
   "description": "Provider abstraction layer for adapters, normalizers, universal clients, and provider capabilities",
   "keywords": [
     "adapters",
@@ -10,7 +10,7 @@
     "typescript"
   ],
   "homepage": "https://github.com/selfagency/agentsy#readme",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git",
@@ -19,35 +19,30 @@
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./adapters": {
-      "types": "./dist/adapters.d.ts",
+      "types": "./src/adapters/index.ts",
       "import": "./dist/adapters.js",
       "require": "./dist/adapters.cjs"
     },
     "./normalizers": {
-      "types": "./dist/normalizers.d.ts",
+      "types": "./src/normalizers/index.ts",
       "import": "./dist/normalizers.js",
       "require": "./dist/normalizers.cjs"
     },
     "./pipeline": {
-      "types": "./dist/pipeline.d.ts",
+      "types": "./src/pipeline/index.ts",
       "import": "./dist/pipeline.js",
       "require": "./dist/pipeline.cjs"
     },
-    "./request-path": {
-      "types": "./dist/request-path.d.ts",
-      "import": "./dist/request-path.js",
-      "require": "./dist/request-path.cjs"
-    },
     "./universal-client": {
-      "types": "./dist/universal-client.d.ts",
+      "types": "./src/universal-client/index.ts",
       "import": "./dist/universal-client.js",
       "require": "./dist/universal-client.cjs"
     }
@@ -55,8 +50,8 @@
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "biome lint",
-    "format": "biome format",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage"
   },
@@ -65,15 +60,12 @@
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.9.0",
+    "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
     "vitest": "^4.1.6"
   },
-  "files": [
-    "dist"
-  ],
   "engines": {
     "node": ">=18"
   },

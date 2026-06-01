@@ -19,15 +19,15 @@ export type RequestType = 'completion' | 'embedding' | 'fine-tuning';
 
 export interface TokenBudget {
   id: string;
-  maxCost: number;
-  maxTokens: number;
-  metadata?: Record<string, unknown>;
-  model: string;
   name: string;
-  periodMs: number;
-  priority: BudgetPriority;
   provider: string;
+  model: string;
+  maxTokens: number;
+  maxCost: number;
+  periodMs: number;
   resetStrategy: BudgetResetStrategy;
+  priority: BudgetPriority;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TokenBudgetConfig extends Omit<TokenBudget, 'id'> {
@@ -35,40 +35,40 @@ export interface TokenBudgetConfig extends Omit<TokenBudget, 'id'> {
 }
 
 export interface BudgetFilter {
+  provider?: string;
   model?: string;
   priority?: BudgetPriority;
-  provider?: string;
 }
 
 export interface TokenUsage {
   budgetId: string;
-  cost: number;
-  metadata?: Record<string, unknown>;
-  model: string;
   provider: string;
-  requestType: RequestType;
-  timestamp: Date;
+  model: string;
   tokensUsed: number;
+  cost: number;
+  timestamp: Date;
+  requestType: RequestType;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UsageFilter {
   budgetId?: string;
-  from?: Date;
-  model?: string;
   provider?: string;
+  model?: string;
   requestType?: RequestType;
+  from?: Date;
   to?: Date;
 }
 
 export interface TokenRequest {
   budgetId?: string;
-  estimatedCost?: number;
-  estimatedTokens: number;
-  metadata?: Record<string, unknown>;
-  model: string;
-  priority?: BudgetPriority;
   provider: string;
+  model: string;
+  estimatedTokens: number;
+  estimatedCost?: number;
+  priority?: BudgetPriority;
   requestType: RequestType;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AllocationCondition {
@@ -77,116 +77,110 @@ export interface AllocationCondition {
 }
 
 export interface TokenAllocation {
-  allocatedCost: number;
-  allocatedTokens: number;
-  budgetId: string;
-  conditions?: AllocationCondition[];
-  expiresAt: Date;
   id: string;
+  budgetId: string;
+  allocatedTokens: number;
+  allocatedCost: number;
+  expiresAt: Date;
+  conditions?: AllocationCondition[];
 }
 
 export interface CostAnalysisBudgetSummary {
   budgetId: string;
-  requestCount: number;
-  totalCost: number;
   totalTokens: number;
+  totalCost: number;
+  requestCount: number;
 }
 
 export interface CostAnalysis {
-  budgets: CostAnalysisBudgetSummary[];
-  requestCount: number;
-  totalCost: number;
   totalTokens: number;
+  totalCost: number;
+  requestCount: number;
+  budgets: CostAnalysisBudgetSummary[];
 }
 
 export interface OptimizationSuggestion {
   budgetId: string;
-  message: string;
   type: 'reduce-tokens' | 'reduce-cost' | 'rate-limit';
+  message: string;
 }
 
 export interface TokenManager {
   createBudget(config: TokenBudgetConfig): Promise<TokenBudget>;
-  deleteBudget(id: string): Promise<void>;
   getBudget(id: string): Promise<TokenBudget | null>;
+  updateBudget(id: string, updates: Partial<Omit<TokenBudget, 'id'>>): Promise<TokenBudget>;
+  deleteBudget(id: string): Promise<void>;
+  listBudgets(filter?: BudgetFilter): Promise<TokenBudget[]>;
+  requestTokens(request: TokenRequest): Promise<TokenAllocation>;
+  releaseTokens(allocationId: string, actualUsage: number, actualCost?: number): Promise<void>;
+  recordUsage(usage: TokenUsage): Promise<void>;
+  getUsage(filter?: UsageFilter): Promise<TokenUsage[]>;
   getCostAnalysis(periodMs: number): Promise<CostAnalysis>;
   getOptimizationSuggestions(budgetId: string): Promise<OptimizationSuggestion[]>;
-  getUsage(filter?: UsageFilter): Promise<TokenUsage[]>;
-  listBudgets(filter?: BudgetFilter): Promise<TokenBudget[]>;
-  recordUsage(usage: TokenUsage): Promise<void>;
-  releaseTokens(allocationId: string, actualUsage: number, actualCost?: number): Promise<void>;
-  requestTokens(request: TokenRequest): Promise<TokenAllocation>;
-  updateBudget(id: string, updates: Partial<Omit<TokenBudget, 'id'>>): Promise<TokenBudget>;
 }
 
 export interface CompressionOptions<TMessage> {
-  estimateTokens?: (message: TMessage) => number;
   maxTokens: number;
   preserveLast?: number;
+  estimateTokens?: (message: TMessage) => number;
 }
 
 export interface CompressionResult<TMessage> {
-  compressed: boolean;
+  messages: TMessage[];
   droppedCount: number;
   estimatedTokens: number;
-  messages: TMessage[];
+  compressed: boolean;
 }
 
 export type OutputCompressionLevel = 'lite' | 'full' | 'ultra';
 
 export interface OutputCompressionOptions {
-  intensity?: number;
   level: OutputCompressionLevel;
-  preserve?: ('code' | 'technical' | 'urls' | 'paths' | 'markdown' | 'errors')[];
+  preserve?: Array<'code' | 'technical' | 'urls' | 'paths' | 'markdown' | 'errors'>;
+  intensity?: number;
 }
 
 export interface OutputCompressionResult {
-  compressed: string;
-  compressedTokens: number;
   original: string;
+  compressed: string;
   originalTokens: number;
+  compressedTokens: number;
   savingsRatio: number;
 }
 
 export interface RateLimit {
-  maxRequests: number;
   windowMs: number;
+  maxRequests: number;
 }
 
 export interface RateLimitStatus {
   allowed: boolean;
   limit: number;
   remaining: number;
-  retryAfterMs: number;
   windowMs: number;
+  retryAfterMs: number;
 }
 
 export interface PacingFeedback {
-  overloaded?: boolean;
   provider: string;
+  overloaded?: boolean;
   retryAfterMs?: number;
 }
 
 interface AllocationRecord {
   allocation: TokenAllocation;
-  createdAt: number;
   request: TokenRequest;
+  createdAt: number;
 }
 
 function getBudgetPriorityRank(priority: BudgetPriority): number {
   switch (priority) {
-    case 'high': {
+    case 'high':
       return 2;
-    }
-    case 'medium': {
+    case 'medium':
       return 1;
-    }
-    case 'low': {
+    case 'low':
       return 0;
-    }
-    default: {
-      return 0;
-    }
   }
 }
 
@@ -262,7 +256,7 @@ function selectBudget(budgets: TokenBudget[], request: TokenRequest): TokenBudge
   }
 
   return (
-    [...candidates].toSorted(
+    [...candidates].sort(
       (left, right) => getBudgetPriorityRank(right.priority) - getBudgetPriorityRank(left.priority)
     )[0] ?? null
   );
@@ -302,10 +296,10 @@ function sumUsageForBudget(budget: TokenBudget, usage: TokenUsage[], now: number
     })
     .reduce(
       (totals, entry) => ({
-        cost: totals.cost + entry.cost,
-        tokens: totals.tokens + entry.tokensUsed
+        tokens: totals.tokens + entry.tokensUsed,
+        cost: totals.cost + entry.cost
       }),
-      { cost: 0, tokens: 0 }
+      { tokens: 0, cost: 0 }
     );
 }
 
@@ -317,10 +311,10 @@ function sumReservedForBudget(
     .filter(record => record.allocation.budgetId === budgetId)
     .reduce(
       (totals, record) => ({
-        cost: totals.cost + record.allocation.allocatedCost,
-        tokens: totals.tokens + record.allocation.allocatedTokens
+        tokens: totals.tokens + record.allocation.allocatedTokens,
+        cost: totals.cost + record.allocation.allocatedCost
       }),
-      { cost: 0, tokens: 0 }
+      { tokens: 0, cost: 0 }
     );
 }
 
@@ -368,14 +362,14 @@ export function compressConversation<TMessage>(
   }
 
   return {
-    compressed: droppedCount > 0,
+    messages: retained,
     droppedCount,
     estimatedTokens: Math.max(0, estimatedTokens),
-    messages: retained
+    compressed: droppedCount > 0
   };
 }
 
-const CODE_FENCE_PATTERN = /```[\s\S]*?```/gu;
+const CODE_FENCE_PATTERN = /```[\s\S]*?```/g;
 const DEFAULT_PRESERVATION_SET: ReadonlySet<string> = new Set(['code', 'urls', 'paths', 'markdown', 'errors']);
 const FILLER_WORDS = new Set([
   'really',
@@ -435,37 +429,37 @@ const STOP_WORDS = new Set(
     .filter(item => item.length > 0)
 );
 
-const REDUNDANT_PHRASES: readonly [RegExp, string][] = [
-  [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/giu, ''],
-  [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/giu, 'that '],
-  [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/giu, 'because '],
-  [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/giu, ''],
-  [/\bas\s+mentioned\b/giu, ''],
-  [/\bas\s+you\s+may\s+know\b/giu, ''],
-  [/\bin\s+conclusion/giu, 'Finally'],
-  [/\bdue\s+to\s+the\s+fact\s+that\b/giu, 'because'],
-  [/\bat\s+this\s+point\s+in\s+time\b/giu, 'now']
+const REDUNDANT_PHRASES: ReadonlyArray<[RegExp, string]> = [
+  [/\b(is\s+)?(really\s+)?(quite\s+)?(very\s+)?(basically|essentially|fundamentally|practically)\s+/gi, ''],
+  [/\b(that|which)\s+is\s+(really|very|quite|basically)\s+/gi, 'that '],
+  [/\bthe\s+reason\s+(is\s+)?(that|why)\s+/gi, 'because '],
+  [/\bit\s+(seems|appears|looks|sounds)\s+(that\s+)?(really|very|quite)\s+/gi, ''],
+  [/\bas\s+mentioned\b/gi, ''],
+  [/\bas\s+you\s+may\s+know\b/gi, ''],
+  [/\bin\s+conclusion/gi, 'Finally'],
+  [/\bdue\s+to\s+the\s+fact\s+that\b/gi, 'because'],
+  [/\bat\s+this\s+point\s+in\s+time\b/gi, 'now']
 ];
 
-const ABBREVIATIONS: readonly [RegExp, string][] = [
-  [/\bapproximately\b/giu, 'approx'],
-  [/\bconfiguration\b/giu, 'config'],
-  [/\binformation\b/giu, 'info'],
-  [/\badministration\b/giu, 'admin'],
-  [/\bdocumentation\b/giu, 'docs'],
-  [/\bdirectory\b/giu, 'dir'],
-  [/\bnumber\b/giu, '#'],
-  [/\btechnology\b/giu, 'tech'],
-  [/\bimplementation\b/giu, 'impl'],
-  [/\boperation\b/giu, 'op'],
-  [/\bgeneral\b/giu, 'gen']
+const ABBREVIATIONS: ReadonlyArray<[RegExp, string]> = [
+  [/\bapproximately\b/gi, 'approx'],
+  [/\bconfiguration\b/gi, 'config'],
+  [/\binformation\b/gi, 'info'],
+  [/\badministration\b/gi, 'admin'],
+  [/\bdocumentation\b/gi, 'docs'],
+  [/\bdirectory\b/gi, 'dir'],
+  [/\bnumber\b/gi, '#'],
+  [/\btechnology\b/gi, 'tech'],
+  [/\bimplementation\b/gi, 'impl'],
+  [/\boperation\b/gi, 'op'],
+  [/\bgeneral\b/gi, 'gen']
 ];
 
 function estimateTextTokens(text: string): number {
   return Math.max(1, Math.ceil(text.length / 4));
 }
 
-function applyReplacements(source: string, replacements: readonly [RegExp, string][]): string {
+function applyReplacements(source: string, replacements: ReadonlyArray<[RegExp, string]>): string {
   let result = source;
   for (const [pattern, replacement] of replacements) {
     result = result.replace(pattern, replacement);
@@ -481,7 +475,7 @@ function normalizeAndDedupeLines(segment: string): string {
   let previousWasBlank = false;
 
   for (const rawLine of lines) {
-    const line = rawLine.replaceAll(/\s+/gu, ' ').trimEnd();
+    const line = rawLine.replace(/\s+/g, ' ').trimEnd();
     const isBlank = line.trim().length === 0;
 
     if (isBlank) {
@@ -519,35 +513,30 @@ function protectPreservedContent(
   let masked = source;
 
   if (preserve.has('urls')) {
-    masked = masked.replaceAll(/https?:\/\/[^\s)]+/gu, stash);
+    masked = masked.replace(/https?:\/\/[^\s)]+/g, stash);
   }
 
   if (preserve.has('paths')) {
-    masked = masked.replaceAll(
-      /(^|\s)(\.\.?\/|~\/|\/[A-Za-z0-9._/-]+)/gu,
-      (_, prefix: string, path: string) => `${prefix}${stash(path)}`
-    );
+    masked = masked.replace(/(^|\s)(\.\.?\/|~\/|\/[A-Za-z0-9._/-]+)/g, (_, prefix: string, path: string) => {
+      return `${prefix}${stash(path)}`;
+    });
   }
 
   if (preserve.has('markdown')) {
-    masked = masked.replaceAll(/`[^`]+`/gu, stash);
+    masked = masked.replace(/`[^`]+`/g, stash);
     masked = protectMarkdownLinks(masked, stash);
   }
 
   if (preserve.has('errors')) {
-    // nosemgrep: regex-dos-error-pattern
-    // Input is bounded LLM token output; pattern has no nested quantifiers.
-    masked = masked.replaceAll(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/giu, stash);
+    masked = masked.replace(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/gi, stash);
   }
 
   if (preserve.has('technical')) {
-    // nosemgrep: regex-dos-technical-pattern
-    // Input is bounded LLM token output; pattern has no nested quantifiers.
-    masked = masked.replaceAll(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/gu, stash);
+    masked = masked.replace(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/g, stash);
   }
 
   const restore = (value: string): string =>
-    value.replaceAll(/__AGENTSY_PRESERVE_(\d+)__/gu, (_, indexRaw: string) => {
+    value.replace(/__AGENTSY_PRESERVE_(\d+)__/g, (_, indexRaw: string) => {
       const index = Number(indexRaw);
       return preserved[index] ?? '';
     });
@@ -604,7 +593,7 @@ function stripFillerWords(source: string, strongOnly: boolean): string {
 }
 
 function finalizeWhitespace(source: string): string {
-  return source.replaceAll(/\s{2,}/gu, ' ').trim();
+  return source.replace(/\s{2,}/g, ' ').trim();
 }
 
 function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, preserve: ReadonlySet<string>): string {
@@ -630,29 +619,26 @@ function compressNonCodeSegment(segment: string, level: OutputCompressionLevel, 
     case 'ultra': {
       const withoutFiller = stripFillerWords(masked, false);
       const reduced = normalizeUltraText(applyReplacements(withoutFiller, REDUNDANT_PHRASES));
-      const abbreviated = applyReplacements(reduced, ABBREVIATIONS).replaceAll(
-        /\b(?:the|a|an)\s+([a-z]+)\b/giu,
+      const abbreviated = applyReplacements(reduced, ABBREVIATIONS).replace(
+        /\b(?:the|a|an)\s+([a-z]+)\b/gi,
         (_, adjective: string) => `${adjective} `
       );
 
       return restore(
         abbreviated
-          .replaceAll(/\s{2,}/gu, ' ')
-          .replaceAll(/ ([,.])/gu, '$1')
+          .replace(/\s{2,}/g, ' ')
+          .replace(/ ([,.])/g, '$1')
           .trim()
       );
-    }
-    default: {
-      return segment;
     }
   }
 }
 
 function normalizeUltraText(source: string): string {
-  let output = source.replaceAll(/\b(and|or)\s+\1\s+/giu, '$1 ').replaceAll(/\b(is|are|was|were)\s+quite\s+/giu, '');
+  let output = source.replace(/\b(and|or)\s+\1\s+/gi, '$1 ').replace(/\b(is|are|was|were)\s+quite\s+/gi, '');
 
   output = removeWhichClauses(output);
-  return output.replaceAll(/ ([,.?!])/gu, '$1');
+  return output.replace(/ ([,.?!])/g, '$1');
 }
 
 function removeWhichClauses(source: string): string {
@@ -686,22 +672,22 @@ function removeWhichClauses(source: string): string {
 
 export function compressOutput(response: string, options: OutputCompressionOptions): OutputCompressionResult {
   const preserve = new Set(options.preserve ?? [...DEFAULT_PRESERVATION_SET]);
-  const { level } = options;
+  const level = options.level;
 
   if (!preserve.has('code')) {
     const originalTokens = estimateTextTokens(response);
     const compressed = compressNonCodeSegment(response, level, preserve);
     const compressedTokens = estimateTextTokens(compressed);
     return {
-      compressed,
-      compressedTokens,
       original: response,
+      compressed,
       originalTokens,
+      compressedTokens,
       savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
     };
   }
 
-  const segments: { kind: 'code' | 'text'; value: string }[] = [];
+  const segments: Array<{ kind: 'code' | 'text'; value: string }> = [];
   let lastIndex = 0;
 
   for (const match of response.matchAll(CODE_FENCE_PATTERN)) {
@@ -724,17 +710,17 @@ export function compressOutput(response: string, options: OutputCompressionOptio
   const compressed = segments
     .map(segment => (segment.kind === 'code' ? segment.value : compressNonCodeSegment(segment.value, level, preserve)))
     .join('\n')
-    .replaceAll(/\n{3,}/gu, '\n\n')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 
   const originalTokens = estimateTextTokens(response);
   const compressedTokens = estimateTextTokens(compressed);
 
   return {
-    compressed,
-    compressedTokens,
     original: response,
+    compressed,
     originalTokens,
+    compressedTokens,
     savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
   };
 }
@@ -745,26 +731,44 @@ export function createInMemoryTokenManager(): TokenManager {
   const usage: TokenUsage[] = [];
 
   return {
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async createBudget(config) {
       const id = config.id ?? createId('budget');
       const budget: TokenBudget = {
         id,
-        maxCost: config.maxCost,
-        maxTokens: config.maxTokens,
-        model: config.model,
         name: config.name,
-        periodMs: config.periodMs,
-        priority: config.priority,
         provider: config.provider,
+        model: config.model,
+        maxTokens: config.maxTokens,
+        maxCost: config.maxCost,
+        periodMs: config.periodMs,
         resetStrategy: config.resetStrategy,
+        priority: config.priority,
         ...(config.metadata === undefined ? {} : { metadata: { ...config.metadata } })
       };
       budgets.set(id, budget);
       return cloneBudget(budget);
     },
 
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
+    async getBudget(id) {
+      const budget = budgets.get(id);
+      return budget ? cloneBudget(budget) : null;
+    },
+
+    async updateBudget(id, updates) {
+      const current = budgets.get(id);
+      if (!current) {
+        throw new Error(`Unknown token budget: ${id}`);
+      }
+
+      const next: TokenBudget = {
+        ...current,
+        ...updates,
+        ...(updates.metadata === undefined ? {} : { metadata: { ...updates.metadata } })
+      };
+      budgets.set(id, next);
+      return cloneBudget(next);
+    },
+
     async deleteBudget(id) {
       budgets.delete(id);
       for (const [allocationId, record] of allocations.entries()) {
@@ -774,115 +778,10 @@ export function createInMemoryTokenManager(): TokenManager {
       }
     },
 
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
-    async getBudget(id) {
-      const budget = budgets.get(id);
-      return budget ? cloneBudget(budget) : null;
-    },
-
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
-    async getCostAnalysis(periodMs) {
-      const now = Date.now();
-      const inWindow = usage.filter(entry => isWithinWindow(entry.timestamp, now, periodMs));
-      const budgetSummaries = new Map<string, CostAnalysisBudgetSummary>();
-
-      for (const entry of inWindow) {
-        const existing = budgetSummaries.get(entry.budgetId) ?? {
-          budgetId: entry.budgetId,
-          requestCount: 0,
-          totalCost: 0,
-          totalTokens: 0
-        };
-        existing.totalTokens += entry.tokensUsed;
-        existing.totalCost += entry.cost;
-        existing.requestCount += 1;
-        budgetSummaries.set(entry.budgetId, existing);
-      }
-
-      return {
-        budgets: [...budgetSummaries.values()].toSorted((left, right) => left.budgetId.localeCompare(right.budgetId)),
-        requestCount: inWindow.length,
-        totalCost: inWindow.reduce((total, entry) => total + entry.cost, 0),
-        totalTokens: inWindow.reduce((total, entry) => total + entry.tokensUsed, 0)
-      };
-    },
-
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
-    async getOptimizationSuggestions(budgetId) {
-      const budget = budgets.get(budgetId);
-      if (!budget) {
-        return [];
-      }
-
-      const now = Date.now();
-      const spent = sumUsageForBudget(budget, usage, now);
-      const suggestions: OptimizationSuggestion[] = [];
-      const tokenRatio = budget.maxTokens === 0 ? 0 : spent.tokens / budget.maxTokens;
-      const costRatio = budget.maxCost === 0 ? 0 : spent.cost / budget.maxCost;
-
-      if (tokenRatio >= 0.8) {
-        suggestions.push({
-          budgetId,
-          message: 'Budget is above 80% token usage; compress conversation history or shorten prompts.',
-          type: 'reduce-tokens'
-        });
-      }
-
-      if (costRatio >= 0.8) {
-        suggestions.push({
-          budgetId,
-          message: 'Budget is above 80% cost usage; consider a lower-cost model or shorter completions.',
-          type: 'reduce-cost'
-        });
-      }
-
-      if (suggestions.length === 0) {
-        suggestions.push({
-          budgetId,
-          message: 'Budget usage is healthy; keep monitoring burst traffic before raising limits.',
-          type: 'rate-limit'
-        });
-      }
-
-      return suggestions;
-    },
-
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
-    async getUsage(filter = {}) {
-      return usage.filter(entry => filterUsage(entry, filter)).map(cloneUsage);
-    },
-
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async listBudgets(filter = {}) {
       return [...budgets.values()].filter(budget => filterBudget(budget, filter)).map(cloneBudget);
     },
 
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
-    async recordUsage(entry) {
-      usage.push(cloneUsage(entry));
-    },
-
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
-    async releaseTokens(allocationId, actualUsage, actualCost = 0) {
-      const record = allocations.get(allocationId);
-      if (!record) {
-        throw new Error(`Unknown token allocation: ${allocationId}`);
-      }
-
-      allocations.delete(allocationId);
-      usage.push({
-        budgetId: record.allocation.budgetId,
-        cost: actualCost,
-        model: record.request.model,
-        provider: record.request.provider,
-        requestType: record.request.requestType,
-        timestamp: new Date(record.createdAt),
-        tokensUsed: actualUsage,
-        ...(record.request.metadata === undefined ? {} : { metadata: { ...record.request.metadata } })
-      });
-    },
-
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
     async requestTokens(request) {
       const budget = request.budgetId
         ? (budgets.get(request.budgetId) ?? null)
@@ -906,39 +805,115 @@ export function createInMemoryTokenManager(): TokenManager {
       }
 
       const allocation: TokenAllocation = {
-        allocatedCost: getAllocationCost(request),
-        allocatedTokens: request.estimatedTokens,
+        id: createId('allocation'),
         budgetId: budget.id,
-        expiresAt: new Date(now + budget.periodMs),
-        id: createId('allocation')
+        allocatedTokens: request.estimatedTokens,
+        allocatedCost: getAllocationCost(request),
+        expiresAt: new Date(now + budget.periodMs)
       };
 
       allocations.set(allocation.id, {
         allocation,
-        createdAt: now,
         request: {
           ...request,
           ...(request.metadata === undefined ? {} : { metadata: { ...request.metadata } })
-        }
+        },
+        createdAt: now
       });
 
       return cloneAllocation(allocation);
     },
 
-    // biome-ignore lint/suspicious/useAwait: async needed for Promise<ReturnType> signature
-    async updateBudget(id, updates) {
-      const current = budgets.get(id);
-      if (!current) {
-        throw new Error(`Unknown token budget: ${id}`);
+    async releaseTokens(allocationId, actualUsage, actualCost = 0) {
+      const record = allocations.get(allocationId);
+      if (!record) {
+        throw new Error(`Unknown token allocation: ${allocationId}`);
       }
 
-      const next: TokenBudget = {
-        ...current,
-        ...updates,
-        ...(updates.metadata === undefined ? {} : { metadata: { ...updates.metadata } })
+      allocations.delete(allocationId);
+      usage.push({
+        budgetId: record.allocation.budgetId,
+        provider: record.request.provider,
+        model: record.request.model,
+        tokensUsed: actualUsage,
+        cost: actualCost,
+        timestamp: new Date(record.createdAt),
+        requestType: record.request.requestType,
+        ...(record.request.metadata === undefined ? {} : { metadata: { ...record.request.metadata } })
+      });
+    },
+
+    async recordUsage(entry) {
+      usage.push(cloneUsage(entry));
+    },
+
+    async getUsage(filter = {}) {
+      return usage.filter(entry => filterUsage(entry, filter)).map(cloneUsage);
+    },
+
+    async getCostAnalysis(periodMs) {
+      const now = Date.now();
+      const inWindow = usage.filter(entry => isWithinWindow(entry.timestamp, now, periodMs));
+      const budgetSummaries = new Map<string, CostAnalysisBudgetSummary>();
+
+      for (const entry of inWindow) {
+        const existing = budgetSummaries.get(entry.budgetId) ?? {
+          budgetId: entry.budgetId,
+          totalTokens: 0,
+          totalCost: 0,
+          requestCount: 0
+        };
+        existing.totalTokens += entry.tokensUsed;
+        existing.totalCost += entry.cost;
+        existing.requestCount += 1;
+        budgetSummaries.set(entry.budgetId, existing);
+      }
+
+      return {
+        totalTokens: inWindow.reduce((total, entry) => total + entry.tokensUsed, 0),
+        totalCost: inWindow.reduce((total, entry) => total + entry.cost, 0),
+        requestCount: inWindow.length,
+        budgets: [...budgetSummaries.values()].sort((left, right) => left.budgetId.localeCompare(right.budgetId))
       };
-      budgets.set(id, next);
-      return cloneBudget(next);
+    },
+
+    async getOptimizationSuggestions(budgetId) {
+      const budget = budgets.get(budgetId);
+      if (!budget) {
+        return [];
+      }
+
+      const now = Date.now();
+      const spent = sumUsageForBudget(budget, usage, now);
+      const suggestions: OptimizationSuggestion[] = [];
+      const tokenRatio = budget.maxTokens === 0 ? 0 : spent.tokens / budget.maxTokens;
+      const costRatio = budget.maxCost === 0 ? 0 : spent.cost / budget.maxCost;
+
+      if (tokenRatio >= 0.8) {
+        suggestions.push({
+          budgetId,
+          type: 'reduce-tokens',
+          message: 'Budget is above 80% token usage; compress conversation history or shorten prompts.'
+        });
+      }
+
+      if (costRatio >= 0.8) {
+        suggestions.push({
+          budgetId,
+          type: 'reduce-cost',
+          message: 'Budget is above 80% cost usage; consider a lower-cost model or shorter completions.'
+        });
+      }
+
+      if (suggestions.length === 0) {
+        suggestions.push({
+          budgetId,
+          type: 'rate-limit',
+          message: 'Budget usage is healthy; keep monitoring burst traffic before raising limits.'
+        });
+      }
+
+      return suggestions;
     }
   };
 }
@@ -953,42 +928,42 @@ export class PacingController {
     this.#manager = tokenManager;
   }
 
-  throttleRequest(request: TokenRequest): Promise<boolean> {
-    const waitTime = this.getWaitTime(request);
+  async throttleRequest(request: TokenRequest): Promise<boolean> {
+    const waitTime = await this.getWaitTime(request);
     if (waitTime > 0) {
-      return Promise.resolve(false);
+      return false;
     }
 
     const timestamps = this.#requestTimestamps.get(request.provider) ?? [];
     timestamps.push(Date.now());
     this.#requestTimestamps.set(request.provider, timestamps);
-    return Promise.resolve(true);
+    return true;
   }
 
-  getWaitTime(request: TokenRequest): number {
+  async getWaitTime(request: TokenRequest): Promise<number> {
     const providerCooldown = this.#cooldowns.get(request.provider);
     const now = Date.now();
     const cooldownWait = providerCooldown === undefined ? 0 : Math.max(0, providerCooldown - now);
-    const rateLimitStatus = this.checkRateLimit(request.provider);
+    const rateLimitStatus = await this.checkRateLimit(request.provider);
     return Math.max(cooldownWait, rateLimitStatus.retryAfterMs);
   }
 
-  updateRateLimits(provider: string, limits: RateLimit[]): void {
+  async updateRateLimits(provider: string, limits: RateLimit[]): Promise<void> {
     this.#limits.set(
       provider,
       limits.map(limit => ({ ...limit }))
     );
   }
 
-  checkRateLimit(provider: string): RateLimitStatus {
+  async checkRateLimit(provider: string): Promise<RateLimitStatus> {
     const limits = this.#limits.get(provider) ?? [];
     if (limits.length === 0) {
       return {
         allowed: true,
         limit: 0,
         remaining: Number.MAX_SAFE_INTEGER,
-        retryAfterMs: 0,
-        windowMs: 0
+        windowMs: 0,
+        retryAfterMs: 0
       };
     }
 
@@ -999,8 +974,8 @@ export class PacingController {
       allowed: true,
       limit: 0,
       remaining: Number.MAX_SAFE_INTEGER,
-      retryAfterMs: 0,
-      windowMs: 0
+      windowMs: 0,
+      retryAfterMs: 0
     };
 
     for (const limit of limits) {
@@ -1011,8 +986,8 @@ export class PacingController {
         allowed: retryAfterMs === 0,
         limit: limit.maxRequests,
         remaining,
-        retryAfterMs,
-        windowMs: limit.windowMs
+        windowMs: limit.windowMs,
+        retryAfterMs
       };
 
       if (!candidate.allowed) {
@@ -1029,7 +1004,7 @@ export class PacingController {
     return strictest;
   }
 
-  adjustPacing(feedback: PacingFeedback): void {
+  async adjustPacing(feedback: PacingFeedback): Promise<void> {
     if (feedback.overloaded === true && typeof feedback.retryAfterMs === 'number') {
       this.#cooldowns.set(feedback.provider, Date.now() + Math.max(0, feedback.retryAfterMs));
       return;

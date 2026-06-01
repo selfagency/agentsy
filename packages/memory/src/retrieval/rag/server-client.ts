@@ -12,19 +12,19 @@ export interface RAGServerClientOptions {
 }
 
 export interface RAGServerClient {
-  delete(documentId: string): Promise<RAGDeleteResult>;
   health(): Promise<RAGHealthResult>;
-  ingest(document: RAGServerDocument): Promise<void>;
   search(request: RAGSearchRequest): Promise<RAGSearchResult[]>;
+  ingest(document: RAGServerDocument): Promise<void>;
   upsert(document: RAGServerDocument): Promise<void>;
+  delete(documentId: string): Promise<RAGDeleteResult>;
 }
 
-async function requestJson<TData>(
+async function requestJson<T>(
   baseUrl: string,
   timeoutMs: number,
   path: string,
   init: RequestInit
-): Promise<{ ok: boolean; status: number; data: TData | null }> {
+): Promise<{ ok: boolean; status: number; data: T | null }> {
   const controller = new AbortController();
   const timeoutHandle = setTimeout(() => {
     controller.abort();
@@ -33,17 +33,17 @@ async function requestJson<TData>(
   try {
     const response = await fetch(`${baseUrl}${path}`, {
       ...init,
-      headers: Object.fromEntries([
-        ['content-type', 'application/json'],
-        ...(init.headers ? Object.entries(init.headers).map(([k, v]) => [k, v] as [string, string]) : [])
-      ]) as Record<string, string>,
+      headers: {
+        'content-type': 'application/json',
+        ...init.headers
+      },
       signal: controller.signal
     });
 
-    const data = (await response.json().catch(() => null)) as TData | null;
-    return { data, ok: response.ok, status: response.status };
+    const data = (await response.json().catch(() => null)) as T | null;
+    return { ok: response.ok, status: response.status, data };
   } catch {
-    return { data: null, ok: false, status: 0 };
+    return { ok: false, status: 0, data: null };
   } finally {
     clearTimeout(timeoutHandle);
   }
@@ -51,25 +51,9 @@ async function requestJson<TData>(
 
 export function createRAGServerClient(options: RAGServerClientOptions): RAGServerClient {
   const baseUrl = options.baseUrl.replace(/\/$/u, '');
-  const timeoutMs = Math.max(200, options.timeoutMs ?? 3000);
+  const timeoutMs = Math.max(200, options.timeoutMs ?? 3_000);
 
   return {
-    async delete(documentId) {
-      const result = await requestJson<{ id?: string; deleted?: boolean }>(
-        baseUrl,
-        timeoutMs,
-        `/documents/${encodeURIComponent(documentId)}`,
-        {
-          method: 'DELETE'
-        }
-      );
-
-      return {
-        deleted: result.data?.deleted ?? false,
-        id: result.data?.id ?? documentId
-      };
-    },
-
     async health() {
       const result = await requestJson<{ status?: string }>(baseUrl, timeoutMs, '/health', {
         method: 'GET'
@@ -85,14 +69,10 @@ export function createRAGServerClient(options: RAGServerClientOptions): RAGServe
       };
     },
 
-    async ingest(document) {
-      await this.upsert(document);
-    },
-
     async search(request) {
       const result = await requestJson<{ results?: RAGSearchResult[] }>(baseUrl, timeoutMs, '/search', {
-        body: JSON.stringify(request),
-        method: 'POST'
+        method: 'POST',
+        body: JSON.stringify(request)
       });
 
       if (!result.ok) {
@@ -102,15 +82,35 @@ export function createRAGServerClient(options: RAGServerClientOptions): RAGServe
       return [...(result.data?.results ?? [])];
     },
 
+    async ingest(document) {
+      await this.upsert(document);
+    },
+
     async upsert(document) {
       const result = await requestJson<Record<string, unknown>>(baseUrl, timeoutMs, '/documents', {
-        body: JSON.stringify(document),
-        method: 'POST'
+        method: 'POST',
+        body: JSON.stringify(document)
       });
 
       if (!result.ok) {
         throw new Error(`Failed to upsert document ${document.id}`);
       }
+    },
+
+    async delete(documentId) {
+      const result = await requestJson<{ id?: string; deleted?: boolean }>(
+        baseUrl,
+        timeoutMs,
+        `/documents/${encodeURIComponent(documentId)}`,
+        {
+          method: 'DELETE'
+        }
+      );
+
+      return {
+        id: result.data?.id ?? documentId,
+        deleted: result.data?.deleted ?? false
+      };
     }
   };
 }

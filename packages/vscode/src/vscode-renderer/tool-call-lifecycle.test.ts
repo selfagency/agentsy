@@ -1,50 +1,49 @@
 import { describe, expect, it, vi } from 'vitest';
+import { ToolCallDeltaAccumulator, accumulateToolCallDeltas, toVSCodeToolCallPart } from './tool-call-lifecycle.js';
 
-import { accumulateToolCallDeltas, ToolCallDeltaAccumulator, toVSCodeToolCallPart } from './tool-call-lifecycle.js';
-
-describe(toVSCodeToolCallPart, () => {
+describe('toVSCodeToolCallPart', () => {
   it('maps processor tool_call part to VS Code-style tool call payload', () => {
     const part = toVSCodeToolCallPart({
+      type: 'tool_call',
+      state: 'input-complete',
       call: {
-        format: 'native-json',
         id: 'call_abc',
         name: 'lookup',
-        parameters: { q: 'weather' }
-      },
-      state: 'input-complete',
-      type: 'tool_call'
+        parameters: { q: 'weather' },
+        format: 'native-json'
+      }
     });
 
-    expect(part).toStrictEqual({
+    expect(part).toEqual({
       callId: 'call_abc',
-      input: { q: 'weather' },
-      name: 'lookup'
+      name: 'lookup',
+      input: { q: 'weather' }
     });
   });
 });
 
-describe(ToolCallDeltaAccumulator, () => {
+describe('ToolCallDeltaAccumulator', () => {
   it('accumulates deltas and finalizes valid JSON inputs', () => {
     const accumulator = new ToolCallDeltaAccumulator();
     accumulateToolCallDeltas(accumulator, {
-      argumentsDelta: '{"q":',
-      id: 'call_1',
+      type: 'tool_call_delta',
       index: 0,
+      id: 'call_1',
       name: 'lookup',
-      type: 'tool_call_delta'
+      argumentsDelta: '{"q":'
     });
     accumulateToolCallDeltas(accumulator, {
-      argumentsDelta: '"x"}',
+      type: 'tool_call_delta',
       index: 0,
       name: 'lookup',
-      type: 'tool_call_delta'
+      argumentsDelta: '"x"}'
     });
 
-    expect(accumulator.finalize()).toStrictEqual([
+    expect(accumulator.finalize()).toEqual([
       {
         callId: 'call_1',
-        input: { q: 'x' },
-        name: 'lookup'
+        name: 'lookup',
+        input: { q: 'x' }
       }
     ]);
   });
@@ -54,14 +53,14 @@ describe(ToolCallDeltaAccumulator, () => {
     const onWarning = vi.fn();
 
     accumulateToolCallDeltas(accumulator, {
-      argumentsDelta: '{"q":"abc"',
+      type: 'tool_call_delta',
       index: 0,
       name: 'lookup',
-      type: 'tool_call_delta'
+      argumentsDelta: '{"q":"abc"'
     });
 
     const finalized = accumulator.finalize({ onWarning });
-    expect(finalized[0]?.input).toStrictEqual({ q: 'abc' });
+    expect(finalized[0]?.input).toEqual({ q: 'abc' });
     expect(onWarning).not.toHaveBeenCalled();
   });
 });

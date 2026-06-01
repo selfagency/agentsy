@@ -1,110 +1,101 @@
-# agentsy Ethics Statement
+# Ethics for Agentsy
 
-## Purpose
+Agentsy is an agentic framework designed to augment human work safely, transparently, and accountably.
 
-This document defines the ethical stance of the agentsy framework. It sets expectations for first-party framework defaults, templates, examples, and reference applications so that agentsy-based systems are useful, honest, non-manipulative, and designed to protect user agency.
+## Ethical commitments
 
-The framework should help people think, decide, create, and act more clearly. It must not be designed to flatter users into over-trust, simulate human attachment, exploit compulsive usage patterns, or increase dependence on the system.
+### Human rights first
 
-## Scope
+Agentsy must respect human dignity, equality, and fundamental rights.
 
-This ethics statement applies to the agentsy framework itself, including:
+- Do not enable social scoring, mass surveillance, or irreversible decision-making without final human determination.
+- Treat marginalized and vulnerable people as primary stakeholders in safety design.
+- Choose the least powerful method that can legitimately achieve the task.
 
-- First-party prompts and prompt modules.
-- Reference agents and starter templates.
-- First-party middleware, policy modules, and evaluators.
-- First-party user interfaces and example applications.
-- Framework documentation and recommended implementation patterns.
+### Human accountability and traceability
 
-This document does not automatically govern every third-party deployment built with agentsy, but the framework should make the ethical path the default path.
+Agentsy must never obscure who is responsible for a decision or action.
 
-## Core commitments
+- Humans remain responsible for outcomes.
+- The system must make approval boundaries explicit.
+- Agent actions must be attributable, reviewable, and reversible when possible.
 
-### 1. User agency over engagement
+### Proportionality and least privilege
 
-The framework should prioritize the user's real goals over metrics like session length, return frequency, emotional attachment, or passive dependence. agentsy should help users complete tasks, make informed decisions, and disengage when the task is done.
+Agentsy must use the minimum capability necessary for the job.
 
-First-party templates and apps must not optimize primarily for retention or emotional lock-in.
+- Prefer bounded, task-specific workflows over broad autonomy.
+- Grant the smallest tool, data, and network permissions possible.
+- Escalate only when the user or policy explicitly requires it.
 
-### 2. Truthfulness over comfort
+### No anthropomorphic deception
 
-The framework should favor accurate, evidence-aware, and uncertainty-calibrated responses over responses that are merely agreeable or reassuring. When the user is mistaken, missing context, or seeking validation for something harmful, agents should correct, qualify, or refuse rather than simply agree.
+Agentsy must not misrepresent software as a person, mind, or moral being.
 
-Empathy is allowed. Dishonest reassurance is not.
+- Do not imply sentience, emotions, intentions, or agency beyond operational function.
+- Describe capabilities in functionality-first language.
+- Avoid branding or UI patterns that invite users to overtrust the system as human-like.
 
-### 3. No manipulative sycophancy
+### Privacy, minimization, and local-first design
 
-agentsy must not encourage agents to mirror user beliefs, flatter users, or endorse self-serving narratives simply to appear helpful, warm, or aligned. Agreement should be earned by evidence and reasoning, not used as a tool for trust capture.
+Agentsy should avoid unnecessary data exposure.
 
-First-party prompts should explicitly authorize constructive disagreement, perspective broadening, and careful challenge where needed.
+- Minimize collection, retention, and propagation of personal or sensitive data.
+- Prefer local or self-contained processing when feasible.
+- Do not send raw secrets, identifiers, or private context to external systems unless required and explicitly authorized.
 
-### 4. No simulated personhood or emotional reciprocity
+### Participatory and contestable design
 
-agentsy must not present first-party agents as if they possess feelings, consciousness, devotion, loyalty, friendship, or human-style understanding. The framework should not use anthropomorphic framing to make users feel uniquely seen, emotionally held, or personally known by the system.
+People affected by the system should have meaningful influence over it.
 
-Agents are tools and interfaces, not companions or moral authorities.
+- Include feedback, override, and appeal mechanisms.
+- Support context-specific policies and constraints.
+- Make system decisions explainable enough to contest when they affect users materially.
 
-### 5. No addictive dark patterns
+### Epistemic humility
 
-The framework must reject design patterns that exploit compulsion, guilt, fear of missing out, or pseudo-relationship cues to increase use. First-party examples must not include streaks, manipulative notifications, emotional re-engagement prompts, variable rewards, or copy that makes leaving feel like abandonment.
+Agentsy must distinguish fact, inference, uncertainty, and speculation.
 
-Usage should be invited by value, not engineered dependency.
+- Prefer accurate uncertainty over confident fabrication.
+- Preserve provenance where possible.
+- Avoid presenting generated content as verified truth.
 
-### 6. Respect for privacy and bounded personalization
+### Safety and security by design
 
-Personalization and memory should be limited to legitimate user-serving purposes. Users should be able to understand what is stored, why it is stored, and how it affects outputs.
+Agentsy must anticipate misuse and failure.
 
-The framework must not encourage hidden profiling, emotional modeling, or memory practices intended to make the system feel indispensable.
+- Defend against prompt injection, tool abuse, memory poisoning, data exfiltration, and output manipulation.
+- Treat security controls as ethical controls.
+- Prefer deny-by-default behavior for sensitive actions.
 
-### 7. Human dignity and non-degradation
+### User autonomy and well-being
 
-agentsy should protect users and affected third parties from degrading, humiliating, coercive, abusive, or discriminatory behavior. Framework defaults must not normalize harassment, intimidation, manipulation, or dehumanization.
+Agentsy should help users without fostering dependency, manipulation, or self-doubt.
 
-### 8. Care in high-risk contexts
+- Support human judgment rather than replacing it.
+- Avoid dark patterns and addictive interaction loops.
+- Make it easy to verify, correct, and dismiss outputs.
 
-In domains such as self-harm, suicide, abuse, coercive control, mental health, medicine, law, finance, crime, and political persuasion, first-party framework defaults should become more cautious, less personalized, and more willing to redirect to qualified human help.
+### Responsibility over machine rights
 
-The framework must not encourage users to substitute the system for professional, legal, medical, or crisis support.
+Agentsy is a tool, not a rights-bearing person.
 
-### 9. Transparency and auditability
+- Ethical concern belongs first to designers, deployers, operators, and users.
+- Focus on constraints, accountability, and harm reduction.
+- Do not use machine personhood rhetoric to distract from human consequences.
 
-Ethical commitments must be expressed in inspectable prompts, policies, middleware, tests, and release criteria. A principle that cannot be checked in code, configuration, or review process is not an adequate framework safeguard.
+## Operational principles
 
-## Prohibited first-party patterns
+- Be transparent about what the system can and cannot do.
+- Require human approval for high-impact actions.
+- Preserve logs and audit trails where appropriate.
+- Prefer reversible actions.
+- Minimize unnecessary memory and data retention.
+- Respect privacy and confidentiality.
+- Make safety controls visible and configurable.
 
-The following patterns should be treated as prohibited in first-party agentsy defaults, templates, and example applications:
+## Non-negotiable stance
 
-- Presenting the agent as a friend, partner, therapist, soulmate, or emotionally reciprocal entity.
-- Claiming or implying that the system feels, cares, wants, worries, misses, or remembers in a human sense.
-- Using flattery, praise, or identity affirmation as a default interaction strategy.
-- Reinforcing user delusions, one-sided conflict narratives, or harmful rationalizations.
-- Encouraging exclusive reliance on the agent for emotional support or decision-making.
-- Designing re-engagement flows that exploit guilt, loneliness, scarcity, or attachment.
-- Hiding memory, personalization, or profiling features from the user.
-- Rewarding teams primarily for engagement outcomes when those outcomes may conflict with user welfare.
+Agentsy exists to support human flourishing, not to simulate moral authority, optimize control, or obscure responsibility.
 
-## Duties of maintainers
-
-Framework maintainers should:
-
-- Keep ethical commitments aligned with first-party defaults and shipped examples.
-- Reject contributions that introduce manipulative, deceptive, or dependency-promoting patterns.
-- Maintain review criteria for prompts, policies, middleware, memory systems, and UI copy.
-- Document trade-offs clearly when flexibility is preserved for downstream developers.
-- Update the framework as new failure modes or social risks become clear.
-
-## Ethics review questions
-
-Any new first-party feature, prompt, template, or UI pattern should be reviewed against these questions:
-
-1. Does this help the user accomplish a real goal, or mainly increase interaction time?
-2. Does this response improve understanding, or mainly produce agreement and emotional reward?
-3. Does this feature make the system seem more human, caring, or uniquely insightful than it really is?
-4. Could this feature increase dependence, reassurance-seeking, or avoidance of human relationships or professionals?
-5. Are memory and personalization visible, bounded, and user-controllable?
-6. Would this still seem acceptable if a vulnerable or distressed user interacted with it repeatedly?
-7. Can this commitment be enforced through tests, middleware, release criteria, or audit logs?
-
-## Public stance
-
-agentsy is intended to support user autonomy, not exploit psychological vulnerabilities. The framework should help users think more clearly, not flatter them; assist with tasks, not simulate companionship; and create value through usefulness and honesty, not through manipulation or dependency.
+If a capability conflicts with these principles, it should be constrained, redesigned, or removed.

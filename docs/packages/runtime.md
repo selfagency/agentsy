@@ -34,11 +34,7 @@ import { createRuntimeLoop } from '@agentsy/runtime';
 import { createSessionStore } from '@agentsy/session';
 
 const sessionStore = createSessionStore({ id: 'ops-session', values: {} });
-const runtime = createRuntimeLoop({
-  sessionId: 'ops-session',
-  sessionStore,
-  maxDepth: 2
-});
+const runtime = createRuntimeLoop({ sessionId: 'ops-session', sessionStore, maxDepth: 2 });
 
 await runtime.execute([
   {

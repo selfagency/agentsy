@@ -14,16 +14,14 @@
 
 import { EventEmitter } from 'node:events';
 
-const WS_SEARCH_REGEX = /\s/;
-
 // ---------------------------------------------------------------------------
 // Public node-data types
 // ---------------------------------------------------------------------------
 
 export interface SaxophoneTag {
+  name: string;
   attrs: string;
   isSelfClosing: boolean;
-  name: string;
 }
 
 export interface SaxophoneText {
@@ -51,18 +49,14 @@ export interface SaxophoneProcessingInstruction {
  * Returns -1 if not found.
  */
 function findIndexOutside(haystack: string, predicate: (ch: string) => boolean, delim = '', fromIndex = 0): number {
-  const { length } = haystack;
+  const length = haystack.length;
   let index = fromIndex;
   let inDelim = false;
 
   while (index < length) {
     const ch = haystack.charAt(index);
-    if (!inDelim && predicate(ch)) {
-      break;
-    }
-    if (ch === delim) {
-      inDelim = !inDelim;
-    }
+    if (!inDelim && predicate(ch)) break;
+    if (ch === delim) inDelim = !inDelim;
     index++;
   }
 
@@ -82,8 +76,8 @@ const NT_TAG_OPEN = 'tagopen';
 const NT_TAG_CLOSE = 'tagclose';
 
 interface WaitState {
-  data: string;
   token: string;
+  data: string;
 }
 
 type ParserStepResult = number | Error | null;
@@ -101,14 +95,12 @@ export class Saxophone extends EventEmitter {
   private _waiting: WaitState | null = null;
 
   private _wait(token: string, data: string): void {
-    this._waiting = { data, token };
+    this._waiting = { token, data };
   }
 
   private _unwait(): string {
-    if (this._waiting === null) {
-      return '';
-    }
-    const { data } = this._waiting;
+    if (this._waiting === null) return '';
+    const data = this._waiting.data;
     this._waiting = null;
     return data;
   }
@@ -128,77 +120,71 @@ export class Saxophone extends EventEmitter {
       return input.length;
     }
 
-    this.emit(NT_TEXT, {
-      contents: input.slice(pos, nextTag)
-    } satisfies SaxophoneText);
+    this.emit(NT_TEXT, { contents: input.slice(pos, nextTag) } satisfies SaxophoneText);
     return nextTag;
   }
 
   private _handleCDataSection(input: string, pos: number): number | null {
-    const p = pos + 7;
-    const cdataClose = input.indexOf(']]>', p);
+    pos += 7;
+    const cdataClose = input.indexOf(']]>', pos);
 
     if (cdataClose === -1) {
-      this._wait(NT_CDATA, input.slice(p - 9));
+      this._wait(NT_CDATA, input.slice(pos - 9));
       return null;
     }
 
-    this.emit(NT_CDATA, {
-      contents: input.slice(p, cdataClose)
-    } satisfies SaxophoneCData);
+    this.emit(NT_CDATA, { contents: input.slice(pos, cdataClose) } satisfies SaxophoneCData);
     return cdataClose + 3;
   }
 
   private _handleComment(input: string, pos: number): ParserStepResult {
-    const p = pos + 2;
-    const commentClose = input.indexOf('--', p);
+    pos += 2;
+    const commentClose = input.indexOf('--', pos);
 
     if (commentClose === -1 || input.charAt(commentClose + 2) === '') {
-      this._wait(NT_COMMENT, input.slice(p - 4));
+      this._wait(NT_COMMENT, input.slice(pos - 4));
       return null;
     }
 
     if (input.charAt(commentClose + 2) !== '>') {
-      return new Error(`Unexpected -- inside comment: '${input.slice(p - 4)}'`);
+      return new Error(`Unexpected -- inside comment: '${input.slice(pos - 4)}'`);
     }
 
-    this.emit(NT_COMMENT, {
-      contents: input.slice(p, commentClose)
-    } satisfies SaxophoneComment);
+    this.emit(NT_COMMENT, { contents: input.slice(pos, commentClose) } satisfies SaxophoneComment);
     return commentClose + 3;
   }
 
   private _handleMarkupDeclaration(input: string, pos: number): ParserStepResult {
-    const p = pos + 1;
-    const c2 = input.charAt(p);
+    pos += 1;
+    const c2 = input.charAt(pos);
 
     if (c2 === '') {
-      this._wait(NT_MARKUP_DECL, input.slice(p - 2));
+      this._wait(NT_MARKUP_DECL, input.slice(pos - 2));
       return null;
     }
 
-    if (c2 === '[' && input.slice(p + 1, p + 7) === 'CDATA[') {
-      return this._handleCDataSection(input, p);
+    if (c2 === '[' && input.slice(pos + 1, pos + 7) === 'CDATA[') {
+      return this._handleCDataSection(input, pos);
     }
 
-    if (c2 === '-' && (input.charAt(p + 1) === '' || input.charAt(p + 1) === '-')) {
-      return this._handleComment(input, p);
+    if (c2 === '-' && (input.charAt(pos + 1) === '' || input.charAt(pos + 1) === '-')) {
+      return this._handleComment(input, pos);
     }
 
     return new Error(`Unrecognized sequence: <!${c2}`);
   }
 
   private _handleProcessingInstruction(input: string, pos: number): number | null {
-    const p = pos + 1;
-    const piClose = input.indexOf('?>', p);
+    pos += 1;
+    const piClose = input.indexOf('?>', pos);
 
     if (piClose === -1) {
-      this._wait(NT_PROC_INST, input.slice(p - 2));
+      this._wait(NT_PROC_INST, input.slice(pos - 2));
       return null;
     }
 
     this.emit(NT_PROC_INST, {
-      contents: input.slice(p, piClose)
+      contents: input.slice(pos, piClose)
     } satisfies SaxophoneProcessingInstruction);
     return piClose + 2;
   }
@@ -225,21 +211,21 @@ export class Saxophone extends EventEmitter {
 
     const isSelfClosing = input.charAt(tagClose - 1) === '/';
     const realTagClose = isSelfClosing ? tagClose - 1 : tagClose;
-    const wsOffset = input.slice(pos).search(WS_SEARCH_REGEX);
+    const wsOffset = input.slice(pos).search(/\s/);
 
     if (wsOffset === -1 || wsOffset >= tagClose - pos) {
       this._handleTagOpening({
+        name: input.slice(pos, realTagClose),
         attrs: '',
-        isSelfClosing,
-        name: input.slice(pos, realTagClose)
+        isSelfClosing
       });
     } else if (wsOffset === 0) {
       return new Error('Tag names may not start with whitespace');
     } else {
       this._handleTagOpening({
+        name: input.slice(pos, pos + wsOffset),
         attrs: input.slice(pos + wsOffset, realTagClose),
-        isSelfClosing,
-        name: input.slice(pos, pos + wsOffset)
+        isSelfClosing
       });
     }
 
@@ -259,20 +245,20 @@ export class Saxophone extends EventEmitter {
   }
 
   private _parseChunk(input: string): Error | null {
-    const data = this._unwait() + input;
+    input = this._unwait() + input;
 
     let pos = 0;
-    const end = data.length;
+    const end = input.length;
 
     while (pos < end) {
-      if (data.charAt(pos) !== '<') {
-        pos = this._emitTextChunk(data, pos);
+      if (input.charAt(pos) !== '<') {
+        pos = this._emitTextChunk(input, pos);
         continue;
       }
 
       pos += 1;
-      const nextChar = data.charAt(pos);
-      const nextPos = this._dispatchTagChunk(data, pos, nextChar);
+      const nextChar = input.charAt(pos);
+      const nextPos = this._dispatchTagChunk(input, pos, nextChar);
       if (nextPos === null) {
         break;
       }
@@ -288,9 +274,7 @@ export class Saxophone extends EventEmitter {
   /** Write a string chunk into the parser. */
   write(chunk: string): this {
     const err = this._parseChunk(chunk);
-    if (err) {
-      this.emit('error', err);
-    }
+    if (err) this.emit('error', err);
     return this;
   }
 
@@ -304,28 +288,21 @@ export class Saxophone extends EventEmitter {
 
     if (this._waiting !== null) {
       switch (this._waiting.token) {
-        case NT_TEXT: {
-          this.emit(NT_TEXT, {
-            contents: this._waiting.data
-          } satisfies SaxophoneText);
+        case NT_TEXT:
+          this.emit(NT_TEXT, { contents: this._waiting.data } satisfies SaxophoneText);
           break;
-        }
-        case NT_CDATA: {
+        case NT_CDATA:
           this.emit('error', new Error('Unclosed CDATA section'));
           return this;
-        }
-        case NT_COMMENT: {
+        case NT_COMMENT:
           this.emit('error', new Error('Unclosed comment'));
           return this;
-        }
-        case NT_PROC_INST: {
+        case NT_PROC_INST:
           this.emit('error', new Error('Unclosed processing instruction'));
           return this;
-        }
-        default: {
+        default:
           this.emit('error', new Error('Unclosed tag'));
           return this;
-        }
       }
     }
 

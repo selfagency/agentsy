@@ -6,24 +6,15 @@ import path from 'node:path';
 const packagesDir = 'packages';
 const files = fs.readdirSync(packagesDir);
 
-for (const file of files) {
+files.forEach(file => {
   const filePath = path.join(packagesDir, file, 'CHANGELOG.md');
-  const normalizedPath = path.normalize(filePath);
-
-  // Validate path stays within packagesDir to prevent path traversal
-  if (!normalizedPath.startsWith(path.normalize(packagesDir))) {
-    console.error(`Invalid path: ${filePath} escaped allowed directory`);
-    continue;
-  }
-
   if (fs.existsSync(filePath) && !file.startsWith('.')) {
-    // nosemgrep: typescript.lang.security.detect-non-literal-fs-filename -- path is from fs.readdirSync of own packages dir, not user input
-    let content = fs.readFileSync(filePath, 'utf-8');
+    let content = fs.readFileSync(filePath, 'utf8');
     // Add angle brackets around GitHub URLs in commit references
-    content = content.replaceAll(
-      /by @selfagency in (https:\/\/github\.com\/selfagency\/agentsy\/pull\/\d+)/gu,
+    content = content.replace(
+      /by @selfagency in (https:\/\/github\.com\/selfagency\/agentsy\/pull\/\d+)/g,
       'by @selfagency in <$1>'
     );
     fs.writeFileSync(filePath, content);
   }
-}
+});

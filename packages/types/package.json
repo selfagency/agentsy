@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/selfagency/agentsy/issues"
   },
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "author": "Daniel Sieradski <daniel@self.agency>",
   "repository": {
     "type": "git",
@@ -33,8 +33,8 @@
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "biome lint",
-    "format": "biome format",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
     "test": "vitest --typecheck run",
     "coverage": "vitest --typecheck run --coverage"
   },
@@ -42,7 +42,7 @@
     "type-fest": "5.6.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.0",
+    "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",

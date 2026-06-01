@@ -1,28 +1,25 @@
 import type { FinishReason } from '@agentsy/types';
-
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 
 const DEEPSEEK_FINISH_REASON_MAP: Record<string, FinishReason> = {
-  content_filter: 'content-filter',
-  insufficient_balance: 'error',
-  length: 'length',
   stop: 'stop',
-  tool_calls: 'tool-calls'
+  tool_calls: 'tool-calls',
+  length: 'length',
+  content_filter: 'content-filter',
+  insufficient_balance: 'error'
 };
 
 interface DeepSeekToolCallDeltaRaw {
+  index: number;
+  id?: string;
   function?: {
     name?: string;
     arguments?: string;
   };
-  id?: string;
-  index: number;
 }
 
 function mapDeepSeekFinishReason(reason: string | null | undefined): FinishReason | undefined {
-  if (!reason) {
-    return;
-  }
+  if (!reason) return undefined;
   return DEEPSEEK_FINISH_REASON_MAP[reason] ?? 'other';
 }
 
@@ -44,21 +41,13 @@ function toNativeToolCallDelta(raw: DeepSeekToolCallDeltaRaw): NativeToolCallDel
 }
 
 function normalizeUsage(raw: unknown): UsageInfo | undefined {
-  if (raw === null || typeof raw !== 'object') {
-    return;
-  }
+  if (raw === null || typeof raw !== 'object') return undefined;
   const usage = raw as Record<string, unknown>;
 
   const out: UsageInfo = {};
-  if (typeof usage.prompt_tokens === 'number') {
-    out.inputTokens = usage.prompt_tokens;
-  }
-  if (typeof usage.completion_tokens === 'number') {
-    out.outputTokens = usage.completion_tokens;
-  }
-  if (typeof usage.total_tokens === 'number') {
-    out.totalTokens = usage.total_tokens;
-  }
+  if (typeof usage.prompt_tokens === 'number') out.inputTokens = usage.prompt_tokens;
+  if (typeof usage.completion_tokens === 'number') out.outputTokens = usage.completion_tokens;
+  if (typeof usage.total_tokens === 'number') out.totalTokens = usage.total_tokens;
 
   return Object.keys(out).length > 0 ? out : undefined;
 }
@@ -68,21 +57,13 @@ function normalizeUsage(raw: unknown): UsageInfo | undefined {
  * Compatible with DeepSeek-V3 and DeepSeek-R1 (using reasoning_content).
  */
 export function normalizeDeepSeekChunk(raw: unknown): NormalizerResult | null {
-  if (raw === null || typeof raw !== 'object') {
-    return null;
-  }
+  if (raw === null || typeof raw !== 'object') return null;
   const data = raw as Record<string, unknown>;
 
-  const { choices } = data;
-  if (!Array.isArray(choices) || choices.length === 0) {
-    return null;
-  }
+  const choices = data.choices;
+  if (!Array.isArray(choices) || choices.length === 0) return null;
 
-  const rawChoice = choices[0];
-  if (rawChoice === null || typeof rawChoice !== 'object') {
-    return null;
-  }
-  const choice = rawChoice as Record<string, unknown>;
+  const choice = choices[0] as Record<string, unknown>;
   const delta = (choice.delta as Record<string, unknown>) || {};
 
   const content = typeof delta.content === 'string' ? delta.content : undefined;
@@ -99,11 +80,11 @@ export function normalizeDeepSeekChunk(raw: unknown): NormalizerResult | null {
   return {
     chunk: {
       content,
-      done: finishReason !== undefined,
-      finishReason,
-      nativeToolCallDeltas,
       thinking,
-      usage
+      nativeToolCallDeltas,
+      finishReason,
+      usage,
+      done: finishReason !== undefined
     },
     rawEvent: raw
   };

@@ -139,9 +139,7 @@ async function runFullWorkflow(): Promise<void> {
     } catch (_error) {
       // 6) recovery + continuation
       const snapshot = captureStreamState(processor);
-      const continuationMessages = buildContinuationPrompt(snapshot, {
-        provider: 'openai'
-      });
+      const continuationMessages = buildContinuationPrompt(snapshot, { provider: 'openai' });
       for await (const chunk of executeProviderStream([...messages, ...continuationMessages])) {
         const output = processor.process(chunk);
         if (output.content) {

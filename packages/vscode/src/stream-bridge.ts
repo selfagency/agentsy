@@ -1,7 +1,6 @@
 import type { StreamChunk } from '@agentsy/core/processor';
-
 import { mapStreamChunkToVsCode } from './message-conversion/helpers.js';
-import type { LanguageModelChatResponseChunk } from './provider/base-language-model-chat-provider.js';
+import type { LanguageModelChatResponseChunk } from './provider/index.js';
 
 export interface VSCodeStreamBridgeOptions {
   /**
@@ -21,11 +20,7 @@ export interface VSCodeStreamBridgeOptions {
  * synchronous VS Code LanguageModelChatProvider response stream.
  */
 export class VSCodeStreamBridge {
-  private readonly options: VSCodeStreamBridgeOptions;
-
-  constructor(options: VSCodeStreamBridgeOptions) {
-    this.options = options;
-  }
+  constructor(private readonly options: VSCodeStreamBridgeOptions) {}
 
   /**
    * Processes an @agentsy/core StreamChunk and surfaces it to VS Code.

@@ -3,14 +3,14 @@ import { parseJson } from '@agentsy/core/structured';
 
 export interface VSCodeToolCallPartLike {
   callId: string;
-  input: Record<string, unknown>;
   name: string;
+  input: Record<string, unknown>;
 }
 
 interface PendingDeltaCall {
-  argumentsBuffer: string;
   id?: string;
   name?: string;
+  argumentsBuffer: string;
 }
 
 /**
@@ -27,8 +27,8 @@ export function toVSCodeToolCallPart(
 
   return {
     callId: part.call.id ?? fallbackCallId,
-    input: part.call.parameters,
-    name: part.call.name
+    name: part.call.name,
+    input: part.call.parameters
   };
 }
 
@@ -41,9 +41,7 @@ export class ToolCallDeltaAccumulator {
   add(delta: Extract<OutputPart, { type: 'tool_call_delta' }>): void {
     const existing = this.calls.get(delta.index);
     if (existing !== undefined) {
-      if (delta.id !== undefined) {
-        existing.id = delta.id;
-      }
+      if (delta.id !== undefined) existing.id = delta.id;
       existing.name = delta.name;
       existing.argumentsBuffer += delta.argumentsDelta;
       return;
@@ -51,8 +49,8 @@ export class ToolCallDeltaAccumulator {
 
     this.calls.set(delta.index, {
       ...(delta.id === undefined ? {} : { id: delta.id }),
-      argumentsBuffer: delta.argumentsDelta,
-      name: delta.name
+      name: delta.name,
+      argumentsBuffer: delta.argumentsDelta
     });
   }
 
@@ -70,8 +68,8 @@ export class ToolCallDeltaAccumulator {
 
       parts.push({
         callId: fallbackId,
-        input: parsed,
-        name: fallbackName
+        name: fallbackName,
+        input: parsed
       });
     }
 
@@ -100,9 +98,7 @@ export class ToolCallDeltaAccumulator {
     }
 
     if (!repairIncomplete) {
-      onWarning?.('Malformed tool_call_delta arguments; using empty input.', {
-        index
-      });
+      onWarning?.('Malformed tool_call_delta arguments; using empty input.', { index });
       return {};
     }
 
@@ -111,15 +107,13 @@ export class ToolCallDeltaAccumulator {
       return repaired;
     }
 
-    onWarning?.('Unable to repair malformed tool_call_delta arguments; using empty input.', {
-      index
-    });
+    onWarning?.('Unable to repair malformed tool_call_delta arguments; using empty input.', { index });
     return {};
   }
 
   private parseStrictJsonObject(value: string): Record<string, unknown> | null {
     try {
-      const json = JSON.parse(value) as unknown;
+      const json = JSON.parse(value);
       return this.asObjectRecord(json);
     } catch {
       return null;

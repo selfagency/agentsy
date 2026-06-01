@@ -1,8 +1,6 @@
 import { createContext, runInContext } from 'node:vm';
 import { parentPort, workerData } from 'node:worker_threads';
 
-import type { WorkerOutputMessage, WorkerResultMessage, WorkerRuntimeErrorMessage } from './worker-messages.js';
-
 if (parentPort === null) {
   process.exit(1);
 }
@@ -13,25 +11,13 @@ const { code, env, timeout } = workerData as {
   timeout: number;
 };
 
-function sendMessage(message: WorkerOutputMessage): void {
-  parentPort?.postMessage(message);
-}
-
 // Create a safe realm
 const context = createContext({
   console: {
-    error: (...args: unknown[]) => {
-      sendMessage({ args, type: 'error' });
-    },
-    info: (...args: unknown[]) => {
-      sendMessage({ args, type: 'info' });
-    },
-    log: (...args: unknown[]) => {
-      sendMessage({ args, type: 'log' });
-    },
-    warn: (...args: unknown[]) => {
-      sendMessage({ args, type: 'warn' });
-    }
+    log: (...args: unknown[]) => parentPort?.postMessage({ type: 'log', args }),
+    error: (...args: unknown[]) => parentPort?.postMessage({ type: 'error', args }),
+    warn: (...args: unknown[]) => parentPort?.postMessage({ type: 'warn', args }),
+    info: (...args: unknown[]) => parentPort?.postMessage({ type: 'info', args })
   },
   process: {
     env: Object.freeze({ ...env })
@@ -45,24 +31,20 @@ const context = createContext({
 Object.freeze(context);
 
 try {
-  // nosemgrep: dangerous-sandbox-run-in-context
-  // runInContext executes user-provided code inside a hardened vm.Context with
-  // no Node builtins, no require, no filesystem, and a frozen global object.
-  // Timeout and worker.terminate() provide defense-in-depth.
-  const result: unknown = runInContext(code, context, {
-    displayErrors: true,
-    timeout // vm timeout provides a first layer, but worker.terminate() is the fallback
+  // Wrap code to support implicit return if it's a simple expression,
+  // or just run as-is if it's a block.
+  const result = runInContext(code, context, {
+    timeout, // vm timeout provides a first layer, but worker.terminate() is the fallback
+    displayErrors: true
   });
 
-  const resultMessage: WorkerResultMessage = { type: 'result', value: result };
-  parentPort.postMessage(resultMessage);
+  parentPort.postMessage({ type: 'result', value: result });
 } catch (error) {
   const errorPayload =
     error instanceof Error ? { message: error.message, stack: error.stack } : { message: String(error) };
 
-  const runtimeError: WorkerRuntimeErrorMessage = {
-    args: [errorPayload.message],
-    type: 'runtime-error'
-  };
-  parentPort.postMessage(runtimeError);
+  parentPort.postMessage({
+    type: 'runtime-error',
+    args: [errorPayload.message]
+  });
 }

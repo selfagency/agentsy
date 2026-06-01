@@ -17,8 +17,8 @@ interface ResolveConflictOptions {
 }
 
 const DEFAULT_WIKI_FIELD_PRECEDENCE = {
-  content: 'remote',
   metadata: 'local',
+  content: 'remote',
   relationships: 'local',
   vectorFingerprint: 'remote'
 } as const;
@@ -30,11 +30,11 @@ function createRecordKey(record: Pick<SyncRecord, 'id' | 'tier'>): string {
 function createConflictId(local: SyncRecord, remote: SyncRecord): string {
   const source = JSON.stringify({
     id: local.id,
-    localContent: local.content,
+    tier: local.tier,
     localUpdatedAt: local.updatedAt,
-    remoteContent: remote.content,
     remoteUpdatedAt: remote.updatedAt,
-    tier: local.tier
+    localContent: local.content,
+    remoteContent: remote.content
   });
 
   return `sha256:${createHash('sha256').update(source).digest('hex')}`;
@@ -63,7 +63,7 @@ function mergeWikiConflict(conflict: ConflictRecord, options: ResolveConflictOpt
   const { local, remote } = conflict;
   const metadata = precedence.metadata === 'local' ? local.metadata : remote.metadata;
   const relationships =
-    precedence.relationships === 'local' ? [...(local.relationships ?? [])] : [...(remote.relationships ?? [])];
+    precedence.relationships === 'local' ? (local.relationships ?? []).slice() : (remote.relationships ?? []).slice();
   const vectorFingerprint =
     precedence.vectorFingerprint === 'local' ? local.vectorFingerprint : remote.vectorFingerprint;
 
@@ -94,13 +94,13 @@ export function collectConflicts(
     }
 
     conflicts.push({
-      detectedAt,
       id: createConflictId(local, remote),
-      local,
-      policy,
       recordId: local.id,
+      tier: local.tier,
+      local,
       remote,
-      tier: local.tier
+      detectedAt,
+      policy
     });
   }
 
@@ -114,45 +114,33 @@ export function resolveConflict(
 ): ConflictResolutionResult {
   if (policy === 'manualRequired') {
     return {
+      status: 'manual',
       policy,
-      record: null,
-      status: 'manual'
+      record: null
     };
   }
 
   if (policy === 'localWins') {
-    return {
-      policy,
-      record: chooseRecord('local', conflict.local, conflict.remote),
-      status: 'resolved'
-    };
+    return { status: 'resolved', policy, record: chooseRecord('local', conflict.local, conflict.remote) };
   }
 
   if (policy === 'remoteWins') {
-    return {
-      policy,
-      record: chooseRecord('remote', conflict.local, conflict.remote),
-      status: 'resolved'
-    };
+    return { status: 'resolved', policy, record: chooseRecord('remote', conflict.local, conflict.remote) };
   }
 
   if (policy === 'fieldMerge' && conflict.tier === 'wiki') {
-    return {
-      policy,
-      record: mergeWikiConflict(conflict, options),
-      status: 'resolved'
-    };
+    return { status: 'resolved', policy, record: mergeWikiConflict(conflict, options) };
   }
 
   const localTime = Date.parse(conflict.local.updatedAt);
   const remoteTime = Date.parse(conflict.remote.updatedAt);
 
   return {
+    status: 'resolved',
     policy,
     record:
       localTime > remoteTime
         ? chooseRecord('local', conflict.local, conflict.remote)
-        : chooseRecord('remote', conflict.local, conflict.remote),
-    status: 'resolved'
+        : chooseRecord('remote', conflict.local, conflict.remote)
   };
 }

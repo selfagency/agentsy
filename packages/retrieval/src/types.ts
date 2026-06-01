@@ -1,43 +1,43 @@
 export type ChunkingStrategy = 'semantic' | 'fixed' | 'ast';
 
 export interface Chunk {
-  content: string;
   id: string;
+  content: string;
   metadata: ChunkMetadata;
 }
 
 export interface ChunkMetadata {
-  createdAt?: Date;
-  endLine: number;
-  language?: string;
   source: string;
   startLine: number;
+  endLine: number;
   strategy: ChunkingStrategy;
+  language?: string;
+  createdAt?: Date;
   updatedAt?: Date;
 }
 
 export const _Chunk: Chunk = {
-  content: '',
   id: '',
+  content: '',
   metadata: {
-    endLine: 1,
     source: '',
     startLine: 1,
+    endLine: 1,
     strategy: 'semantic'
   }
 };
 
 export const _ChunkMetadata: ChunkMetadata = {
-  endLine: 1,
   source: '',
   startLine: 1,
+  endLine: 1,
   strategy: 'semantic'
 };
 
 export interface DataSource {
-  content?: string;
-  path?: string;
   type: 'file' | 'url' | 'repository' | 'database';
+  path?: string;
+  content?: string;
 }
 
 export const _DataSource: DataSource = {
@@ -45,10 +45,10 @@ export const _DataSource: DataSource = {
 };
 
 export interface RetrievalQuery {
-  embedding?: number[];
-  minSimilarity?: number;
   query: string;
   topK?: number;
+  minSimilarity?: number;
+  embedding?: number[];
 }
 
 export const _RetrievalQuery: RetrievalQuery = {
@@ -57,41 +57,41 @@ export const _RetrievalQuery: RetrievalQuery = {
 
 export interface SearchResult {
   documents: SearchDocument[];
-  queryTime: number;
   total: number;
+  queryTime: number;
 }
 
 export const _SearchResult: SearchResult = {
   documents: [],
-  queryTime: 0,
-  total: 0
+  total: 0,
+  queryTime: 0
 };
 
 export interface SearchDocument {
-  chunkId?: string;
-  content: string;
   id: string;
+  content: string;
+  chunkId?: string;
   score?: number;
   similarity?: number;
 }
 
 export const _SearchDocument: SearchDocument = {
-  content: '',
-  id: ''
+  id: '',
+  content: ''
 };
 
 export interface Document {
-  chunks: Chunk[];
-  content: string;
   id: string;
-  metadata?: DocumentMetadata;
+  content: string;
+  chunks: Chunk[];
   source?: string;
+  metadata?: DocumentMetadata;
 }
 
 export const _Document: Document = {
-  chunks: [],
+  id: '',
   content: '',
-  id: ''
+  chunks: []
 };
 
 export interface DocumentMetadata {
@@ -103,7 +103,7 @@ export interface DocumentMetadata {
 export const _DocumentMetadata: DocumentMetadata = {};
 
 export const ChunkingStrategy = {
-  AST: 'ast',
+  SEMANTIC: 'semantic',
   FIXED: 'fixed',
-  SEMANTIC: 'semantic'
+  AST: 'ast'
 } as const;

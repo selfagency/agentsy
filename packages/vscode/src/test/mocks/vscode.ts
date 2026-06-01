@@ -47,40 +47,24 @@ export class Uri {
 }
 
 export class ChatResponseProgressPart {
-  public value: string;
-
-  constructor(value: string) {
-    this.value = value;
-  }
+  constructor(public value: string) {}
 }
 
 export class Location {
-  public uri: Uri;
-  public range: {
-    start: { line: number; character: number };
-    end: { line: number; character: number };
-  };
-
   constructor(
-    uri: Uri,
-    range: {
-      start: { line: number; character: number };
-      end: { line: number; character: number };
-    }
-  ) {
-    this.uri = uri;
-    this.range = range;
-  }
+    public uri: Uri,
+    public range: { start: { line: number; character: number }; end: { line: number; character: number } }
+  ) {}
 }
 
 export interface ChatResponseStream {
+  markdown(value: string | { value: string }): void;
+  progress(value: string): void;
+  reference(value: unknown): void;
   anchor(value: unknown, title?: string): void;
   button(value: unknown): void;
   filetree(dir: unknown, baseUri: unknown): void;
-  markdown(value: string | { value: string }): void;
-  progress(value: string): void;
   push(part: unknown): void;
-  reference(value: unknown): void;
 }
 
 export interface CancellationToken {
@@ -89,10 +73,10 @@ export interface CancellationToken {
 }
 
 export interface ExtensionContext {
-  extensionMode: number;
-  extensionUri: Uri;
-  globalStoragePath: string;
   storagePath: string;
+  globalStoragePath: string;
+  extensionUri: Uri;
+  extensionMode: number;
 }
 
 // Minimal mock interfaces for type compatibility
@@ -115,6 +99,6 @@ export interface ExternalUri {
   uri: string;
 }
 export interface ChatMessage {
-  content: string;
   role: string;
+  content: string;
 }

@@ -1,6 +1,5 @@
 import type { OutputPart, StreamChunk } from '@agentsy/core/processor';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
-
 import type { BaseRendererOptions, RendererHandle } from './types.js';
 
 export function createStepChangeEmitter(
@@ -38,7 +37,7 @@ export function createSharedRendererHandle(
   const { processor, onFinish } = options;
 
   // Create processor if not provided (owns it internally)
-  const llmProcessor = processor ?? new LLMStreamProcessor();
+  const llmProcessor = processor || new LLMStreamProcessor();
 
   // Guard flag to prevent double onFinish callback invocation
   let finished = false;
@@ -70,39 +69,11 @@ export function createSharedRendererHandle(
           }
           break;
         }
-        default: {
-          break;
-        }
       }
     }
   }
 
   return {
-    async end(): Promise<void> {
-      try {
-        const result = llmProcessor.flush();
-        await processParts(result.parts);
-        await emitStepChange(result);
-
-        // Fire onFinish if not already fired in writeChunk
-        if (!finished && onFinish) {
-          finished = true;
-          await onFinish(result.finishReason, result.usage);
-        }
-
-        // Call stream-specific end handler if provided
-        if (handlers.onEnd) {
-          await handlers.onEnd();
-        }
-      } catch (error) {
-        if (onError && error instanceof Error) {
-          onError(error);
-        } else {
-          throw error;
-        }
-      }
-    },
-
     async write(chunk: string): Promise<void> {
       try {
         const result = llmProcessor.process({ content: chunk });
@@ -126,6 +97,31 @@ export function createSharedRendererHandle(
         if (chunk.done === true && !finished && onFinish) {
           finished = true;
           await onFinish(chunk.finishReason, chunk.usage);
+        }
+      } catch (error) {
+        if (onError && error instanceof Error) {
+          onError(error);
+        } else {
+          throw error;
+        }
+      }
+    },
+
+    async end(): Promise<void> {
+      try {
+        const result = llmProcessor.flush();
+        await processParts(result.parts);
+        await emitStepChange(result);
+
+        // Fire onFinish if not already fired in writeChunk
+        if (!finished && onFinish) {
+          finished = true;
+          await onFinish(result.finishReason, result.usage);
+        }
+
+        // Call stream-specific end handler if provided
+        if (handlers.onEnd) {
+          await handlers.onEnd();
         }
       } catch (error) {
         if (onError && error instanceof Error) {

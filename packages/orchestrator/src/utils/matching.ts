@@ -1,23 +1,23 @@
 import type { Skill } from '../types/index.js';
 
 export interface SkillMatchResult {
+  score: number;
   matchedSkills: string[];
   missingSkills: string[];
-  proficiencyGaps: {
+  proficiencyGaps: Array<{
     skill: string;
     required: string;
     available: string;
-  }[];
-  score: number;
+  }>;
 }
 
 export type ProficiencyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 
 export const SkillProfiler: Record<ProficiencyLevel, number> = {
-  advanced: 3,
   beginner: 1,
-  expert: 4,
-  intermediate: 2
+  intermediate: 2,
+  advanced: 3,
+  expert: 4
 };
 
 function compareProficiency(required: string, available: string): number {
@@ -35,11 +35,11 @@ export function matchRequirements(required: Skill[], available: Skill[]): SkillM
   const skillMap = new Map(available.map(skill => [skill.name, skill]));
   const matchedSkills: string[] = [];
   const missingSkills: string[] = [];
-  const proficiencyGaps: {
+  const proficiencyGaps: Array<{
     skill: string;
     required: string;
     available: string;
-  }[] = [];
+  }> = [];
 
   let totalScore = 0;
 
@@ -51,9 +51,9 @@ export function matchRequirements(required: Skill[], available: Skill[]): SkillM
       const proficiencyGap = compareProficiency(req.proficiency, availableSkill.proficiency);
       if (proficiencyGap < 0) {
         proficiencyGaps.push({
-          available: availableSkill.proficiency,
+          skill: req.name,
           required: req.proficiency,
-          skill: req.name
+          available: availableSkill.proficiency
         });
       }
 
@@ -70,27 +70,27 @@ export function matchRequirements(required: Skill[], available: Skill[]): SkillM
   const averageScore = required.length > 0 ? totalScore / required.length : 0;
 
   return {
+    score: averageScore,
     matchedSkills,
     missingSkills,
-    proficiencyGaps,
-    score: averageScore
+    proficiencyGaps
   };
 }
 
 export function findBestMatches(
   requirements: Skill[],
-  candidates: { id: string; skills: Skill[]; score?: number }[]
-): { id: string; score: number; match: SkillMatchResult }[] {
+  candidates: Array<{ id: string; skills: Skill[]; score?: number }>
+): Array<{ id: string; score: number; match: SkillMatchResult }> {
   return candidates
     .map(candidate => ({
       id: candidate.id,
-      match: matchRequirements(requirements, candidate.skills),
-      score: 0
+      score: 0,
+      match: matchRequirements(requirements, candidate.skills)
     }))
     .map(item => ({
       ...item,
       score: item.match.score
     }))
     .filter(item => item.score > 0)
-    .toSorted((a, b) => b.score - a.score);
+    .sort((a, b) => b.score - a.score);
 }

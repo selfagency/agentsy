@@ -6,56 +6,39 @@ describe('sync integrity helpers', () => {
   it('validates a well-formed remote snapshot', () => {
     const snapshot = {
       cursor: 'cursor-1',
-      records: [
-        {
-          content: 'value-1',
-          id: 'record-1',
-          tier: 'wiki',
-          updatedAt: '2026-05-15T00:00:00.000Z'
-        }
-      ]
+      records: [{ id: 'record-1', tier: 'wiki', updatedAt: '2026-05-15T00:00:00.000Z', content: 'value-1' }]
     };
 
-    expect(validateRemoteSnapshot(snapshot)).toStrictEqual({
-      errors: [],
-      valid: true
-    });
+    expect(validateRemoteSnapshot(snapshot)).toEqual({ valid: true, errors: [] });
   });
 
   it('rejects malformed remote snapshots', () => {
     expect(
       validateRemoteSnapshot({
         cursor: 42,
-        records: [{ content: 12, id: '', tier: 'broken', updatedAt: 'nope' }]
+        records: [{ id: '', tier: 'broken', updatedAt: 'nope', content: 12 }]
       })
-    ).toStrictEqual({
+    ).toEqual({
+      valid: false,
       errors: expect.arrayContaining([
         expect.stringMatching(/cursor/u),
         expect.stringMatching(/id/u),
         expect.stringMatching(/tier/u),
         expect.stringMatching(/updatedAt/u),
         expect.stringMatching(/content/u)
-      ]) as unknown,
-      valid: false
+      ])
     });
   });
 
   it('computes and verifies checksums', () => {
     const payload = {
       cursor: 'cursor-1',
-      records: [
-        {
-          content: 'value-1',
-          id: 'record-1',
-          tier: 'wiki',
-          updatedAt: '2026-05-15T00:00:00.000Z'
-        }
-      ]
+      records: [{ id: 'record-1', tier: 'wiki', updatedAt: '2026-05-15T00:00:00.000Z', content: 'value-1' }]
     };
     const checksum = computeSyncChecksum(payload);
 
-    expect(verifySyncChecksum(payload, checksum)).toBeTruthy();
-    expect(verifySyncChecksum(payload, 'sha256:tampered')).toBeFalsy();
+    expect(verifySyncChecksum(payload, checksum)).toBe(true);
+    expect(verifySyncChecksum(payload, 'sha256:tampered')).toBe(false);
   });
 
   it('deep-clones nested metadata in snapshots', () => {
@@ -63,23 +46,19 @@ describe('sync integrity helpers', () => {
       cursor: 'cursor-1',
       records: [
         {
-          content: 'value-1',
           id: 'record-1',
-          metadata: { nested: { value: 'original' } },
           tier: 'wiki' as const,
-          updatedAt: '2026-05-15T00:00:00.000Z'
+          updatedAt: '2026-05-15T00:00:00.000Z',
+          content: 'value-1',
+          metadata: { nested: { value: 'original' } }
         }
       ]
     };
 
     const clone = cloneSyncSnapshot(snapshot);
-    const record = snapshot.records[0] as {
-      metadata: { nested: { value: string } };
-    };
+    const record = snapshot.records[0] as { metadata: { nested: { value: string } } };
     record.metadata.nested.value = 'mutated';
 
-    expect(clone.records[0]?.metadata).toMatchObject({
-      nested: { value: 'original' }
-    });
+    expect(clone.records[0]?.metadata).toMatchObject({ nested: { value: 'original' } });
   });
 });

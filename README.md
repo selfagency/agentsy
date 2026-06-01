@@ -4,13 +4,13 @@ Composable infrastructure for LLM and agentic systems.
 
 Agentsy is a pnpm/turborepo monorepo of focused `@agentsy/*` packages for stream processing, provider integration, orchestration/runtime execution, state/memory systems, and integration surfaces.
 
-[![Tests](https://github.com/selfagency/agentsy/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/agentsy/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/selfagency/agentsy/graph/badge.svg?token=4U6b4yU5Ln)](https://codecov.io/gh/selfagency/agentsy) [![License: GPL-3.0-or-later](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+[![Tests](https://github.com/selfagency/agentsy/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/agentsy/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/selfagency/agentsy/graph/badge.svg?token=4U6b4yU5Ln)](https://codecov.io/gh/selfagency/agentsy) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 
 ## Current repository state
 
 This workspace currently contains:
 
-- **24 manifest-backed packages** (have `package.json` and build/test surfaces)
+- **23 manifest-backed packages** (have `package.json` and build/test surfaces)
 - **0 plan-only package domains** (all domains have been promoted)
 
 ### Manifest-backed packages
@@ -21,7 +21,6 @@ This workspace currently contains:
 - `@agentsy/guardrails`
 - `@agentsy/mcp`
 - `@agentsy/memory`
-- `@agentsy/gateway`
 - `@agentsy/observability`
 - `@agentsy/orchestrator`
 - `@agentsy/plugins`
@@ -76,12 +75,7 @@ pnpm format
 - [Architecture overview](./docs/architecture/index.md)
 - [Roadmap](./docs/roadmap.md)
 - [Developer docs](./docs/developers/index.md)
-- [Dogfood implementation plan](./plan/DOGFOOD-PLAN.md)
 - [Master implementation plan](./plan/MASTER-IMPLEMENTATION-PLAN.md)
-
-## Dogfood implementation
-
-The repository now follows `plan/DOGFOOD-PLAN.md` as the active production sequence for CLI-first delivery. Start there when implementing the next vertical slice.
 
 ## License
 

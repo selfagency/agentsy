@@ -1,14 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-
-import type { AgentFsLike } from './agentfs-adapter.js';
-import { createAgentFsAdapter } from './agentfs-adapter.js';
+import { createAgentFsAdapter, type AgentFsLike } from './agentfs-adapter.js';
 
 describe('createAgentFsAdapter', () => {
   const mockManager = (): AgentFsLike => ({
-    delete: vi.fn<(path: string) => boolean>(),
-    list: vi.fn<() => { path: string; contentHash: string }[]>(),
-    read: vi.fn<(path: string) => { content: string; contentHash: string } | undefined>(),
-    write: vi.fn<(path: string, content: string) => { contentHash: string }>()
+    read: vi.fn(),
+    write: vi.fn(),
+    delete: vi.fn(),
+    list: vi.fn()
   });
 
   it('should handle successful read', () => {
@@ -16,19 +14,10 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'test.txt';
 
-    // biome-ignore lint: typescript/unbound-method
-    vi.mocked(manager.read).mockReturnValue({
-      content: 'hello',
-      contentHash: 'h1'
-    });
+    vi.mocked(manager.read).mockReturnValue({ content: 'hello', contentHash: 'h1' });
 
     const result = adapter.read({ path });
-    expect(result).toStrictEqual({
-      content: 'hello',
-      contentHash: 'h1',
-      ok: true,
-      path
-    });
+    expect(result).toEqual({ ok: true, path, content: 'hello', contentHash: 'h1' });
   });
 
   it('should handle read failure for missing path', () => {
@@ -36,11 +25,10 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'missing.txt';
 
-    // biome-ignore lint: typescript/unbound-method
-    vi.mocked(manager.read).mockClear();
+    vi.mocked(manager.read).mockReturnValue(undefined);
 
     const result = adapter.read({ path });
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     expect(result.error).toContain('not found');
   });
 
@@ -49,31 +37,28 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'new.txt';
 
-    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.write).mockReturnValue({ contentHash: 'h2' });
 
-    const result = adapter.write({ content: 'world', path });
-    expect(result).toStrictEqual({ contentHash: 'h2', ok: true, path });
+    const result = adapter.write({ path, content: 'world' });
+    expect(result).toEqual({ ok: true, path, contentHash: 'h2' });
   });
 
   it('should handle write errors', () => {
     const manager = mockManager();
     const adapter = createAgentFsAdapter(manager);
 
-    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.write).mockImplementation(() => {
       throw new Error('write failed');
     });
 
-    const result = adapter.write({ content: '...', path: 'fail.txt' });
-    expect(result.ok).toBeFalsy();
+    const result = adapter.write({ path: 'fail.txt', content: '...' });
+    expect(result.ok).toBe(false);
     expect(result.error).toBe('write failed');
 
-    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.write).mockImplementation(() => {
       throw new Error('string error');
     });
-    const result2 = adapter.write({ content: '...', path: 'fail2.txt' });
+    const result2 = adapter.write({ path: 'fail2.txt', content: '...' });
     expect(result2.error).toBe('string error');
   });
 
@@ -82,11 +67,10 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'gone.txt';
 
-    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.delete).mockReturnValue(true);
 
     const result = adapter.delete({ path });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it('should handle delete failure', () => {
@@ -94,23 +78,21 @@ describe('createAgentFsAdapter', () => {
     const adapter = createAgentFsAdapter(manager);
     const path = 'nonexistent.txt';
 
-    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.delete).mockReturnValue(false);
 
     const result = adapter.delete({ path });
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     expect(result.error).toContain('not found');
   });
 
   it('should handle list', () => {
     const manager = mockManager();
     const adapter = createAgentFsAdapter(manager);
-    const entries = [{ contentHash: 'ha', path: 'a.txt' }];
+    const entries = [{ path: 'a.txt', contentHash: 'ha' }];
 
-    // biome-ignore lint: typescript/unbound-method
     vi.mocked(manager.list).mockReturnValue(entries);
 
     const result = adapter.list();
-    expect(result).toStrictEqual({ entries, ok: true });
+    expect(result).toEqual({ ok: true, entries });
   });
 });

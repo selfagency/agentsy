@@ -1,18 +1,11 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  clean: true,
-  dts: true,
-  entry: {
-    index: 'src/index.ts',
-    cli: 'src/cli/index.ts',
-    ink: 'src/ink/index.ts',
-    plain: 'src/plain/index.ts',
-    'streaming-md': 'src/streaming-md/index.ts',
-    adapters: 'src/adapters/index.ts'
-  },
+  entry: { index: 'src/index.ts' },
   format: ['esm', 'cjs'],
+  dts: true,
   sourcemap: true,
+  clean: true,
   splitting: false,
   target: 'es2022'
 });

@@ -5,38 +5,38 @@ import { AgentRegistry } from './registry.js';
 
 function createAgent(overrides: Partial<AgentCapabilities> = {}): AgentCapabilities {
   return {
-    available: overrides.available ?? true,
-    costPerTask: overrides.costPerTask ?? 0.1,
     id: overrides.id ?? 'agent-1',
-    lastSeen: overrides.lastSeen ?? new Date('2026-01-01T00:00:00.000Z'),
-    maxConcurrency: overrides.maxConcurrency ?? 1,
     name: overrides.name ?? 'Agent 1',
     skills: overrides.skills ?? [
       {
-        capabilities: ['summarize'],
-        category: 'nlp',
         id: 'skill-1',
         name: 'summarization',
-        proficiency: 'advanced'
+        category: 'nlp',
+        proficiency: 'advanced',
+        capabilities: ['summarize']
       }
-    ]
+    ],
+    maxConcurrency: overrides.maxConcurrency ?? 1,
+    costPerTask: overrides.costPerTask ?? 0.1,
+    available: overrides.available ?? true,
+    lastSeen: overrides.lastSeen ?? new Date('2026-01-01T00:00:00.000Z')
   };
 }
 
-describe(AgentRegistry, () => {
+describe('AgentRegistry', () => {
   it('registers and unregisters agents and updates skill lookup', () => {
     const registry = new AgentRegistry();
     const agent = createAgent({ id: 'agent-a' });
 
     registry.register(agent);
 
-    expect(registry.getAgent('agent-a')).toStrictEqual(agent);
-    expect(registry.findAgentsBySkill('summarization').map(item => item.id)).toStrictEqual(['agent-a']);
+    expect(registry.getAgent('agent-a')).toEqual(agent);
+    expect(registry.findAgentsBySkill('summarization').map(item => item.id)).toEqual(['agent-a']);
 
     registry.unregister('agent-a');
 
     expect(registry.getAgent('agent-a')).toBeUndefined();
-    expect(registry.findAgentsBySkill('summarization')).toStrictEqual([]);
+    expect(registry.findAgentsBySkill('summarization')).toEqual([]);
   });
 
   it('finds agents by multiple skills with proficiency checks', () => {
@@ -47,18 +47,18 @@ describe(AgentRegistry, () => {
         id: 'agent-expert',
         skills: [
           {
-            capabilities: ['coding'],
-            category: 'language',
             id: 'skill-ts',
             name: 'typescript',
-            proficiency: 'expert'
+            category: 'language',
+            proficiency: 'expert',
+            capabilities: ['coding']
           },
           {
-            capabilities: ['unit-tests'],
-            category: 'quality',
             id: 'skill-test',
             name: 'testing',
-            proficiency: 'advanced'
+            category: 'quality',
+            proficiency: 'advanced',
+            capabilities: ['unit-tests']
           }
         ]
       })
@@ -69,18 +69,18 @@ describe(AgentRegistry, () => {
         id: 'agent-beginner',
         skills: [
           {
-            capabilities: ['coding'],
-            category: 'language',
             id: 'skill-ts-low',
             name: 'typescript',
-            proficiency: 'beginner'
+            category: 'language',
+            proficiency: 'beginner',
+            capabilities: ['coding']
           },
           {
-            capabilities: ['unit-tests'],
-            category: 'quality',
             id: 'skill-test-low',
             name: 'testing',
-            proficiency: 'intermediate'
+            category: 'quality',
+            proficiency: 'intermediate',
+            capabilities: ['unit-tests']
           }
         ]
       })
@@ -91,7 +91,7 @@ describe(AgentRegistry, () => {
       { name: 'testing', proficiency: 'advanced' }
     ]);
 
-    expect(matched.map(item => item.id)).toStrictEqual(['agent-expert']);
+    expect(matched.map(item => item.id)).toEqual(['agent-expert']);
   });
 
   it('updates agent availability and lastSeen', () => {
@@ -100,8 +100,8 @@ describe(AgentRegistry, () => {
 
     registry.register(
       createAgent({
-        available: true,
         id: 'agent-update',
+        available: true,
         lastSeen: originalLastSeen
       })
     );
@@ -109,7 +109,7 @@ describe(AgentRegistry, () => {
     registry.updateAvailability('agent-update', false);
 
     const updated = registry.getAgent('agent-update');
-    expect(updated?.available).toBeFalsy();
+    expect(updated?.available).toBe(false);
     expect(updated?.lastSeen.getTime()).toBeGreaterThanOrEqual(originalLastSeen.getTime());
   });
 });

@@ -1,7 +1,7 @@
 export interface NavigationSystem {
-  getBacklinks(pageId: string): string[];
-  getOutgoing(pageId: string): string[];
   linkPages(fromPageId: string, toPageId: string): void;
+  getOutgoing(pageId: string): string[];
+  getBacklinks(pageId: string): string[];
 }
 
 export function createNavigationSystem(): NavigationSystem {
@@ -19,6 +19,15 @@ export function createNavigationSystem(): NavigationSystem {
   }
 
   return {
+    linkPages(fromPageId: string, toPageId: string) {
+      getOrCreate(fromPageId).add(toPageId);
+      getOrCreate(toPageId);
+    },
+
+    getOutgoing(pageId: string) {
+      return [...(outgoing.get(pageId) ?? new Set<string>())];
+    },
+
     getBacklinks(pageId: string) {
       const backlinks: string[] = [];
 
@@ -29,15 +38,6 @@ export function createNavigationSystem(): NavigationSystem {
       }
 
       return backlinks;
-    },
-
-    getOutgoing(pageId: string) {
-      return [...(outgoing.get(pageId) ?? new Set<string>())];
-    },
-
-    linkPages(fromPageId: string, toPageId: string) {
-      getOrCreate(fromPageId).add(toPageId);
-      getOrCreate(toPageId);
     }
   };
 }

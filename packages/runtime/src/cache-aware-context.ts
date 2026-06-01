@@ -1,36 +1,30 @@
 export interface RuntimeReusableSegment {
   fingerprint: string;
-  invalidations: string[];
   reuseClass: 'hot' | 'warm' | 'cold';
+  invalidations: string[];
 }
 
 export interface BuildRuntimeContextInput {
-  invalidatedKeys?: string[];
   modelFamily: string;
-  reusableSegments: RuntimeReusableSegment[];
   templateVersion: string;
+  reusableSegments: RuntimeReusableSegment[];
+  invalidatedKeys?: string[];
 }
 
 export interface RuntimeContextReuse {
   modelFamily: string;
-  reusedSegments: string[];
   templateVersion: string;
+  reusedSegments: string[];
 }
 
 function reusePriority(reuseClass: RuntimeReusableSegment['reuseClass']): number {
   switch (reuseClass) {
-    case 'hot': {
+    case 'hot':
       return 0;
-    }
-    case 'warm': {
+    case 'warm':
       return 1;
-    }
-    case 'cold': {
+    case 'cold':
       return 2;
-    }
-    default: {
-      return 999;
-    }
   }
 }
 
@@ -39,12 +33,12 @@ export function buildRuntimeContext(input: BuildRuntimeContextInput): RuntimeCon
   const reusedSegments = [...input.reusableSegments]
     .filter(segment => segment.reuseClass !== 'cold')
     .filter(segment => segment.invalidations.every(invalidation => !invalidated.has(invalidation)))
-    .toSorted((left, right) => reusePriority(left.reuseClass) - reusePriority(right.reuseClass))
+    .sort((left, right) => reusePriority(left.reuseClass) - reusePriority(right.reuseClass))
     .map(segment => segment.fingerprint);
 
   return {
     modelFamily: input.modelFamily,
-    reusedSegments,
-    templateVersion: input.templateVersion
+    templateVersion: input.templateVersion,
+    reusedSegments
   };
 }

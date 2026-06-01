@@ -1,11 +1,17 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  dts: {
-    resolve: true
-  },
   entry: ['src/index.ts'],
-  external: ['node-fetch'],
   format: ['esm', 'cjs'],
-  target: 'node20'
+  target: 'node20',
+  dts: {
+    resolve: true,
+    tsconfig: {
+      compilerOptions: {
+        declaration: true,
+        moduleResolution: 'bundler'
+      }
+    }
+  },
+  external: ['node-fetch']
 });

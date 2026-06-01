@@ -1,5 +1,4 @@
 import type { ExtensionContext } from 'vscode';
-
 import type { ApiKeyChangeListener, ApiKeyManagerConfig } from '../types/index.js';
 
 /**
@@ -7,24 +6,20 @@ import type { ApiKeyChangeListener, ApiKeyManagerConfig } from '../types/index.j
  * Provides secure storage, retrieval, and change notifications.
  */
 export class ApiKeyManager {
-  private readonly listeners = new Set<ApiKeyChangeListener>();
-  private readonly context: ExtensionContext;
-  private readonly config: ApiKeyManagerConfig;
+  private readonly listeners: Set<ApiKeyChangeListener> = new Set();
   private apiKey: string | undefined;
   private isInitialized = false;
 
-  constructor(context: ExtensionContext, config: ApiKeyManagerConfig) {
-    this.context = context;
-    this.config = config;
-  }
+  constructor(
+    private readonly context: ExtensionContext,
+    private readonly config: ApiKeyManagerConfig
+  ) {}
 
   /**
    * Initialize the manager and load stored API key.
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) {
-      return;
-    }
+    if (this.isInitialized) return;
 
     this.apiKey = await this.context.secrets.get(this.config.secretKey);
     this.isInitialized = true;
@@ -147,9 +142,10 @@ export class ApiKeyManager {
   async _debugShowStoredKey(): Promise<string | undefined> {
     const key = await this.getApiKey();
     if (key) {
-      const masked = key.slice(0, 4) + '*'.repeat(Math.max(0, key.length - 8)) + key.slice(-4);
+      const masked = key.substring(0, 4) + '*'.repeat(Math.max(0, key.length - 8)) + key.substring(key.length - 4);
       return masked;
     }
+    return undefined;
   }
 
   /**
@@ -158,7 +154,7 @@ export class ApiKeyManager {
   private async promptForApiKey(): Promise<string | undefined> {
     const input = await this.promptForInput(
       this.config.displayName,
-      this.config.promptMessage ?? `Enter your ${this.config.displayName}:`,
+      this.config.promptMessage || `Enter your ${this.config.displayName}:`,
       true
     );
     return input;
@@ -171,13 +167,13 @@ export class ApiKeyManager {
     try {
       const { window } = await import('vscode');
       return await window.showInputBox({
-        ignoreFocusOut: true,
+        prompt,
         password,
-        prompt
+        ignoreFocusOut: true
       });
     } catch {
       // Gracefully ignore when vscode is unavailable (e.g., during tests)
-      return;
+      return undefined;
     }
   }
 

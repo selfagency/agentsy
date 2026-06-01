@@ -2,7 +2,7 @@
 goal: @agentsy/cli production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-25
+last_updated: 2026-05-15
 owner: cli-maintainers
 status: In progress
 tags: [feature, architecture, cli, tui, dogfood, production]
@@ -61,22 +61,19 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 
 - GOAL-CLI-002: Core CLI capability completion with oclif command discovery and Rune-style presentation.
 
-| Task         | Description                                                                                                                                                                                                                                                                                                                         | Completed         | Date       |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ---------- |
-| TASK-CLI-004 | Complete interactive shell flows (chat, chooser, panes, approvals, config edit, slash command UX) as oclif commands and command groups. Readline-based chat command built (packages/cli/src/commands/chat.ts) with mock provider support — covers ~10% of full TUI. Need Inked TUI components from @agentsy/renderers for complete. | ⚠️ partial        | 2026-05-25 |
-| TASK-012     | DOGFOOD Phase 2: Add E2E streaming test (packages/cli/src/e2e/chat-streaming.e2e.test.ts) validating streamed output from mock provider through full stack.                                                                                                                                                                         |                   |            |
-| TASK-095     | DOGFOOD Phase 2: Add shared MSW bootstrap and reusable HTTP handlers for provider-facing CLI/runtime integration tests in @agentsy/testing/src/msw/.                                                                                                                                                                                |                   |            |
-| TASK-SIA-014 | SKILLS Phase 7: Add agentsy agents list/show and agentsy skills list/show commands. Add `--agent <id>` flag and `/agent <id>` command.                                                                                                                                                                                       | ?> slash command. |            |
-| TASK-CLI-005 | Implement deterministic headless and JSON operation modes.                                                                                                                                                                                                                                                                          |                   |            |
-| TASK-CLI-006 | Finalize project-aware context insertion (`@`) with budget-aware previews.                                                                                                                                                                                                                                                          |                   |            |
-| TASK-CLI-014 | Add rune-style banner, splash, and motion-safe status components hosted by CLI composition but rendered through `@agentsy/renderers`.                                                                                                                                                                                               |                   |            |
-| TASK-CLI-015 | Implement plugin-backed command discovery, `commands` listing, `version`, `help`, `search`, `which`, and autocomplete surfaces using oclif plugin conventions.                                                                                                                                                                      |                   |            |
-| TASK-CLI-018 | Add bundled-superagent bootstrap so the official plugin is available out of the box but can still be disabled, overridden, or upgraded like any external plugin.                                                                                                                                                                    |                   |            |
-| TASK-CLI-019 | Add `/agent-mode` and startup picker workflows backed by plugin discovery, provenance labels, and persisted default-mode selection.                                                                                                                                                                                                 |                   |            |
-| TASK-CLI-022 | Implement native cmux command surfaces (`/cmux status`, `/cmux workspace`, `/cmux surface`, `/cmux notify`) plus automatic context attachment for terminal panes when running inside cmux.                                                                                                                                          |                   |            |
-| TASK-CLI-023 | Implement sidebar metadata publishing hooks (status/progress/log) mapped to cmux APIs (`set-status`, `set-progress`, `log` / socket equivalents) with feature flags and motion-safe renderer behavior.                                                                                                                              |                   |            |
-| TASK-CLI-027 | Implement cmux-native subagent split orchestration for parallel agents (grid/main-vertical layouts, dynamic resize/reflow, and queued pane creation retries under constrained terminal geometry).                                                                                                                                   |                   |            |
-| TASK-CLI-030 | Implement discovery-gated exposure so `/cmux` commands, menu items, and autocomplete/help entries are shown only when cmux is discovered in the active workspace environment; otherwise keep them suppressed by default.                                                                                                            |                   |            |
+| Task         | Description                                                                                                                                                                                                              | Completed | Date |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
+| TASK-CLI-004 | Complete interactive shell flows (chat, chooser, panes, approvals, config edit, slash command UX) as oclif commands and command groups.                                                                                  |           |      |
+| TASK-CLI-005 | Implement deterministic headless and JSON operation modes.                                                                                                                                                               |           |      |
+| TASK-CLI-006 | Finalize project-aware context insertion (`@`) with budget-aware previews.                                                                                                                                               |           |      |
+| TASK-CLI-014 | Add rune-style banner, splash, and motion-safe status components hosted by CLI composition but rendered through `@agentsy/renderers`.                                                                                    |           |      |
+| TASK-CLI-015 | Implement plugin-backed command discovery, `commands` listing, `version`, `help`, `search`, `which`, and autocomplete surfaces using oclif plugin conventions.                                                           |           |      |
+| TASK-CLI-018 | Add bundled-superagent bootstrap so the official plugin is available out of the box but can still be disabled, overridden, or upgraded like any external plugin.                                                         |           |      |
+| TASK-CLI-019 | Add `/agent-mode` and startup picker workflows backed by plugin discovery, provenance labels, and persisted default-mode selection.                                                                                      |           |      |
+| TASK-CLI-022 | Implement native cmux command surfaces (`/cmux status`, `/cmux workspace`, `/cmux surface`, `/cmux notify`) plus automatic context attachment for terminal panes when running inside cmux.                               |           |      |
+| TASK-CLI-023 | Implement sidebar metadata publishing hooks (status/progress/log) mapped to cmux APIs (`set-status`, `set-progress`, `log` / socket equivalents) with feature flags and motion-safe renderer behavior.                   |           |      |
+| TASK-CLI-027 | Implement cmux-native subagent split orchestration for parallel agents (grid/main-vertical layouts, dynamic resize/reflow, and queued pane creation retries under constrained terminal geometry).                        |           |      |
+| TASK-CLI-030 | Implement discovery-gated exposure so `/cmux` commands, menu items, and autocomplete/help entries are shown only when cmux is discovered in the active workspace environment; otherwise keep them suppressed by default. |           |      |
 
 ### Implementation Phase 3
 
@@ -107,18 +104,6 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 | TASK-CLI-017 | Validate oclif packaging/release hooks, installer/update behavior, and plugin metadata generation.                                                                                                                                  |           |      |
 | TASK-CLI-025 | Harden cmux failure modes (socket permission errors, stale socket path, unsupported methods, mode restrictions) with user-facing diagnostics and non-cmux fallback to standard terminal behavior.                                   |           |      |
 | TASK-CLI-029 | Document and validate interoperability behavior when launched from tmux-compat environments (`TMUX`, `TMUX_PANE`, and forwarded config directories), ensuring deterministic behavior without requiring shadow-config bootstrapping. |           |      |
-
-### Implementation Phase 4.5 — Agent selection and skills CLI commands
-
-- GOAL-CLI-004.5: Add agent mode selection and skills/agents CLI commands.
-
-| Task         | Description                                                                                                                                                          | Completed                                                                                                                                                                   | Date |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| TASK-CLI-034 | Add `--agent <id>` startup flag and `/agent <id>` slash command to select agent mode at launch or mid-session. Integrate with `AgentPickerComponent` from `@agentsy/renderers` for interactive selection when no ID is given. |      |            |
-| TASK-CLI-035 | Add `agentsy agents list` and `agentsy agents show <id>` commands — lists discovered agents with provenance, model preferences, tool access summary.                 |                                                                                                                                                                             |      |
-| TASK-CLI-036 | Add `agentsy skills list` and `agentsy skills show <id>` commands — lists discovered skills with names, descriptions, triggers, activation status.                   |                                                                                                                                                                             |      |
-| TASK-CLI-037 | Wire agent selection into orchestrator's `createAgentSession` — pass selected agent definition at session construction; store user preference in config.             |                                                                                                                                                                             |      |
-| TASK-CLI-038 | Add integration tests: `--agent` flag parsing, `/agent` slash command routing, agent list/show output, skills list/show output, interactive picker flow in TTY mode. |                                                                                                                                                                             |      |
 
 ## 3. Acceptance Criteria
 
@@ -313,16 +298,16 @@ The CLI must handle ANSI sequences correctly, ensuring that streaming output doe
 interface HybridSearchEngine {
   // SQL queries for precise filtering
   sqlQueries: {
-    byProject: "SELECT * FROM documents WHERE project_root = ?";
-    byFileType: "SELECT * FROM documents WHERE file_type = ?";
-    byDependencies: "SELECT * FROM documents WHERE JSON_search(dependencies, ?, ?)";
-    byAccessPattern: "SELECT * FROM documents ORDER BY access_count DESC";
-    byRecency: "SELECT * FROM documents WHERE updated_at > ?";
+    byProject: 'SELECT * FROM documents WHERE project_root = ?';
+    byFileType: 'SELECT * FROM documents WHERE file_type = ?';
+    byDependencies: 'SELECT * FROM documents WHERE JSON_search(dependencies, ?, ?)';
+    byAccessPattern: 'SELECT * FROM documents ORDER BY access_count DESC';
+    byRecency: 'SELECT * FROM documents WHERE updated_at > ?';
   };
 
   // Vector search for semantic similarity
   vectorSearch: {
-    embeddingModel: "text-embedding-3-small" | "local-embeddings";
+    embeddingModel: 'text-embedding-3-small' | 'local-embeddings';
     similarityThreshold: 0.7;
     maxResults: 10;
     rerankByRecency: boolean;
@@ -331,10 +316,10 @@ interface HybridSearchEngine {
 
   // Combined query optimization
   hybridQueries: {
-    semanticPrecise: "Vector + SQL by project/file type";
-    contextualAware: "Vector + conversation history + recent access";
-    dependencyAware: "Vector + import graph + package structure";
-    trending: "Vector + access frequency + recency";
+    semanticPrecise: 'Vector + SQL by project/file type';
+    contextualAware: 'Vector + conversation history + recent access';
+    dependencyAware: 'Vector + import graph + package structure';
+    trending: 'Vector + access frequency + recency';
   };
 }
 ```

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import { createDedupStore } from './dedup-store.js';
 import { fingerprintContent } from './fingerprint.js';
 
@@ -8,7 +7,7 @@ describe('createDedupStore', () => {
     const store = createDedupStore();
     const fp = store.intern('hello');
     expect(fp.algorithm).toBe('blake3');
-    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/u);
+    expect(fp.value).toMatch(/^blake3:[a-f0-9]{64}$/);
   });
 
   it('increments refCount on duplicate intern', () => {
@@ -43,7 +42,7 @@ describe('createDedupStore', () => {
     const store = createDedupStore();
     const fp = store.intern('single');
     const removed = store.release(fp.value);
-    expect(removed).toBeTruthy();
+    expect(removed).toBe(true);
     expect(store.retrieve(fp.value)).toBeUndefined();
     expect(store.size()).toBe(0);
   });
@@ -53,13 +52,13 @@ describe('createDedupStore', () => {
     const fp = store.intern('multi');
     store.intern('multi');
     const removed = store.release(fp.value);
-    expect(removed).toBeFalsy();
+    expect(removed).toBe(false);
     expect(store.retrieve(fp.value)).toBe('multi');
   });
 
   it('release() returns false for unknown fingerprint', () => {
     const store = createDedupStore();
-    expect(store.release('blake3:unknown')).toBeFalsy();
+    expect(store.release('blake3:unknown')).toBe(false);
   });
 
   it('purgeOrphans() removes legacy or corrupted entries with refCount <= 0', () => {
@@ -92,16 +91,12 @@ describe('createDedupStore', () => {
     const values = store
       .entries()
       .map(e => e.content)
-      .toSorted((a, b) => {
-        if (a < b) {
-          return -1;
-        }
-        if (a > b) {
-          return 1;
-        }
+      .sort((a, b) => {
+        if (a < b) return -1;
+        if (a > b) return 1;
         return 0;
       });
-    expect(values).toStrictEqual(['x', 'y']);
+    expect(values).toEqual(['x', 'y']);
   });
 
   it('fingerprint values match fingerprintContent directly', () => {

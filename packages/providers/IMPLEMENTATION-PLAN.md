@@ -1,11 +1,11 @@
 ---
 goal: @agentsy/providers production implementation plan
-version: 1.1
+version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-26
+last_updated: 2026-05-15
 owner: providers-maintainers
 status: In progress
-tags: [feature, architecture, providers, adapters, routing, VERIFIED]
+tags: [feature, architecture, providers, adapters, routing]
 ---
 
 # Introduction
@@ -28,33 +28,25 @@ This plan defines the production implementation order for `@agentsy/providers` a
 
 ## 2. Implementation Steps
 
-### Implementation Phase 0-2 — Provider Request Path ✅ COMPLETE (2026-05-26)
+### Implementation Phase 1
 
-| Task           | Description                                                                 | Completed | Date       |
-| -------------- | --------------------------------------------------------------------------- | --------- | ---------- |
-| TASK-008       | Wire provider request path with stable adapter interface consumed by runtime. Mock provider built in cli (createMockClient). | ✅        | 2026-05-26 |
-| TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.                | ✅        | 2026-05-17 |
-| TASK-PROVIDERS-006 | Implement deterministic mock providers and MSW handler sets for provider API surfaces. | ✅        | 2026-05-17 |
+- GOAL-PROVIDERS-001: Adapter and routing contract stabilization.
 
-## TASK-008: Provider Request Path — ✅ COMPLETE
+| Task               | Description                                                                 | Completed | Date |
+| ------------------ | --------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROVIDERS-001 | Stabilize provider profile/capability schema and routing decision envelope. |           |      |
+| TASK-PROVIDERS-002 | Add typed tests for deterministic fallback and override behavior.           |           |      |
+| TASK-PROVIDERS-003 | Document boundaries with models/core/runtime/secrets packages.              |           |      |
 
-**Evidence:**
+### Implementation Phase 2
 
-- `packages/providers/src/request-path.ts` — full pipeline
-- `packages/providers/src/pipeline/request-handler.ts` — handler factory
-- Request builder + response parser + mock provider
-- Mock provider built in CLI (createMockClient)
+- GOAL-PROVIDERS-002: Core provider implementation completion.
 
-**Verification:** ✅ COMPLETE (verified 2026-05-26 codebase audit)
-
-### Implementation Phase 2.5 — LLM Gateway Integration (DOGFOOD Phase 3.5)
-
-- GOAL-PROVIDERS-002.5: Integrate with `@agentsy/llm-gateway` for multi-provider routing, circuit-breaking, and failover.
-
-| Task               | Description                                                                                                                                                              | Completed | Date |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---- |
-| TASK-LB-010        | Update `packages/cli/src/providers/resolve-provider.ts` to call `createLLMGatewayClient(config)` instead of `createUniversalClient()` directly.                          |           |      |
-| TASK-PROVIDERS-013 | Expose provider metadata (capabilities, auth state, connectivity, protocol family) in structured form consumed by `@agentsy/models` and `@agentsy/renderers` chooser UI. |           |      |
+| Task               | Description                                                                            | Completed | Date |
+| ------------------ | -------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PROVIDERS-004 | Finalize first-party provider adapters and protocol bridges.                           |           |      |
+| TASK-PROVIDERS-005 | Implement retries/timeouts/circuit-breakers and capability probes.                     |           |      |
+| TASK-PROVIDERS-006 | Implement deterministic mock providers and MSW handler sets for provider API surfaces. |           |      |
 
 ### Implementation Phase 3
 
@@ -62,7 +54,6 @@ This plan defines the production implementation order for `@agentsy/providers` a
 
 | Task               | Description                                                                                                            | Completed | Date |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-PROVIDERS-005 | Implement retries/timeouts/circuit-breakers and capability probes.                                                    | ⚠️ partial | 2026-05-17 |
 | TASK-PROVIDERS-007 | Integrate runtime/core streaming and models selection pathways.                                                        |           |      |
 | TASK-PROVIDERS-008 | Add integration tests for provider routing and failover.                                                               |           |      |
 | TASK-PROVIDERS-009 | Emit provider telemetry with redaction-safe defaults through `@agentsy/observability` logger factories (tslog-backed). |           |      |
@@ -205,17 +196,9 @@ interface ProviderStrategy {
 | ------------ | ------------------------ | -------------------------------- | ------------------------ | ------------- | --------------------------------------- |
 | DeepSeek     | OpenAI-compatible        | `tool_calls` + `delta`           | `reasoning_content`      | Yes           | Capture reasoning deltas explicitly     |
 | Kimi         | OpenAI-compatible        | `tool_calls` + `delta` + `index` | N/A                      | Yes           | Preserve delta index ordering           |
-| Qwen         | OpenAI/Ollama-compatible | `tool_calls` + `delta`           | Inline tags in `content` | Partial       | Parse `<think>` from content safely       |
+| Qwen         | OpenAI/Ollama-compatible | `tool_calls` + `delta`           | Inline tags in `content` | Partial       | Parse `<tool_call>` from content safely |
 | Llama (Meta) | OpenAI/Ollama-compatible | `tool_calls` + `delta`           | N/A                      | No            | Standard OpenAI-compatible behavior     |
 | Granite      | OpenAI-compatible        | `tool_calls` + `delta`           | N/A                      | No            | IBM Granite compatibility path          |
-
-### Capability routing metadata
-
-Expose capability metadata per provider/model for the LLM Gateway's routing layer: supported tool types, context window, modalities (text/image/audio), streaming support, rate limits, latency percentile data.
-
-### Cross-ref LLM Gateway
-
-This package provides the model capability metadata that feeds the LLM Gateway's routing decisions. The Gateway does not live in this package — it consumes provider metadata via a narrow interface in @agentsy/types.
 
 ### Internal contract mapping
 
@@ -351,35 +334,35 @@ Implement a first-party provider adapter for fully local inference and embedding
 
 ### Delivery phases
 
-## P1 — Adapter scaffolding + conformance tests
+**P1 — Adapter scaffolding + conformance tests**
 
 - define local adapter interface shared by all local providers
 - add fixture-backed protocol tests for OpenAI-compatible and Ollama-native paths
 
-## P2 — External local adapters
+**P2 — External local adapters**
 
 - implement adapters for Ollama, vLLM, LM Studio, Lemonade, Docker Model Runner, Jan, Apfel
 - include health checks and model discovery contracts
 
-## P2.5 — Runner source adapters
+**P2.5 — Runner source adapters**
 
 - implement Hugging Face/Ollama/open-provider source adapters
 - define retry, checksum validation, and partial-download resume semantics
 - add adapter contracts shared with runtime acquisition service
 
-## P2.6 — llama-swap runtime adapter
+**P2.6 — llama-swap runtime adapter**
 
 - add config rendering for model-to-backend swap rules
 - add request/response compatibility checks for OpenAI and Anthropic endpoints
 - add log and health endpoint wiring for runtime diagnostics
 
-## P3 — node-llama-cpp first-party adapter
+**P3 — node-llama-cpp first-party adapter**
 
 - implement chat/streaming completion path
 - add embeddings support
 - add lifecycle management (`load`, `ready`, `dispose`)
 
-## P4 — Fallback and policy integration
+**P4 — Fallback and policy integration**
 
 - integrate local adapter chain fallback policies
 - expose latency/error/capability metrics to `@agentsy/observability`
@@ -413,19 +396,3 @@ This package should not render UI, but it must make provider refinement possible
 - examples: one end-to-end local-only workflow (Jan/Ollama/vLLM) + one native node-llama-cpp workflow
 - examples: one end-to-end model acquisition workflow (Hugging Face -> GGUF -> agentsy-local-llama)
 - examples: one local hot-swap workflow (llama-swap behind a single OpenAI-compatible endpoint)
-
----
-
-## Verification Criteria
-
-- [ ] Provider request path complete
-- [ ] First-party provider adapters implemented
-- [ ] Retry/timeout/circuit-breaker policies configurable
-- [ ] Capability matrix queryable by models/runtime/orchestrator
-- [ ] Mock providers and MSW handler sets implemented
-- [ ] Provider telemetry emitted through observability
-- [ ] Security constraints satisfied (no plaintext credentials, redaction)
-
----
-
-**Next phase:** Phase 3 (integration and observability wiring)

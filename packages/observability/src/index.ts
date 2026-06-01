@@ -1,5 +1,5 @@
 /**
- * AI Agent Observability Platform
+ * @agentsy/observability - AI Agent Observability Platform
  *
  * OpenTelemetry-compatible observability stack for monitoring agent behavior,
  * cost, and performance across the Agentsy framework.
@@ -41,4 +41,4 @@ export * from './core/logger.js';
 export * from './core/meter.js';
 export * from './core/observability.js';
 export * from './core/tracer.js';
-export type * from './core/types.js';
+export * from './core/types.js';

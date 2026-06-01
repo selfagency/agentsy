@@ -8,8 +8,8 @@ describe('EntityExtractor', () => {
 
     const result = extractor.extract('OAuth works with OpenID Connect and PKCE. Redis caches tokens.');
 
-    expect(result.entities.some(entity => entity.name === 'OAuth')).toBeTruthy();
-    expect(result.entities.every(entity => entity.confidence >= 0 && entity.confidence <= 1)).toBeTruthy();
+    expect(result.entities.some(entity => entity.name === 'OAuth')).toBe(true);
+    expect(result.entities.every(entity => entity.confidence >= 0 && entity.confidence <= 1)).toBe(true);
     expect(result.relationships.length).toBeGreaterThan(0);
   });
 });

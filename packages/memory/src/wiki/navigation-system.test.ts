@@ -9,7 +9,7 @@ describe('NavigationSystem', () => {
     nav.linkPages('a', 'b');
     nav.linkPages('c', 'b');
 
-    expect(nav.getOutgoing('a')).toStrictEqual(['b']);
-    expect(new Set(nav.getBacklinks('b'))).toStrictEqual(new Set(['a', 'c']));
+    expect(nav.getOutgoing('a')).toEqual(['b']);
+    expect(new Set(nav.getBacklinks('b'))).toEqual(new Set(['a', 'c']));
   });
 });

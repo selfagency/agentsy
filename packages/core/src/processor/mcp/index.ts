@@ -1,2 +1,2 @@
-export type { MCPTransport } from './transport.js';
 export { adaptTransportToStream } from './transport.js';
+export type { MCPTransport } from './transport.js';

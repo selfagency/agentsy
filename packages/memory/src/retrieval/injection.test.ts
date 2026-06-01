@@ -6,11 +6,11 @@ describe('memory injection', () => {
   it('formats sanitized memory XML blocks', () => {
     const xml = formatMemoryContextXml([
       {
-        content: '<script>alert(1)</script> OAuth PKCE',
         id: 'r1',
         scope: 'project',
         score: 0.93,
-        title: 'Auth'
+        title: 'Auth',
+        content: '<script>alert(1)</script> OAuth PKCE'
       }
     ]);
 

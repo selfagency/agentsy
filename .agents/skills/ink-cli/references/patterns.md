@@ -7,44 +7,44 @@ Reusable patterns for building common CLI interface elements.
 A selectable list with arrow key navigation.
 
 ```tsx
-import React, { useState } from "react";
-import { Box, Text, useInput } from "ink";
+import React, {useState} from 'react';
+import {Box, Text, useInput} from 'ink';
 
 interface MenuProps {
-  items: string[];
-  onSelect: (item: string) => void;
+	items: string[];
+	onSelect: (item: string) => void;
 }
 
-function Menu({ items, onSelect }: MenuProps) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+function Menu({items, onSelect}: MenuProps) {
+	const [selectedIndex, setSelectedIndex] = useState(0);
 
-  useInput((input, key) => {
-    if (key.upArrow) {
-      setSelectedIndex((i) => (i > 0 ? i - 1 : items.length - 1));
-    }
-    if (key.downArrow) {
-      setSelectedIndex((i) => (i < items.length - 1 ? i + 1 : 0));
-    }
-    if (key.return) {
-      onSelect(items[selectedIndex]);
-    }
-  });
+	useInput((input, key) => {
+		if (key.upArrow) {
+			setSelectedIndex(i => (i > 0 ? i - 1 : items.length - 1));
+		}
+		if (key.downArrow) {
+			setSelectedIndex(i => (i < items.length - 1 ? i + 1 : 0));
+		}
+		if (key.return) {
+			onSelect(items[selectedIndex]);
+		}
+	});
 
-  return (
-    <Box flexDirection="column">
-      {items.map((item, index) => (
-        <Box key={item}>
-          <Text
-            color={selectedIndex === index ? "green" : "white"}
-            bold={selectedIndex === index}
-          >
-            {selectedIndex === index ? "> " : "  "}
-            {item}
-          </Text>
-        </Box>
-      ))}
-    </Box>
-  );
+	return (
+		<Box flexDirection="column">
+			{items.map((item, index) => (
+				<Box key={item}>
+					<Text
+						color={selectedIndex === index ? 'green' : 'white'}
+						bold={selectedIndex === index}
+					>
+						{selectedIndex === index ? '> ' : '  '}
+						{item}
+					</Text>
+				</Box>
+			))}
+		</Box>
+	);
 }
 ```
 
@@ -52,8 +52,8 @@ function Menu({ items, onSelect }: MenuProps) {
 
 ```tsx
 <Menu
-  items={["New Project", "Open Project", "Settings", "Quit"]}
-  onSelect={(item) => console.log(`Selected: ${item}`)}
+	items={['New Project', 'Open Project', 'Settings', 'Quit']}
+	onSelect={item => console.log(`Selected: ${item}`)}
 />
 ```
 
@@ -62,90 +62,90 @@ function Menu({ items, onSelect }: MenuProps) {
 Basic text input with backspace support.
 
 ```tsx
-import React, { useState } from "react";
-import { Box, Text, useInput } from "ink";
+import React, {useState} from 'react';
+import {Box, Text, useInput} from 'ink';
 
 interface TextInputProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  onSubmit?: (value: string) => void;
-  placeholder?: string;
-  mask?: string;
+	label: string;
+	value: string;
+	onChange: (value: string) => void;
+	onSubmit?: (value: string) => void;
+	placeholder?: string;
+	mask?: string;
 }
 
 function TextInput({
-  label,
-  value,
-  onChange,
-  onSubmit,
-  placeholder,
-  mask,
+	label,
+	value,
+	onChange,
+	onSubmit,
+	placeholder,
+	mask,
 }: TextInputProps) {
-  const [cursorPosition, setCursorPosition] = useState(value.length);
+	const [cursorPosition, setCursorPosition] = useState(value.length);
 
-  useInput((input, key) => {
-    if (key.return && onSubmit) {
-      onSubmit(value);
-      return;
-    }
+	useInput((input, key) => {
+		if (key.return && onSubmit) {
+			onSubmit(value);
+			return;
+		}
 
-    if (key.backspace || key.delete) {
-      if (cursorPosition > 0) {
-        const newValue =
-          value.slice(0, cursorPosition - 1) + value.slice(cursorPosition);
-        onChange(newValue);
-        setCursorPosition((p) => p - 1);
-      }
-      return;
-    }
+		if (key.backspace || key.delete) {
+			if (cursorPosition > 0) {
+				const newValue =
+					value.slice(0, cursorPosition - 1) + value.slice(cursorPosition);
+				onChange(newValue);
+				setCursorPosition(p => p - 1);
+			}
+			return;
+		}
 
-    if (key.leftArrow) {
-      setCursorPosition((p) => Math.max(0, p - 1));
-      return;
-    }
+		if (key.leftArrow) {
+			setCursorPosition(p => Math.max(0, p - 1));
+			return;
+		}
 
-    if (key.rightArrow) {
-      setCursorPosition((p) => Math.min(value.length, p + 1));
-      return;
-    }
+		if (key.rightArrow) {
+			setCursorPosition(p => Math.min(value.length, p + 1));
+			return;
+		}
 
-    if (input && !key.ctrl && !key.meta) {
-      const newValue =
-        value.slice(0, cursorPosition) + input + value.slice(cursorPosition);
-      onChange(newValue);
-      setCursorPosition((p) => p + 1);
-    }
-  });
+		if (input && !key.ctrl && !key.meta) {
+			const newValue =
+				value.slice(0, cursorPosition) + input + value.slice(cursorPosition);
+			onChange(newValue);
+			setCursorPosition(p => p + 1);
+		}
+	});
 
-  const displayValue = mask ? mask.repeat(value.length) : value;
-  const showPlaceholder = !value && placeholder;
+	const displayValue = mask ? mask.repeat(value.length) : value;
+	const showPlaceholder = !value && placeholder;
 
-  return (
-    <Box>
-      <Text bold>{label}: </Text>
-      <Box borderStyle="single" paddingX={1}>
-        <Text dimColor={showPlaceholder}>
-          {showPlaceholder ? placeholder : displayValue}
-        </Text>
-        <Text color="green">|</Text>
-      </Box>
-    </Box>
-  );
+	return (
+		<Box>
+			<Text bold>{label}: </Text>
+			<Box borderStyle="single" paddingX={1}>
+				<Text dimColor={showPlaceholder}>
+					{showPlaceholder ? placeholder : displayValue}
+				</Text>
+				<Text color="green">|</Text>
+			</Box>
+		</Box>
+	);
 }
 ```
 
 ### Usage
 
 ```tsx
-const [name, setName] = useState("");
+const [name, setName] = useState('');
 
 <TextInput
-  label="Name"
-  value={name}
-  onChange={setName}
-  onSubmit={(value) => console.log(`Hello, ${value}!`)}
-  placeholder="Enter your name"
+	label="Name"
+	value={name}
+	onChange={setName}
+	onSubmit={value => console.log(`Hello, ${value}!`)}
+	placeholder="Enter your name"
 />;
 ```
 
@@ -154,58 +154,58 @@ const [name, setName] = useState("");
 Visual progress indicator.
 
 ```tsx
-import React from "react";
-import { Box, Text } from "ink";
+import React from 'react';
+import {Box, Text} from 'ink';
 
 interface ProgressBarProps {
-  percent: number;
-  width?: number;
-  character?: string;
-  color?: string;
+	percent: number;
+	width?: number;
+	character?: string;
+	color?: string;
 }
 
 function ProgressBar({
-  percent,
-  width = 40,
-  character = "█",
-  color = "green",
+	percent,
+	width = 40,
+	character = '█',
+	color = 'green',
 }: ProgressBarProps) {
-  const filled = Math.floor((percent / 100) * width);
-  const empty = width - filled;
+	const filled = Math.floor((percent / 100) * width);
+	const empty = width - filled;
 
-  return (
-    <Box>
-      <Text color={color}>{character.repeat(filled)}</Text>
-      <Text dimColor>{"░".repeat(empty)}</Text>
-      <Text> {percent.toFixed(0)}%</Text>
-    </Box>
-  );
+	return (
+		<Box>
+			<Text color={color}>{character.repeat(filled)}</Text>
+			<Text dimColor>{'░'.repeat(empty)}</Text>
+			<Text> {percent.toFixed(0)}%</Text>
+		</Box>
+	);
 }
 ```
 
 ### Animated Progress Example
 
 ```tsx
-import { useState, useEffect } from "react";
+import {useState, useEffect} from 'react';
 
 function AnimatedProgress() {
-  const [progress, setProgress] = useState(0);
+	const [progress, setProgress] = useState(0);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          clearInterval(timer);
-          return 100;
-        }
-        return p + 1;
-      });
-    }, 100);
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setProgress(p => {
+				if (p >= 100) {
+					clearInterval(timer);
+					return 100;
+				}
+				return p + 1;
+			});
+		}, 100);
 
-    return () => clearInterval(timer);
-  }, []);
+		return () => clearInterval(timer);
+	}, []);
 
-  return <ProgressBar percent={progress} />;
+	return <ProgressBar percent={progress} />;
 }
 ```
 
@@ -214,26 +214,26 @@ function AnimatedProgress() {
 Animated loading indicator.
 
 ```tsx
-import React, { useState, useEffect } from "react";
-import { Text } from "ink";
+import React, {useState, useEffect} from 'react';
+import {Text} from 'ink';
 
-function Spinner({ text = "Loading" }: { text?: string }) {
-  const [frame, setFrame] = useState(0);
-  const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+function Spinner({text = 'Loading'}: {text?: string}) {
+	const [frame, setFrame] = useState(0);
+	const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setFrame((f) => (f + 1) % frames.length);
-    }, 80);
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setFrame(f => (f + 1) % frames.length);
+		}, 80);
 
-    return () => clearInterval(timer);
-  }, []);
+		return () => clearInterval(timer);
+	}, []);
 
-  return (
-    <Text>
-      <Text color="green">{frames[frame]}</Text> {text}...
-    </Text>
-  );
+	return (
+		<Text>
+			<Text color="green">{frames[frame]}</Text> {text}...
+		</Text>
+	);
 }
 ```
 
@@ -241,7 +241,7 @@ function Spinner({ text = "Loading" }: { text?: string }) {
 
 ```tsx
 {
-  isLoading && <Spinner text="Fetching data" />;
+	isLoading && <Spinner text="Fetching data" />;
 }
 ```
 
@@ -250,68 +250,68 @@ function Spinner({ text = "Loading" }: { text?: string }) {
 Guided multi-step form flow.
 
 ```tsx
-import React, { useState } from "react";
-import { Box, Text, useInput } from "ink";
+import React, {useState} from 'react';
+import {Box, Text, useInput} from 'ink';
 
 interface WizardStep {
-  id: string;
-  title: string;
-  component: React.ComponentType<{ onNext: () => void; onBack?: () => void }>;
+	id: string;
+	title: string;
+	component: React.ComponentType<{onNext: () => void; onBack?: () => void}>;
 }
 
 interface WizardProps {
-  steps: WizardStep[];
-  onComplete: (data: Record<string, any>) => void;
+	steps: WizardStep[];
+	onComplete: (data: Record<string, any>) => void;
 }
 
-function Wizard({ steps, onComplete }: WizardProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [data, setData] = useState<Record<string, any>>({});
+function Wizard({steps, onComplete}: WizardProps) {
+	const [currentStep, setCurrentStep] = useState(0);
+	const [data, setData] = useState<Record<string, any>>({});
 
-  const handleNext = (stepData?: any) => {
-    if (stepData) {
-      setData((d) => ({ ...d, [steps[currentStep].id]: stepData }));
-    }
+	const handleNext = (stepData?: any) => {
+		if (stepData) {
+			setData(d => ({...d, [steps[currentStep].id]: stepData}));
+		}
 
-    if (currentStep < steps.length - 1) {
-      setCurrentStep((s) => s + 1);
-    } else {
-      onComplete({ ...data, [steps[currentStep].id]: stepData });
-    }
-  };
+		if (currentStep < steps.length - 1) {
+			setCurrentStep(s => s + 1);
+		} else {
+			onComplete({...data, [steps[currentStep].id]: stepData});
+		}
+	};
 
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep((s) => s - 1);
-    }
-  };
+	const handleBack = () => {
+		if (currentStep > 0) {
+			setCurrentStep(s => s - 1);
+		}
+	};
 
-  const StepComponent = steps[currentStep].component;
+	const StepComponent = steps[currentStep].component;
 
-  return (
-    <Box flexDirection="column">
-      {/* Progress */}
-      <Box marginBottom={1}>
-        <Text dimColor>
-          Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
-        </Text>
-      </Box>
+	return (
+		<Box flexDirection="column">
+			{/* Progress */}
+			<Box marginBottom={1}>
+				<Text dimColor>
+					Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
+				</Text>
+			</Box>
 
-      {/* Step content */}
-      <StepComponent
-        onNext={handleNext}
-        onBack={currentStep > 0 ? handleBack : undefined}
-      />
+			{/* Step content */}
+			<StepComponent
+				onNext={handleNext}
+				onBack={currentStep > 0 ? handleBack : undefined}
+			/>
 
-      {/* Navigation help */}
-      <Box marginTop={1}>
-        <Text dimColor>
-          {currentStep > 0 && "← Back  "}
-          Enter → Next
-        </Text>
-      </Box>
-    </Box>
-  );
+			{/* Navigation help */}
+			<Box marginTop={1}>
+				<Text dimColor>
+					{currentStep > 0 && '← Back  '}
+					Enter → Next
+				</Text>
+			</Box>
+		</Box>
+	);
 }
 ```
 
@@ -319,21 +319,21 @@ function Wizard({ steps, onComplete }: WizardProps) {
 
 ```tsx
 const steps = [
-  {
-    id: "name",
-    title: "Project Name",
-    component: ({ onNext }) => <TextInput label="Name" onSubmit={onNext} />,
-  },
-  {
-    id: "type",
-    title: "Project Type",
-    component: ({ onNext }) => (
-      <Menu items={["Web App", "CLI Tool", "Library"]} onSelect={onNext} />
-    ),
-  },
+	{
+		id: 'name',
+		title: 'Project Name',
+		component: ({onNext}) => <TextInput label="Name" onSubmit={onNext} />,
+	},
+	{
+		id: 'type',
+		title: 'Project Type',
+		component: ({onNext}) => (
+			<Menu items={['Web App', 'CLI Tool', 'Library']} onSelect={onNext} />
+		),
+	},
 ];
 
-<Wizard steps={steps} onComplete={(data) => console.log("Created:", data)} />;
+<Wizard steps={steps} onComplete={data => console.log('Created:', data)} />;
 ```
 
 ## Confirmation Dialog
@@ -341,50 +341,50 @@ const steps = [
 Yes/No confirmation prompt.
 
 ```tsx
-import React, { useState } from "react";
-import { Box, Text, useInput } from "ink";
+import React, {useState} from 'react';
+import {Box, Text, useInput} from 'ink';
 
 interface ConfirmProps {
-  message: string;
-  onConfirm: () => void;
-  onCancel: () => void;
+	message: string;
+	onConfirm: () => void;
+	onCancel: () => void;
 }
 
-function Confirm({ message, onConfirm, onCancel }: ConfirmProps) {
-  const [selected, setSelected] = useState<"yes" | "no">("yes");
+function Confirm({message, onConfirm, onCancel}: ConfirmProps) {
+	const [selected, setSelected] = useState<'yes' | 'no'>('yes');
 
-  useInput((input, key) => {
-    if (key.leftArrow || key.rightArrow) {
-      setSelected((s) => (s === "yes" ? "no" : "yes"));
-    }
-    if (key.return) {
-      if (selected === "yes") {
-        onConfirm();
-      } else {
-        onCancel();
-      }
-    }
-  });
+	useInput((input, key) => {
+		if (key.leftArrow || key.rightArrow) {
+			setSelected(s => (s === 'yes' ? 'no' : 'yes'));
+		}
+		if (key.return) {
+			if (selected === 'yes') {
+				onConfirm();
+			} else {
+				onCancel();
+			}
+		}
+	});
 
-  return (
-    <Box flexDirection="column">
-      <Text>{message}</Text>
-      <Box marginTop={1} gap={2}>
-        <Text
-          backgroundColor={selected === "yes" ? "green" : undefined}
-          color={selected === "yes" ? "black" : "white"}
-        >
-          {" Yes "}
-        </Text>
-        <Text
-          backgroundColor={selected === "no" ? "red" : undefined}
-          color={selected === "no" ? "black" : "white"}
-        >
-          {" No "}
-        </Text>
-      </Box>
-    </Box>
-  );
+	return (
+		<Box flexDirection="column">
+			<Text>{message}</Text>
+			<Box marginTop={1} gap={2}>
+				<Text
+					backgroundColor={selected === 'yes' ? 'green' : undefined}
+					color={selected === 'yes' ? 'black' : 'white'}
+				>
+					{' Yes '}
+				</Text>
+				<Text
+					backgroundColor={selected === 'no' ? 'red' : undefined}
+					color={selected === 'no' ? 'black' : 'white'}
+				>
+					{' No '}
+				</Text>
+			</Box>
+		</Box>
+	);
 }
 ```
 
@@ -393,31 +393,31 @@ function Confirm({ message, onConfirm, onCancel }: ConfirmProps) {
 Visual status badges.
 
 ```tsx
-import React from "react";
-import { Text } from "ink";
+import React from 'react';
+import {Text} from 'ink';
 
-type StatusType = "success" | "error" | "warning" | "info" | "pending";
+type StatusType = 'success' | 'error' | 'warning' | 'info' | 'pending';
 
 interface StatusProps {
-  type: StatusType;
-  text: string;
+	type: StatusType;
+	text: string;
 }
 
-const statusConfig: Record<StatusType, { icon: string; color: string }> = {
-  success: { icon: "✓", color: "green" },
-  error: { icon: "✗", color: "red" },
-  warning: { icon: "⚠", color: "yellow" },
-  info: { icon: "ℹ", color: "blue" },
-  pending: { icon: "○", color: "gray" },
+const statusConfig: Record<StatusType, {icon: string; color: string}> = {
+	success: {icon: '✓', color: 'green'},
+	error: {icon: '✗', color: 'red'},
+	warning: {icon: '⚠', color: 'yellow'},
+	info: {icon: 'ℹ', color: 'blue'},
+	pending: {icon: '○', color: 'gray'},
 };
 
-function Status({ type, text }: StatusProps) {
-  const config = statusConfig[type];
-  return (
-    <Text>
-      <Text color={config.color}>{config.icon}</Text> {text}
-    </Text>
-  );
+function Status({type, text}: StatusProps) {
+	const config = statusConfig[type];
+	return (
+		<Text>
+			<Text color={config.color}>{config.icon}</Text> {text}
+		</Text>
+	);
 }
 ```
 
@@ -434,50 +434,50 @@ function Status({ type, text }: StatusProps) {
 Scrollable log output with timestamps.
 
 ```tsx
-import React, { useState, useEffect } from "react";
-import { Static, Text } from "ink";
+import React, {useState, useEffect} from 'react';
+import {Static, Text} from 'ink';
 
 interface LogEntry {
-  id: string;
-  timestamp: Date;
-  level: "info" | "warn" | "error";
-  message: string;
+	id: string;
+	timestamp: Date;
+	level: 'info' | 'warn' | 'error';
+	message: string;
 }
 
-function LogOutput({ entries }: { entries: LogEntry[] }) {
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  };
+function LogOutput({entries}: {entries: LogEntry[]}) {
+	const formatTime = (date: Date) => {
+		return date.toLocaleTimeString('en-US', {
+			hour12: false,
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit',
+		});
+	};
 
-  const getLevelColor = (level: LogEntry["level"]) => {
-    switch (level) {
-      case "error":
-        return "red";
-      case "warn":
-        return "yellow";
-      default:
-        return "white";
-    }
-  };
+	const getLevelColor = (level: LogEntry['level']) => {
+		switch (level) {
+			case 'error':
+				return 'red';
+			case 'warn':
+				return 'yellow';
+			default:
+				return 'white';
+		}
+	};
 
-  return (
-    <Static items={entries}>
-      {(entry) => (
-        <Text key={entry.id}>
-          <Text dimColor>[{formatTime(entry.timestamp)}]</Text>{" "}
-          <Text color={getLevelColor(entry.level)}>
-            {entry.level.toUpperCase()}
-          </Text>{" "}
-          {entry.message}
-        </Text>
-      )}
-    </Static>
-  );
+	return (
+		<Static items={entries}>
+			{entry => (
+				<Text key={entry.id}>
+					<Text dimColor>[{formatTime(entry.timestamp)}]</Text>{' '}
+					<Text color={getLevelColor(entry.level)}>
+						{entry.level.toUpperCase()}
+					</Text>{' '}
+					{entry.message}
+				</Text>
+			)}
+		</Static>
+	);
 }
 ```
 
@@ -486,44 +486,44 @@ function LogOutput({ entries }: { entries: LogEntry[] }) {
 Handle and display errors gracefully.
 
 ```tsx
-import React, { Component, ReactNode } from "react";
-import { Box, Text } from "ink";
+import React, {Component, ReactNode} from 'react';
+import {Box, Text} from 'ink';
 
 interface Props {
-  children: ReactNode;
+	children: ReactNode;
 }
 
 interface State {
-  hasError: boolean;
-  error?: Error;
+	hasError: boolean;
+	error?: Error;
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false };
+	state: State = {hasError: false};
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
-  }
+	static getDerivedStateFromError(error: Error): State {
+		return {hasError: true, error};
+	}
 
-  render() {
-    if (this.state.hasError) {
-      return (
-        <Box
-          flexDirection="column"
-          borderStyle="single"
-          borderColor="red"
-          padding={1}
-        >
-          <Text bold color="red">
-            Error
-          </Text>
-          <Text>{this.state.error?.message}</Text>
-        </Box>
-      );
-    }
+	render() {
+		if (this.state.hasError) {
+			return (
+				<Box
+					flexDirection="column"
+					borderStyle="single"
+					borderColor="red"
+					padding={1}
+				>
+					<Text bold color="red">
+						Error
+					</Text>
+					<Text>{this.state.error?.message}</Text>
+				</Box>
+			);
+		}
 
-    return this.props.children;
-  }
+		return this.props.children;
+	}
 }
 ```
 
@@ -532,67 +532,67 @@ class ErrorBoundary extends Component<Props, State> {
 Searchable list with real-time filtering.
 
 ```tsx
-import React, { useState, useMemo } from "react";
-import { Box, Text, useInput } from "ink";
+import React, {useState, useMemo} from 'react';
+import {Box, Text, useInput} from 'ink';
 
 interface SearchableListProps<T> {
-  items: T[];
-  renderItem: (item: T) => string;
-  onSelect: (item: T) => void;
+	items: T[];
+	renderItem: (item: T) => string;
+	onSelect: (item: T) => void;
 }
 
 function SearchableList<T>({
-  items,
-  renderItem,
-  onSelect,
+	items,
+	renderItem,
+	onSelect,
 }: SearchableListProps<T>) {
-  const [query, setQuery] = useState("");
-  const [selectedIndex, setSelectedIndex] = useState(0);
+	const [query, setQuery] = useState('');
+	const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const filteredItems = useMemo(() => {
-    if (!query) return items;
-    return items.filter((item) =>
-      renderItem(item).toLowerCase().includes(query.toLowerCase())
-    );
-  }, [items, query, renderItem]);
+	const filteredItems = useMemo(() => {
+		if (!query) return items;
+		return items.filter(item =>
+			renderItem(item).toLowerCase().includes(query.toLowerCase()),
+		);
+	}, [items, query, renderItem]);
 
-  useInput((input, key) => {
-    if (key.upArrow) {
-      setSelectedIndex((i) => Math.max(0, i - 1));
-    } else if (key.downArrow) {
-      setSelectedIndex((i) => Math.min(filteredItems.length - 1, i + 1));
-    } else if (key.return) {
-      onSelect(filteredItems[selectedIndex]);
-    } else if (key.backspace) {
-      setQuery((q) => q.slice(0, -1));
-    } else if (input && !key.ctrl) {
-      setQuery((q) => q + input);
-    }
-  });
+	useInput((input, key) => {
+		if (key.upArrow) {
+			setSelectedIndex(i => Math.max(0, i - 1));
+		} else if (key.downArrow) {
+			setSelectedIndex(i => Math.min(filteredItems.length - 1, i + 1));
+		} else if (key.return) {
+			onSelect(filteredItems[selectedIndex]);
+		} else if (key.backspace) {
+			setQuery(q => q.slice(0, -1));
+		} else if (input && !key.ctrl) {
+			setQuery(q => q + input);
+		}
+	});
 
-  return (
-    <Box flexDirection="column">
-      <Box borderStyle="single" paddingX={1} marginBottom={1}>
-        <Text>Search: {query}</Text>
-        <Text color="green">|</Text>
-      </Box>
+	return (
+		<Box flexDirection="column">
+			<Box borderStyle="single" paddingX={1} marginBottom={1}>
+				<Text>Search: {query}</Text>
+				<Text color="green">|</Text>
+			</Box>
 
-      <Box flexDirection="column">
-        {filteredItems.map((item, index) => (
-          <Text
-            key={index}
-            color={selectedIndex === index ? "green" : "white"}
-            bold={selectedIndex === index}
-          >
-            {selectedIndex === index ? "> " : "  "}
-            {renderItem(item)}
-          </Text>
-        ))}
-      </Box>
+			<Box flexDirection="column">
+				{filteredItems.map((item, index) => (
+					<Text
+						key={index}
+						color={selectedIndex === index ? 'green' : 'white'}
+						bold={selectedIndex === index}
+					>
+						{selectedIndex === index ? '> ' : '  '}
+						{renderItem(item)}
+					</Text>
+				))}
+			</Box>
 
-      {filteredItems.length === 0 && <Text dimColor>No results found</Text>}
-    </Box>
-  );
+			{filteredItems.length === 0 && <Text dimColor>No results found</Text>}
+		</Box>
+	);
 }
 ```
 

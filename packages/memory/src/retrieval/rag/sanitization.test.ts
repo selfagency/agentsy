@@ -1,13 +1,12 @@
-import { describe, expect, it } from 'vitest';
-
+import { describe, it, expect } from 'vitest';
 import { sanitizeIngestSource } from './sanitization.js';
 
 describe('sanitization', () => {
   it('should redact Bearer tokens', () => {
     const source = {
-      content: 'Access token: bearer abcdef1234567890',
       sourceId: 'test',
-      sourceType: 'file' as const
+      sourceType: 'file' as const,
+      content: 'Access token: bearer abcdef1234567890'
     };
     const sanitized = sanitizeIngestSource(source);
     expect(sanitized.content).toBe('Access token: [REDACTED]');
@@ -15,9 +14,9 @@ describe('sanitization', () => {
 
   it('should redact OpenAI sk- keys', () => {
     const source = {
-      content: 'Key is sk-1234567890abcdef1234567890abcdef',
       sourceId: 'test',
-      sourceType: 'file' as const
+      sourceType: 'file' as const,
+      content: 'Key is sk-1234567890abcdef1234567890abcdef'
     };
     const sanitized = sanitizeIngestSource(source);
     expect(sanitized.content).toBe('Key is [REDACTED]');
@@ -25,9 +24,9 @@ describe('sanitization', () => {
 
   it('should redact api-key labels', () => {
     const source = {
-      content: 'api-key: my-secret-value',
       sourceId: 'test',
-      sourceType: 'file' as const
+      sourceType: 'file' as const,
+      content: 'api-key: my-secret-value'
     };
     const sanitized = sanitizeIngestSource(source);
     expect(sanitized.content).toBe('[REDACTED]');
@@ -35,20 +34,20 @@ describe('sanitization', () => {
 
   it('should preserve metadata', () => {
     const source = {
-      content: 'nothing here',
-      metadata: { foo: 'bar' },
       sourceId: 'test',
-      sourceType: 'file' as const
+      sourceType: 'file' as const,
+      content: 'nothing here',
+      metadata: { foo: 'bar' }
     };
     const sanitized = sanitizeIngestSource(source);
-    expect(sanitized.metadata).toStrictEqual({ foo: 'bar' });
+    expect(sanitized.metadata).toEqual({ foo: 'bar' });
   });
 
   it('should handle undefined metadata', () => {
     const source = {
-      content: 'nothing here',
       sourceId: 'test',
-      sourceType: 'file' as const
+      sourceType: 'file' as const,
+      content: 'nothing here'
     };
     const sanitized = sanitizeIngestSource(source);
     expect(sanitized.metadata).toBeUndefined();
@@ -56,9 +55,9 @@ describe('sanitization', () => {
 
   it('should be case insensitive for tokens', () => {
     const source = {
-      content: 'BEARER secrettokenhere',
       sourceId: 'test',
-      sourceType: 'file' as const
+      sourceType: 'file' as const,
+      content: 'BEARER secrettokenhere'
     };
     const sanitized = sanitizeIngestSource(source);
     expect(sanitized.content).toBe('[REDACTED]');

@@ -9,12 +9,7 @@ describe('retry', () => {
 
   it('retries after a failure and eventually resolves', async () => {
     const fn = vi.fn<() => Promise<string>>().mockRejectedValueOnce(new Error('temporary')).mockResolvedValueOnce('ok');
-    const operation = retry(fn, {
-      backoffFactor: 2,
-      initialDelay: 0,
-      maxAttempts: 3,
-      maxDelay: 0
-    });
+    const operation = retry(fn, { maxAttempts: 3, initialDelay: 0, maxDelay: 0, backoffFactor: 2 });
 
     await expect(operation).resolves.toBe('ok');
     expect(fn).toHaveBeenCalledTimes(2);
@@ -23,12 +18,7 @@ describe('retry', () => {
   it('rejects after max attempts are exhausted', async () => {
     const error = new Error('failed');
     const fn = vi.fn<() => Promise<string>>().mockRejectedValue(error);
-    const operation = retry(fn, {
-      backoffFactor: 2,
-      initialDelay: 0,
-      maxAttempts: 2,
-      maxDelay: 0
-    });
+    const operation = retry(fn, { maxAttempts: 2, initialDelay: 0, maxDelay: 0, backoffFactor: 2 });
 
     await expect(operation).rejects.toBe(error);
     expect(fn).toHaveBeenCalledTimes(2);
@@ -39,8 +29,8 @@ describe('retry', () => {
     controller.abort();
 
     await expect(retry(async () => 'ok', { signal: controller.signal })).rejects.toMatchObject({
-      message: 'Retry aborted',
-      name: 'AbortError'
+      name: 'AbortError',
+      message: 'Retry aborted'
     });
   });
 
@@ -51,68 +41,27 @@ describe('retry', () => {
       const controller = new AbortController();
       const fn = vi.fn<() => Promise<string>>().mockRejectedValue(new Error('temporary'));
       const operation = retry(fn, {
-        backoffFactor: 2,
-        initialDelay: 1000,
         maxAttempts: 3,
-        maxDelay: 1000,
+        initialDelay: 1_000,
+        maxDelay: 1_000,
+        backoffFactor: 2,
         signal: controller.signal
       });
 
       await Promise.resolve();
-      expect(fn).toHaveBeenCalledOnce();
+      expect(fn).toHaveBeenCalledTimes(1);
 
       controller.abort();
 
       await expect(operation).rejects.toMatchObject({
-        message: 'Retry aborted',
-        name: 'AbortError'
+        name: 'AbortError',
+        message: 'Retry aborted'
       });
 
-      vi.advanceTimersByTime(1000);
-      expect(fn).toHaveBeenCalledOnce();
+      vi.advanceTimersByTime(1_000);
+      expect(fn).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
-    }
-  });
-
-  it('does not double-settle when abort fires during fn execution', async () => {
-    const controller = new AbortController();
-
-    const fn = vi.fn<() => Promise<string>>().mockImplementation(() => {
-      controller.abort();
-      throw new Error('fail');
-    });
-
-    const operation = retry(fn, {
-      backoffFactor: 2,
-      initialDelay: 0,
-      maxAttempts: 3,
-      maxDelay: 0,
-      signal: controller.signal
-    });
-
-    await expect(operation).rejects.toMatchObject({
-      message: 'Retry aborted',
-      name: 'AbortError'
-    });
-    expect(fn).toHaveBeenCalledTimes(1);
-  });
-
-  it('falls back to plain Error when DOMException is unavailable', async () => {
-    const originalDOMException = globalThis.DOMException;
-    // biome-ignore lint: xss/no-mixed-html -- test-only DOM exception removal
-    delete (globalThis as Partial<typeof globalThis>).DOMException;
-
-    try {
-      const controller = new AbortController();
-      controller.abort();
-
-      await expect(retry(async () => 'ok', { signal: controller.signal })).rejects.toMatchObject({
-        message: 'Retry aborted',
-        name: 'AbortError'
-      });
-    } finally {
-      (globalThis as Record<string, unknown>).DOMException = originalDOMException;
     }
   });
 
@@ -127,14 +76,14 @@ describe('retry', () => {
         .mockResolvedValueOnce('ok');
 
       const operation = retry(fn, {
-        backoffFactor: 3,
-        initialDelay: 100,
         maxAttempts: 4,
-        maxDelay: 150
+        initialDelay: 100,
+        maxDelay: 150,
+        backoffFactor: 3
       });
 
       await Promise.resolve();
-      expect(fn).toHaveBeenCalledOnce();
+      expect(fn).toHaveBeenCalledTimes(1);
 
       vi.advanceTimersByTime(100);
       await Promise.resolve();

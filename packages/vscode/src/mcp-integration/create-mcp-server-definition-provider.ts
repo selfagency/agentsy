@@ -11,35 +11,35 @@ export interface McpProviderSettingsReader {
  * `enabledSettingKey` allows per-server enable/disable toggles from settings.
  */
 export interface McpProviderServerDefinition extends McpServerDefinition {
+  enabledSettingKey?: string;
   apiKeyEnvVar?: string;
   apiKeyHeader?: string;
-  enabledSettingKey?: string;
 }
 
 export interface CreateMcpServerDefinitionProviderOptions {
-  /** Default environment variable to receive the API key when server-level value is not set. */
-  defaultApiKeyEnvVar?: string;
-  /** Default HTTP header to receive the API key when server-level value is not set. */
-  defaultApiKeyHeader?: string;
-  /** Default setting when `enabledSettingKey` is present but unset. */
-  defaultEnabled?: boolean;
-  /** Format API-key header value. Defaults to raw key value. */
-  formatApiKeyHeaderValue?: (apiKey: string) => string;
-  /** Optional API key provider for dynamic auth injection. */
-  getApiKey?: () => Promise<string | undefined>;
   /** Static list or dynamic resolver for MCP servers. */
   servers:
     | McpProviderServerDefinition[]
     | (() => Promise<McpProviderServerDefinition[]> | McpProviderServerDefinition[]);
   /** Optional settings reader for per-server enable/disable toggles. */
   settings?: McpProviderSettingsReader;
+  /** Optional API key provider for dynamic auth injection. */
+  getApiKey?: () => Promise<string | undefined>;
+  /** Default setting when `enabledSettingKey` is present but unset. */
+  defaultEnabled?: boolean;
+  /** Default environment variable to receive the API key when server-level value is not set. */
+  defaultApiKeyEnvVar?: string;
+  /** Default HTTP header to receive the API key when server-level value is not set. */
+  defaultApiKeyHeader?: string;
+  /** Format API-key header value. Defaults to raw key value. */
+  formatApiKeyHeaderValue?: (apiKey: string) => string;
 }
 
-const resolveEnabled = (
+function resolveEnabled(
   server: McpProviderServerDefinition,
   settings: McpProviderSettingsReader | undefined,
   defaultEnabled: boolean
-): boolean => {
+): boolean {
   if (server.enabledSettingKey === undefined || settings === undefined) {
     return server.disabled !== true;
   }
@@ -50,117 +50,52 @@ const resolveEnabled = (
   }
 
   return defaultEnabled;
-};
-
-/** Inject API key into server env if a matching env-var key is configured. */
-const injectApiKeyIntoEnv = (
-  env: Record<string, string>,
-  server: McpProviderServerDefinition,
-  defaultApiKeyEnvVar: string | undefined,
-  apiKey: string
-): void => {
-  const envKey = server.apiKeyEnvVar ?? defaultApiKeyEnvVar;
-  if (typeof envKey === 'string' && envKey.length > 0) {
-    env[envKey] = apiKey;
-  }
-};
-
-/** Inject API key into server headers if a matching header key is configured. */
-const injectApiKeyIntoHeaders = (
-  headers: Record<string, string>,
-  server: McpProviderServerDefinition,
-  defaultApiKeyHeader: string | undefined,
-  apiKey: string,
-  formatHeader: (value: string) => string
-): void => {
-  const headerKey = server.apiKeyHeader ?? defaultApiKeyHeader;
-  if (typeof headerKey === 'string' && headerKey.length > 0) {
-    headers[headerKey] = formatHeader(apiKey);
-  }
-};
-
-/**
- * Conditionally inject the API key into both env and headers for a server.
- * Mutates `env` and `headers` in-place when a key is configured.
- */
-const injectApiKey = (
-  env: Record<string, string>,
-  headers: Record<string, string>,
-  server: McpProviderServerDefinition,
-  options: {
-    defaultApiKeyEnvVar?: string;
-    defaultApiKeyHeader?: string;
-    formatApiKeyHeaderValue?: (value: string) => string;
-  },
-  apiKey: string | undefined
-): void => {
-  if (typeof apiKey !== 'string' || apiKey.length === 0) {
-    return;
-  }
-
-  const formatHeader = options.formatApiKeyHeaderValue ?? (value => value);
-  injectApiKeyIntoEnv(env, server, options.defaultApiKeyEnvVar, apiKey);
-  injectApiKeyIntoHeaders(headers, server, options.defaultApiKeyHeader, apiKey, formatHeader);
-};
-
-/** Build a plain McpServerDefinition, omitting undefined optionals. */
-const buildServerDefinition = (
-  server: McpProviderServerDefinition,
-  env: Record<string, string>,
-  headers: Record<string, string>,
-  enabled: boolean
-): McpServerDefinition => {
-  const definition: McpServerDefinition = {
-    command: server.command,
-    name: server.name
-  };
-
-  if (server.args !== undefined) {
-    definition.args = server.args;
-  }
-
-  if (Object.keys(env).length > 0) {
-    definition.env = env;
-  }
-
-  if (Object.keys(headers).length > 0) {
-    definition.headers = headers;
-  }
-
-  if (server.alwaysAllow) {
-    definition.alwaysAllow = true;
-  }
-
-  if (!enabled) {
-    definition.disabled = true;
-  }
-
-  return definition;
-};
-
-const provideServerDefinitions = async (
-  options: CreateMcpServerDefinitionProviderOptions
-): Promise<McpServerDefinition[]> => {
-  const defaultEnabled = options.defaultEnabled ?? true;
-  const rawServers = typeof options.servers === 'function' ? await options.servers() : options.servers;
-  const apiKey = await options.getApiKey?.();
-
-  return rawServers.map(server => {
-    const enabled = resolveEnabled(server, options.settings, defaultEnabled);
-    const env: Record<string, string> = { ...server.env };
-    const headers: Record<string, string> = { ...server.headers };
-
-    injectApiKey(env, headers, server, options, apiKey);
-
-    return buildServerDefinition(server, env, headers, enabled);
-  });
-};
+}
 
 /**
  * Creates an MCP server-definition provider with built-in auth and settings enrichment.
  */
-export const createMcpServerDefinitionProvider = (
+export function createMcpServerDefinitionProvider(
   options: CreateMcpServerDefinitionProviderOptions
-): McpServerProvider => ({
-  provide: () => provideServerDefinitions(options)
-});
+): McpServerProvider {
+  const defaultEnabled = options.defaultEnabled ?? true;
+  const formatHeader = options.formatApiKeyHeaderValue ?? (apiKey => apiKey);
+
+  return {
+    async provide(): Promise<McpServerDefinition[]> {
+      const rawServers = typeof options.servers === 'function' ? await options.servers() : options.servers;
+      const apiKey = await options.getApiKey?.();
+
+      return rawServers.map(server => {
+        const enabled = resolveEnabled(server, options.settings, defaultEnabled);
+
+        const env = { ...server.env };
+        const headers = { ...server.headers };
+
+        if (typeof apiKey === 'string' && apiKey.length > 0) {
+          const envKey = server.apiKeyEnvVar ?? options.defaultApiKeyEnvVar;
+          if (typeof envKey === 'string' && envKey.length > 0) {
+            env[envKey] = apiKey;
+          }
+
+          const headerKey = server.apiKeyHeader ?? options.defaultApiKeyHeader;
+          if (typeof headerKey === 'string' && headerKey.length > 0) {
+            headers[headerKey] = formatHeader(apiKey);
+          }
+        }
+
+        const enriched: McpServerDefinition = {
+          name: server.name,
+          command: server.command,
+          ...(server.args === undefined ? {} : { args: server.args }),
+          ...(Object.keys(env).length > 0 ? { env } : {}),
+          ...(Object.keys(headers).length > 0 ? { headers } : {}),
+          ...(server.alwaysAllow ? { alwaysAllow: true } : {}),
+          ...(enabled ? {} : { disabled: true })
+        };
+
+        return enriched;
+      });
+    }
+  };
+}

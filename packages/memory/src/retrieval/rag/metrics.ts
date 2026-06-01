@@ -1,16 +1,16 @@
 export interface RAGMetricsQueryInput {
-  cited: number;
-  hits: number;
   latencyMs: number;
+  hits: number;
+  cited: number;
   sourceMix: Record<string, number>;
 }
 
 export interface RAGMetricsSnapshot {
+  queries: number;
+  totalHits: number;
   averageLatencyMs: number;
   citationCoverage: number;
-  queries: number;
   sourceMix: Record<string, number>;
-  totalHits: number;
 }
 
 export interface RAGMetrics {
@@ -45,11 +45,11 @@ export function createRAGMetrics(): RAGMetrics {
       }
 
       return {
+        queries,
+        totalHits,
         averageLatencyMs: queries === 0 ? 0 : totalLatency / queries,
         citationCoverage: totalHits === 0 ? 0 : totalCited / totalHits,
-        queries,
-        sourceMix: normalizedSourceMix,
-        totalHits
+        sourceMix: normalizedSourceMix
       };
     }
   };

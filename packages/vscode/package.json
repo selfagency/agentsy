@@ -11,7 +11,7 @@
     "streaming",
     "vscode"
   ],
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "author": "Selfagency",
   "repository": {
     "type": "git",
@@ -33,29 +33,29 @@
       "require": "./dist/index.cjs"
     },
     "./api-key-manager": {
-      "types": "./dist/api-key-manager.d.ts",
-      "import": "./dist/api-key-manager.js",
-      "require": "./dist/api-key-manager.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./stream-bridge": {
-      "types": "./dist/stream-bridge.d.ts",
-      "import": "./dist/stream-bridge.js",
-      "require": "./dist/stream-bridge.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./vscode-renderer": {
-      "types": "./dist/vscode-renderer.d.ts",
-      "import": "./dist/vscode-renderer.js",
-      "require": "./dist/vscode-renderer.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./mcp": {
-      "types": "./dist/mcp.d.ts",
-      "import": "./dist/mcp.js",
-      "require": "./dist/mcp.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./message-conversion": {
-      "types": "./dist/message-conversion.d.ts",
-      "import": "./dist/message-conversion.js",
-      "require": "./dist/message-conversion.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "publishConfig": {
@@ -67,19 +67,18 @@
     "test:watch": "vitest",
     "coverage": "vitest --run --coverage",
     "check-types": "tsc --noEmit",
-    "lint": "biome lint",
-    "format": "biome format",
-    "format:check": "biome format",
-    "precommit": "pnpm run check-types && pnpm run lint && pnpm run format:check"
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "format": "oxfmt --no-error-on-unmatched-pattern --write .",
+    "format:check": "oxfmt --no-error-on-unmatched-pattern .",
+    "precommit": "npm run check-types && npm run lint && npm run format:check"
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
     "@agentsy/providers": "workspace:*",
-    "@agentsy/renderers": "workspace:*",
-    "@agentsy/types": "workspace:*"
+    "@agentsy/renderers": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.9.0",
+    "@types/node": "^25.8.0",
     "@types/vscode": "^1.120.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",

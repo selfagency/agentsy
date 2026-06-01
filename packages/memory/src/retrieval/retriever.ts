@@ -1,41 +1,40 @@
+import { createLocalEmbeddingEngine, type LocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
 import type { MemoryScope } from '../scope/scope-manager.js';
-import type { LocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
-import { createLocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
 
 export interface MemorySearchRecord {
-  content: string;
-  createdAt: Date;
   id: string;
   scope: MemoryScope;
-  tags?: string[];
+  content: string;
   title?: string;
+  tags?: string[];
+  createdAt: Date;
   updatedAt?: Date;
 }
 
 export interface MemorySearchHit {
-  reasons: string[];
   record: MemorySearchRecord;
   score: number;
+  reasons: string[];
 }
 
 export interface MemorySearchInput {
+  query: string;
+  scope?: MemoryScope;
   actorId?: string;
   limit?: number;
   now?: Date;
-  query: string;
-  scope?: MemoryScope;
 }
 
 export interface MemoryRetriever {
-  list(): MemorySearchRecord[];
-  remove(recordId: string): void;
-  search(input: MemorySearchInput): Promise<MemorySearchHit[]>;
   upsert(record: MemorySearchRecord): void;
+  remove(recordId: string): void;
+  list(): MemorySearchRecord[];
+  search(input: MemorySearchInput): Promise<MemorySearchHit[]>;
 }
 
 export interface MemoryRetrieverOptions {
-  canReadScope?: (actorId: string, scope: MemoryScope) => boolean;
   embeddingEngine?: LocalEmbeddingEngine;
+  canReadScope?: (actorId: string, scope: MemoryScope) => boolean;
 }
 
 function normalizeQueryTerms(query: string): string[] {
@@ -115,8 +114,10 @@ export function createMemoryRetriever(options: MemoryRetrieverOptions = {}): Mem
   const embeddings = new Map<string, number[]>();
 
   return {
-    list() {
-      return [...records.values()].map(cloneRecord);
+    upsert(record) {
+      const normalized = cloneRecord(record);
+      records.set(record.id, normalized);
+      embeddings.set(record.id, embeddingEngine.embed(`${normalized.title ?? ''}\n${normalized.content}`));
     },
 
     remove(recordId) {
@@ -124,7 +125,10 @@ export function createMemoryRetriever(options: MemoryRetrieverOptions = {}): Mem
       embeddings.delete(recordId);
     },
 
-    // biome-ignore lint/suspicious/useAwait: Implements MemoryRetriever interface requiring Promise return
+    list() {
+      return [...records.values()].map(cloneRecord);
+    },
+
     async search(input) {
       const queryTerms = normalizeQueryTerms(input.query);
       const queryEmbedding = embeddingEngine.embed(input.query);
@@ -158,19 +162,13 @@ export function createMemoryRetriever(options: MemoryRetrieverOptions = {}): Mem
           ];
 
           return {
-            reasons,
             record: cloneRecord(record),
-            score
+            score,
+            reasons
           };
         })
-        .toSorted((left, right) => right.score - left.score)
+        .sort((left, right) => right.score - left.score)
         .slice(0, limit);
-    },
-
-    upsert(record) {
-      const normalized = cloneRecord(record);
-      records.set(record.id, normalized);
-      embeddings.set(record.id, embeddingEngine.embed(`${normalized.title ?? ''}\n${normalized.content}`));
     }
   };
 }

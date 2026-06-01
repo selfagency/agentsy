@@ -1,5 +1,4 @@
-import { describe, expect, expectTypeOf, it } from 'vitest';
-
+import { describe, expect, it } from 'vitest';
 import type { ContainerSandbox } from '../container/rivet-sandbox.js';
 import type { SandboxTriggerDecision } from './dynamic-trigger.js';
 import { createSandboxRouter } from './router.js';
@@ -11,19 +10,11 @@ function makeDecision(mode: SandboxTriggerDecision['mode']): SandboxTriggerDecis
 
 function makeContainerStub(): ContainerSandbox {
   return {
-    async destroy(): Promise<void> {
-      /* noop */
-    },
-    // biome-ignore lint/suspicious/useAwait: matches ContainerSandbox interface
+    mode: 'container',
     async execute(_input: SandboxInput): Promise<SandboxOutput> {
-      return {
-        durationMs: 0,
-        status: 'ok',
-        stderr: '',
-        stdout: 'container ran'
-      };
+      return { status: 'ok', stdout: 'container ran', stderr: '', durationMs: 0 };
     },
-    mode: 'container'
+    async destroy(): Promise<void> {}
   };
 }
 
@@ -32,7 +23,7 @@ describe('createSandboxRouter', () => {
     const router = createSandboxRouter();
     const sandbox = router.route(makeDecision('virtual'));
     expect(sandbox).toBeDefined();
-    expectTypeOf(sandbox.execute).toBeFunction();
+    expect(typeof sandbox.execute).toBe('function');
   });
 
   it('routes container decision to ContainerSandboxStub when provided', () => {
@@ -46,7 +37,7 @@ describe('createSandboxRouter', () => {
     const router = createSandboxRouter();
     const sandbox = router.route(makeDecision('container'));
     // Must still have execute (falls back to virtual)
-    expectTypeOf(sandbox.execute).toBeFunction();
+    expect(typeof sandbox.execute).toBe('function');
     expect((sandbox as { mode?: string }).mode).not.toBe('container');
   });
 
@@ -58,10 +49,7 @@ describe('createSandboxRouter', () => {
   it('virtual sandbox execute() runs simple code', async () => {
     const router = createSandboxRouter();
     const sandbox = router.route(makeDecision('virtual'));
-    const result = (await sandbox.execute({
-      code: 'console.log("hi");',
-      env: {}
-    })) as { status: string };
+    const result = (await sandbox.execute({ code: 'console.log("hi");', env: {} })) as { status: string };
     expect(['ok', 'error', 'timeout']).toContain(result.status);
   });
 });

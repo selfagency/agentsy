@@ -11,7 +11,7 @@ function stableHash(input: string): string {
 }
 
 function splitIntoChunks(content: string, maxChunkSize = 280): string[] {
-  const normalized = content.replaceAll(/\s+/giu, ' ').trim();
+  const normalized = content.replace(/\s+/gu, ' ').trim();
   if (normalized.length <= maxChunkSize) {
     return normalized.length === 0 ? [] : [normalized];
   }
@@ -33,25 +33,25 @@ function splitIntoChunks(content: string, maxChunkSize = 280): string[] {
 
 export function createDocumentIngestor(): DocumentIngestor {
   return {
-    ingest(source) {
+    async ingest(source) {
       const chunks = splitIntoChunks(source.content);
       const updatedAt = source.updatedAt ?? new Date().toISOString();
 
       const documents: RAGServerDocument[] = chunks.map((content, chunkIndex) => {
         const stableId = stableHash(`${source.sourceId}:${chunkIndex}:${content}`);
         return {
-          chunkIndex,
-          content,
           id: `${source.sourceId}:${stableId}`,
           sourceId: source.sourceId,
           sourceType: source.sourceType,
           title: source.title ?? source.sourceId,
+          content,
+          chunkIndex,
           updatedAt,
           ...(source.metadata === undefined ? {} : { metadata: { ...source.metadata } })
         };
       });
 
-      return Promise.resolve({ documents });
+      return { documents };
     }
   };
 }

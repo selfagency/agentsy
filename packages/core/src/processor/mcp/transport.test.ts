@@ -1,7 +1,5 @@
 import { Readable, Writable } from 'node:stream';
-
 import { describe, expect, it } from 'vitest';
-
 import { adaptTransportToStream } from './transport.js';
 
 describe('MCP Transport', () => {
@@ -14,15 +12,12 @@ describe('MCP Transport', () => {
         }
       });
 
-      const adapted = adaptTransportToStream({
-        stream: mockStream,
-        type: 'http'
-      });
+      const adapted = adaptTransportToStream({ type: 'http', stream: mockStream });
       const reader = adapted.getReader();
       const result = await reader.read();
 
       expect(result.value).toBe('data: test\n\n');
-      expect(result.done).toBeFalsy();
+      expect(result.done).toBe(false);
     });
 
     it('should adapt stdio transport to ReadableStream', async () => {
@@ -41,16 +36,12 @@ describe('MCP Transport', () => {
         }
       });
 
-      const adapted = adaptTransportToStream({
-        readable,
-        type: 'stdio',
-        writable
-      });
+      const adapted = adaptTransportToStream({ type: 'stdio', readable, writable });
       const reader = adapted.getReader();
       const result = await reader.read();
 
       expect(result.value).toBe('data: stdio test\n\n');
-      expect(result.done).toBeFalsy();
+      expect(result.done).toBe(false);
     });
   });
 });

@@ -5,8 +5,8 @@ import { dirname } from 'node:path';
 import type { ConflictRecord, ConflictStore } from './types.js';
 
 interface StoredConflictEnvelope {
-  conflicts: ConflictRecord[];
   version: 1;
+  conflicts: ConflictRecord[];
 }
 
 export interface FileConflictStoreOptions {
@@ -14,8 +14,8 @@ export interface FileConflictStoreOptions {
 }
 
 const EMPTY_ENVELOPE: StoredConflictEnvelope = {
-  conflicts: [],
-  version: 1
+  version: 1,
+  conflicts: []
 };
 
 function cloneConflict<T>(value: T): T {
@@ -24,8 +24,8 @@ function cloneConflict<T>(value: T): T {
 
 function createEmptyEnvelope(): StoredConflictEnvelope {
   return {
-    conflicts: [],
-    version: EMPTY_ENVELOPE.version
+    version: EMPTY_ENVELOPE.version,
+    conflicts: []
   };
 }
 
@@ -34,7 +34,7 @@ function isNodeError(error: unknown): error is NodeJS.ErrnoException {
 }
 
 function sortConflicts(conflicts: ConflictRecord[]): ConflictRecord[] {
-  return [...conflicts].toSorted((left, right) => {
+  return [...conflicts].sort((left, right) => {
     if (left.detectedAt !== right.detectedAt) {
       return left.detectedAt.localeCompare(right.detectedAt);
     }
@@ -45,47 +45,30 @@ function sortConflicts(conflicts: ConflictRecord[]): ConflictRecord[] {
 
 class FileConflictStore implements ConflictStore {
   #writeQueue: Promise<void> = Promise.resolve();
-  readonly #options: FileConflictStoreOptions;
 
-  constructor(options: FileConflictStoreOptions) {
-    this.#options = options;
-  }
-
-  isObject(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
-  }
+  constructor(private readonly options: FileConflictStoreOptions) {}
 
   async #withLock<T>(operation: () => Promise<T>): Promise<T> {
     const next = this.#writeQueue.then(operation, operation);
     this.#writeQueue = next.then(
-      () => {
-        /* no-op */
-      },
-      () => {
-        /* no-op */
-      }
+      () => undefined,
+      () => undefined
     );
-    return await next;
+    return next;
   }
 
   async #readEnvelope(): Promise<StoredConflictEnvelope> {
     try {
-      const content = await readFile(this.#options.filePath, 'utf-8');
-      const parsed: unknown = JSON.parse(content);
+      const content = await readFile(this.options.filePath, 'utf8');
+      const parsed = JSON.parse(content) as Partial<StoredConflictEnvelope>;
 
-      if (!this.isObject(parsed)) {
-        return createEmptyEnvelope();
-      }
-
-      const envelope = parsed as Partial<StoredConflictEnvelope>;
-
-      if (!Array.isArray(envelope.conflicts)) {
+      if (!Array.isArray(parsed.conflicts)) {
         return createEmptyEnvelope();
       }
 
       return {
-        conflicts: sortConflicts(envelope.conflicts).map(conflict => cloneConflict(conflict)),
-        version: 1
+        version: 1,
+        conflicts: sortConflicts(parsed.conflicts).map(conflict => cloneConflict(conflict))
       };
     } catch (error) {
       if (isNodeError(error) && error.code === 'ENOENT') {
@@ -97,10 +80,10 @@ class FileConflictStore implements ConflictStore {
   }
 
   async #writeEnvelope(envelope: StoredConflictEnvelope): Promise<void> {
-    await mkdir(dirname(this.#options.filePath), { recursive: true });
-    const temporaryPath = `${this.#options.filePath}.${randomUUID()}.tmp`;
-    await writeFile(temporaryPath, `${JSON.stringify(envelope, null, 2)}\n`, 'utf-8');
-    await rename(temporaryPath, this.#options.filePath);
+    await mkdir(dirname(this.options.filePath), { recursive: true });
+    const temporaryPath = `${this.options.filePath}.${randomUUID()}.tmp`;
+    await writeFile(temporaryPath, `${JSON.stringify(envelope, null, 2)}\n`, 'utf8');
+    await rename(temporaryPath, this.options.filePath);
   }
 
   async save(conflict: ConflictRecord): Promise<void> {
@@ -110,8 +93,8 @@ class FileConflictStore implements ConflictStore {
       conflicts.push(cloneConflict(conflict));
 
       await this.#writeEnvelope({
-        conflicts: sortConflicts(conflicts),
-        version: 1
+        version: 1,
+        conflicts: sortConflicts(conflicts)
       });
     });
   }
@@ -131,8 +114,8 @@ class FileConflictStore implements ConflictStore {
     await this.#withLock(async () => {
       const envelope = await this.#readEnvelope();
       await this.#writeEnvelope({
-        conflicts: envelope.conflicts.filter(conflict => conflict.id !== id),
-        version: 1
+        version: 1,
+        conflicts: envelope.conflicts.filter(conflict => conflict.id !== id)
       });
     });
   }

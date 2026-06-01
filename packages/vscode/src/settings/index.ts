@@ -1,3 +1,3 @@
-export type { SchemaProperty, SettingsSchema } from './schema-validator.js';
-export { applyDefaults, validateSettings } from './schema-validator.js';
 export { SettingsLoader } from './settings-loader.js';
+export { validateSettings, applyDefaults } from './schema-validator.js';
+export type { SettingsSchema, SchemaProperty } from './schema-validator.js';

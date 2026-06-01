@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { CoordinationTask } from './task-queue.js';
 import { createInMemoryTaskQueue } from './task-queue.js';
 
 describe('TaskQueue', () => {
@@ -28,12 +27,12 @@ describe('TaskQueue', () => {
       const queue = createInMemoryTaskQueue();
       const task = {
         id: 'task-1',
+        type: 'process-message',
         payload: {
           message: 'hello',
           priority: 'high',
           timestamp: Date.now()
-        },
-        type: 'process-message'
+        }
       };
 
       await queue.enqueue(task);
@@ -68,7 +67,7 @@ describe('TaskQueue', () => {
 
       const dequeued = await queue.dequeue();
 
-      expect(dequeued).toStrictEqual(task1);
+      expect(dequeued).toEqual(task1);
       expect(queue.size()).toBe(1);
     });
 
@@ -87,9 +86,9 @@ describe('TaskQueue', () => {
       const third = await queue.dequeue();
       const fourth = await queue.dequeue();
 
-      expect(first).toStrictEqual(task1);
-      expect(second).toStrictEqual(task2);
-      expect(third).toStrictEqual(task3);
+      expect(first).toEqual(task1);
+      expect(second).toEqual(task2);
+      expect(third).toEqual(task3);
       expect(fourth).toBeNull();
     });
 
@@ -120,19 +119,19 @@ describe('TaskQueue', () => {
       const queue = createInMemoryTaskQueue();
       const task = {
         id: 'task-with-payload',
+        type: 'data-processing',
         payload: {
+          userId: 'user-123',
           action: 'update',
-          metadata: { createdAt: Date.now(), retries: 0 },
-          userId: 'user-123'
-        },
-        type: 'data-processing'
+          metadata: { retries: 0, createdAt: Date.now() }
+        }
       };
 
       await queue.enqueue(task);
       const dequeued = await queue.dequeue();
 
-      expect(dequeued).toStrictEqual(task);
-      expect(dequeued?.payload).toStrictEqual(task.payload);
+      expect(dequeued).toEqual(task);
+      expect(dequeued?.payload).toEqual(task.payload);
     });
   });
 
@@ -210,7 +209,7 @@ describe('TaskQueue', () => {
       }
 
       // Consumer: dequeue all tasks
-      const consumed: CoordinationTask[] = [];
+      const consumed = [];
       while (true) {
         const task = await queue.dequeue();
         if (task === null) {
@@ -220,7 +219,7 @@ describe('TaskQueue', () => {
         consumed.push(task);
       }
 
-      expect(consumed).toStrictEqual(tasks);
+      expect(consumed).toEqual(tasks);
       expect(queue.size()).toBe(0);
     });
 
@@ -272,18 +271,11 @@ describe('TaskQueue', () => {
       const queue = createInMemoryTaskQueue();
 
       const smallTask = { id: '1', type: 'small' };
-      const mediumTask = {
-        id: '2',
-        payload: { data: 'x'.repeat(100) },
-        type: 'medium'
-      };
+      const mediumTask = { id: '2', type: 'medium', payload: { data: 'x'.repeat(100) } };
       const largeTask = {
         id: '3',
-        payload: {
-          data: 'y'.repeat(10_000),
-          nested: { deep: { structure: true } }
-        },
-        type: 'large'
+        type: 'large',
+        payload: { data: 'y'.repeat(10000), nested: { deep: { structure: true } } }
       };
 
       await queue.enqueue(smallTask);
@@ -294,9 +286,9 @@ describe('TaskQueue', () => {
       const d2 = await queue.dequeue();
       const d3 = await queue.dequeue();
 
-      expect(d1).toStrictEqual(smallTask);
-      expect(d2).toStrictEqual(mediumTask);
-      expect(d3).toStrictEqual(largeTask);
+      expect(d1).toEqual(smallTask);
+      expect(d2).toEqual(mediumTask);
+      expect(d3).toEqual(largeTask);
     });
   });
 });

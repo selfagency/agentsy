@@ -1,6 +1,3 @@
-export { isDiscordAdapterAvailable } from './discord.js';
-export { isSlackAdapterAvailable } from './slack.js';
-export { isTelegramAdapterAvailable } from './telegram.js';
 export type {
   AgentSessionManagerOptions,
   Attachment,
@@ -12,4 +9,9 @@ export type {
   OutboundMessage,
   SessionStore
 } from './types.js';
+
 export { BUILT_IN_COMMANDS, isBuiltInCommand, stripXmlContextTags } from './types.js';
+
+export { isDiscordAdapterAvailable } from './discord.js';
+export { isSlackAdapterAvailable } from './slack.js';
+export { isTelegramAdapterAvailable } from './telegram.js';

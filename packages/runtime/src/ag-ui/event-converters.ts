@@ -23,10 +23,10 @@ export interface CopilotKitEvent {
  */
 export interface CustomUIEvent {
   eventType: string;
-  payload: Record<string, unknown>;
   runId: string;
   threadId?: string;
   timestamp: string;
+  payload: Record<string, unknown>;
 }
 
 /**
@@ -52,7 +52,7 @@ export function toCopilotKitEvent(event: AgUiEvent): CopilotKitEvent {
 
   const eventRec = event as unknown as Record<string, unknown>;
   const eventType = eventRec.type as string | undefined;
-  const copilotKitType = (eventType && copilotKitMapping[eventType]) ?? eventType ?? 'unknown';
+  const copilotKitType = (eventType && copilotKitMapping[eventType]) || eventType || 'unknown';
 
   return {
     type: copilotKitType,
@@ -79,82 +79,71 @@ export function toCustomUIEvent(event: AgUiEvent): CustomUIEvent {
   const eventType = agEvent.type as string;
 
   switch (eventType) {
-    case EventType.RUN_STARTED: {
-      payload = { capabilities: agEvent.capabilities, runId };
+    case EventType.RUN_STARTED:
+      payload = { runId, capabilities: agEvent.capabilities };
       break;
-    }
 
-    case EventType.RUN_FINISHED: {
+    case EventType.RUN_FINISHED:
       payload = { outcome: agEvent.outcome, usage: agEvent.usage };
       break;
-    }
 
-    case EventType.RUN_ERROR: {
+    case EventType.RUN_ERROR:
       payload = { error: agEvent.error };
       break;
-    }
 
-    case EventType.STEP_STARTED: {
-      payload = { stepId: agEvent.stepId, stepIndex: agEvent.stepIndex };
+    case EventType.STEP_STARTED:
+      payload = { stepIndex: agEvent.stepIndex, stepId: agEvent.stepId };
       break;
-    }
 
-    case EventType.STEP_FINISHED: {
+    case EventType.STEP_FINISHED:
       payload = {
-        duration: agEvent.duration,
-        outputLength: agEvent.outputLength,
+        stepIndex: agEvent.stepIndex,
         stepId: agEvent.stepId,
-        stepIndex: agEvent.stepIndex
+        outputLength: agEvent.outputLength,
+        duration: agEvent.duration
       };
       break;
-    }
 
-    case EventType.TEXT_MESSAGE_CONTENT: {
+    case EventType.TEXT_MESSAGE_CONTENT:
       payload = {
-        content: agEvent.content,
-        messageId: agEvent.messageId
+        messageId: agEvent.messageId,
+        content: agEvent.content
       };
       break;
-    }
 
-    case EventType.REASONING_MESSAGE_CONTENT: {
+    case EventType.REASONING_MESSAGE_CONTENT:
       payload = {
+        messageId: agEvent.messageId,
         content: agEvent.content,
-        encrypted: !!agEvent.encryptedValue,
-        messageId: agEvent.messageId
+        encrypted: !!agEvent.encryptedValue
       };
       break;
-    }
 
-    case EventType.TOOL_CALL_START: {
+    case EventType.TOOL_CALL_START:
       payload = {
         toolCallId: agEvent.toolCallId,
         toolName: agEvent.toolName
       };
       break;
-    }
 
-    case EventType.TOOL_CALL_ARGS: {
+    case EventType.TOOL_CALL_ARGS:
       payload = {
-        args: agEvent.args,
-        toolCallId: agEvent.toolCallId
+        toolCallId: agEvent.toolCallId,
+        args: agEvent.args
       };
       break;
-    }
 
-    case EventType.TOOL_CALL_END: {
+    case EventType.TOOL_CALL_END:
       payload = {
-        output: agEvent.output,
-        toolCallId: agEvent.toolCallId
+        toolCallId: agEvent.toolCallId,
+        output: agEvent.output
       };
       break;
-    }
 
-    default: {
+    default:
       // Fallback: copy all non-standard fields
       payload = { ...agEvent };
       break;
-    }
   }
 
   return {
@@ -177,11 +166,11 @@ export function createEventConverter(
 ): (event: AgUiEvent) => CopilotKitEvent | CustomUIEvent {
   if (format === 'copilot-kit') {
     return toCopilotKitEvent;
-  }
-  if (format === 'custom') {
+  } else if (format === 'custom') {
     return toCustomUIEvent;
+  } else {
+    throw new Error(`Unknown format: ${String(format)}`);
   }
-  throw new Error(`Unknown format: ${String(format)}`);
 }
 
 /**

@@ -10,28 +10,29 @@ export interface SessionState {
   /** Session identifier. */
   id: SessionId;
 
-  /** Optional metadata. */
-  metadata?: Record<string, unknown>;
-
   /** Key-value state store. */
   values: Record<string, unknown>;
+
+  /** Optional metadata. */
+  metadata?: Record<string, unknown>;
 }
 
 /**
  * Session store interface for persistence.
  */
 export interface SessionStore {
-  /** Clear entire session. */
-  clear(): void;
   /** Get full session state. */
   getState(): SessionState;
 
   /** Get a specific value. */
   getValue<T>(key: string): T | undefined;
 
+  /** Set a value. */
+  setValue(key: string, value: unknown): void;
+
   /** Remove a value. */
   removeValue(key: string): void;
 
-  /** Set a value. */
-  setValue(key: string, value: unknown): void;
+  /** Clear entire session. */
+  clear(): void;
 }

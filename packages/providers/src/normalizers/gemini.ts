@@ -1,24 +1,14 @@
 import type { FinishReason } from '@agentsy/types';
-
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 import { isObject, toNumber } from './utils.js';
 
 function mapGeminiFinishReason(reason: string | null): FinishReason | undefined {
-  if (!reason) {
-    return;
-  }
-  if (reason === 'STOP') {
-    return 'stop';
-  }
-  if (reason === 'MAX_TOKENS') {
-    return 'length';
-  }
-  if (reason === 'SAFETY' || reason === 'RECITATION' || reason === 'PROHIBITED_CONTENT' || reason === 'SPII') {
+  if (!reason) return undefined;
+  if (reason === 'STOP') return 'stop';
+  if (reason === 'MAX_TOKENS') return 'length';
+  if (reason === 'SAFETY' || reason === 'RECITATION' || reason === 'PROHIBITED_CONTENT' || reason === 'SPII')
     return 'content-filter';
-  }
-  if (reason === 'MALFORMED_FUNCTION_CALL') {
-    return 'other';
-  }
+  if (reason === 'MALFORMED_FUNCTION_CALL') return 'other';
   return 'other';
 }
 
@@ -44,22 +34,18 @@ const FINISH_REASONS_DONE = new Set(['STOP', 'MAX_TOKENS', 'SAFETY', 'RECITATION
 // ---------------------------------------------------------------------------
 
 interface GeminiPartsResult {
-  nativeToolCallList: NativeToolCallDelta[];
   textContent: string | undefined;
   thinking: string | undefined;
+  nativeToolCallList: NativeToolCallDelta[];
 }
 
 // #lizard forgives
 function buildFunctionCallDelta(fc: Record<string, unknown>, index: number): NativeToolCallDelta {
   const delta: NativeToolCallDelta = { index };
   const name = typeof fc.name === 'string' ? fc.name : undefined;
-  const { args } = fc;
-  if (name !== undefined) {
-    delta.name = name;
-  }
-  if (args !== undefined) {
-    delta.argumentsDelta = JSON.stringify(args);
-  }
+  const args = fc.args;
+  if (name !== undefined) delta.name = name;
+  if (args !== undefined) delta.argumentsDelta = JSON.stringify(args);
   return delta;
 }
 
@@ -70,9 +56,7 @@ function processGeminiParts(parts: unknown[]): GeminiPartsResult {
   let toolCallIndex = 0;
 
   for (const part of parts) {
-    if (!isObject(part)) {
-      continue;
-    }
+    if (!isObject(part)) continue;
 
     if (part.thought === true && typeof part.text === 'string') {
       thinking = (thinking ?? '') + part.text;
@@ -90,63 +74,25 @@ function processGeminiParts(parts: unknown[]): GeminiPartsResult {
     }
   }
 
-  return { nativeToolCallList, textContent, thinking };
+  return { textContent, thinking, nativeToolCallList };
 }
 
 function extractGeminiUsage(raw: Record<string, unknown>): UsageInfo | undefined {
-  const { usageMetadata } = raw;
-  if (!isObject(usageMetadata)) {
-    return;
-  }
+  const usageMetadata = raw.usageMetadata;
+  if (!isObject(usageMetadata)) return undefined;
   const usage: UsageInfo = {};
   const input = toNumber(usageMetadata.promptTokenCount);
   const output = toNumber(usageMetadata.candidatesTokenCount);
   const total = toNumber(usageMetadata.totalTokenCount);
-  if (input !== undefined) {
-    usage.inputTokens = input;
-  }
-  if (output !== undefined) {
-    usage.outputTokens = output;
-  }
-  if (total !== undefined) {
-    usage.totalTokens = total;
-  }
+  if (input !== undefined) usage.inputTokens = input;
+  if (output !== undefined) usage.outputTokens = output;
+  if (total !== undefined) usage.totalTokens = total;
   return usage;
 }
 
 // ---------------------------------------------------------------------------
 // Normalizer
 // ---------------------------------------------------------------------------
-
-function validateGeminiInput(raw: unknown): boolean {
-  if (!isObject(raw)) {
-    return false;
-  }
-  if (!Array.isArray(raw.candidates) || raw.candidates.length === 0) {
-    return false;
-  }
-  return true;
-}
-
-function getFirstCandidate(
-  raw: unknown
-): { content?: { parts?: unknown[] }; finishReason?: string; parts?: unknown[] } | null {
-  if (!isObject(raw)) {
-    return null;
-  }
-
-  const rawWithCandidates = raw as { candidates?: unknown[] };
-  const candidates = rawWithCandidates.candidates as Array<{
-    content?: { parts?: unknown[] };
-    finishReason?: string;
-    parts?: unknown[];
-  }>;
-  const candidate = candidates.length > 0 ? candidates[0] : undefined;
-  if (!(candidate && isObject(candidate))) {
-    return null;
-  }
-  return candidate;
-}
 
 /**
  * Normalizes a Google Gemini `generateContent` streaming chunk into a
@@ -157,35 +103,28 @@ function getFirstCandidate(
  */
 export function normalizeGeminiChunk(raw: unknown): NormalizerResult | null {
   try {
-    if (!validateGeminiInput(raw)) {
-      return null;
-    }
+    if (!isObject(raw)) return null;
+    if (!Array.isArray(raw.candidates) || raw.candidates.length === 0) return null;
 
-    const candidate = getFirstCandidate(raw);
-    if (!candidate) {
-      return null;
-    }
+    const candidate = raw.candidates[0];
+    if (!isObject(candidate)) return null;
 
-    const { content } = candidate;
+    const content = candidate.content;
     const finishReason = typeof candidate.finishReason === 'string' ? candidate.finishReason : null;
     const done = finishReason !== null && FINISH_REASONS_DONE.has(finishReason) ? true : undefined;
     const mappedFinishReason = mapGeminiFinishReason(finishReason);
 
-    const parts = isObject(content) && Array.isArray(content.parts) ? content.parts : [];
+    const parts = isObject(content) && Array.isArray(content.parts) ? (content.parts as unknown[]) : [];
     const { textContent, thinking, nativeToolCallList } = processGeminiParts(parts);
-    const usage = isObject(raw) ? extractGeminiUsage(raw) : undefined;
+    const usage = extractGeminiUsage(raw);
 
     const chunk = {
       ...(textContent !== undefined && { content: textContent }),
       ...(thinking !== undefined && { thinking }),
       ...(done !== undefined && { done }),
-      ...(nativeToolCallList.length > 0 && {
-        nativeToolCallDeltas: nativeToolCallList
-      }),
+      ...(nativeToolCallList.length > 0 && { nativeToolCallDeltas: nativeToolCallList }),
       ...(usage !== undefined && { usage }),
-      ...(mappedFinishReason !== undefined && {
-        finishReason: mappedFinishReason
-      })
+      ...(mappedFinishReason !== undefined && { finishReason: mappedFinishReason })
     };
 
     return { chunk, rawEvent: raw };

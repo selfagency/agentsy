@@ -1,4 +1,6 @@
 /**
+ * @agentsy/guardrails
+ *
  * Safety and security guardrails for the Agentsy platform.
  */
 

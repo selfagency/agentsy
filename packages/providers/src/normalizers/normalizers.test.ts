@@ -1,20 +1,18 @@
 import { describe, expect, it } from 'vitest';
-
 import { normalizeAnthropicEvent } from './anthropic.js';
 import { normalizeBedrockConverseEvent } from './bedrock.js';
 import { normalizeCohereEvent } from './cohere.js';
-import { normalizeDeepSeekChunk } from './deepseek.js';
 import { normalizeGeminiChunk } from './gemini.js';
-import { normalizeHuggingFaceTGIChunk } from './hf-tgi.js';
+import { normalizeHuggingFaceTGIChunk } from './hfTgi.js';
 import { normalizeMistralChunk } from './mistral.js';
 import { normalizeOllamaChatChunk, normalizeOllamaGenerateChunk } from './ollama.js';
-import { normalizeOpenAIChatChunk } from './openai.js';
 import {
+  OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS,
   isOpenAICompatibleNormalizerProvider,
-  normalizeOpenAICompatibleChunk,
-  OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS
+  normalizeOpenAICompatibleChunk
 } from './openai-compatible.js';
-import { normalizeOpenAIResponseEvent } from './openai-responses.js';
+import { normalizeOpenAIChatChunk } from './openai.js';
+import { normalizeOpenAIResponseEvent } from './openaiResponses.js';
 import { normalizeZAiChunk } from './zai.js';
 
 // ---------------------------------------------------------------------------
@@ -24,17 +22,11 @@ import { normalizeZAiChunk } from './zai.js';
 describe('normalizeOpenAIChatChunk', () => {
   it('maps content delta to chunk.content', () => {
     const result = normalizeOpenAIChatChunk({
-      choices: [
-        {
-          delta: { content: 'Hello', role: 'assistant' },
-          finish_reason: null,
-          index: 0
-        }
-      ],
-      created: 1_700_000_000,
       id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
       model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: { role: 'assistant', content: 'Hello' }, finish_reason: null }]
     });
     expect(result?.chunk.content).toBe('Hello');
     expect(result?.chunk.done).toBeFalsy();
@@ -42,134 +34,128 @@ describe('normalizeOpenAIChatChunk', () => {
 
   it('maps thinking/reasoning_content delta to chunk.thinking', () => {
     const result = normalizeOpenAIChatChunk({
-      choices: [
-        {
-          delta: { reasoning_content: 'Thinking...', role: 'assistant' },
-          finish_reason: null,
-          index: 0
-        }
-      ],
-      created: 1_700_000_000,
       id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
       model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: { role: 'assistant', reasoning_content: 'Thinking...' }, finish_reason: null }]
     });
     expect(result?.chunk.thinking).toBe('Thinking...');
   });
 
   it('sets done=true on finish_reason stop', () => {
     const result = normalizeOpenAIChatChunk({
-      choices: [{ delta: {}, finish_reason: 'stop', index: 0 }],
-      created: 1_700_000_000,
       id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
       model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: {}, finish_reason: 'stop' }]
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('maps finish_reason stop to finishReason stop', () => {
     const result = normalizeOpenAIChatChunk({
-      choices: [{ delta: {}, finish_reason: 'stop', index: 0 }],
-      created: 1_700_000_000,
       id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
       model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: {}, finish_reason: 'stop' }]
     });
     expect(result?.chunk.finishReason).toBe('stop');
   });
 
   it('maps finish_reason tool_calls to finishReason tool-calls', () => {
     const result = normalizeOpenAIChatChunk({
-      choices: [{ delta: {}, finish_reason: 'tool_calls', index: 0 }],
-      created: 1_700_000_000,
       id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
       model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: {}, finish_reason: 'tool_calls' }]
     });
     expect(result?.chunk.finishReason).toBe('tool-calls');
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('maps finish_reason length to finishReason length', () => {
     const result = normalizeOpenAIChatChunk({
-      choices: [{ delta: {}, finish_reason: 'length', index: 0 }],
-      created: 1_700_000_000,
       id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
       model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: {}, finish_reason: 'length' }]
     });
     expect(result?.chunk.finishReason).toBe('length');
   });
 
   it('maps finish_reason content_filter to finishReason content-filter', () => {
     const result = normalizeOpenAIChatChunk({
-      choices: [{ delta: {}, finish_reason: 'content_filter', index: 0 }],
-      created: 1_700_000_000,
       id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
       model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: {}, finish_reason: 'content_filter' }]
     });
     expect(result?.chunk.finishReason).toBe('content-filter');
   });
 
   it('does not set finishReason on mid-stream chunks', () => {
     const result = normalizeOpenAIChatChunk({
-      choices: [{ delta: { content: 'hi' }, finish_reason: null, index: 0 }],
-      created: 1_700_000_000,
       id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
       model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: { content: 'hi' }, finish_reason: null }]
     });
     expect(result?.chunk.finishReason).toBeUndefined();
   });
 
   it('sets done=true on finish_reason tool_calls', () => {
     const result = normalizeOpenAIChatChunk({
-      choices: [{ delta: {}, finish_reason: 'tool_calls', index: 0 }],
-      created: 1_700_000_000,
       id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
       model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: {}, finish_reason: 'tool_calls' }]
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('sets done=true on other terminal finish reasons (length, content_filter)', () => {
     for (const finish_reason of ['length', 'content_filter']) {
       const result = normalizeOpenAIChatChunk({
-        choices: [{ delta: {}, finish_reason, index: 0 }],
-        created: 1_700_000_000,
         id: 'chatcmpl-abc',
+        object: 'chat.completion.chunk',
+        created: 1700000000,
         model: 'gpt-4o',
-        object: 'chat.completion.chunk'
+        choices: [{ index: 0, delta: {}, finish_reason }]
       });
-      expect(result?.chunk.done).toBeTruthy();
+      expect(result?.chunk.done).toBe(true);
     }
   });
 
   it('maps tool_call delta to nativeToolCallDeltas', () => {
     const result = normalizeOpenAIChatChunk({
+      id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
+      model: 'gpt-4o',
       choices: [
         {
+          index: 0,
           delta: {
             tool_calls: [
               {
-                function: { arguments: '', name: 'get_weather' },
-                id: 'call_xyz',
                 index: 0,
-                type: 'function'
+                id: 'call_xyz',
+                type: 'function',
+                function: { name: 'get_weather', arguments: '' }
               }
             ]
           },
-          finish_reason: null,
-          index: 0
+          finish_reason: null
         }
-      ],
-      created: 1_700_000_000,
-      id: 'chatcmpl-abc',
-      model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      ]
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -179,31 +165,31 @@ describe('normalizeOpenAIChatChunk', () => {
 
   it('maps tool_call argument delta', () => {
     const result = normalizeOpenAIChatChunk({
+      id: 'chatcmpl-abc',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
+      model: 'gpt-4o',
       choices: [
         {
+          index: 0,
           delta: {
-            tool_calls: [{ function: { arguments: '{"city"', name: null }, index: 0 }]
+            tool_calls: [{ index: 0, function: { name: null, arguments: '{"city"' } }]
           },
-          finish_reason: null,
-          index: 0
+          finish_reason: null
         }
-      ],
-      created: 1_700_000_000,
-      id: 'chatcmpl-abc',
-      model: 'gpt-4o',
-      object: 'chat.completion.chunk'
+      ]
     });
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.argumentsDelta).toBe('{"city"');
   });
 
   it('extracts usage from final chunk', () => {
     const result = normalizeOpenAIChatChunk({
-      choices: [],
-      created: 1_700_000_000,
       id: 'chatcmpl-abc',
-      model: 'gpt-4o',
       object: 'chat.completion.chunk',
-      usage: { completion_tokens: 20, prompt_tokens: 10, total_tokens: 30 }
+      created: 1700000000,
+      model: 'gpt-4o',
+      choices: [],
+      usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 }
     });
     expect(result?.chunk.usage?.inputTokens).toBe(10);
     expect(result?.chunk.usage?.outputTokens).toBe(20);
@@ -225,28 +211,22 @@ describe('normalizeOpenAIChatChunk', () => {
 
 describe('openai-compatible normalizer', () => {
   it('exposes expected provider registry', () => {
-    expect(OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS).toStrictEqual(['openai', 'kimi', 'qwen', 'llama', 'granite']);
+    expect(OPENAI_COMPATIBLE_NORMALIZER_PROVIDERS).toEqual(['openai', 'kimi', 'qwen', 'llama', 'granite']);
   });
 
   it('checks provider compatibility', () => {
-    expect(isOpenAICompatibleNormalizerProvider('openai')).toBeTruthy();
-    expect(isOpenAICompatibleNormalizerProvider('qwen')).toBeTruthy();
-    expect(isOpenAICompatibleNormalizerProvider('mistral')).toBeFalsy();
+    expect(isOpenAICompatibleNormalizerProvider('openai')).toBe(true);
+    expect(isOpenAICompatibleNormalizerProvider('qwen')).toBe(true);
+    expect(isOpenAICompatibleNormalizerProvider('mistral')).toBe(false);
   });
 
   it('normalizes openai-compatible chunks through shared helper', () => {
     const result = normalizeOpenAICompatibleChunk('kimi', {
-      choices: [
-        {
-          delta: { content: 'Hello from kimi' },
-          finish_reason: null,
-          index: 0
-        }
-      ],
-      created: 1_700_000_000,
       id: 'chatcmpl-kimi-1',
+      object: 'chat.completion.chunk',
+      created: 1700000000,
       model: 'kimi-k2',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: { content: 'Hello from kimi' }, finish_reason: null }]
     });
 
     expect(result?.chunk.content).toBe('Hello from kimi');
@@ -260,12 +240,12 @@ describe('openai-compatible normalizer', () => {
 describe('normalizeOpenAIResponseEvent', () => {
   it('maps response.output_text.delta to chunk.content', () => {
     const result = normalizeOpenAIResponseEvent({
-      content_index: 0,
-      delta: 'Hello ',
+      type: 'response.output_text.delta',
       event_id: 'ev_001',
       item_id: 'item_001',
       output_index: 0,
-      type: 'response.output_text.delta'
+      content_index: 0,
+      delta: 'Hello '
     });
     expect(result?.chunk.content).toBe('Hello ');
     expect(result?.chunk.done).toBeFalsy();
@@ -273,36 +253,36 @@ describe('normalizeOpenAIResponseEvent', () => {
 
   it('maps response.output_text.delta with empty delta to empty content', () => {
     const result = normalizeOpenAIResponseEvent({
-      delta: '',
-      type: 'response.output_text.delta'
+      type: 'response.output_text.delta',
+      delta: ''
     });
     expect(result?.chunk.content).toBe('');
   });
 
   it('maps response.refusal.delta to chunk.content (refusal text)', () => {
     const result = normalizeOpenAIResponseEvent({
-      content_index: 0,
-      delta: 'I cannot help with that.',
+      type: 'response.refusal.delta',
       event_id: 'ev_002',
       item_id: 'item_001',
       output_index: 0,
-      type: 'response.refusal.delta'
+      content_index: 0,
+      delta: 'I cannot help with that.'
     });
     expect(result?.chunk.content).toBe('I cannot help with that.');
   });
 
   it('maps response.output_item.added for function_call to nativeToolCallDeltas', () => {
     const result = normalizeOpenAIResponseEvent({
+      type: 'response.output_item.added',
       event_id: 'ev_003',
-      item: {
-        call_id: 'call_abc',
-        id: 'item_001',
-        name: 'get_weather',
-        status: 'in_progress',
-        type: 'function_call'
-      },
       output_index: 0,
-      type: 'response.output_item.added'
+      item: {
+        type: 'function_call',
+        id: 'item_001',
+        call_id: 'call_abc',
+        name: 'get_weather',
+        status: 'in_progress'
+      }
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -313,12 +293,12 @@ describe('normalizeOpenAIResponseEvent', () => {
 
   it('maps response.function_call_arguments.delta to nativeToolCallDeltas', () => {
     const result = normalizeOpenAIResponseEvent({
-      call_id: 'call_abc',
-      delta: '{"city"',
+      type: 'response.function_call_arguments.delta',
       event_id: 'ev_004',
       item_id: 'item_001',
       output_index: 0,
-      type: 'response.function_call_arguments.delta'
+      call_id: 'call_abc',
+      delta: '{"city"'
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -329,15 +309,15 @@ describe('normalizeOpenAIResponseEvent', () => {
 
   it('maps response.completed to done=true with usage', () => {
     const result = normalizeOpenAIResponseEvent({
+      type: 'response.completed',
       event_id: 'ev_005',
       response: {
         id: 'resp_001',
         status: 'completed',
         usage: { input_tokens: 15, output_tokens: 25, total_tokens: 40 }
-      },
-      type: 'response.completed'
+      }
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
     expect(result?.chunk.usage?.inputTokens).toBe(15);
     expect(result?.chunk.usage?.outputTokens).toBe(25);
     expect(result?.chunk.usage?.totalTokens).toBe(40);
@@ -345,8 +325,8 @@ describe('normalizeOpenAIResponseEvent', () => {
 
   it('maps response.completed to finishReason stop', () => {
     const result = normalizeOpenAIResponseEvent({
-      response: { id: 'resp_001', status: 'completed' },
-      type: 'response.completed'
+      type: 'response.completed',
+      response: { id: 'resp_001', status: 'completed' }
     });
     expect(result?.chunk.finishReason).toBe('stop');
   });
@@ -365,18 +345,8 @@ describe('normalizeOpenAIResponseEvent', () => {
   });
 
   it('never throws on adversarial input', () => {
-    expect(() =>
-      normalizeOpenAIResponseEvent({
-        delta: null,
-        type: 'response.output_text.delta'
-      })
-    ).not.toThrow();
-    expect(() =>
-      normalizeOpenAIResponseEvent({
-        response: null,
-        type: 'response.completed'
-      })
-    ).not.toThrow();
+    expect(() => normalizeOpenAIResponseEvent({ type: 'response.output_text.delta', delta: null })).not.toThrow();
+    expect(() => normalizeOpenAIResponseEvent({ type: 'response.completed', response: null })).not.toThrow();
     expect(() => normalizeOpenAIResponseEvent(undefined)).not.toThrow();
   });
 });
@@ -388,43 +358,43 @@ describe('normalizeOpenAIResponseEvent', () => {
 describe('normalizeAnthropicEvent', () => {
   it('extracts input token usage from message_start', () => {
     const result = normalizeAnthropicEvent({
+      type: 'message_start',
       message: {
-        content: [],
         id: 'msg_01',
-        model: 'claude-opus-4-6',
-        role: 'assistant',
-        stop_reason: null,
         type: 'message',
+        role: 'assistant',
+        content: [],
+        model: 'claude-opus-4-6',
+        stop_reason: null,
         usage: { input_tokens: 25, output_tokens: 1 }
-      },
-      type: 'message_start'
+      }
     });
     expect(result?.chunk.usage?.inputTokens).toBe(25);
   });
 
   it('maps content_block_delta text_delta to chunk.content', () => {
     const result = normalizeAnthropicEvent({
-      delta: { text: 'Hello!', type: 'text_delta' },
+      type: 'content_block_delta',
       index: 0,
-      type: 'content_block_delta'
+      delta: { type: 'text_delta', text: 'Hello!' }
     });
     expect(result?.chunk.content).toBe('Hello!');
   });
 
   it('maps content_block_delta thinking_delta to chunk.thinking', () => {
     const result = normalizeAnthropicEvent({
-      delta: { thinking: 'Let me reason...', type: 'thinking_delta' },
+      type: 'content_block_delta',
       index: 0,
-      type: 'content_block_delta'
+      delta: { type: 'thinking_delta', thinking: 'Let me reason...' }
     });
     expect(result?.chunk.thinking).toBe('Let me reason...');
   });
 
   it('maps content_block_delta input_json_delta to nativeToolCallDeltas', () => {
     const result = normalizeAnthropicEvent({
-      delta: { partial_json: '{"location":"', type: 'input_json_delta' },
+      type: 'content_block_delta',
       index: 1,
-      type: 'content_block_delta'
+      delta: { type: 'input_json_delta', partial_json: '{"location":"' }
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(1);
@@ -433,14 +403,14 @@ describe('normalizeAnthropicEvent', () => {
 
   it('maps content_block_start tool_use to nativeToolCallDeltas with name+id', () => {
     const result = normalizeAnthropicEvent({
-      content_block: {
-        id: 'toolu_01A09',
-        input: {},
-        name: 'get_weather',
-        type: 'tool_use'
-      },
+      type: 'content_block_start',
       index: 1,
-      type: 'content_block_start'
+      content_block: {
+        type: 'tool_use',
+        id: 'toolu_01A09',
+        name: 'get_weather',
+        input: {}
+      }
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(1);
@@ -451,27 +421,27 @@ describe('normalizeAnthropicEvent', () => {
 
   it('returns null for content_block_start with text type', () => {
     const result = normalizeAnthropicEvent({
-      content_block: { text: '', type: 'text' },
+      type: 'content_block_start',
       index: 0,
-      type: 'content_block_start'
+      content_block: { type: 'text', text: '' }
     });
     expect(result).toBeNull();
   });
 
   it('maps message_delta stop_reason end_turn to done=true with output tokens', () => {
     const result = normalizeAnthropicEvent({
-      delta: { stop_reason: 'end_turn', stop_sequence: null },
       type: 'message_delta',
+      delta: { stop_reason: 'end_turn', stop_sequence: null },
       usage: { output_tokens: 42 }
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
     expect(result?.chunk.usage?.outputTokens).toBe(42);
   });
 
   it('maps message_delta stop_reason end_turn to finishReason stop', () => {
     const result = normalizeAnthropicEvent({
-      delta: { stop_reason: 'end_turn', stop_sequence: null },
       type: 'message_delta',
+      delta: { stop_reason: 'end_turn', stop_sequence: null },
       usage: { output_tokens: 5 }
     });
     expect(result?.chunk.finishReason).toBe('stop');
@@ -479,8 +449,8 @@ describe('normalizeAnthropicEvent', () => {
 
   it('maps message_delta stop_reason tool_use to finishReason tool-calls', () => {
     const result = normalizeAnthropicEvent({
-      delta: { stop_reason: 'tool_use' },
       type: 'message_delta',
+      delta: { stop_reason: 'tool_use' },
       usage: { output_tokens: 10 }
     });
     expect(result?.chunk.finishReason).toBe('tool-calls');
@@ -488,8 +458,8 @@ describe('normalizeAnthropicEvent', () => {
 
   it('maps message_delta stop_reason max_tokens to finishReason length', () => {
     const result = normalizeAnthropicEvent({
-      delta: { stop_reason: 'max_tokens' },
       type: 'message_delta',
+      delta: { stop_reason: 'max_tokens' },
       usage: { output_tokens: 100 }
     });
     expect(result?.chunk.finishReason).toBe('length');
@@ -497,20 +467,20 @@ describe('normalizeAnthropicEvent', () => {
 
   it('maps message_delta stop_reason tool_use to done=true', () => {
     const result = normalizeAnthropicEvent({
-      delta: { stop_reason: 'tool_use' },
       type: 'message_delta',
+      delta: { stop_reason: 'tool_use' },
       usage: { output_tokens: 10 }
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('maps message_stop to done=true', () => {
     const result = normalizeAnthropicEvent({ type: 'message_stop' });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('returns null for unknown/informational event types', () => {
-    expect(normalizeAnthropicEvent({ index: 0, type: 'content_block_stop' })).toBeNull();
+    expect(normalizeAnthropicEvent({ type: 'content_block_stop', index: 0 })).toBeNull();
     expect(normalizeAnthropicEvent({ type: 'ping' })).toBeNull();
   });
 
@@ -521,8 +491,8 @@ describe('normalizeAnthropicEvent', () => {
   });
 
   it('never throws on adversarial input', () => {
-    expect(() => normalizeAnthropicEvent({ delta: null, type: 'content_block_delta' })).not.toThrow();
-    expect(() => normalizeAnthropicEvent({ message: null, type: 'message_start' })).not.toThrow();
+    expect(() => normalizeAnthropicEvent({ type: 'content_block_delta', delta: null })).not.toThrow();
+    expect(() => normalizeAnthropicEvent({ type: 'message_start', message: null })).not.toThrow();
     expect(() => normalizeAnthropicEvent(undefined)).not.toThrow();
   });
 });
@@ -534,10 +504,10 @@ describe('normalizeAnthropicEvent', () => {
 describe('normalizeOllamaChatChunk', () => {
   it('maps message.content to chunk.content', () => {
     const result = normalizeOllamaChatChunk({
+      model: 'llama3.2',
       created_at: '2024-01-01T00:00:00Z',
-      done: false,
-      message: { content: 'Hello ', role: 'assistant' },
-      model: 'llama3.2'
+      message: { role: 'assistant', content: 'Hello ' },
+      done: false
     });
     expect(result?.chunk.content).toBe('Hello ');
     expect(result?.chunk.done).toBeFalsy();
@@ -545,55 +515,48 @@ describe('normalizeOllamaChatChunk', () => {
 
   it('sets done=true on done:true chunk and extracts usage', () => {
     const result = normalizeOllamaChatChunk({
-      created_at: '2024-01-01T00:00:00Z',
-      done: true,
-      eval_count: 150,
-      message: { content: '', role: 'assistant' },
       model: 'llama3.2',
-      prompt_eval_count: 26
+      created_at: '2024-01-01T00:00:00Z',
+      message: { role: 'assistant', content: '' },
+      done: true,
+      prompt_eval_count: 26,
+      eval_count: 150
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
     expect(result?.chunk.usage?.inputTokens).toBe(26);
     expect(result?.chunk.usage?.outputTokens).toBe(150);
   });
 
   it('sets finishReason stop on done:true chunk', () => {
     const result = normalizeOllamaChatChunk({
+      model: 'llama3.2',
       created_at: '2024-01-01T00:00:00Z',
-      done: true,
-      message: { content: '', role: 'assistant' },
-      model: 'llama3.2'
+      message: { role: 'assistant', content: '' },
+      done: true
     });
     expect(result?.chunk.finishReason).toBe('stop');
   });
 
   it('does not set finishReason on mid-stream ollama chat chunk', () => {
     const result = normalizeOllamaChatChunk({
+      model: 'llama3.2',
       created_at: '2024-01-01T00:00:00Z',
-      done: false,
-      message: { content: 'hi', role: 'assistant' },
-      model: 'llama3.2'
+      message: { role: 'assistant', content: 'hi' },
+      done: false
     });
     expect(result?.chunk.finishReason).toBeUndefined();
   });
 
   it('maps message.tool_calls to nativeToolCallDeltas', () => {
     const result = normalizeOllamaChatChunk({
+      model: 'llama3.2',
       created_at: '2024-01-01T00:00:00Z',
-      done: false,
       message: {
-        content: '',
         role: 'assistant',
-        tool_calls: [
-          {
-            function: {
-              arguments: { location: 'Boston' },
-              name: 'get_weather'
-            }
-          }
-        ]
+        content: '',
+        tool_calls: [{ function: { name: 'get_weather', arguments: { location: 'Boston' } } }]
       },
-      model: 'llama3.2'
+      done: false
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -602,13 +565,7 @@ describe('normalizeOllamaChatChunk', () => {
   });
 
   it('returns null when message field is absent', () => {
-    expect(
-      normalizeOllamaChatChunk({
-        done: false,
-        model: 'llama3.2',
-        response: 'hello'
-      })
-    ).toBeNull();
+    expect(normalizeOllamaChatChunk({ model: 'llama3.2', response: 'hello', done: false })).toBeNull();
     expect(normalizeOllamaChatChunk(null)).toBeNull();
   });
 
@@ -622,46 +579,40 @@ describe('normalizeOllamaChatChunk', () => {
 describe('normalizeOllamaGenerateChunk', () => {
   it('maps response field to chunk.content', () => {
     const result = normalizeOllamaGenerateChunk({
-      created_at: '2024-01-01T00:00:00Z',
-      done: false,
       model: 'llama3.2',
-      response: 'The capital'
+      created_at: '2024-01-01T00:00:00Z',
+      response: 'The capital',
+      done: false
     });
     expect(result?.chunk.content).toBe('The capital');
   });
 
   it('sets done=true on done:true and extracts usage', () => {
     const result = normalizeOllamaGenerateChunk({
-      created_at: '2024-01-01T00:00:00Z',
-      done: true,
-      eval_count: 80,
       model: 'llama3.2',
+      created_at: '2024-01-01T00:00:00Z',
+      response: '',
+      done: true,
       prompt_eval_count: 10,
-      response: ''
+      eval_count: 80
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
     expect(result?.chunk.usage?.inputTokens).toBe(10);
     expect(result?.chunk.usage?.outputTokens).toBe(80);
   });
 
   it('sets finishReason stop on done:true generate chunk', () => {
     const result = normalizeOllamaGenerateChunk({
-      created_at: '2024-01-01T00:00:00Z',
-      done: true,
       model: 'llama3.2',
-      response: ''
+      created_at: '2024-01-01T00:00:00Z',
+      response: '',
+      done: true
     });
     expect(result?.chunk.finishReason).toBe('stop');
   });
 
   it('returns null when response field is absent', () => {
-    expect(
-      normalizeOllamaGenerateChunk({
-        done: false,
-        message: {},
-        model: 'llama3.2'
-      })
-    ).toBeNull();
+    expect(normalizeOllamaGenerateChunk({ model: 'llama3.2', message: {}, done: false })).toBeNull();
     expect(normalizeOllamaGenerateChunk(null)).toBeNull();
   });
 
@@ -694,10 +645,7 @@ describe('normalizeGeminiChunk', () => {
     const result = normalizeGeminiChunk({
       candidates: [
         {
-          content: {
-            parts: [{ text: 'Hello' }, { text: ' world' }],
-            role: 'model'
-          },
+          content: { parts: [{ text: 'Hello' }, { text: ' world' }], role: 'model' },
           finishReason: 'FINISH_REASON_UNSPECIFIED'
         }
       ]
@@ -710,7 +658,7 @@ describe('normalizeGeminiChunk', () => {
       candidates: [
         {
           content: {
-            parts: [{ text: 'Let me reason...', thought: true }, { text: 'The answer is 42.' }],
+            parts: [{ thought: true, text: 'Let me reason...' }, { text: 'The answer is 42.' }],
             role: 'model'
           },
           finishReason: 'FINISH_REASON_UNSPECIFIED'
@@ -728,10 +676,7 @@ describe('normalizeGeminiChunk', () => {
           content: {
             parts: [
               {
-                functionCall: {
-                  args: { location: 'Boston' },
-                  name: 'get_weather'
-                }
+                functionCall: { name: 'get_weather', args: { location: 'Boston' } }
               }
             ],
             role: 'model'
@@ -750,7 +695,7 @@ describe('normalizeGeminiChunk', () => {
     const result = normalizeGeminiChunk({
       candidates: [{ content: { parts: [], role: 'model' }, finishReason: 'STOP' }]
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('maps Gemini finishReason STOP to finishReason stop', () => {
@@ -778,15 +723,15 @@ describe('normalizeGeminiChunk', () => {
     const result = normalizeGeminiChunk({
       candidates: [{ content: { parts: [], role: 'model' }, finishReason: 'MAX_TOKENS' }]
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('extracts usageMetadata tokens', () => {
     const result = normalizeGeminiChunk({
       candidates: [{ content: { parts: [], role: 'model' }, finishReason: 'STOP' }],
       usageMetadata: {
-        candidatesTokenCount: 30,
         promptTokenCount: 10,
+        candidatesTokenCount: 30,
         totalTokenCount: 40
       }
     });
@@ -816,68 +761,56 @@ describe('normalizeGeminiChunk', () => {
 describe('normalizeMistralChunk', () => {
   it('maps delta.content to chunk.content (OpenAI-compatible)', () => {
     const result = normalizeMistralChunk({
-      choices: [{ delta: { content: 'Bonjour' }, finish_reason: null, index: 0 }],
       id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
       model: 'mistral-large',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: { content: 'Bonjour' }, finish_reason: null }]
     });
     expect(result?.chunk.content).toBe('Bonjour');
   });
 
   it('sets done=true on finish_reason stop', () => {
     const result = normalizeMistralChunk({
-      choices: [{ delta: {}, finish_reason: 'stop', index: 0 }],
       id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
       model: 'mistral-large',
-      object: 'chat.completion.chunk'
+      choices: [{ index: 0, delta: {}, finish_reason: 'stop' }]
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('maps tool_call delta to nativeToolCallDeltas', () => {
     const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'mistral-large',
       choices: [
         {
+          index: 0,
           delta: {
-            tool_calls: [
-              {
-                function: { arguments: '', name: 'search' },
-                id: 'call_1',
-                index: 0,
-                type: 'function'
-              }
-            ]
+            tool_calls: [{ index: 0, id: 'call_1', type: 'function', function: { name: 'search', arguments: '' } }]
           },
-          finish_reason: null,
-          index: 0
+          finish_reason: null
         }
-      ],
-      id: 'cmpl-abc',
-      model: 'mistral-large',
-      object: 'chat.completion.chunk'
+      ]
     });
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('search');
   });
 
   it('extracts thinking from structured content array (Magistral native reasoning)', () => {
     const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'magistral-medium-latest',
       choices: [
         {
+          index: 0,
           delta: {
-            content: [
-              {
-                thinking: [{ text: 'Let me reason...', type: 'text' }],
-                type: 'thinking'
-              }
-            ]
+            content: [{ type: 'thinking', thinking: [{ type: 'text', text: 'Let me reason...' }] }]
           },
-          finish_reason: null,
-          index: 0
+          finish_reason: null
         }
-      ],
-      id: 'cmpl-abc',
-      model: 'magistral-medium-latest',
-      object: 'chat.completion.chunk'
+      ]
     });
     expect(result?.chunk.thinking).toBe('Let me reason...');
     expect(result?.chunk.content).toBeUndefined();
@@ -885,18 +818,18 @@ describe('normalizeMistralChunk', () => {
 
   it('extracts text from structured content array (Magistral native reasoning)', () => {
     const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'magistral-medium-latest',
       choices: [
         {
+          index: 0,
           delta: {
-            content: [{ text: 'The answer is 42.', type: 'text' }]
+            content: [{ type: 'text', text: 'The answer is 42.' }]
           },
-          finish_reason: null,
-          index: 0
+          finish_reason: null
         }
-      ],
-      id: 'cmpl-abc',
-      model: 'magistral-medium-latest',
-      object: 'chat.completion.chunk'
+      ]
     });
     expect(result?.chunk.content).toBe('The answer is 42.');
     expect(result?.chunk.thinking).toBeUndefined();
@@ -904,24 +837,21 @@ describe('normalizeMistralChunk', () => {
 
   it('extracts both content and thinking when both appear in one chunk', () => {
     const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'magistral-medium-latest',
       choices: [
         {
+          index: 0,
           delta: {
             content: [
-              {
-                thinking: [{ text: 'reasoning', type: 'text' }],
-                type: 'thinking'
-              },
-              { text: 'answer', type: 'text' }
+              { type: 'thinking', thinking: [{ type: 'text', text: 'reasoning' }] },
+              { type: 'text', text: 'answer' }
             ]
           },
-          finish_reason: null,
-          index: 0
+          finish_reason: null
         }
-      ],
-      id: 'cmpl-abc',
-      model: 'magistral-medium-latest',
-      object: 'chat.completion.chunk'
+      ]
     });
     expect(result?.chunk.thinking).toBe('reasoning');
     expect(result?.chunk.content).toBe('answer');
@@ -929,26 +859,19 @@ describe('normalizeMistralChunk', () => {
 
   it('preserves tool call deltas alongside structured content', () => {
     const result = normalizeMistralChunk({
+      id: 'cmpl-abc',
+      object: 'chat.completion.chunk',
+      model: 'magistral-medium-latest',
       choices: [
         {
+          index: 0,
           delta: {
-            content: [{ text: 'ok', type: 'text' }],
-            tool_calls: [
-              {
-                function: { arguments: '', name: 'fn' },
-                id: 'call_1',
-                index: 0,
-                type: 'function'
-              }
-            ]
+            content: [{ type: 'text', text: 'ok' }],
+            tool_calls: [{ index: 0, id: 'call_1', type: 'function', function: { name: 'fn', arguments: '' } }]
           },
-          finish_reason: null,
-          index: 0
+          finish_reason: null
         }
-      ],
-      id: 'cmpl-abc',
-      model: 'magistral-medium-latest',
-      object: 'chat.completion.chunk'
+      ]
     });
     expect(result?.chunk.content).toBe('ok');
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('fn');
@@ -972,9 +895,9 @@ describe('normalizeMistralChunk', () => {
 describe('normalizeCohereEvent', () => {
   it('maps content-delta to chunk.content', () => {
     const result = normalizeCohereEvent({
-      delta: { message: { content: { text: 'Hello' } } },
+      type: 'content-delta',
       index: 0,
-      type: 'content-delta'
+      delta: { message: { content: { text: 'Hello' } } }
     });
     expect(result?.chunk.content).toBe('Hello');
     expect(result?.chunk.done).toBeFalsy();
@@ -982,25 +905,25 @@ describe('normalizeCohereEvent', () => {
 
   it('maps tool-plan-delta to chunk.thinking', () => {
     const result = normalizeCohereEvent({
-      delta: { message: { tool_plan: 'I will check the weather.' } },
-      type: 'tool-plan-delta'
+      type: 'tool-plan-delta',
+      delta: { message: { tool_plan: 'I will check the weather.' } }
     });
     expect(result?.chunk.thinking).toBe('I will check the weather.');
   });
 
   it('maps tool-call-start to nativeToolCallDeltas with id+name', () => {
     const result = normalizeCohereEvent({
+      type: 'tool-call-start',
+      index: 0,
       delta: {
         message: {
           tool_calls: {
-            function: { arguments: '', name: 'get_weather' },
             id: 'get_weather_abc123',
-            type: 'function'
+            type: 'function',
+            function: { name: 'get_weather', arguments: '' }
           }
         }
-      },
-      index: 0,
-      type: 'tool-call-start'
+      }
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -1010,11 +933,9 @@ describe('normalizeCohereEvent', () => {
 
   it('maps tool-call-delta to nativeToolCallDeltas with argumentsDelta', () => {
     const result = normalizeCohereEvent({
-      delta: {
-        message: { tool_calls: { function: { arguments: '{"location":' } } }
-      },
+      type: 'tool-call-delta',
       index: 0,
-      type: 'tool-call-delta'
+      delta: { message: { tool_calls: { function: { arguments: '{"location":' } } } }
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
     expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
@@ -1023,61 +944,61 @@ describe('normalizeCohereEvent', () => {
 
   it('sets done=true on message-end', () => {
     const result = normalizeCohereEvent({
-      delta: { finish_reason: 'COMPLETE' },
-      type: 'message-end'
+      type: 'message-end',
+      delta: { finish_reason: 'COMPLETE' }
     });
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('maps Cohere message-end COMPLETE to finishReason stop', () => {
     const result = normalizeCohereEvent({
-      delta: { finish_reason: 'COMPLETE' },
-      type: 'message-end'
+      type: 'message-end',
+      delta: { finish_reason: 'COMPLETE' }
     });
     expect(result?.chunk.finishReason).toBe('stop');
   });
 
   it('maps Cohere message-end MAX_TOKENS to finishReason length', () => {
     const result = normalizeCohereEvent({
-      delta: { finish_reason: 'MAX_TOKENS' },
-      type: 'message-end'
+      type: 'message-end',
+      delta: { finish_reason: 'MAX_TOKENS' }
     });
     expect(result?.chunk.finishReason).toBe('length');
   });
 
   it('maps Cohere message-end TOOL_CALL to finishReason tool-calls', () => {
     const result = normalizeCohereEvent({
-      delta: { finish_reason: 'TOOL_CALL' },
-      type: 'message-end'
+      type: 'message-end',
+      delta: { finish_reason: 'TOOL_CALL' }
     });
     expect(result?.chunk.finishReason).toBe('tool-calls');
   });
 
   it('maps Cohere message-end ERROR to finishReason error', () => {
     const result = normalizeCohereEvent({
-      delta: { finish_reason: 'ERROR' },
-      type: 'message-end'
+      type: 'message-end',
+      delta: { finish_reason: 'ERROR' }
     });
     expect(result?.chunk.finishReason).toBe('error');
   });
 
   it('extracts usage tokens from message-end', () => {
     const result = normalizeCohereEvent({
+      type: 'message-end',
       delta: {
         finish_reason: 'COMPLETE',
         usage: { tokens: { input_tokens: 71, output_tokens: 418 } }
-      },
-      type: 'message-end'
+      }
     });
     expect(result?.chunk.usage?.inputTokens).toBe(71);
     expect(result?.chunk.usage?.outputTokens).toBe(418);
   });
 
   it('returns null for informational event types', () => {
-    expect(normalizeCohereEvent({ id: 'abc', type: 'message-start' })).toBeNull();
-    expect(normalizeCohereEvent({ index: 0, type: 'content-start' })).toBeNull();
-    expect(normalizeCohereEvent({ index: 0, type: 'content-end' })).toBeNull();
-    expect(normalizeCohereEvent({ index: 0, type: 'citation-start' })).toBeNull();
+    expect(normalizeCohereEvent({ type: 'message-start', id: 'abc' })).toBeNull();
+    expect(normalizeCohereEvent({ type: 'content-start', index: 0 })).toBeNull();
+    expect(normalizeCohereEvent({ type: 'content-end', index: 0 })).toBeNull();
+    expect(normalizeCohereEvent({ type: 'citation-start', index: 0 })).toBeNull();
   });
 
   it('returns null for non-object or missing type', () => {
@@ -1088,13 +1009,8 @@ describe('normalizeCohereEvent', () => {
   });
 
   it('never throws on adversarial input', () => {
-    expect(() => normalizeCohereEvent({ delta: null, type: 'content-delta' })).not.toThrow();
-    expect(() =>
-      normalizeCohereEvent({
-        delta: { message: null },
-        type: 'tool-call-start'
-      })
-    ).not.toThrow();
+    expect(() => normalizeCohereEvent({ type: 'content-delta', delta: null })).not.toThrow();
+    expect(() => normalizeCohereEvent({ type: 'tool-call-start', delta: { message: null } })).not.toThrow();
     expect(() => normalizeCohereEvent(undefined)).not.toThrow();
   });
 });
@@ -1138,7 +1054,7 @@ describe('normalizeBedrockConverseEvent', () => {
     const result = normalizeBedrockConverseEvent({
       contentBlockStart: {
         contentBlockIndex: 1,
-        start: { toolUse: { name: 'get_weather', toolUseId: 'tooluse_abc' } }
+        start: { toolUse: { toolUseId: 'tooluse_abc', name: 'get_weather' } }
       }
     });
     expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
@@ -1148,54 +1064,38 @@ describe('normalizeBedrockConverseEvent', () => {
   });
 
   it('sets done=true on messageStop event', () => {
-    const result = normalizeBedrockConverseEvent({
-      messageStop: { stopReason: 'end_turn' }
-    });
-    expect(result?.chunk.done).toBeTruthy();
+    const result = normalizeBedrockConverseEvent({ messageStop: { stopReason: 'end_turn' } });
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('maps Bedrock messageStop end_turn to finishReason stop', () => {
-    const result = normalizeBedrockConverseEvent({
-      messageStop: { stopReason: 'end_turn' }
-    });
+    const result = normalizeBedrockConverseEvent({ messageStop: { stopReason: 'end_turn' } });
     expect(result?.chunk.finishReason).toBe('stop');
   });
 
   it('maps Bedrock messageStop tool_use to finishReason tool-calls', () => {
-    const result = normalizeBedrockConverseEvent({
-      messageStop: { stopReason: 'tool_use' }
-    });
+    const result = normalizeBedrockConverseEvent({ messageStop: { stopReason: 'tool_use' } });
     expect(result?.chunk.finishReason).toBe('tool-calls');
   });
 
   it('maps Bedrock messageStop max_tokens to finishReason length', () => {
-    const result = normalizeBedrockConverseEvent({
-      messageStop: { stopReason: 'max_tokens' }
-    });
+    const result = normalizeBedrockConverseEvent({ messageStop: { stopReason: 'max_tokens' } });
     expect(result?.chunk.finishReason).toBe('length');
   });
 
   it('maps Bedrock messageStop guardrail_intervened to finishReason content-filter', () => {
-    const result = normalizeBedrockConverseEvent({
-      messageStop: { stopReason: 'guardrail_intervened' }
-    });
+    const result = normalizeBedrockConverseEvent({ messageStop: { stopReason: 'guardrail_intervened' } });
     expect(result?.chunk.finishReason).toBe('content-filter');
   });
 
   it('sets done=true for all messageStop stopReason values', () => {
-    expect(normalizeBedrockConverseEvent({ messageStop: { stopReason: 'tool_use' } })?.chunk.done).toBeTruthy();
-    expect(
-      normalizeBedrockConverseEvent({
-        messageStop: { stopReason: 'max_tokens' }
-      })?.chunk.done
-    ).toBeTruthy();
+    expect(normalizeBedrockConverseEvent({ messageStop: { stopReason: 'tool_use' } })?.chunk.done).toBe(true);
+    expect(normalizeBedrockConverseEvent({ messageStop: { stopReason: 'max_tokens' } })?.chunk.done).toBe(true);
   });
 
   it('extracts usage from metadata event', () => {
     const result = normalizeBedrockConverseEvent({
-      metadata: {
-        usage: { inputTokens: 15, outputTokens: 42, totalTokens: 57 }
-      }
+      metadata: { usage: { inputTokens: 15, outputTokens: 42, totalTokens: 57 } }
     });
     expect(result?.chunk.usage?.inputTokens).toBe(15);
     expect(result?.chunk.usage?.outputTokens).toBe(42);
@@ -1203,11 +1103,7 @@ describe('normalizeBedrockConverseEvent', () => {
   });
 
   it('returns null for contentBlockStop and messageStart', () => {
-    expect(
-      normalizeBedrockConverseEvent({
-        contentBlockStop: { contentBlockIndex: 0 }
-      })
-    ).toBeNull();
+    expect(normalizeBedrockConverseEvent({ contentBlockStop: { contentBlockIndex: 0 } })).toBeNull();
     expect(normalizeBedrockConverseEvent({ messageStart: { role: 'assistant' } })).toBeNull();
   });
 
@@ -1231,13 +1127,7 @@ describe('normalizeBedrockConverseEvent', () => {
 describe('normalizeZAiChunk', () => {
   it('maps content delta to chunk.content', () => {
     const result = normalizeZAiChunk({
-      choices: [
-        {
-          delta: { content: 'Hello from Z.ai' },
-          finish_reason: null,
-          index: 0
-        }
-      ]
+      choices: [{ index: 0, delta: { content: 'Hello from Z.ai' }, finish_reason: null }]
     });
 
     expect(result?.chunk.content).toBe('Hello from Z.ai');
@@ -1245,57 +1135,36 @@ describe('normalizeZAiChunk', () => {
   });
 
   it('maps finish reasons to canonical finishReason and done', () => {
+    expect(normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'stop' }] })?.chunk.finishReason).toBe(
+      'stop'
+    );
     expect(
-      normalizeZAiChunk({
-        choices: [{ delta: {}, finish_reason: 'stop', index: 0 }]
-      })?.chunk.finishReason
-    ).toBe('stop');
-    expect(
-      normalizeZAiChunk({
-        choices: [{ delta: {}, finish_reason: 'tool_calls', index: 0 }]
-      })?.chunk.finishReason
+      normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'tool_calls' }] })?.chunk.finishReason
     ).toBe('tool-calls');
+    expect(normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'length' }] })?.chunk.finishReason).toBe(
+      'length'
+    );
     expect(
-      normalizeZAiChunk({
-        choices: [{ delta: {}, finish_reason: 'length', index: 0 }]
-      })?.chunk.finishReason
-    ).toBe('length');
-    expect(
-      normalizeZAiChunk({
-        choices: [{ delta: {}, finish_reason: 'sensitive', index: 0 }]
-      })?.chunk.finishReason
+      normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'sensitive' }] })?.chunk.finishReason
     ).toBe('content-filter');
     expect(
-      normalizeZAiChunk({
-        choices: [
-          {
-            delta: {},
-            finish_reason: 'model_context_window_exceeded',
-            index: 0
-          }
-        ]
-      })?.chunk.finishReason
+      normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'model_context_window_exceeded' }] })?.chunk
+        .finishReason
     ).toBe('error');
     expect(
-      normalizeZAiChunk({
-        choices: [{ delta: {}, finish_reason: 'network_error', index: 0 }]
-      })?.chunk.finishReason
+      normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'network_error' }] })?.chunk.finishReason
     ).toBe('error');
 
-    expect(
-      normalizeZAiChunk({
-        choices: [{ delta: {}, finish_reason: 'stop', index: 0 }]
-      })?.chunk.done
-    ).toBeTruthy();
+    expect(normalizeZAiChunk({ choices: [{ index: 0, delta: {}, finish_reason: 'stop' }] })?.chunk.done).toBe(true);
   });
 
   it('extracts usage from z.ai usage fields', () => {
     const result = normalizeZAiChunk({
-      choices: [{ delta: {}, finish_reason: 'stop', index: 0 }],
+      choices: [{ index: 0, delta: {}, finish_reason: 'stop' }],
       usage: { input_tokens: 7, output_tokens: 13 }
     });
 
-    expect(result?.chunk.usage).toStrictEqual({
+    expect(result?.chunk.usage).toEqual({
       inputTokens: 7,
       outputTokens: 13,
       totalTokens: 20
@@ -1312,34 +1181,25 @@ describe('normalizeZAiChunk', () => {
     const result = normalizeZAiChunk({
       choices: [
         {
+          index: 0,
           delta: {
-            tool_calls: [
-              {
-                function: { arguments: '{"q":"x"}', name: 'lookup' },
-                id: '',
-                index: 0
-              },
-              { invalid: true }
-            ]
+            tool_calls: [{ index: 0, id: '', function: { name: 'lookup', arguments: '{"q":"x"}' } }, { invalid: true }]
           },
-          finish_reason: null,
-          index: 0
+          finish_reason: null
         }
       ]
     });
 
-    expect(result?.chunk.nativeToolCallDeltas).toStrictEqual([
-      { argumentsDelta: '{"q":"x"}', index: 0, name: 'lookup' }
-    ]);
+    expect(result?.chunk.nativeToolCallDeltas).toEqual([{ index: 0, name: 'lookup', argumentsDelta: '{"q":"x"}' }]);
   });
 
   it('preserves explicit total_tokens usage when provided', () => {
     const result = normalizeZAiChunk({
-      choices: [{ delta: { content: 'ok' }, finish_reason: null, index: 0 }],
-      usage: { completion_tokens: 4, prompt_tokens: 3, total_tokens: 99 }
+      choices: [{ index: 0, delta: { content: 'ok' }, finish_reason: null }],
+      usage: { prompt_tokens: 3, completion_tokens: 4, total_tokens: 99 }
     });
 
-    expect(result?.chunk.usage).toStrictEqual({
+    expect(result?.chunk.usage).toEqual({
       inputTokens: 3,
       outputTokens: 4,
       totalTokens: 99
@@ -1354,10 +1214,10 @@ describe('normalizeZAiChunk', () => {
 describe('normalizeHuggingFaceTGIChunk', () => {
   it('maps token.text to chunk.content for non-special tokens', () => {
     const result = normalizeHuggingFaceTGIChunk({
-      details: null,
-      generated_text: null,
       index: 0,
-      token: { id: 15_496, logprob: -0.5, special: false, text: ' Hello' }
+      token: { id: 15496, text: ' Hello', logprob: -0.5, special: false },
+      generated_text: null,
+      details: null
     });
     expect(result?.chunk.content).toBe(' Hello');
     expect(result?.chunk.done).toBeFalsy();
@@ -1365,290 +1225,80 @@ describe('normalizeHuggingFaceTGIChunk', () => {
 
   it('omits content for special tokens (e.g., EOS)', () => {
     const result = normalizeHuggingFaceTGIChunk({
-      details: {
-        finish_reason: 'eos_token',
-        generated_tokens: 5,
-        input_length: 10
-      },
-      generated_text: 'Hello world',
       index: 5,
-      token: { id: 2, logprob: 0, special: true, text: '</s>' }
+      token: { id: 2, text: '</s>', logprob: 0, special: true },
+      generated_text: 'Hello world',
+      details: { finish_reason: 'eos_token', generated_tokens: 5, input_length: 10 }
     });
     expect(result?.chunk.content).toBeUndefined();
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
   });
 
   it('sets done=true and extracts usage on final event with details', () => {
     const result = normalizeHuggingFaceTGIChunk({
-      details: {
-        finish_reason: 'eos_token',
-        generated_tokens: 5,
-        input_length: 10
-      },
-      generated_text: 'Hello world.',
       index: 4,
-      token: { id: 13, logprob: -0.1, special: false, text: '.' }
+      token: { id: 13, text: '.', logprob: -0.1, special: false },
+      generated_text: 'Hello world.',
+      details: { finish_reason: 'eos_token', generated_tokens: 5, input_length: 10 }
     });
     expect(result?.chunk.content).toBe('.');
-    expect(result?.chunk.done).toBeTruthy();
+    expect(result?.chunk.done).toBe(true);
     expect(result?.chunk.usage?.inputTokens).toBe(10);
     expect(result?.chunk.usage?.outputTokens).toBe(5);
   });
 
   it('maps HF TGI eos_token to finishReason stop', () => {
     const result = normalizeHuggingFaceTGIChunk({
-      details: {
-        finish_reason: 'eos_token',
-        generated_tokens: 3,
-        input_length: 5
-      },
       index: 1,
-      token: { id: 2, special: true, text: '</s>' }
+      token: { id: 2, text: '</s>', special: true },
+      details: { finish_reason: 'eos_token', generated_tokens: 3, input_length: 5 }
     });
     expect(result?.chunk.finishReason).toBe('stop');
   });
 
   it('maps HF TGI length to finishReason length', () => {
     const result = normalizeHuggingFaceTGIChunk({
-      details: {
-        finish_reason: 'length',
-        generated_tokens: 10,
-        input_length: 5
-      },
       index: 1,
-      token: { id: 1, special: false, text: 'x' }
+      token: { id: 1, text: 'x', special: false },
+      details: { finish_reason: 'length', generated_tokens: 10, input_length: 5 }
     });
     expect(result?.chunk.finishReason).toBe('length');
   });
 
   it('maps HF TGI stop_sequence to finishReason stop', () => {
     const result = normalizeHuggingFaceTGIChunk({
-      details: {
-        finish_reason: 'stop_sequence',
-        generated_tokens: 5,
-        input_length: 3
-      },
       index: 1,
-      token: { id: 1, special: false, text: '.' }
+      token: { id: 1, text: '.', special: false },
+      details: { finish_reason: 'stop_sequence', generated_tokens: 5, input_length: 3 }
     });
     expect(result?.chunk.finishReason).toBe('stop');
   });
 
   it('sets done=true for stop_sequence and length finish reasons', () => {
+    // biome-ignore lint/correctness/useQwikValidLexicalScope: legitimate usage
     const make = (finish_reason: string) =>
       normalizeHuggingFaceTGIChunk({
-        details: { finish_reason, generated_tokens: 1, input_length: 5 },
         index: 1,
-        token: { id: 1, special: false, text: 'x' }
+        token: { id: 1, text: 'x', special: false },
+        details: { finish_reason, generated_tokens: 1, input_length: 5 }
       });
-    expect(make('stop_sequence')?.chunk.done).toBeTruthy();
-    expect(make('length')?.chunk.done).toBeTruthy();
+    expect(make('stop_sequence')?.chunk.done).toBe(true);
+    expect(make('length')?.chunk.done).toBe(true);
   });
 
   it('returns null for missing or non-object token field', () => {
-    expect(normalizeHuggingFaceTGIChunk({ generated_text: null, index: 0 })).toBeNull();
+    expect(normalizeHuggingFaceTGIChunk({ index: 0, generated_text: null })).toBeNull();
     expect(normalizeHuggingFaceTGIChunk({ token: 'bad' })).toBeNull();
     expect(normalizeHuggingFaceTGIChunk(null)).toBeNull();
   });
 
   it('returns null for special-only event with no details', () => {
-    expect(
-      normalizeHuggingFaceTGIChunk({
-        details: null,
-        token: { id: 0, special: true, text: '<pad>' }
-      })
-    ).toBeNull();
+    expect(normalizeHuggingFaceTGIChunk({ token: { id: 0, text: '<pad>', special: true }, details: null })).toBeNull();
   });
 
   it('never throws on adversarial input', () => {
     expect(() => normalizeHuggingFaceTGIChunk({ token: null })).not.toThrow();
     expect(() => normalizeHuggingFaceTGIChunk({ token: { text: null } })).not.toThrow();
     expect(() => normalizeHuggingFaceTGIChunk(undefined)).not.toThrow();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// DeepSeek streaming chunk normalizer
-// ---------------------------------------------------------------------------
-
-describe('normalizeDeepSeekChunk', () => {
-  it('maps content delta to chunk.content', () => {
-    const result = normalizeDeepSeekChunk({
-      choices: [
-        {
-          delta: { content: 'Hello', role: 'assistant' },
-          finish_reason: null,
-          index: 0
-        }
-      ],
-      created: 1_700_000_000,
-      id: 'chatcmpl-ds-abc',
-      model: 'deepseek-chat',
-      object: 'chat.completion.chunk'
-    });
-    expect(result?.chunk.content).toBe('Hello');
-    expect(result?.chunk.done).toBeFalsy();
-  });
-
-  it('maps reasoning_content to chunk.thinking for DeepSeek-R1', () => {
-    const result = normalizeDeepSeekChunk({
-      choices: [
-        {
-          delta: { reasoning_content: 'Thinking step by step...', role: 'assistant' },
-          finish_reason: null,
-          index: 0
-        }
-      ],
-      created: 1_700_000_000,
-      id: 'chatcmpl-ds-r1',
-      model: 'deepseek-reasoner',
-      object: 'chat.completion.chunk'
-    });
-    expect(result?.chunk.thinking).toBe('Thinking step by step...');
-  });
-
-  it('sets done=true and finishReason=stop on finish_reason stop', () => {
-    const result = normalizeDeepSeekChunk({
-      choices: [{ delta: {}, finish_reason: 'stop', index: 0 }],
-      created: 1_700_000_000,
-      id: 'chatcmpl-ds-abc',
-      model: 'deepseek-chat',
-      object: 'chat.completion.chunk'
-    });
-    expect(result?.chunk.done).toBeTruthy();
-    expect(result?.chunk.finishReason).toBe('stop');
-  });
-
-  it('maps tool_calls delta to nativeToolCallDeltas', () => {
-    const result = normalizeDeepSeekChunk({
-      choices: [
-        {
-          delta: {
-            tool_calls: [
-              {
-                function: { arguments: '{"location":"', name: 'get_weather' },
-                id: 'call_abc123',
-                index: 0
-              }
-            ]
-          },
-          finish_reason: null,
-          index: 0
-        }
-      ],
-      created: 1_700_000_000,
-      id: 'chatcmpl-ds-abc',
-      model: 'deepseek-chat',
-      object: 'chat.completion.chunk'
-    });
-    expect(result?.chunk.nativeToolCallDeltas).toHaveLength(1);
-    expect(result?.chunk.nativeToolCallDeltas?.[0]?.index).toBe(0);
-    expect(result?.chunk.nativeToolCallDeltas?.[0]?.id).toBe('call_abc123');
-    expect(result?.chunk.nativeToolCallDeltas?.[0]?.name).toBe('get_weather');
-    expect(result?.chunk.nativeToolCallDeltas?.[0]?.argumentsDelta).toBe('{"location":"');
-  });
-
-  it('filters invalid tool calls and preserves valid ones', () => {
-    const result = normalizeDeepSeekChunk({
-      choices: [
-        {
-          delta: {
-            tool_calls: [
-              { function: { arguments: '', name: 'fn' }, id: 'c1', index: 0 },
-              { invalid: true } as never,
-              { function: { arguments: '{}', name: 'fn2' }, id: 'c2', index: 2 }
-            ]
-          },
-          finish_reason: null,
-          index: 0
-        }
-      ],
-      created: 1_700_000_000,
-      id: 'chatcmpl-ds-abc',
-      model: 'deepseek-chat',
-      object: 'chat.completion.chunk'
-    });
-    expect(result?.chunk.nativeToolCallDeltas).toHaveLength(2);
-  });
-
-  it('maps finish_reason length to finishReason length', () => {
-    const result = normalizeDeepSeekChunk({
-      choices: [{ delta: { content: '...' }, finish_reason: 'length', index: 0 }],
-      created: 1_700_000_000,
-      id: 'chatcmpl-ds-abc',
-      model: 'deepseek-chat',
-      object: 'chat.completion.chunk'
-    });
-    expect(result?.chunk.finishReason).toBe('length');
-  });
-
-  it('maps finish_reason content_filter to finishReason content-filter', () => {
-    const result = normalizeDeepSeekChunk({
-      choices: [{ delta: {}, finish_reason: 'content_filter', index: 0 }],
-      created: 1_700_000_000,
-      id: 'chatcmpl-ds-abc',
-      model: 'deepseek-chat',
-      object: 'chat.completion.chunk'
-    });
-    expect(result?.chunk.finishReason).toBe('content-filter');
-  });
-
-  it('maps finish_reason insufficient_balance to finishReason error', () => {
-    const result = normalizeDeepSeekChunk({
-      choices: [{ delta: {}, finish_reason: 'insufficient_balance', index: 0 }],
-      created: 1_700_000_000,
-      id: 'chatcmpl-ds-abc',
-      model: 'deepseek-chat',
-      object: 'chat.completion.chunk'
-    });
-    expect(result?.chunk.finishReason).toBe('error');
-  });
-
-  it('maps finish_reason tool_calls to finishReason tool-calls', () => {
-    const result = normalizeDeepSeekChunk({
-      choices: [{ delta: {}, finish_reason: 'tool_calls', index: 0 }],
-      created: 1_700_000_000,
-      id: 'chatcmpl-ds-abc',
-      model: 'deepseek-chat',
-      object: 'chat.completion.chunk'
-    });
-    expect(result?.chunk.finishReason).toBe('tool-calls');
-  });
-
-  it('extracts usage tokens from top-level usage object', () => {
-    const result = normalizeDeepSeekChunk({
-      choices: [{ delta: {}, finish_reason: 'stop', index: 0 }],
-      created: 1_700_000_000,
-      id: 'chatcmpl-ds-abc',
-      model: 'deepseek-chat',
-      object: 'chat.completion.chunk',
-      usage: { completion_tokens: 42, prompt_tokens: 15, total_tokens: 57 }
-    });
-    expect(result?.chunk.usage?.inputTokens).toBe(15);
-    expect(result?.chunk.usage?.outputTokens).toBe(42);
-    expect(result?.chunk.usage?.totalTokens).toBe(57);
-  });
-
-  it('returns null for non-object input', () => {
-    expect(normalizeDeepSeekChunk(null)).toBeNull();
-    expect(normalizeDeepSeekChunk('string')).toBeNull();
-    expect(normalizeDeepSeekChunk(undefined)).toBeNull();
-  });
-
-  it('returns null for empty choices array', () => {
-    expect(
-      normalizeDeepSeekChunk({
-        choices: [],
-        id: 'chatcmpl-ds-abc',
-        object: 'chat.completion.chunk'
-      })
-    ).toBeNull();
-  });
-
-  it('never throws on adversarial input', () => {
-    expect(() => normalizeDeepSeekChunk({ choices: null })).not.toThrow();
-    expect(() => normalizeDeepSeekChunk({ choices: [null] })).not.toThrow();
-    expect(() => normalizeDeepSeekChunk({ choices: [{ delta: null }] })).not.toThrow();
-    expect(() => normalizeDeepSeekChunk({ choices: [{ delta: { content: null } }] })).not.toThrow();
   });
 });

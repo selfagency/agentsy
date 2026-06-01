@@ -12,10 +12,10 @@ describe('Turso sync foundation', () => {
 
     expect(() =>
       createTursoManager({
-        authToken: '',
         databaseUrl: '',
-        maxRetries: -1,
-        syncIntervalMs: 0
+        authToken: '',
+        syncIntervalMs: 0,
+        maxRetries: -1
       })
     ).toThrow(/databaseUrl|authToken|syncIntervalMs|maxRetries/u);
   });
@@ -24,19 +24,19 @@ describe('Turso sync foundation', () => {
     const { createTursoManager } = await import('./index.js');
 
     const manager = createTursoManager({
-      authToken: 'token-value',
       databaseUrl: 'libsql://agentsy-memory.turso.io',
+      authToken: 'token-value',
+      syncIntervalMs: 5_000,
       maxRetries: 3,
-      mode: 'local-only',
-      syncIntervalMs: 5000
+      mode: 'local-only'
     });
 
     expect(manager.getStatus()).toBe('idle');
-    expect(manager.getMetrics()).toStrictEqual({
-      conflicts: 0,
+    expect(manager.getMetrics()).toEqual({
+      successes: 0,
       failures: 0,
       retries: 0,
-      successes: 0
+      conflicts: 0
     });
 
     manager.pause();
@@ -50,18 +50,18 @@ describe('Turso sync foundation', () => {
     const { createTursoManager } = await import('./index.js');
 
     const manager = createTursoManager({
-      authToken: 'token-value',
-      client: {
-        download() {
-          throw new Error('download should not run while paused');
-        },
-        upload() {
-          throw new Error('upload should not run while paused');
-        }
-      },
       databaseUrl: 'libsql://agentsy-memory.turso.io',
+      authToken: 'token-value',
+      syncIntervalMs: 5_000,
       maxRetries: 3,
-      syncIntervalMs: 5000
+      client: {
+        async upload() {
+          throw new Error('upload should not run while paused');
+        },
+        async download() {
+          throw new Error('download should not run while paused');
+        }
+      }
     });
 
     manager.pause();
@@ -72,11 +72,11 @@ describe('Turso sync foundation', () => {
         records: []
       })
     ).resolves.toMatchObject({
+      status: 'paused',
+      uploaded: 0,
       downloaded: 0,
       resolvedConflicts: 0,
-      status: 'paused',
-      unresolvedConflicts: 0,
-      uploaded: 0
+      unresolvedConflicts: 0
     });
   });
 
@@ -85,70 +85,65 @@ describe('Turso sync foundation', () => {
     let uploadedSnapshot: { cursor: string; records: { id: string; tier: string }[] } | undefined;
 
     const manager = createTursoManager({
+      databaseUrl: 'libsql://agentsy-memory.turso.io',
       authToken: 'token-value',
+      syncIntervalMs: 5_000,
+      maxRetries: 3,
       client: {
-        // biome-ignore lint/suspicious/useAwait: callback matches Promise<SyncSnapshot> interface
+        async upload(snapshot) {
+          uploadedSnapshot = {
+            cursor: snapshot.cursor,
+            records: snapshot.records.map(record => ({ id: record.id, tier: record.tier }))
+          };
+          return {
+            uploadedCount: snapshot.records.length,
+            nextCursor: 'remote-cursor-2'
+          };
+        },
         async download(cursor) {
           return {
             cursor,
             records: [
               {
-                content: 'Remote wiki page',
                 id: 'remote-1',
                 tier: 'wiki',
-                updatedAt: '2026-05-15T00:00:00.000Z'
+                updatedAt: '2026-05-15T00:00:00.000Z',
+                content: 'Remote wiki page'
               }
             ]
           };
-        },
-        // biome-ignore lint/suspicious/useAwait: callback matches Promise<TursoUploadResult> interface
-        async upload(snapshot) {
-          uploadedSnapshot = {
-            cursor: snapshot.cursor,
-            records: snapshot.records.map(record => ({
-              id: record.id,
-              tier: record.tier
-            }))
-          };
-          return {
-            nextCursor: 'remote-cursor-2',
-            uploadedCount: snapshot.records.length
-          };
         }
-      },
-      databaseUrl: 'libsql://agentsy-memory.turso.io',
-      maxRetries: 3,
-      syncIntervalMs: 5000
+      }
     });
 
     const result = await manager.sync({
       cursor: 'local-cursor-1',
       records: [
         {
-          content: 'Local wiki page',
           id: 'local-1',
           tier: 'wiki',
-          updatedAt: '2026-05-15T00:00:00.000Z'
+          updatedAt: '2026-05-15T00:00:00.000Z',
+          content: 'Local wiki page'
         }
       ]
     });
 
     expect(result).toMatchObject({
-      downloaded: 1,
-      nextCursor: 'remote-cursor-2',
-      resolvedConflicts: 0,
       status: 'success',
+      uploaded: 2,
+      downloaded: 1,
+      resolvedConflicts: 0,
       unresolvedConflicts: 0,
-      uploaded: 2
+      nextCursor: 'remote-cursor-2'
     });
     expect(manager.getStatus()).toBe('idle');
-    expect(manager.getMetrics()).toStrictEqual({
-      conflicts: 0,
+    expect(manager.getMetrics()).toEqual({
+      successes: 1,
       failures: 0,
       retries: 0,
-      successes: 1
+      conflicts: 0
     });
-    expect(uploadedSnapshot?.records).toStrictEqual(
+    expect(uploadedSnapshot?.records).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: 'local-1', tier: 'wiki' }),
         expect.objectContaining({ id: 'remote-1', tier: 'wiki' })
@@ -160,22 +155,21 @@ describe('Turso sync foundation', () => {
     const { createTursoManager } = await import('./index.js');
 
     const manager = createTursoManager({
+      databaseUrl: 'libsql://agentsy-memory.turso.io',
       authToken: 'token-value',
+      syncIntervalMs: 5_000,
+      maxRetries: 3,
       client: {
-        // biome-ignore lint/suspicious/useAwait: callback matches Promise<SyncSnapshot> interface
+        async upload() {
+          throw new Error('remote unavailable');
+        },
         async download() {
           return {
             cursor: 'cursor-1',
             records: []
           };
-        },
-        upload() {
-          throw new Error('remote unavailable');
         }
-      },
-      databaseUrl: 'libsql://agentsy-memory.turso.io',
-      maxRetries: 3,
-      syncIntervalMs: 5000
+      }
     });
 
     await expect(
@@ -184,22 +178,22 @@ describe('Turso sync foundation', () => {
         records: []
       })
     ).resolves.toMatchObject({
+      status: 'error',
+      uploaded: 0,
       downloaded: 0,
+      resolvedConflicts: 0,
+      unresolvedConflicts: 0,
       error: {
         code: 'SYNC_FAILED',
         retryable: true
-      },
-      resolvedConflicts: 0,
-      status: 'error',
-      unresolvedConflicts: 0,
-      uploaded: 0
+      }
     });
     expect(manager.getStatus()).toBe('error');
-    expect(manager.getMetrics()).toStrictEqual({
-      conflicts: 0,
+    expect(manager.getMetrics()).toEqual({
+      successes: 0,
       failures: 1,
       retries: 0,
-      successes: 0
+      conflicts: 0
     });
   });
 });

@@ -2,32 +2,28 @@ import type { ContentFingerprint } from './fingerprint.js';
 import { fingerprintContent } from './fingerprint.js';
 
 export interface DedupEntry {
-  readonly content: string;
   readonly fingerprint: ContentFingerprint;
+  readonly content: string;
   refCount: number;
 }
 
 export interface DedupStore {
-  entries(): DedupEntry[];
   /** Intern content, increment ref count, and return its fingerprint. */
   intern(content: string): ContentFingerprint;
-  /** Remove entries with refCount <= 0 and return the count purged. */
-  purgeOrphans(): number;
-  /** Decrement ref count; remove if zero. Returns true if removed. */
-  release(fingerprintValue: string): boolean;
   /** Retrieve content by fingerprint value string. */
   retrieve(fingerprintValue: string): string | undefined;
+  /** Decrement ref count; remove if zero. Returns true if removed. */
+  release(fingerprintValue: string): boolean;
   size(): number;
+  entries(): DedupEntry[];
+  /** Remove entries with refCount <= 0 and return the count purged. */
+  purgeOrphans(): number;
 }
 
 export function createDedupStore(): DedupStore {
   const store = new Map<string, DedupEntry>();
 
   return {
-    entries() {
-      return [...store.values()];
-    },
-
     intern(content) {
       const fp = fingerprintContent(content);
       const existing = store.get(fp.value);
@@ -35,8 +31,31 @@ export function createDedupStore(): DedupStore {
         existing.refCount++;
         return fp;
       }
-      store.set(fp.value, { content, fingerprint: fp, refCount: 1 });
+      store.set(fp.value, { fingerprint: fp, content, refCount: 1 });
       return fp;
+    },
+
+    retrieve(fingerprintValue) {
+      return store.get(fingerprintValue)?.content;
+    },
+
+    release(fingerprintValue) {
+      const entry = store.get(fingerprintValue);
+      if (entry === undefined) return false;
+      entry.refCount--;
+      if (entry.refCount <= 0) {
+        store.delete(fingerprintValue);
+        return true;
+      }
+      return false;
+    },
+
+    size() {
+      return store.size;
+    },
+
+    entries() {
+      return [...store.values()];
     },
 
     purgeOrphans() {
@@ -48,27 +67,6 @@ export function createDedupStore(): DedupStore {
         }
       }
       return count;
-    },
-
-    release(fingerprintValue) {
-      const entry = store.get(fingerprintValue);
-      if (entry === undefined) {
-        return false;
-      }
-      entry.refCount--;
-      if (entry.refCount <= 0) {
-        store.delete(fingerprintValue);
-        return true;
-      }
-      return false;
-    },
-
-    retrieve(fingerprintValue) {
-      return store.get(fingerprintValue)?.content;
-    },
-
-    size() {
-      return store.size;
     }
   };
 }

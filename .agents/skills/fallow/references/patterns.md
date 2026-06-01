@@ -100,7 +100,7 @@ Parse the JSON to list specific files and exports that became unused.
 ```yaml
 - name: Fallow analysis
   run: npx fallow dead-code --ci > fallow.sarif
-  continue-on-error: true # --ci sets --fail-on-issues; continue to upload SARIF even if issues found
+  continue-on-error: true  # --ci sets --fail-on-issues; continue to upload SARIF even if issues found
 
 - name: Upload SARIF
   uses: github/codeql-action/upload-sarif@v3
@@ -135,7 +135,7 @@ Computes a health score (0-100 with letter grade) in combined mode and enables t
 - uses: fallow-rs/fallow@v2
   with:
     command: audit
-    gate: new-only # default; fails only on findings introduced by this PR
+    gate: new-only        # default; fails only on findings introduced by this PR
     fail-on-issues: true
 ```
 
@@ -164,7 +164,7 @@ The official action supports inline PR annotations via GitHub workflow commands.
     command: dead-code
     changed-since: main
     annotations: true
-    max-annotations: 50 # default: 50, limits annotation count
+    max-annotations: 50   # default: 50, limits annotation count
 ```
 
 Annotations appear as inline warnings on the PR diff. They work with all commands (`dead-code`, `dupes`, `health`, and the default combined mode). The `max-annotations` input prevents annotation flooding on large projects.
@@ -198,7 +198,7 @@ Only reports duplication in files modified by the PR.
 
 ```yaml
 include:
-  - remote: "https://raw.githubusercontent.com/fallow-rs/fallow/main/ci/gitlab-ci.yml"
+  - remote: 'https://raw.githubusercontent.com/fallow-rs/fallow/main/ci/gitlab-ci.yml'
 
 fallow:
   extends: .fallow
@@ -213,14 +213,14 @@ If runners cannot reach `raw.githubusercontent.com`, run `fallow ci-template git
 
 ```yaml
 include:
-  - local: "ci/gitlab-ci.yml"
+  - local: 'ci/gitlab-ci.yml'
 ```
 
 ### GitLab CI: With MR Summary Comments
 
 ```yaml
 include:
-  - remote: "https://raw.githubusercontent.com/fallow-rs/fallow/main/ci/gitlab-ci.yml"
+  - remote: 'https://raw.githubusercontent.com/fallow-rs/fallow/main/ci/gitlab-ci.yml'
 
 fallow:
   extends: .fallow
@@ -234,7 +234,7 @@ Posts a summary comment on the MR with issue counts and findings. In MR pipeline
 
 ```yaml
 include:
-  - remote: "https://raw.githubusercontent.com/fallow-rs/fallow/main/ci/gitlab-ci.yml"
+  - remote: 'https://raw.githubusercontent.com/fallow-rs/fallow/main/ci/gitlab-ci.yml'
 
 fallow:
   extends: .fallow
@@ -248,7 +248,7 @@ Posts inline review comments directly on the MR diff lines where issues were fou
 
 ```yaml
 include:
-  - remote: "https://raw.githubusercontent.com/fallow-rs/fallow/main/ci/gitlab-ci.yml"
+  - remote: 'https://raw.githubusercontent.com/fallow-rs/fallow/main/ci/gitlab-ci.yml'
 
 fallow:
   extends: .fallow
@@ -264,7 +264,7 @@ Posts both a summary comment and inline review comments on the MR. The template 
 
 ```yaml
 include:
-  - remote: "https://raw.githubusercontent.com/fallow-rs/fallow/main/ci/gitlab-ci.yml"
+  - remote: 'https://raw.githubusercontent.com/fallow-rs/fallow/main/ci/gitlab-ci.yml'
 
 fallow:
   extends: .fallow
@@ -474,12 +474,12 @@ fallow dupes --format json --quiet
 
 ### Detection mode mapping
 
-| jscpd                  | fallow                                     |
-| ---------------------- | ------------------------------------------ |
-| Default (exact tokens) | `strict`                                   |
-| —                      | `mild` (fallow default, syntax normalized) |
-| —                      | `weak` (literal normalization)             |
-| —                      | `semantic` (variable rename detection)     |
+| jscpd | fallow |
+|-------|--------|
+| Default (exact tokens) | `strict` |
+| — | `mild` (fallow default, syntax normalized) |
+| — | `weak` (literal normalization) |
+| — | `semantic` (variable rename detection) |
 
 ---
 
@@ -600,7 +600,7 @@ The export is genuinely unused. Consider removing it or marking it as intentiona
 
 ```typescript
 // fallow-ignore-next-line unused-export
-export const publicApi = createWidget(); // Used by external consumers
+export const publicApi = createWidget();  // Used by external consumers
 ```
 
 ---
@@ -639,9 +639,9 @@ For frameworks not covered by the 94 built-in plugins.
     {
       "name": "my-framework",
       "enablers": ["my-framework"],
-      "entryPoints": ["src/routes/**/*.ts", "src/middleware/**/*.ts"],
-    },
-  ],
+      "entryPoints": ["src/routes/**/*.ts", "src/middleware/**/*.ts"]
+    }
+  ]
 }
 ```
 
@@ -656,9 +656,9 @@ Create `.fallow/plugins/my-framework.jsonc`:
   "entryPoints": ["src/routes/**/*.ts"],
   "alwaysUsedFiles": ["src/bootstrap.ts"],
   "usedExports": {
-    "src/config.ts": ["default"],
+    "src/config.ts": ["default"]
   },
-  "toolingDependencies": ["my-framework-cli"],
+  "toolingDependencies": ["my-framework-cli"]
 }
 ```
 
@@ -667,7 +667,7 @@ Create `.fallow/plugins/my-framework.jsonc`:
 ```jsonc
 // .fallowrc.json
 {
-  "plugins": ["tools/plugins/"],
+  "plugins": ["tools/plugins/"]
 }
 ```
 
@@ -790,4 +790,4 @@ Use `--force` to remove a hook script that the user has edited (the marker is no
 
 ### Distinguish from `fallow hooks install --target git`
 
-`fallow hooks install --target git` is a different target: it scaffolds a shell-level Git pre-commit hook under `.git/hooks/` that runs `fallow` on changed files. That is the _human_ enforcement path. `fallow hooks install --target agent` is the _agent_ enforcement path, targeting `.claude/` and `AGENTS.md`. Both can live in the same repo: git hooks catch human commits, the agent gate catches agent commits.
+`fallow hooks install --target git` is a different target: it scaffolds a shell-level Git pre-commit hook under `.git/hooks/` that runs `fallow` on changed files. That is the *human* enforcement path. `fallow hooks install --target agent` is the *agent* enforcement path, targeting `.claude/` and `AGENTS.md`. Both can live in the same repo: git hooks catch human commits, the agent gate catches agent commits.
