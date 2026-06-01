@@ -61,10 +61,17 @@ $.verbose = false;
 const RELEASE_STATE_PATH = resolve(ROOT, 'config', 'release-state.json');
 cd(ROOT);
 
-const packageName = argv._[0] ?? argv.package;
+const packageName = resolvePackageName(argv);
 const versionArg = typeof argv._[1] === 'string' ? argv._[1] : undefined;
 const version = parseVersionArg(versionArg ?? (typeof argv.version === 'string' ? argv.version : undefined));
 const isDryRun = Boolean(argv['dry-run'] ?? argv.dryRun);
+
+function resolvePackageName(argv: Record<string, unknown>): string | null {
+  if (typeof argv._[0] === 'string') {
+    return argv._[0];
+  }
+  return typeof argv.package === 'string' ? argv.package : null;
+}
 
 if (!packageName) {
   console.error('Usage: pnpm release <package-name> <version> [--dry-run]');
