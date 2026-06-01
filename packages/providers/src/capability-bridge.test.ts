@@ -234,7 +234,11 @@ describe('filterProvidersByCapabilities', () => {
   it('sets providerId on each result', () => {
     const required: ProviderCapabilities = { streaming: true };
     const results = filterProvidersByCapabilities(providers, required);
-    expect(results.map(r => r.providerId).sort()).toStrictEqual(['anthropic', 'ollama', 'openai']);
+    expect(results.map(r => r.providerId).sort((a, b) => a.localeCompare(b))).toStrictEqual([
+      'anthropic',
+      'ollama',
+      'openai'
+    ]);
   });
 
   it('handles empty provider list', () => {

@@ -6,6 +6,8 @@ on:
     paths:
       - "packages/**"
       - "scripts/**"
+      - "plan/**"
+      - ".github/workflows/**"
       - "turbo.json"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -13,6 +15,8 @@ on:
     paths:
       - "packages/**"
       - "scripts/**"
+      - "plan/**"
+      - ".github/workflows/**"
       - "turbo.json"
       - "package.json"
       - "pnpm-lock.yaml"
