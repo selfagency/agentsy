@@ -4,26 +4,31 @@
  * Verifies AsyncGenerator to Observable conversion without hard RxJS dependency
  */
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
+
 import { toObservable } from './observable.js';
 
 // Module-level generators for test fixtures
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceBasic() {
   yield 1;
   yield 2;
   yield 3;
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceStringPair() {
   yield 'a';
   yield 'b';
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceWithError() {
   yield 1;
   throw new Error('Test error');
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceDouble() {
   yield 1;
   yield 2;
@@ -37,10 +42,12 @@ async function* sourceWithDelay() {
   yield 3;
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceTest() {
   yield 'test';
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceExpected() {
   yield 1;
   throw new Error('Expected');
@@ -50,10 +57,12 @@ async function* sourceEmpty() {
   // Intentionally empty generator for testing completion without values
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceSingle() {
   yield 1;
 }
 
+// biome-ignore lint/suspicious/useAwait: async generator needed for AsyncGenerator
 async function* sourceMultiple() {
   yield 1;
   yield 2;
@@ -80,7 +89,7 @@ describe('toObservable', () => {
     // Give async generator time to consume
     await new Promise(resolve => setTimeout(resolve, 10));
 
-    expect(results).toEqual([1, 2, 3]);
+    expect(results).toStrictEqual([1, 2, 3]);
   });
 
   it('should support callback syntax for next', async () => {
@@ -91,7 +100,7 @@ describe('toObservable', () => {
 
     await new Promise(resolve => setTimeout(resolve, 10));
 
-    expect(results).toEqual(['a', 'b']);
+    expect(results).toStrictEqual(['a', 'b']);
   });
 
   it('should call error handler on generator error', async () => {
@@ -99,8 +108,8 @@ describe('toObservable', () => {
     const errors: unknown[] = [];
 
     toObservable(sourceWithError()).subscribe({
-      next: value => results.push(value),
-      error: err => errors.push(err)
+      error: err => errors.push(err),
+      next: value => results.push(value)
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -114,15 +123,17 @@ describe('toObservable', () => {
     let completed = false;
 
     toObservable(sourceDouble()).subscribe({
-      next: () => {},
       complete: () => {
         completed = true;
+      },
+      next: () => {
+        /* noop */
       }
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    expect(completed).toBe(true);
+    expect(completed).toBeTruthy();
   });
 
   it('should support unsubscribe to stop consuming', async () => {
@@ -158,14 +169,14 @@ describe('toObservable', () => {
     const complete = vi.fn();
 
     toObservable(sourceExpected()).subscribe({
-      next,
-      complete
+      complete,
+      next
     });
 
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // Should not crash, just stop
-    expect(next).toHaveBeenCalled();
+    // Should not crash, just stop - next should receive yielded value
+    expect(next).toHaveBeenCalledWith(1);
   });
 
   it('should handle empty generator', async () => {
@@ -173,20 +184,22 @@ describe('toObservable', () => {
     const complete = vi.fn();
 
     toObservable(sourceEmpty()).subscribe({
-      next,
-      complete
+      complete,
+      next
     });
 
     await new Promise(resolve => setTimeout(resolve, 10));
 
     expect(next).not.toHaveBeenCalled();
-    expect(complete).toHaveBeenCalled();
+    expect(complete).toHaveBeenCalledWith();
   });
 
   it('should return subscription object', () => {
-    const subscription = toObservable(sourceSingle()).subscribe(() => {});
+    const subscription = toObservable(sourceSingle()).subscribe(() => {
+      /* noop */
+    });
 
-    expect(typeof subscription.unsubscribe).toBe('function');
+    expectTypeOf(subscription.unsubscribe).toBeFunction();
   });
 
   it('should support multiple values with no delay', async () => {
@@ -198,7 +211,7 @@ describe('toObservable', () => {
 
     await new Promise(resolve => setTimeout(resolve, 10));
 
-    expect(results).toEqual([1, 2, 3, 4, 5]);
+    expect(results).toStrictEqual([1, 2, 3, 4, 5]);
   });
 
   it('should handle async operations in generator', async () => {
@@ -210,12 +223,13 @@ describe('toObservable', () => {
 
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    expect(results).toEqual(['start', 'middle', 'end']);
+    expect(results).toStrictEqual(['start', 'middle', 'end']);
   });
 
   it('should not consume generator if not subscribed', async () => {
     const nextSpy = vi.fn();
 
+    // biome-ignore lint/suspicious/useAwait: satisfies AsyncGenerator interface for toObservable
     async function* sourceWithSpy() {
       nextSpy();
       yield 1;
@@ -228,12 +242,13 @@ describe('toObservable', () => {
 
     // nextSpy might or might not be called depending on implementation
     // This test documents the behavior
-    expect(true).toBe(true); // Placeholder
+    expect(true).toBeTruthy(); // Placeholder
   });
 
   it('should call error handler with error object', async () => {
     const testError = new Error('Custom error message');
 
+    // biome-ignore lint/suspicious/useAwait: satisfies AsyncGenerator interface for toObservable
     async function* sourceWithCustomError() {
       yield;
       throw testError;

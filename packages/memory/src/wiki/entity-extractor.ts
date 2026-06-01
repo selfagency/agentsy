@@ -1,16 +1,16 @@
 export type EntityKind = 'technology' | 'organization' | 'person' | 'concept' | 'unknown';
 
 export interface ExtractedEntity {
-  name: string;
-  kind: EntityKind;
   confidence: number;
+  kind: EntityKind;
+  name: string;
 }
 
 export interface EntityRelationship {
-  from: string;
-  to: string;
-  relation: 'co_occurs_with';
   confidence: number;
+  from: string;
+  relation: 'co_occurs_with';
+  to: string;
 }
 
 export interface EntityExtractionResult {
@@ -22,7 +22,7 @@ export interface EntityExtractor {
   extract(content: string): EntityExtractionResult;
 }
 
-const TOKEN_PATTERN = /\b(?:[A-Z][A-Za-z0-9_-]+|[A-Z]{2,})\b/g;
+const TOKEN_PATTERN = /\b(?:[A-Z][A-Za-z0-9_-]+|[A-Z]{2,})\b/gu;
 
 function classifyEntity(name: string): EntityKind {
   if (/(Inc|Corp|LLC|Ltd|Foundation)$/u.test(name)) {
@@ -45,7 +45,40 @@ function toConfidence(occurrences: number): number {
 }
 
 function normalizeSentence(sentence: string): string {
-  return sentence.replace(/\s+/g, ' ').trim();
+  return sentence.replaceAll(/\s+/gu, ' ').trim();
+}
+
+function buildRelationships(sentences: string[], entitySet: Set<string>): EntityRelationship[] {
+  const relationships: EntityRelationship[] = [];
+  const seenEdges = new Set<string>();
+
+  for (const sentence of sentences) {
+    const sentenceEntities = [...new Set(sentence.match(TOKEN_PATTERN) ?? [])].filter(name => entitySet.has(name));
+    for (let i = 0; i < sentenceEntities.length; i += 1) {
+      for (let j = i + 1; j < sentenceEntities.length; j += 1) {
+        const from = sentenceEntities[i];
+        const to = sentenceEntities[j];
+        if (!(from && to)) {
+          continue;
+        }
+
+        const edgeKey = `${from}->${to}`;
+        if (seenEdges.has(edgeKey)) {
+          continue;
+        }
+
+        seenEdges.add(edgeKey);
+        relationships.push({
+          confidence: 0.6,
+          from,
+          relation: 'co_occurs_with',
+          to
+        });
+      }
+    }
+  }
+
+  return relationships;
 }
 
 export function createEntityExtractor(): EntityExtractor {
@@ -60,45 +93,19 @@ export function createEntityExtractor(): EntityExtractor {
 
       const entities: ExtractedEntity[] = [...frequency.entries()]
         .map(([name, occurrences]) => ({
-          name,
+          confidence: toConfidence(occurrences),
           kind: classifyEntity(name),
-          confidence: toConfidence(occurrences)
+          name
         }))
-        .sort((left, right) => right.confidence - left.confidence || left.name.localeCompare(right.name));
+        .toSorted((left, right) => right.confidence - left.confidence || left.name.localeCompare(right.name));
 
       const entitySet = new Set(entities.map(entity => entity.name));
-      const relationships: EntityRelationship[] = [];
-      const seenEdges = new Set<string>();
       const sentences = content
         .split(/[.!?]\s+/u)
         .map(normalizeSentence)
         .filter(Boolean);
 
-      for (const sentence of sentences) {
-        const sentenceEntities = [...new Set(sentence.match(TOKEN_PATTERN) ?? [])].filter(name => entitySet.has(name));
-        for (let i = 0; i < sentenceEntities.length; i += 1) {
-          for (let j = i + 1; j < sentenceEntities.length; j += 1) {
-            const from = sentenceEntities[i];
-            const to = sentenceEntities[j];
-            if (!from || !to) {
-              continue;
-            }
-
-            const edgeKey = `${from}->${to}`;
-            if (seenEdges.has(edgeKey)) {
-              continue;
-            }
-
-            seenEdges.add(edgeKey);
-            relationships.push({
-              from,
-              to,
-              relation: 'co_occurs_with',
-              confidence: 0.6
-            });
-          }
-        }
-      }
+      const relationships = buildRelationships(sentences, entitySet);
 
       return { entities, relationships };
     }

@@ -1,4 +1,5 @@
 import { decideSandboxTrigger, detectContainerRuntime } from '@agentsy/runtime';
+
 import type { CliIO } from '../index.js';
 
 interface SandboxDiagnosticsResult {
@@ -20,7 +21,9 @@ interface SandboxDiagnosticsResult {
 function runDiagnostics(): SandboxDiagnosticsResult {
   const detection = detectContainerRuntime();
 
-  const defaultTrigger = decideSandboxTrigger({ containerAvailable: detection.available });
+  const defaultTrigger = decideSandboxTrigger({
+    containerAvailable: detection.available
+  });
   const untrustedTrigger = decideSandboxTrigger({
     containerAvailable: detection.available,
     trustLevel: 'untrusted'
@@ -32,14 +35,27 @@ function runDiagnostics(): SandboxDiagnosticsResult {
       runtime: detection.runtime,
       ...(detection.socketPath === undefined ? {} : { socketPath: detection.socketPath })
     },
-    defaultTrigger: { mode: defaultTrigger.mode, reason: defaultTrigger.reason },
-    untrustedTrigger: { mode: untrustedTrigger.mode, reason: untrustedTrigger.reason }
+    defaultTrigger: {
+      mode: defaultTrigger.mode,
+      reason: defaultTrigger.reason
+    },
+    untrustedTrigger: {
+      mode: untrustedTrigger.mode,
+      reason: untrustedTrigger.reason
+    }
   };
 }
 
-const defaultIo = {
-  stdout: (msg: string) => console.log(msg),
-  stderr: (msg: string) => console.error(msg)
+const defaultIo: {
+  stderr: (msg: string) => void;
+  stdout: (msg: string) => void;
+} = {
+  stderr: (msg: string): void => {
+    console.error(msg);
+  },
+  stdout: (msg: string): void => {
+    console.log(msg);
+  }
 };
 
 export function runSandboxDiagnosticsCommand(argv: readonly string[], io: CliIO = defaultIo): number {

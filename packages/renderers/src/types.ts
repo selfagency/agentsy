@@ -6,9 +6,9 @@ import type { FinishReason, ToolCallState, UsageInfo } from '@agentsy/types';
  * Tool call output part (not rendered, only passed to callbacks).
  */
 export interface ToolCallPart {
-  type: 'tool_call';
   call: XmlToolCall;
   state: ToolCallState;
+  type: 'tool_call';
 }
 
 /**
@@ -20,14 +20,14 @@ export type OnToolCall = (part: ToolCallPart) => void | Promise<void>;
  * Options common to all renderers.
  */
 export interface BaseRendererOptions {
-  /** Whether to include thinking blocks in output. @default false */
-  showThinking?: boolean;
-
-  /** Optional processor instance; if not provided, renderer creates one internally. */
-  processor?: LLMStreamProcessor;
-
   /** Optional callback fired when an error occurs during rendering. */
   onError?: (error: Error) => void;
+
+  /** Optional callback fired when the stream finishes with a finish reason and optional usage info. */
+  onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
+
+  /** Optional callback fired when the step index changes (e.g., between tool calls in an agent loop). */
+  onStep?: (stepIndex: number, usage: UsageInfo | undefined) => void | Promise<void>;
 
   /** Optional callback fired when a tool call is encountered (not rendered as content). */
   onToolCall?: OnToolCall;
@@ -35,11 +35,10 @@ export interface BaseRendererOptions {
   /** Optional callback fired for each streaming argument delta while a native tool call is assembling. */
   onToolCallDelta?: (delta: Extract<OutputPart, { type: 'tool_call_delta' }>) => void;
 
-  /** Optional callback fired when the stream finishes with a finish reason and optional usage info. */
-  onFinish?: (finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>;
-
-  /** Optional callback fired when the step index changes (e.g., between tool calls in an agent loop). */
-  onStep?: (stepIndex: number, usage: UsageInfo | undefined) => void | Promise<void>;
+  /** Optional processor instance; if not provided, renderer creates one internally. */
+  processor?: LLMStreamProcessor;
+  /** Whether to include thinking blocks in output. @default false */
+  showThinking?: boolean;
 }
 
 /**
@@ -56,13 +55,20 @@ export type ThinkingStyle = 'blockquote' | 'progress' | 'suppress';
  */
 export interface CancellationToken {
   readonly isCancellationRequested: boolean;
-  readonly onCancellationRequested: (listener: (e: unknown) => void) => { dispose(): void };
+  readonly onCancellationRequested: (listener: (e: unknown) => void) => {
+    dispose(): void;
+  };
 }
 
 /**
  * Generic renderer handle: write-stream-like interface for composable pipelines.
  */
 export interface RendererHandle {
+  /**
+   * Signal end of stream. Flushes any buffered content.
+   * @returns Promise that resolves when the stream is finalized.
+   */
+  end(): Promise<void>;
   /**
    * Process a chunk of streamed data (text).
    * @param chunk - The text data chunk to process.
@@ -77,12 +83,6 @@ export interface RendererHandle {
    * @returns Promise that resolves when the chunk is processed.
    */
   writeChunk(chunk: StreamChunk): Promise<void>;
-
-  /**
-   * Signal end of stream. Flushes any buffered content.
-   * @returns Promise that resolves when the stream is finalized.
-   */
-  end(): Promise<void>;
 }
 
 /**

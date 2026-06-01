@@ -1,47 +1,44 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import type { IQuotaDataSource, UsageQuota } from '../types/errors.js';
 import { mapUsageToVSCode } from './map-usage.js';
-import {
-  createQuotaDataSourceAdapter,
-  formatStandardQuotaTooltip,
-  pickActiveQuotaWindow,
-  type QuotaWindowValue
-} from './quota-adapter.js';
-import { UsageStatusBar, formatQuotaText, getQuotaStatus } from './usage-status-bar.js';
+import type { QuotaWindowValue } from './quota-adapter.js';
+import { createQuotaDataSourceAdapter, formatStandardQuotaTooltip, pickActiveQuotaWindow } from './quota-adapter.js';
+import { formatQuotaText, getQuotaStatus, UsageStatusBar } from './usage-status-bar.js';
 
 function makeQuota(overrides: Partial<UsageQuota> = {}): UsageQuota {
   return {
-    used: 5000,
-    total: 10000,
-    unit: 'tokens',
-    window: 'daily',
     percentUsed: 0.5,
+    total: 10_000,
+    unit: 'tokens',
+    used: 5000,
+    window: 'daily',
     ...overrides
   };
 }
 
 function makeDataSource(quota: UsageQuota = makeQuota()): IQuotaDataSource & { quota: UsageQuota } {
   return {
-    quota,
+    dispose: vi.fn(),
     getQuota: vi.fn().mockResolvedValue(quota),
-    refreshQuota: vi.fn().mockResolvedValue(quota),
-    dispose: vi.fn()
+    quota,
+    refreshQuota: vi.fn().mockResolvedValue(quota)
   };
 }
 
-describe('formatQuotaText', () => {
+describe(formatQuotaText, () => {
   it('formats token quota', () => {
-    const text = formatQuotaText(makeQuota({ used: 1000, total: 5000, unit: 'tokens', percentUsed: 0.2 }));
+    const text = formatQuotaText(makeQuota({ percentUsed: 0.2, total: 5000, unit: 'tokens', used: 1000 }));
     expect(text).toBe('1,000 / 5,000 tokens (20%)');
   });
 
   it('rounds percentage', () => {
-    const text = formatQuotaText(makeQuota({ used: 1, total: 3, unit: 'credits', percentUsed: 1 / 3 }));
+    const text = formatQuotaText(makeQuota({ percentUsed: 1 / 3, total: 3, unit: 'credits', used: 1 }));
     expect(text).toContain('33%');
   });
 });
 
-describe('getQuotaStatus', () => {
+describe(getQuotaStatus, () => {
   it('returns normal below warning threshold', () => {
     expect(getQuotaStatus(0.5)).toBe('normal');
   });
@@ -69,7 +66,7 @@ describe('getQuotaStatus', () => {
   });
 });
 
-describe('UsageStatusBar', () => {
+describe(UsageStatusBar, () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -90,7 +87,7 @@ describe('UsageStatusBar', () => {
   });
 
   it('refresh returns quota from data source', async () => {
-    const quota = makeQuota({ used: 3000, percentUsed: 0.3 });
+    const quota = makeQuota({ percentUsed: 0.3, used: 3000 });
     const ds = makeDataSource(quota);
     const bar = new UsageStatusBar({
       displayName: 'Test Usage',
@@ -118,14 +115,22 @@ describe('UsageStatusBar', () => {
 
   it('updateDisplay is a no-op without statusBarItem', () => {
     const ds = makeDataSource();
-    const bar = new UsageStatusBar({ displayName: 'Test Usage', quotaDataSource: ds });
-    expect(() => bar.updateDisplay(makeQuota())).not.toThrow();
+    const bar = new UsageStatusBar({
+      displayName: 'Test Usage',
+      quotaDataSource: ds
+    });
+    expect(() => {
+      bar.updateDisplay(makeQuota());
+    }).not.toThrow();
     bar.dispose();
   });
 
   it('dispose calls quotaDataSource.dispose', () => {
     const ds = makeDataSource();
-    const bar = new UsageStatusBar({ displayName: 'Test Usage', quotaDataSource: ds });
+    const bar = new UsageStatusBar({
+      displayName: 'Test Usage',
+      quotaDataSource: ds
+    });
     bar.dispose();
     expect(ds.dispose).toHaveBeenCalledOnce();
   });
@@ -135,14 +140,24 @@ describe('UsageStatusBar', () => {
       getQuota: vi.fn().mockResolvedValue(makeQuota()),
       refreshQuota: vi.fn().mockResolvedValue(makeQuota())
     };
-    const bar = new UsageStatusBar({ displayName: 'Test Usage', quotaDataSource: ds });
-    expect(() => bar.dispose()).not.toThrow();
+    const bar = new UsageStatusBar({
+      displayName: 'Test Usage',
+      quotaDataSource: ds
+    });
+    expect(() => {
+      bar.dispose();
+    }).not.toThrow();
   });
 
   it('hide is a no-op without statusBarItem', () => {
     const ds = makeDataSource();
-    const bar = new UsageStatusBar({ displayName: 'Test Usage', quotaDataSource: ds });
-    expect(() => bar.hide()).not.toThrow();
+    const bar = new UsageStatusBar({
+      displayName: 'Test Usage',
+      quotaDataSource: ds
+    });
+    expect(() => {
+      bar.hide();
+    }).not.toThrow();
     bar.dispose();
   });
 });
@@ -150,8 +165,8 @@ describe('UsageStatusBar', () => {
 describe('Quota adapter utilities', () => {
   it('pickActiveQuotaWindow prefers most constrained window by default', () => {
     const windows: QuotaWindowValue[] = [
-      { used: 50, total: 100, unit: 'tokens', window: 'hourly' },
-      { used: 900, total: 1000, unit: 'tokens', window: 'daily' }
+      { total: 100, unit: 'tokens', used: 50, window: 'hourly' },
+      { total: 1000, unit: 'tokens', used: 900, window: 'daily' }
     ];
 
     const active = pickActiveQuotaWindow(windows);
@@ -162,8 +177,18 @@ describe('Quota adapter utilities', () => {
     const source = createQuotaDataSourceAdapter({
       fetch: async () => ({
         windows: [
-          { used: 20, total: 100, unit: 'tokens' as const, window: 'hourly' as const },
-          { used: 850, total: 1000, unit: 'tokens' as const, window: 'monthly' as const }
+          {
+            total: 100,
+            unit: 'tokens' as const,
+            used: 20,
+            window: 'hourly' as const
+          },
+          {
+            total: 1000,
+            unit: 'tokens' as const,
+            used: 850,
+            window: 'monthly' as const
+          }
         ]
       }),
       mapWindows: payload => payload.windows,
@@ -177,11 +202,11 @@ describe('Quota adapter utilities', () => {
 
   it('formatStandardQuotaTooltip formats consistent tooltip text', () => {
     const tooltip = formatStandardQuotaTooltip('Z.ai Usage', {
-      used: 800,
+      percentUsed: 0.8,
       total: 1000,
       unit: 'tokens',
-      window: 'weekly',
-      percentUsed: 0.8
+      used: 800,
+      window: 'weekly'
     });
 
     expect(tooltip).toContain('Z.ai Usage: 800 / 1,000 tokens (80%)');
@@ -190,8 +215,8 @@ describe('Quota adapter utilities', () => {
 
   it('pickActiveQuotaWindow honors preferred-order strategy', () => {
     const windows: QuotaWindowValue[] = [
-      { used: 50, total: 100, unit: 'tokens', window: 'monthly' },
-      { used: 10, total: 100, unit: 'tokens', window: 'hourly' }
+      { total: 100, unit: 'tokens', used: 50, window: 'monthly' },
+      { total: 100, unit: 'tokens', used: 10, window: 'hourly' }
     ];
 
     const active = pickActiveQuotaWindow(windows, 'preferred-order', ['hourly', 'monthly']);
@@ -200,8 +225,8 @@ describe('Quota adapter utilities', () => {
 
   it('pickActiveQuotaWindow tie-breaks most-constrained by smaller remaining budget', () => {
     const windows: QuotaWindowValue[] = [
-      { used: 80, total: 100, unit: 'tokens', window: 'hourly' }, // 80%, remaining 20
-      { used: 8, total: 10, unit: 'tokens', window: 'daily' } // 80%, remaining 2
+      { total: 100, unit: 'tokens', used: 80, window: 'hourly' }, // 80%, remaining 20
+      { total: 10, unit: 'tokens', used: 8, window: 'daily' } // 80%, remaining 2
     ];
 
     const active = pickActiveQuotaWindow(windows, 'most-constrained');
@@ -209,10 +234,10 @@ describe('Quota adapter utilities', () => {
   });
 });
 
-describe('mapUsageToVSCode', () => {
+describe(mapUsageToVSCode, () => {
   it('maps input/output tokens to prompt/completion tokens', () => {
     const mapped = mapUsageToVSCode({ inputTokens: 11, outputTokens: 22 });
-    expect(mapped).toEqual({ promptTokens: 11, completionTokens: 22 });
+    expect(mapped).toStrictEqual({ completionTokens: 22, promptTokens: 11 });
   });
 
   it('returns undefined for undefined usage', () => {

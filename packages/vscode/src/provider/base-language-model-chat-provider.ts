@@ -1,5 +1,6 @@
 import { errorCodeToMessage, errorToProviderCode } from '../error-handling/error-mapper.js';
-import { convertMessages, type ChatMessage } from '../message-conversion/index.js';
+import type { ChatMessage } from '../message-conversion/index.js';
+import { convertMessages } from '../message-conversion/index.js';
 import type { ProviderApiRequest, ProviderConfig, ProviderStreamChunk } from '../types/errors.js';
 
 /**
@@ -14,16 +15,16 @@ async function* emptyStream(): AsyncIterable<LanguageModelChatResponseChunk> {
  * These match the shapes used by VS Code's LanguageModelChatProvider.
  */
 export interface LanguageModelChatRequest {
-  messages: unknown[];
-  tools?: unknown[];
-  toolMode?: unknown;
   justification?: string;
+  messages: unknown[];
   model?: { id: string; [key: string]: unknown };
   options?: {
     temperature?: number;
     stopSequences?: string[];
     [key: string]: unknown;
   };
+  toolMode?: unknown;
+  tools?: unknown[];
   [key: string]: unknown;
 }
 
@@ -55,10 +56,13 @@ export interface ExtensionContext {
  * Subclasses must implement buildRequest, normalizeStream, and mapErrorToCode.
  */
 export abstract class BaseLanguageModelChatProvider {
-  constructor(
-    protected readonly context: ExtensionContext,
-    protected readonly config: ProviderConfig
-  ) {}
+  protected readonly context: ExtensionContext;
+  protected readonly config: ProviderConfig;
+
+  constructor(context: ExtensionContext, config: ProviderConfig) {
+    this.context = context;
+    this.config = config;
+  }
 
   // fallow-ignore-next-line unused-class-member
   get id(): string {
@@ -86,7 +90,7 @@ export abstract class BaseLanguageModelChatProvider {
   }
 
   // fallow-ignore-next-line unused-class-member
-  async countTokens(text: string, _model: string): Promise<number> {
+  countTokens(text: string, _model: string): number {
     // Simple approximation: 1 token ≈ 4 characters
     return Math.ceil(text.length / 4);
   }
@@ -107,7 +111,7 @@ export abstract class BaseLanguageModelChatProvider {
       const messages = convertMessages(request.messages);
       const providerRequest = await this.buildRequest(messages, request);
 
-      // biome-ignore lint/correctness/useQwikValidLexicalScope: false positive from linter
+      //
       const rawStream = await this.streamChat({ ...providerRequest, signal: abortController.signal }, token);
       const normalizedStream = this.normalizeStream(rawStream);
 
@@ -117,12 +121,14 @@ export abstract class BaseLanguageModelChatProvider {
         resolveText = resolve;
       });
 
-      const generateStream = async function* (): AsyncIterable<LanguageModelChatResponseChunk> {
+      const generateStream = async function* generateStream(): AsyncIterable<LanguageModelChatResponseChunk> {
         try {
           for await (const chunk of normalizedStream) {
             if (chunk.part && typeof chunk.part === 'object') {
               const p = chunk.part as Record<string, unknown>;
-              if (typeof p.value === 'string') fullText += String(p.value);
+              if (typeof p.value === 'string') {
+                fullText += String(p.value);
+              }
             }
             yield chunk;
           }
@@ -157,33 +163,38 @@ export abstract class BaseLanguageModelChatProvider {
     }
 
     const response = await fetch(url, {
-      method: method ?? 'POST',
+      body: body === undefined ? null : JSON.stringify(body),
       headers: headers as NonNullable<RequestInit['headers']>,
-      body: body !== undefined ? JSON.stringify(body) : null,
+      method: method ?? 'POST',
       ...(signal && { signal })
     });
 
     if (response.ok) {
-      const body = response.body;
+      const { body } = response;
       if (body === null) {
         throw new Error('HTTP response has no body');
       }
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Streaming parser with multi-line SSE protocol handling — tightly coupled by design
       return (async function* (): AsyncIterable<ProviderStreamChunk> {
-        // biome-ignore lint/correctness/useQwikValidLexicalScope: false positive from linter
+        //
         const reader = (body as ReadableStream<Uint8Array>).getReader();
         const decoder = new TextDecoder();
         let buffer = '';
         try {
           while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
+            if (done) {
+              break;
+            }
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
             buffer = lines.pop() ?? '';
 
             for (const line of lines) {
               const trimmed = line.trim();
-              if (!trimmed || trimmed === 'data: [DONE]') continue;
+              if (!trimmed || trimmed === 'data: [DONE]') {
+                continue;
+              }
               const data = trimmed.startsWith('data: ') ? trimmed.slice(6) : trimmed;
               try {
                 yield JSON.parse(data) as ProviderStreamChunk;
@@ -202,7 +213,9 @@ export abstract class BaseLanguageModelChatProvider {
 
     // Handle error response
     const text = await response.text().catch(() => '');
-    const err = new Error(`HTTP ${response.status}: ${text}`) as Error & { status: number };
+    const err = new Error(`HTTP ${response.status}: ${text}`) as Error & {
+      status: number;
+    };
     err.status = response.status;
     throw err;
   }

@@ -1,8 +1,8 @@
-export { BaseLanguageModelChatProvider } from './base-language-model-chat-provider.js';
 export type {
-  LanguageModelChatRequest,
   CancellationToken,
+  ExtensionContext,
+  LanguageModelChatRequest,
   LanguageModelChatResponse,
-  LanguageModelChatResponseChunk,
-  ExtensionContext
+  LanguageModelChatResponseChunk
 } from './base-language-model-chat-provider.js';
+export { BaseLanguageModelChatProvider } from './base-language-model-chat-provider.js';

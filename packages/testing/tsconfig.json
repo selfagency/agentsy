@@ -1,26 +1,27 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "../..",
     "rootDir": "../..",
-    "outDir": "dist",
+    "outDir": "./dist",
     "paths": {
-      "@agentsy/core": ["packages/core/src/index.ts"],
-      "@agentsy/core/processor": ["packages/core/src/processor/index.ts"],
-      "@agentsy/core/recovery": ["packages/core/src/recovery/index.ts"],
-      "@agentsy/core/sse": ["packages/core/src/sse/index.ts"],
-      "@agentsy/core/context": ["packages/core/src/context/index.ts"],
-      "@agentsy/core/formatting": ["packages/core/src/formatting/index.ts"],
-      "@agentsy/core/structured": ["packages/core/src/structured/index.ts"],
-      "@agentsy/core/thinking": ["packages/core/src/thinking/index.ts"],
-      "@agentsy/core/tool-calls": ["packages/core/src/tool-calls/index.ts"],
-      "@agentsy/core/xml-filter": ["packages/core/src/xml-filter/index.ts"],
-      "@agentsy/providers": ["packages/providers/src/index.ts"],
-      "@agentsy/providers/adapters": ["packages/providers/src/adapters/index.ts"],
-      "@agentsy/providers/normalizers": ["packages/providers/src/normalizers/index.ts"],
-      "@agentsy/providers/pipeline": ["packages/providers/src/pipeline/index.ts"],
-      "@agentsy/memory": ["packages/memory/src/index.ts"],
-      "@agentsy/renderers": ["packages/renderers/src/index.ts"]
+      "@agentsy/core": ["../core/src/index.ts"],
+      "@agentsy/core/processor": ["../core/src/processor/index.ts"],
+      "@agentsy/core/recovery": ["../core/src/recovery/index.ts"],
+      "@agentsy/core/sse": ["../core/src/sse/index.ts"],
+      "@agentsy/core/context": ["../core/src/context/index.ts"],
+      "@agentsy/core/formatting": ["../core/src/formatting/index.ts"],
+      "@agentsy/core/structured": ["../core/src/structured/index.ts"],
+      "@agentsy/core/thinking": ["../core/src/thinking/index.ts"],
+      "@agentsy/core/tool-calls": ["../core/src/tool-calls/index.ts"],
+      "@agentsy/core/xml-filter": ["../core/src/xml-filter/index.ts"],
+      "@agentsy/providers": ["../providers/src/index.ts"],
+      "@agentsy/providers/adapters": ["../providers/src/adapters/index.ts"],
+      "@agentsy/providers/normalizers": [
+        "../providers/src/normalizers/index.ts"
+      ],
+      "@agentsy/providers/pipeline": ["../providers/src/pipeline/index.ts"],
+      "@agentsy/memory": ["../memory/src/index.ts"],
+      "@agentsy/renderers": ["../renderers/src/index.ts"]
     },
     "strictNullChecks": true
   },

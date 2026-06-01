@@ -1,10 +1,10 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
-  format: ['esm'],
-  dts: true,
-  sourcemap: true,
   clean: true,
-  external: ['@agentsy/types']
+  dts: true,
+  entry: ['src/index.ts'],
+  external: ['@agentsy/types'],
+  format: ['esm'],
+  sourcemap: true
 });

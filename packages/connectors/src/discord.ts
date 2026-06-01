@@ -18,30 +18,21 @@ export function isDiscordAdapterAvailable(): boolean {
 }
 
 export class DiscordAdapterNotAvailableError extends Error {
-  constructor() {
-    super('DiscordAdapter requires the discord.js peer dependency. Install it with pnpm add discord.js@^14.');
-    Object.defineProperty(this, 'name', {
-      value: 'DiscordAdapterNotAvailableError',
-      configurable: true
-    });
-    Object.defineProperty(this, 'message', {
-      value: 'DiscordAdapter requires the discord.js peer dependency. Install it with pnpm add discord.js@^14.',
-      configurable: true
-    });
-  }
+  name = 'DiscordAdapterNotAvailableError';
+  message = 'DiscordAdapter requires the discord.js peer dependency. Install it with pnpm add discord.js@^14.';
 }
 
 export const DiscordAdapter = {
-  connect: async () => {
+  connect: () => {
     throw new DiscordAdapterNotAvailableError();
   },
-  disconnect: async () => {
-    throw new DiscordAdapterNotAvailableError();
-  },
-  send: async () => {
+  disconnect: () => {
     throw new DiscordAdapterNotAvailableError();
   },
   onMessage: () => {
+    throw new DiscordAdapterNotAvailableError();
+  },
+  send: () => {
     throw new DiscordAdapterNotAvailableError();
   }
 };

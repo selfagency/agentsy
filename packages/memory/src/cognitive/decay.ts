@@ -1,0 +1,90 @@
+import type { MemoryItem, TierName } from './tier-types.js';
+
+export interface DecayConfig {
+  longTermHalfLife: number;
+  minimumImportance: number;
+  sensoryBufferHalfLife: number;
+  sensoryRegisterHalfLife: number;
+  shortTermHalfLife: number;
+  workingMemoryHalfLife: number;
+}
+
+export const DEFAULT_DECAY_CONFIG: DecayConfig = {
+  sensoryBufferHalfLife: 2500,
+  sensoryRegisterHalfLife: 1000,
+  workingMemoryHalfLife: 15_000,
+  shortTermHalfLife: 1_800_000,
+  longTermHalfLife: Number.POSITIVE_INFINITY,
+  minimumImportance: 0.05
+};
+
+export interface DecayedItem {
+  action: 'keep' | 'promote' | 'demote' | 'discard';
+  item: MemoryItem;
+  newImportance: number;
+  tier: TierName;
+}
+
+const TIER_HALF_LIVES: Record<TierName, keyof DecayConfig> = {
+  long_term_memory: 'longTermHalfLife',
+  sensory_buffer: 'sensoryBufferHalfLife',
+  sensory_register: 'sensoryRegisterHalfLife',
+  short_term_memory: 'shortTermHalfLife',
+  working_memory: 'workingMemoryHalfLife'
+};
+
+function getHalfLife(tier: TierName, config: DecayConfig): number {
+  // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection -- known key from constant map, keyof DecayConfig
+  const key = TIER_HALF_LIVES[tier];
+  return config[key] ?? Number.POSITIVE_INFINITY;
+}
+
+export function applyDecay(
+  items: readonly MemoryItem[],
+  tier: TierName,
+  now: number,
+  config: DecayConfig = DEFAULT_DECAY_CONFIG
+): DecayedItem[] {
+  const halfLife = getHalfLife(tier, config);
+
+  return items.map(item => {
+    if (halfLife === Number.POSITIVE_INFINITY) {
+      return {
+        item,
+        newImportance: item.importance,
+        tier,
+        action: 'keep' as const
+      };
+    }
+
+    const age = Math.max(0, now - item.createdAt);
+    const decayedImportance = item.importance * 0.5 ** (age / halfLife);
+    const newImportance = Math.max(0, decayedImportance);
+
+    let action: DecayedItem['action'];
+    if (newImportance < config.minimumImportance) {
+      action = 'discard';
+    } else if (newImportance < item.importance * 0.5) {
+      action = 'demote';
+    } else {
+      action = 'keep';
+    }
+
+    return { item, newImportance, tier, action };
+  });
+}
+
+export function applyDecayToAllTiers(
+  itemsByTier: ReadonlyMap<TierName, readonly MemoryItem[]>,
+  now: number,
+  config: DecayConfig = DEFAULT_DECAY_CONFIG
+): DecayedItem[] {
+  const results: DecayedItem[] = [];
+
+  for (const [tier, items] of itemsByTier) {
+    const decayed = applyDecay(items, tier, now, config);
+    results.push(...decayed);
+  }
+
+  return results;
+}

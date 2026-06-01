@@ -118,9 +118,9 @@ export interface AgentSpan {
   traceId: TraceId;
   spanId: string;
   parentId?: string;
-  type: 'agent' | 'tool' | 'model' | 'internal';
+  type: "agent" | "tool" | "model" | "internal";
   attributes: Record<string, string | number | boolean>;
-  status: 'ok' | 'error';
+  status: "ok" | "error";
 }
 ```
 

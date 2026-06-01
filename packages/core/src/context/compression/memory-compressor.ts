@@ -1,22 +1,23 @@
 import { constants, copyFile, readFile, writeFile } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
+
 import type { CompressionLevel } from './prose-compressor.js';
 import { compressProse, protectPattern, restoreProtectedSegments } from './prose-compressor.js';
 
 export type MemoryCompressionLevel = CompressionLevel;
 
 export interface MemoryCompressionOptions {
-  level?: MemoryCompressionLevel;
   backup?: boolean;
+  level?: MemoryCompressionLevel;
 }
 
 export interface MemoryCompressionResult {
-  original: string;
-  compressed: string;
-  originalChars: number;
-  compressedChars: number;
-  savingsRatio: number;
   backupPath?: string;
+  compressed: string;
+  compressedChars: number;
+  original: string;
+  originalChars: number;
+  savingsRatio: number;
 }
 
 const SENSITIVE_NAME_TOKENS = [
@@ -39,9 +40,9 @@ function compressContent(input: string, level: MemoryCompressionLevel): string {
   const nextId = { value: 0 };
 
   let working = input;
-  working = protectPattern(working, /```[\s\S]*?```/g, placeholderMap, nextId, PLACEHOLDER_PREFIX);
-  working = protectPattern(working, /`[^`\n]+`/g, placeholderMap, nextId, PLACEHOLDER_PREFIX);
-  working = protectPattern(working, /https?:\/\/\S+/gi, placeholderMap, nextId, PLACEHOLDER_PREFIX);
+  working = protectPattern(working, /```[\s\S]*?```/gu, placeholderMap, nextId, PLACEHOLDER_PREFIX);
+  working = protectPattern(working, /`[^`\n]+`/gu, placeholderMap, nextId, PLACEHOLDER_PREFIX);
+  working = protectPattern(working, /https?:\/\/\S+/giu, placeholderMap, nextId, PLACEHOLDER_PREFIX);
 
   const compressed = compressProse(working, level);
   return restoreProtectedSegments(compressed, placeholderMap);
@@ -80,7 +81,7 @@ export async function compressMemoryFile(
   }
 
   const level = options.level ?? 'full';
-  const original = await readFile(filePath, 'utf8');
+  const original = await readFile(filePath, 'utf-8');
   const compressed = compressContent(original, level);
 
   let backupPath: string | undefined;
@@ -89,17 +90,17 @@ export async function compressMemoryFile(
     await copyFile(filePath, backupPath, constants.COPYFILE_EXCL);
   }
 
-  await writeFile(filePath, compressed, 'utf8');
+  await writeFile(filePath, compressed, 'utf-8');
 
   const originalChars = original.length;
   const compressedChars = compressed.length;
   const savingsRatio = originalChars === 0 ? 0 : (originalChars - compressedChars) / originalChars;
 
   return {
-    original,
     compressed,
-    originalChars,
     compressedChars,
+    original,
+    originalChars,
     savingsRatio,
     ...(backupPath === undefined ? {} : { backupPath })
   };

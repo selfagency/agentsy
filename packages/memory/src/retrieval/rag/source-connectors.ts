@@ -8,8 +8,8 @@ export interface SourceConnectorOptions {
 }
 
 export interface SourceConnectors {
-  readLocalFile(filePath: string): Promise<string>;
   fetchWebSource(url: string): Promise<string>;
+  readLocalFile(filePath: string): Promise<string>;
 }
 
 function assertAllowedHost(url: URL, allowHosts: readonly string[]): void {
@@ -23,10 +23,6 @@ export function createSourceConnectors(options: SourceConnectorOptions): SourceC
   const allowHosts = [...(options.web?.allowHosts ?? [])];
 
   return {
-    async readLocalFile(filePath) {
-      return readFile(filePath, 'utf8');
-    },
-
     async fetchWebSource(inputUrl) {
       if (!webEnabled) {
         throw new Error('Web connector is disabled by configuration');
@@ -41,6 +37,10 @@ export function createSourceConnectors(options: SourceConnectorOptions): SourceC
       }
 
       return response.text();
+    },
+
+    async readLocalFile(filePath) {
+      return await readFile(filePath, 'utf-8');
     }
   };
 }

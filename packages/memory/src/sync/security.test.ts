@@ -12,18 +12,24 @@ describe('sync security helpers', () => {
   });
 
   it('rejects unsafe credential sources', () => {
-    expect(() => validateCredentialSource('environment')).not.toThrow();
-    expect(() => validateCredentialSource('injected')).not.toThrow();
-    expect(() => validateCredentialSource('source-code')).toThrow(/credential source/u);
+    expect(() => {
+      validateCredentialSource('environment');
+    }).not.toThrow();
+    expect(() => {
+      validateCredentialSource('injected');
+    }).not.toThrow();
+    expect(() => {
+      validateCredentialSource('source-code');
+    }).toThrow(/credential source/u);
   });
 
   it('creates redacted secure error envelopes', () => {
     const envelope = createSecureSyncErrorEnvelope(new Error('Bearer sk_live_secret-token exploded'), {
-      retryable: true,
-      diagnosticContext: 'api_key=super-secret'
+      diagnosticContext: 'api_key=super-secret',
+      retryable: true
     });
 
-    expect(envelope.retryable).toBe(true);
+    expect(envelope.retryable).toBeTruthy();
     expect(envelope.message).toContain('[REDACTED]');
     expect(envelope.message).not.toContain('sk_live_secret-token');
     expect(envelope.diagnosticContext).toContain('[REDACTED]');

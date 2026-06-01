@@ -1,30 +1,33 @@
-import type { FinishReason, JsonObject, ToolCallState, UsageInfo } from '@agentsy/types';
+// nosemgrep: export-from-syntax
+// Types are imported for use in local interfaces below and then re-exported.
+import type { ConversationEvent, FinishReason, JsonObject, ToolCallState, UsageInfo } from '@agentsy/types';
+
+export type { ConversationEvent, FinishReason, JsonObject, ToolCallState, UsageInfo };
 
 /**
  * Represents a single UI message in a conversation.
  * Messages are immutable and events are applied to create new states.
  */
 export interface UIMessage {
+  /** Timestamp when message was created. */
+  createdAt: Date;
+
+  /** Finish reason if assistant message. */
+  finishReason?: FinishReason;
   /** Unique message identifier. */
   id: string;
 
-  /** Message role: 'user' or 'assistant'. */
-  role: 'user' | 'assistant';
+  /** Metadata: custom key-value pairs. */
+  metadata?: JsonObject;
 
   /** Message parts (text, thinking, tool calls). */
   parts: UIMessagePart[];
 
-  /** Finish reason if assistant message. */
-  finishReason?: FinishReason;
+  /** Message role: 'user' or 'assistant'. */
+  role: 'user' | 'assistant';
 
   /** Token usage if assistant message. */
   usage?: UsageInfo;
-
-  /** Timestamp when message was created. */
-  createdAt: Date;
-
-  /** Metadata: custom key-value pairs. */
-  metadata?: JsonObject;
 }
 
 /**
@@ -47,54 +50,54 @@ export type UIMessagePartWithoutCreatedAt =
  * Text content part.
  */
 export interface UITextPart {
-  type: 'text';
-  text: string;
   createdAt: Date;
+  text: string;
+  type: 'text';
 }
 
 /**
  * Thinking block part (Claude model internals).
  */
 export interface UIThinkingPart {
-  type: 'thinking';
-  text: string;
   createdAt: Date;
+  text: string;
+  type: 'thinking';
 }
 
 /**
  * Tool call part (function invocation).
  */
 export interface UIToolCallPart {
-  type: 'tool_call';
+  argumentsText?: string;
+  createdAt: Date;
+  error?: string;
   id: string;
   name: string;
   parameters: JsonObject;
-  state: ToolCallState;
-  argumentsText?: string;
   result?: unknown;
-  error?: string;
-  createdAt: Date;
+  state: ToolCallState;
+  type: 'tool_call';
 }
 
 /**
  * Step lifecycle marker for agent-loop aware UIs.
  */
 export interface UIStepPart {
-  type: 'step';
-  stepIndex: number;
-  status: 'started' | 'finished';
-  usage?: UsageInfo;
   createdAt: Date;
+  status: 'started' | 'finished';
+  stepIndex: number;
+  type: 'step';
+  usage?: UsageInfo;
 }
 
 /**
  * Error part associated with a message.
  */
 export interface UIErrorPart {
-  type: 'error';
-  message: string;
   code?: string;
   createdAt: Date;
+  message: string;
+  type: 'error';
 }
 
 /**
@@ -104,58 +107,24 @@ export interface UIConversation {
   /** Unique conversation identifier. */
   id: string;
 
+  /** Last applied event timestamp. */
+  lastEventAt: Date;
+
   /** All messages in order. */
   messages: UIMessage[];
 
-  /** Current step index in agent loop. */
-  stepIndex: number;
+  /** Metadata: custom key-value pairs. */
+  metadata?: JsonObject | undefined;
 
   /** Current streaming status for the conversation. */
   status: 'idle' | 'streaming' | 'error';
 
-  /** Last applied event timestamp. */
-  lastEventAt: Date;
+  /** Current step index in agent loop. */
+  stepIndex: number;
 
   /** Total token count across all messages. */
   totalTokens: number;
 
   /** Aggregated usage across all messages. */
   totalUsage: UsageInfo;
-
-  /** Metadata: custom key-value pairs. */
-  metadata: JsonObject | undefined;
 }
-
-/**
- * Events that drive conversation state transitions.
- */
-export type ConversationEvent =
-  | { type: 'message_started'; role: 'user' | 'assistant'; messageId: string }
-  | { type: 'text_part_added'; messageId: string; text: string }
-  | { type: 'thinking_part_added'; messageId: string; text: string }
-  | {
-      type: 'tool_call_part_added';
-      messageId: string;
-      toolCall: {
-        id: string;
-        name: string;
-        parameters: JsonObject;
-        state?: ToolCallState;
-        argumentsText?: string;
-      };
-    }
-  | {
-      type: 'tool_call_updated';
-      messageId: string;
-      toolCallId: string;
-      state?: ToolCallState;
-      argumentsTextDelta?: string;
-      parameters?: JsonObject;
-    }
-  | { type: 'tool_call_result_added'; messageId: string; toolCallId: string; result: unknown; isError?: boolean }
-  | { type: 'message_finished'; messageId: string; finishReason?: FinishReason; usage?: UsageInfo }
-  | { type: 'step_started'; stepIndex: number; messageId?: string; usage?: UsageInfo }
-  | { type: 'step_finished'; stepIndex: number; messageId?: string; usage?: UsageInfo }
-  | { type: 'step_updated'; stepIndex: number }
-  | { type: 'error_part_added'; messageId: string; message: string; code?: string }
-  | { type: 'conversation_reset' };

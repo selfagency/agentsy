@@ -41,7 +41,10 @@ await manager.createBudget({
 });
 
 const pacing = new PacingController(manager);
-const compressed = compressConversation(['a', 'b', 'c'], { maxTokens: 2, estimateTokens: () => 1 });
+const compressed = compressConversation(['a', 'b', 'c'], {
+  maxTokens: 2,
+  estimateTokens: () => 1
+});
 
 console.log(compressed.messages);
 console.log(

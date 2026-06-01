@@ -29,7 +29,7 @@ Install this package when you want shared type contracts without pulling in impl
 ## Usage
 
 ```ts
-import type { StreamChunk, FinishReason, UsageInfo } from '@agentsy/types';
+import type { StreamChunk, FinishReason, UsageInfo } from "@agentsy/types";
 ```
 
 ## Learn more

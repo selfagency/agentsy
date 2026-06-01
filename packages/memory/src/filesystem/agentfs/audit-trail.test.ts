@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { createAuditTrail } from './audit-trail.js';
 
 describe('createAuditTrail', () => {

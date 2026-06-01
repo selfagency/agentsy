@@ -28,20 +28,29 @@ import { EventType } from '@agentsy/types';
  * See src/pipeline/createPipeline.ts for full definition.
  */
 export interface PipelineEvent {
-  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
+  code?: string;
   content?: string;
-  toolCallId?: string;
-  toolName?: string;
+  message?: string;
+  reasoning?: string;
   toolArgs?: Record<string, unknown>;
   toolArgsJson?: string;
-  reasoning?: string;
-  message?: string;
-  code?: string;
+  toolCallId?: string;
+  toolName?: string;
+  type: 'delta' | 'thinking' | 'tool_call' | 'message_done' | 'error';
   usage?: { inputTokens?: number; outputTokens?: number };
   [key: string]: unknown;
 }
 
 export interface AdapterOptions {
+  /**
+   * Emit the REASONING_ENCRYPTED_VALUE placeholder (default: false).
+   */
+  encryptReasoning?: boolean;
+
+  /**
+   * Parent run ID for hierarchical multi-turn workflows (optional).
+   */
+  parentRunId?: string;
   /**
    * Unique identifier for this run (e.g., UUID).
    */
@@ -51,16 +60,6 @@ export interface AdapterOptions {
    * Thread ID for this conversation (optional).
    */
   threadId?: string;
-
-  /**
-   * Parent run ID for hierarchical multi-turn workflows (optional).
-   */
-  parentRunId?: string;
-
-  /**
-   * Emit the REASONING_ENCRYPTED_VALUE placeholder (default: false).
-   */
-  encryptReasoning?: boolean;
 }
 
 /**
@@ -74,28 +73,32 @@ function generateMessageId(): string {
  * Enriches an event object with optional threadId.
  */
 function enrichEvent<T extends Record<string, unknown>>(event: T, threadId: string | undefined): T {
-  if (threadId === undefined) return event;
+  if (threadId === undefined) {
+    return event;
+  }
   return { ...event, threadId } as T;
 }
 
 /**
  * Handles delta (text content) events.
  */
-async function* handleDelta(
+function* handleDelta(
   event: PipelineEvent,
   runId: string,
   currentTextMessageId: string,
   threadId: string | undefined
-): AsyncGenerator<AgUiEvent> {
+): Generator<AgUiEvent> {
   if (event.content) {
     const textEventBase: TextMessageContentEvent = {
-      type: EventType.TEXT_MESSAGE_CONTENT,
-      runId,
-      messageId: currentTextMessageId,
       content: event.content,
-      timestamp: new Date().toISOString()
+      messageId: currentTextMessageId,
+      runId,
+      timestamp: new Date().toISOString(),
+      type: EventType.TEXT_MESSAGE_CONTENT
     };
-    if (threadId) textEventBase.threadId = threadId;
+    if (threadId) {
+      textEventBase.threadId = threadId;
+    }
     yield textEventBase;
   }
 }
@@ -103,47 +106,55 @@ async function* handleDelta(
 /**
  * Handles thinking (reasoning) events and state management.
  */
-async function* handleThinking(
+function* handleThinking(
   event: PipelineEvent,
   runId: string,
   threadId: string | undefined,
   encryptReasoning: boolean,
   inReasoning: { value: boolean },
   currentReasoningMessageId: { value: string | null }
-): AsyncGenerator<AgUiEvent> {
-  if (inReasoning.value === false) {
+): Generator<AgUiEvent> {
+  if (!inReasoning.value) {
     currentReasoningMessageId.value = generateMessageId();
     inReasoning.value = true;
 
     const reasoningStartBase: ReasoningStartEvent = {
-      type: EventType.REASONING_START,
-      runId,
       messageId: currentReasoningMessageId.value,
-      timestamp: new Date().toISOString()
+      runId,
+      timestamp: new Date().toISOString(),
+      type: EventType.REASONING_START
     };
-    if (threadId) reasoningStartBase.threadId = threadId;
+    if (threadId) {
+      reasoningStartBase.threadId = threadId;
+    }
     yield reasoningStartBase;
 
     const msgStartBase: ReasoningMessageStartEvent = {
-      type: EventType.REASONING_MESSAGE_START,
-      runId,
       messageId: currentReasoningMessageId.value,
-      timestamp: new Date().toISOString()
+      runId,
+      timestamp: new Date().toISOString(),
+      type: EventType.REASONING_MESSAGE_START
     };
-    if (threadId) msgStartBase.threadId = threadId;
+    if (threadId) {
+      msgStartBase.threadId = threadId;
+    }
     yield msgStartBase;
   }
 
   if (event.content && currentReasoningMessageId.value) {
     const contentEventBase: ReasoningMessageContentEvent = {
-      type: EventType.REASONING_MESSAGE_CONTENT,
-      runId,
-      messageId: currentReasoningMessageId.value,
       content: event.content,
-      timestamp: new Date().toISOString()
+      messageId: currentReasoningMessageId.value,
+      runId,
+      timestamp: new Date().toISOString(),
+      type: EventType.REASONING_MESSAGE_CONTENT
     };
-    if (encryptReasoning) contentEventBase.encryptedValue = 'encrypted';
-    if (threadId) contentEventBase.threadId = threadId;
+    if (encryptReasoning) {
+      contentEventBase.encryptedValue = 'encrypted';
+    }
+    if (threadId) {
+      contentEventBase.threadId = threadId;
+    }
     yield contentEventBase;
   }
 }
@@ -151,30 +162,34 @@ async function* handleThinking(
 /**
  * Closes open reasoning and tool call sessions.
  */
-async function* closeOpenSessions(
+function* closeOpenSessions(
   runId: string,
   threadId: string | undefined,
   inReasoning: { value: boolean },
   currentReasoningMessageId: { value: string | null },
   currentToolCallId: { value: string | null }
-): AsyncGenerator<AgUiEvent> {
+): Generator<AgUiEvent> {
   if (inReasoning.value && currentReasoningMessageId.value) {
     const msgEndBase: ReasoningMessageEndEvent = {
-      type: EventType.REASONING_MESSAGE_END,
-      runId,
       messageId: currentReasoningMessageId.value,
-      timestamp: new Date().toISOString()
+      runId,
+      timestamp: new Date().toISOString(),
+      type: EventType.REASONING_MESSAGE_END
     };
-    if (threadId) msgEndBase.threadId = threadId;
+    if (threadId) {
+      msgEndBase.threadId = threadId;
+    }
     yield msgEndBase;
 
     const reasoningEndBase: ReasoningEndEvent = {
-      type: EventType.REASONING_END,
-      runId,
       messageId: currentReasoningMessageId.value,
-      timestamp: new Date().toISOString()
+      runId,
+      timestamp: new Date().toISOString(),
+      type: EventType.REASONING_END
     };
-    if (threadId) reasoningEndBase.threadId = threadId;
+    if (threadId) {
+      reasoningEndBase.threadId = threadId;
+    }
     yield reasoningEndBase;
 
     inReasoning.value = false;
@@ -183,12 +198,14 @@ async function* closeOpenSessions(
 
   if (currentToolCallId.value) {
     const toolEndBase: ToolCallEndEvent = {
-      type: EventType.TOOL_CALL_END,
       runId,
+      timestamp: new Date().toISOString(),
       toolCallId: currentToolCallId.value,
-      timestamp: new Date().toISOString()
+      type: EventType.TOOL_CALL_END
     };
-    if (threadId) toolEndBase.threadId = threadId;
+    if (threadId) {
+      toolEndBase.threadId = threadId;
+    }
     yield toolEndBase;
     currentToolCallId.value = null;
   }
@@ -212,25 +229,29 @@ async function* handleToolCall(
 
     currentToolCallId.value = event.toolCallId;
     const toolStartBase: ToolCallStartEvent = {
-      type: EventType.TOOL_CALL_START,
       runId,
+      timestamp: new Date().toISOString(),
       toolCallId: currentToolCallId.value,
-      toolName: event.toolName || 'unknown',
-      timestamp: new Date().toISOString()
+      toolName: event.toolName ?? 'unknown',
+      type: EventType.TOOL_CALL_START
     };
-    if (threadId) toolStartBase.threadId = threadId;
+    if (threadId) {
+      toolStartBase.threadId = threadId;
+    }
     yield toolStartBase;
   }
 
   if (currentToolCallId.value && event.toolArgs) {
     const toolArgsBase: ToolCallArgsEvent = {
-      type: EventType.TOOL_CALL_ARGS,
-      runId,
-      toolCallId: currentToolCallId.value,
       args: event.toolArgs,
-      timestamp: new Date().toISOString()
+      runId,
+      timestamp: new Date().toISOString(),
+      toolCallId: currentToolCallId.value,
+      type: EventType.TOOL_CALL_ARGS
     };
-    if (threadId) toolArgsBase.threadId = threadId;
+    if (threadId) {
+      toolArgsBase.threadId = threadId;
+    }
     yield toolArgsBase;
   }
 }
@@ -249,13 +270,17 @@ async function* handleMessageDone(
   yield* closeOpenSessions(runId, threadId, inReasoning, currentReasoningMessageId, currentToolCallId);
 
   const runFinishedBase: RunFinishedEvent = {
-    type: EventType.RUN_FINISHED,
-    runId,
     outcome: { type: 'success' },
-    timestamp: new Date().toISOString()
+    runId,
+    timestamp: new Date().toISOString(),
+    type: EventType.RUN_FINISHED
   };
-  if (event.usage) runFinishedBase.usage = event.usage;
-  if (threadId) runFinishedBase.threadId = threadId;
+  if (event.usage) {
+    runFinishedBase.usage = event.usage;
+  }
+  if (threadId) {
+    runFinishedBase.threadId = threadId;
+  }
   yield runFinishedBase;
 }
 
@@ -273,15 +298,19 @@ async function* handleError(
   yield* closeOpenSessions(runId, threadId, inReasoning, currentReasoningMessageId, currentToolCallId);
 
   const runErrorBase: RunErrorEvent = {
-    type: EventType.RUN_ERROR,
-    runId,
     error: {
-      message: event.message || 'Unknown error'
+      message: event.message ?? 'Unknown error'
     },
-    timestamp: new Date().toISOString()
+    runId,
+    timestamp: new Date().toISOString(),
+    type: EventType.RUN_ERROR
   };
-  if (event.code) runErrorBase.error.code = event.code;
-  if (threadId) runErrorBase.threadId = threadId;
+  if (event.code) {
+    runErrorBase.error.code = event.code;
+  }
+  if (threadId) {
+    runErrorBase.threadId = threadId;
+  }
   yield runErrorBase;
 }
 
@@ -306,9 +335,9 @@ export async function* toAgUiStream(
 
   // Emit RUN_STARTED
   const runStartedBase = {
-    type: EventType.RUN_STARTED as const,
     runId,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    type: EventType.RUN_STARTED
   };
   const runStarted = enrichEvent(runStartedBase, threadId);
   if (parentRunId) {
@@ -320,11 +349,12 @@ export async function* toAgUiStream(
   try {
     for await (const event of source) {
       switch (event.type) {
-        case 'delta':
+        case 'delta': {
           yield* handleDelta(event, runId, currentTextMessageId, threadId);
           break;
+        }
 
-        case 'thinking':
+        case 'thinking': {
           yield* handleThinking(
             event,
             runId,
@@ -334,10 +364,12 @@ export async function* toAgUiStream(
             currentReasoningMessageId
           );
           break;
+        }
 
-        case 'tool_call':
+        case 'tool_call': {
           yield* handleToolCall(event, runId, threadId, inReasoning, currentReasoningMessageId, currentToolCallId);
           break;
+        }
 
         case 'message_done': {
           yield* handleMessageDone(event, runId, threadId, inReasoning, currentReasoningMessageId, currentToolCallId);
@@ -345,20 +377,24 @@ export async function* toAgUiStream(
           break;
         }
 
-        case 'error':
+        case 'error': {
           yield* handleError(event, runId, threadId, inReasoning, currentReasoningMessageId, currentToolCallId);
           break;
+        }
+        default: {
+          break;
+        }
       }
     }
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Unknown stream error';
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown stream error';
     const runErrorBase = {
-      type: EventType.RUN_ERROR as const,
-      runId,
       error: {
         message: errorMessage
       },
-      timestamp: new Date().toISOString()
+      runId,
+      timestamp: new Date().toISOString(),
+      type: EventType.RUN_ERROR
     };
     yield enrichEvent(runErrorBase, threadId) as RunErrorEvent;
   }

@@ -13,13 +13,16 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest --run --passWithNoTests",
-    "lint": "oxlint src",
-    "format": "oxfmt src"
+    "lint": "biome lint",
+    "format": "biome format src"
   },
   "dependencies": {
     "@octokit/rest": "22.0.1",
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.0",
     "ora": "^9.4.0",
     "zx": "^8.8.5"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
   }
 }

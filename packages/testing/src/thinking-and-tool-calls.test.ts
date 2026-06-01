@@ -1,3 +1,7 @@
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import { ThinkingParser } from '@agentsy/core/thinking';
+import { extractXmlToolCalls } from '@agentsy/core/tool-calls';
+import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
 /**
  * Integration: processor + thinking/xml-filter + tool-calls
  *
@@ -6,18 +10,16 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-import { ThinkingParser } from '@agentsy/core/thinking';
-import { extractXmlToolCalls } from '@agentsy/core/tool-calls';
-import { createXmlStreamFilter } from '@agentsy/core/xml-filter';
-
 // ---------------------------------------------------------------------------
 // Thinking tag parsing through the processor
 // ---------------------------------------------------------------------------
 
 describe('LLMStreamProcessor — thinking tag integration', () => {
   it('strips <think> tags and exposes thinking separately (single chunk)', () => {
-    const processor = new LLMStreamProcessor({ parseThinkTags: true, scrubContextTags: false });
+    const processor = new LLMStreamProcessor({
+      parseThinkTags: true,
+      scrubContextTags: false
+    });
 
     const out = processor.process({
       content: '<think>my reasoning here</think>The final answer.'
@@ -42,8 +44,8 @@ describe('LLMStreamProcessor — thinking tag integration', () => {
   it('supports custom thinking tags via thinkingOpenTag/CloseTag', () => {
     const processor = new LLMStreamProcessor({
       parseThinkTags: true,
-      thinkingOpenTag: '<reasoning>',
-      thinkingCloseTag: '</reasoning>'
+      thinkingCloseTag: '</reasoning>',
+      thinkingOpenTag: '<reasoning>'
     });
 
     const out = processor.processComplete({
@@ -87,7 +89,10 @@ describe('LLMStreamProcessor — thinking tag integration', () => {
 
 describe('ThinkingParser (standalone)', () => {
   it('parses thinking tags and separates text from thinking', () => {
-    const parser = new ThinkingParser({ openingTag: '<think>', closingTag: '</think>' });
+    const parser = new ThinkingParser({
+      closingTag: '</think>',
+      openingTag: '<think>'
+    });
 
     let accThinking = '';
     let accContent = '';
@@ -103,7 +108,10 @@ describe('ThinkingParser (standalone)', () => {
   });
 
   it('handles multi-push boundary splits', () => {
-    const parser = new ThinkingParser({ openingTag: '<think>', closingTag: '</think>' });
+    const parser = new ThinkingParser({
+      closingTag: '</think>',
+      openingTag: '<think>'
+    });
 
     let accThinking = '';
     let accContent = '';
@@ -140,7 +148,7 @@ describe('LLMStreamProcessor — XML tool call extraction', () => {
     expect(out.toolCalls).toHaveLength(1);
     const [tc] = out.toolCalls;
     expect(tc?.name).toBe('read_file');
-    expect(tc?.parameters).toEqual({ path: 'package.json' });
+    expect(tc?.parameters).toStrictEqual({ path: 'package.json' });
   });
 
   it('extracts multiple XML tool calls from a single response', () => {
@@ -158,7 +166,10 @@ describe('LLMStreamProcessor — XML tool call extraction', () => {
     expect(out.toolCalls).toHaveLength(2);
     expect(out.toolCalls[0]?.name).toBe('read_file');
     expect(out.toolCalls[1]?.name).toBe('write_file');
-    expect(out.toolCalls[1]?.parameters).toEqual({ path: 'b.ts', content: 'hello' });
+    expect(out.toolCalls[1]?.parameters).toStrictEqual({
+      content: 'hello',
+      path: 'b.ts'
+    });
   });
 
   it('preserves surrounding text content and strips the tool call markup', () => {
@@ -174,7 +185,7 @@ describe('LLMStreamProcessor — XML tool call extraction', () => {
     // Content should not include the tool call XML
     expect(out.content).toContain('Searching now.');
     expect(out.toolCalls[0]?.name).toBe('search');
-    expect(out.toolCalls[0]?.parameters).toEqual({ query: 'cats' });
+    expect(out.toolCalls[0]?.parameters).toStrictEqual({ query: 'cats' });
   });
 
   it('handles tool call arguments streamed across chunk boundaries', () => {
@@ -183,10 +194,14 @@ describe('LLMStreamProcessor — XML tool call extraction', () => {
     });
 
     processor.process({ content: '<search><query>split ' });
-    const result = processor.processComplete({ content: 'query</query></search>' });
+    const result = processor.processComplete({
+      content: 'query</query></search>'
+    });
 
     expect(result.toolCalls).toHaveLength(1);
-    expect(result.toolCalls[0]?.parameters).toEqual({ query: 'split query' });
+    expect(result.toolCalls[0]?.parameters).toStrictEqual({
+      query: 'split query'
+    });
   });
 });
 
@@ -200,14 +215,14 @@ describe('ToolCallAccumulator (standalone)', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]?.name).toBe('find');
-    expect(result[0]?.parameters).toEqual({ pattern: '*.ts' });
+    expect(result[0]?.parameters).toStrictEqual({ pattern: '*.ts' });
   });
 
   it('skips parsing oversized tool-call payloads', () => {
     const oversized = `<find><pattern>${'x'.repeat(1_000_001)}</pattern></find>`;
     const result = extractXmlToolCalls(oversized, new Set(['find']));
 
-    expect(result).toEqual([]);
+    expect(result).toStrictEqual([]);
   });
 
   it('extracts bare JSON tool calls wrapped in markdown fences', () => {
@@ -216,11 +231,11 @@ describe('ToolCallAccumulator (standalone)', () => {
       new Set(['find'])
     );
 
-    expect(result).toEqual([
+    expect(result).toStrictEqual([
       {
+        format: 'json-wrapped',
         name: 'find',
-        parameters: { pattern: '*.ts' },
-        format: 'json-wrapped'
+        parameters: { pattern: '*.ts' }
       }
     ]);
   });
@@ -232,7 +247,9 @@ describe('ToolCallAccumulator (standalone)', () => {
 
 describe('XmlStreamFilter (standalone)', () => {
   it('strips specified XML tags from streamed text', () => {
-    const filter = createXmlStreamFilter({ extraScrubTags: new Set(['context']) });
+    const filter = createXmlStreamFilter({
+      extraScrubTags: new Set(['context'])
+    });
 
     const result = filter.write('<context>some context</context>actual text') + filter.end();
 
@@ -241,7 +258,9 @@ describe('XmlStreamFilter (standalone)', () => {
   });
 
   it('handles tag split across multiple push calls', () => {
-    const filter = createXmlStreamFilter({ extraScrubTags: new Set(['scratchpad']) });
+    const filter = createXmlStreamFilter({
+      extraScrubTags: new Set(['scratchpad'])
+    });
 
     const p1 = filter.write('<scratchpad>hide ');
     const p2 = filter.write('this</scratchpad>show this');

@@ -4,13 +4,13 @@
  * Real implementation to be recovered soon.
  */
 
-export type RetryOptions = {
-  maxAttempts?: number;
-  initialDelay?: number;
-  maxDelay?: number;
+export interface RetryOptions {
   backoffFactor?: number;
+  initialDelay?: number;
+  maxAttempts?: number;
+  maxDelay?: number;
   signal?: AbortSignal;
-};
+}
 
 function createAbortError(): Error {
   if (typeof DOMException !== 'undefined') {
@@ -23,68 +23,47 @@ function createAbortError(): Error {
 }
 
 export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
-  const { maxAttempts = 3, initialDelay = 1000, maxDelay = 30000, backoffFactor = 2, signal } = options;
+  const { maxAttempts = 3, initialDelay = 1000, maxDelay = 30_000, backoffFactor = 2, signal } = options;
 
-  return new Promise((resolve, reject) => {
-    let attempt = 0;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    let settled = false;
-    let abortHandler: (() => void) | undefined;
+  if (signal?.aborted) {
+    return Promise.reject(createAbortError()) as Promise<T>;
+  }
 
-    const cleanup = () => {
-      if (timeoutId !== undefined) {
-        clearTimeout(timeoutId);
-        timeoutId = undefined;
-      }
-
-      if (signal && abortHandler) {
-        signal.removeEventListener('abort', abortHandler);
-        abortHandler = undefined;
-      }
-    };
+  return new Promise<T>((resolve, reject) => {
+    const state = { attempt: 0, settled: false };
 
     const settle = (callback: () => void) => {
-      if (settled) {
+      if (state.settled) {
         return;
       }
-
-      settled = true;
-      cleanup();
+      state.settled = true;
       callback();
     };
 
-    // Listen for abort signal
     if (signal) {
-      if (signal.aborted) {
-        settle(() => reject(createAbortError()));
-        return;
-      }
-
-      abortHandler = () => {
-        settle(() => reject(createAbortError()));
-      };
-      signal.addEventListener('abort', abortHandler, { once: true });
+      signal.addEventListener('abort', () => settle(() => reject(createAbortError())), {
+        once: true
+      });
     }
 
-    const attemptRetry = async () => {
+    async function attemptOnce(): Promise<void> {
+      if (state.settled) {
+        return;
+      }
       try {
         const result = await fn();
         settle(() => resolve(result));
       } catch (error) {
-        if (settled) {
-          return;
-        }
-
-        attempt++;
-        if (attempt >= maxAttempts) {
+        state.attempt++;
+        if (state.attempt >= maxAttempts) {
           settle(() => reject(error));
         } else {
-          const delay = Math.min(initialDelay * backoffFactor ** (attempt - 1), maxDelay);
-          timeoutId = setTimeout(attemptRetry, delay);
+          const delay = Math.min(initialDelay * backoffFactor ** (state.attempt - 1), maxDelay);
+          setTimeout(attemptOnce, delay);
         }
       }
-    };
+    }
 
-    void attemptRetry();
+    attemptOnce();
   });
 }

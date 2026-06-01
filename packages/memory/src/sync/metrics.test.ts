@@ -6,28 +6,64 @@ describe('createSyncMetricsRegistry', () => {
   it('tracks sync, conflict, backup, and restore counters', () => {
     const metrics = createSyncMetricsRegistry();
 
-    metrics.recordSyncRun({ status: 'success', durationMs: 120, queueDepth: 2, conflicts: 1, retries: 0 });
-    metrics.recordSyncRun({ status: 'error', durationMs: 240, queueDepth: 3, conflicts: 2, retries: 1 });
-    metrics.recordBackupRun({ success: true, durationMs: 80 });
-    metrics.recordRestoreRun({ success: true, durationMs: 60 });
+    metrics.recordSyncRun({
+      conflicts: 1,
+      durationMs: 120,
+      queueDepth: 2,
+      retries: 0,
+      status: 'success'
+    });
+    metrics.recordSyncRun({
+      conflicts: 2,
+      durationMs: 240,
+      queueDepth: 3,
+      retries: 1,
+      status: 'error'
+    });
+    metrics.recordBackupRun({ durationMs: 80, success: true });
+    metrics.recordRestoreRun({ durationMs: 60, success: true });
 
-    expect(metrics.snapshot()).toEqual({
-      sync_runs_total: 2,
-      sync_failures_total: 1,
-      sync_conflicts_total: 3,
-      backup_runs_total: 1,
+    expect(metrics.snapshot()).toStrictEqual({
       backup_restore_total: 1,
-      sync_duration_ms: {
-        average: 180,
-        max: 240
-      },
+      backup_runs_total: 1,
+      backup_success_rate: 1,
       queue_depth: {
         average: 2.5,
         max: 3
       },
+      restore_success_rate: 1,
       retries_total: 1,
-      backup_success_rate: 1,
-      restore_success_rate: 1
+      sync_conflicts_total: 3,
+      sync_duration_ms: {
+        average: 180,
+        max: 240
+      },
+      sync_failures_total: 1,
+      sync_runs_total: 2
     });
+  });
+
+  it('returns zero values when no runs recorded', () => {
+    const metrics = createSyncMetricsRegistry();
+    const snap = metrics.snapshot();
+
+    expect(snap.sync_runs_total).toBe(0);
+    expect(snap.sync_failures_total).toBe(0);
+    expect(snap.sync_duration_ms.average).toBe(0);
+    expect(snap.queue_depth.average).toBe(0);
+    expect(snap.backup_success_rate).toBe(0);
+    expect(snap.restore_success_rate).toBe(0);
+    expect(snap.backup_runs_total).toBe(0);
+    expect(snap.backup_restore_total).toBe(0);
+  });
+
+  it('handles failed backup and restore correctly', () => {
+    const metrics = createSyncMetricsRegistry();
+    metrics.recordBackupRun({ durationMs: 100, success: false });
+    metrics.recordRestoreRun({ durationMs: 200, success: false });
+
+    const snap = metrics.snapshot();
+    expect(snap.backup_success_rate).toBe(0);
+    expect(snap.restore_success_rate).toBe(0);
   });
 });

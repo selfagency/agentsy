@@ -8,8 +8,7 @@ vitest.config.ts
 .prettierrc.json*
 .eslintrc*
 .eslintrc.json*
-.oxlintrc*
-.oxfmtrc*
+# (oxlint/oxfmt configs moved to biome.jsonc via ultracite)
 
 # Build outputs (temporary files only)
 *.tsbuildinfo

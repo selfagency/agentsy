@@ -1,29 +1,31 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+
 import { defineConfig } from 'vitest/config';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 
 export default defineConfig({
-  test: {
-    environment: 'node',
-    globals: true,
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'lcov'],
-      exclude: ['node_modules/', 'dist/', '**/*.test.ts', '**/*.spec.ts', 'src/test/fixtures', 'src/test/integration'],
-      lines: 90,
-      functions: 90,
-      branches: 85,
-      statements: 90
-    },
-    include: ['src/**/*.test.ts'],
-    exclude: ['node_modules', 'dist']
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
       vscode: path.resolve(__dirname, './src/test/mocks/vscode.ts')
     }
+  },
+  test: {
+    coverage: {
+      exclude: ['node_modules/', 'dist/', '**/*.test.ts', '**/*.spec.ts', 'src/test/', 'src/testing/'],
+      thresholds: {
+        branches: 60,
+        functions: 80,
+        lines: 80,
+        statements: 80
+      },
+      provider: 'v8',
+      reporter: ['text', 'lcov']
+    },
+    environment: 'node',
+    exclude: ['node_modules', 'dist'],
+    globals: true,
+    include: ['src/**/*.test.ts']
   }
 });

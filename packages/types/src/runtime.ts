@@ -25,40 +25,38 @@ export interface RuntimeWorkflowTask extends RuntimeTask {
  * Result from executing a runtime task.
  */
 export interface RuntimeTaskResult {
-  /** Task identifier. */
-  taskId: string;
-
-  /** Execution status. */
-  status: 'completed' | 'failed' | 'skipped';
-
-  /** Start timestamp. */
-  startedAt: number;
+  /** Error if execution failed. */
+  error?: Error;
 
   /** Finish timestamp. */
   finishedAt: number;
 
-  /** Error if execution failed. */
-  error?: Error;
+  /** Start timestamp. */
+  startedAt: number;
+
+  /** Execution status. */
+  status: 'completed' | 'failed' | 'skipped';
+  /** Task identifier. */
+  taskId: string;
 }
 
 /**
  * Snapshot of runtime execution state.
  */
 export interface RuntimeSnapshot {
-  /** Session identifier. */
-  sessionId: string;
-
-  /** Execution depth (for nested tasks). */
-  depth: number;
+  /** Snapshots from child executions. */
+  childSnapshots: RuntimeSnapshot[];
 
   /** IDs of completed tasks. */
   completedTaskIds: string[];
 
+  /** Execution depth (for nested tasks). */
+  depth: number;
+
   /** Results from executed tasks. */
   results: RuntimeTaskResult[];
-
-  /** Snapshots from child executions. */
-  childSnapshots: RuntimeSnapshot[];
+  /** Session identifier. */
+  sessionId: string;
 
   /** Last update timestamp. */
   updatedAt: number;
@@ -68,11 +66,10 @@ export interface RuntimeSnapshot {
  * Context provided to running tasks.
  */
 export interface RuntimeTaskContext {
-  /** Session identifier. */
-  sessionId: string;
-
   /** Execution depth. */
   depth: number;
+  /** Session identifier. */
+  sessionId: string;
 
   /** Spawn child tasks for parallel execution. */
   spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
@@ -85,11 +82,11 @@ export interface RuntimeOptions {
   /** Error handler. */
   onError?: (error: Error, task: RuntimeTask) => void;
 
-  /** Handler called when task starts. */
-  onTaskStart?: (task: RuntimeTask) => void;
-
   /** Handler called when task completes. */
   onTaskComplete?: (result: RuntimeTaskResult, task: RuntimeTask) => void;
+
+  /** Handler called when task starts. */
+  onTaskStart?: (task: RuntimeTask) => void;
 
   /** Task context to inject. */
   taskContext?: RuntimeTaskContext;
@@ -110,23 +107,22 @@ export interface RuntimeExecutor {
  * Options for runtime loop with persistence.
  */
 export interface RuntimeLoopOptions extends RuntimeOptions {
-  /** Session identifier. */
-  sessionId?: string;
-
-  /** Initial snapshot (for resuming). */
-  snapshot?: RuntimeSnapshot;
-
-  /** Session store for persistence. */
-  sessionStore?: unknown;
-
-  /** Key to store snapshot under. */
-  snapshotKey?: string;
-
   /** Initial execution depth. */
   depth?: number;
 
   /** Maximum execution depth (prevents infinite recursion). */
   maxDepth?: number;
+  /** Session identifier. */
+  sessionId?: string;
+
+  /** Session store for persistence. */
+  sessionStore?: unknown;
+
+  /** Initial snapshot (for resuming). */
+  snapshot?: RuntimeSnapshot;
+
+  /** Key to store snapshot under. */
+  snapshotKey?: string;
 }
 
 /**
@@ -136,14 +132,14 @@ export interface RuntimeLoop {
   /** Execute tasks and return updated snapshot. */
   execute(tasks: RuntimeTask[], signal?: AbortSignal): Promise<RuntimeSnapshot>;
 
-  /** Spawn child tasks in a new execution context. */
-  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
+  /** Get current execution depth. */
+  getDepth(): number;
 
   /** Get current snapshot. */
   getSnapshot(): RuntimeSnapshot;
 
-  /** Get current execution depth. */
-  getDepth(): number;
+  /** Spawn child tasks in a new execution context. */
+  spawn(tasks: RuntimeTask[], signal?: AbortSignal, sessionId?: string): Promise<RuntimeSnapshot>;
 }
 
 /**

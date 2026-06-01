@@ -1,13 +1,24 @@
 import type { FinishReason } from '@agentsy/types';
+
 import type { NativeToolCallDelta, NormalizerResult, UsageInfo } from './types.js';
 import { isObject, toNumber } from './utils.js';
 
 function mapAnthropicStopReason(reason: string | null): FinishReason | undefined {
-  if (!reason) return undefined;
-  if (reason === 'end_turn') return 'stop';
-  if (reason === 'tool_use') return 'tool-calls';
-  if (reason === 'max_tokens') return 'length';
-  if (reason === 'stop_sequence') return 'stop';
+  if (!reason) {
+    return;
+  }
+  if (reason === 'end_turn') {
+    return 'stop';
+  }
+  if (reason === 'tool_use') {
+    return 'tool-calls';
+  }
+  if (reason === 'max_tokens') {
+    return 'length';
+  }
+  if (reason === 'stop_sequence') {
+    return 'stop';
+  }
   return 'other';
 }
 
@@ -27,54 +38,76 @@ function mapAnthropicStopReason(reason: string | null): FinishReason | undefined
 // ---------------------------------------------------------------------------
 
 function handleMessageStart(raw: Record<string, unknown>): NormalizerResult | null {
-  const message = raw.message;
-  if (!isObject(message)) return null;
+  const { message } = raw;
+  if (!isObject(message)) {
+    return null;
+  }
   const msgUsage = message.usage;
-  if (!isObject(msgUsage)) return null;
+  if (!isObject(msgUsage)) {
+    return null;
+  }
   const inputTokens = toNumber(msgUsage.input_tokens);
-  if (inputTokens === undefined) return null;
+  if (inputTokens === undefined) {
+    return null;
+  }
   const usage: UsageInfo = { inputTokens };
   return { chunk: { usage }, rawEvent: raw };
 }
 
 function handleContentBlockStart(raw: Record<string, unknown>): NormalizerResult | null {
   const contentBlock = raw.content_block;
-  if (!isObject(contentBlock)) return null;
-  if (contentBlock.type !== 'tool_use') return null;
+  if (!isObject(contentBlock)) {
+    return null;
+  }
+  if (contentBlock.type !== 'tool_use') {
+    return null;
+  }
 
   const index = toNumber(raw.index) ?? 0;
   const id = typeof contentBlock.id === 'string' ? contentBlock.id : undefined;
   const name = typeof contentBlock.name === 'string' ? contentBlock.name : undefined;
 
   const delta: NativeToolCallDelta = { index };
-  if (id !== undefined) delta.id = id;
-  if (name !== undefined) delta.name = name;
+  if (id !== undefined) {
+    delta.id = id;
+  }
+  if (name !== undefined) {
+    delta.name = name;
+  }
 
   return { chunk: { nativeToolCallDeltas: [delta] }, rawEvent: raw };
 }
 
 function handleContentBlockDelta(raw: Record<string, unknown>): NormalizerResult | null {
   const deltaObj = raw.delta;
-  if (!isObject(deltaObj)) return null;
+  if (!isObject(deltaObj)) {
+    return null;
+  }
   const deltaType = deltaObj.type;
   const index = toNumber(raw.index) ?? 0;
 
   if (deltaType === 'text_delta') {
-    const text = deltaObj.text;
-    if (typeof text !== 'string') return null;
+    const { text } = deltaObj;
+    if (typeof text !== 'string') {
+      return null;
+    }
     return { chunk: { content: text }, rawEvent: raw };
   }
 
   if (deltaType === 'thinking_delta') {
-    const thinking = deltaObj.thinking;
-    if (typeof thinking !== 'string') return null;
+    const { thinking } = deltaObj;
+    if (typeof thinking !== 'string') {
+      return null;
+    }
     return { chunk: { thinking }, rawEvent: raw };
   }
 
   if (deltaType === 'input_json_delta') {
     const partialJson = deltaObj.partial_json;
-    if (typeof partialJson !== 'string') return null;
-    const tcDelta: NativeToolCallDelta = { index, argumentsDelta: partialJson };
+    if (typeof partialJson !== 'string') {
+      return null;
+    }
+    const tcDelta: NativeToolCallDelta = { argumentsDelta: partialJson, index };
     return { chunk: { nativeToolCallDeltas: [tcDelta] }, rawEvent: raw };
   }
 
@@ -92,10 +125,14 @@ function handleMessageDelta(raw: Record<string, unknown>): NormalizerResult | nu
   let usage: UsageInfo | undefined;
   if (isObject(usageObj)) {
     const outputTokens = toNumber(usageObj.output_tokens);
-    if (outputTokens !== undefined) usage = { outputTokens };
+    if (outputTokens !== undefined) {
+      usage = { outputTokens };
+    }
   }
 
-  if (done === undefined && usage === undefined) return null;
+  if (done === undefined && usage === undefined) {
+    return null;
+  }
 
   return {
     chunk: {
@@ -116,15 +153,29 @@ function handleMessageDelta(raw: Record<string, unknown>): NormalizerResult | nu
  */
 export function normalizeAnthropicEvent(raw: unknown): NormalizerResult | null {
   try {
-    if (!isObject(raw)) return null;
-    const type = raw.type;
-    if (typeof type !== 'string') return null;
+    if (!isObject(raw)) {
+      return null;
+    }
+    const { type } = raw;
+    if (typeof type !== 'string') {
+      return null;
+    }
 
-    if (type === 'message_start') return handleMessageStart(raw);
-    if (type === 'content_block_start') return handleContentBlockStart(raw);
-    if (type === 'content_block_delta') return handleContentBlockDelta(raw);
-    if (type === 'message_delta') return handleMessageDelta(raw);
-    if (type === 'message_stop') return { chunk: { done: true }, rawEvent: raw };
+    if (type === 'message_start') {
+      return handleMessageStart(raw);
+    }
+    if (type === 'content_block_start') {
+      return handleContentBlockStart(raw);
+    }
+    if (type === 'content_block_delta') {
+      return handleContentBlockDelta(raw);
+    }
+    if (type === 'message_delta') {
+      return handleMessageDelta(raw);
+    }
+    if (type === 'message_stop') {
+      return { chunk: { done: true }, rawEvent: raw };
+    }
 
     // content_block_stop, ping, error, etc.
     return null;

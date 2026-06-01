@@ -80,7 +80,7 @@ repositories[2]{id,name,repo,stars,forks}:
 
 **File extension:** `.toon`
 **Media type:** `text/toon; charset=utf-8`
-**License:** MIT
+**License:** GPL-3.0-or-later
 
 **Structure:**
 
@@ -122,13 +122,13 @@ npm install @toon-format/toon
 **Basic usage:**
 
 ```typescript
-import { encode, decode } from '@toon-format/toon';
+import { encode, decode } from "@toon-format/toon";
 
 const data = {
   users: [
-    { id: 1, name: 'Alice', role: 'admin' },
-    { id: 2, name: 'Bob', role: 'user' }
-  ]
+    { id: 1, name: "Alice", role: "admin" },
+    { id: 2, name: "Bob", role: "user" },
+  ],
 };
 
 // Encode to TOON
@@ -145,7 +145,7 @@ const json = decode(toon);
 **Streaming for large datasets:**
 
 ```typescript
-import { encodeLines } from '@toon-format/toon';
+import { encodeLines } from "@toon-format/toon";
 
 const largeData = await fetchThousandsOfRecords();
 
@@ -158,7 +158,7 @@ for (const line of encodeLines(largeData)) {
 **Stream encoding write to file:**
 
 ```typescript
-const writableStream = fs.createWriteStream('output.toon');
+const writableStream = fs.createWriteStream("output.toon");
 
 const lines = encodeLines(largeData);
 for (const line of lines) {
@@ -169,10 +169,10 @@ for (const line of lines) {
 **Stream decoding read from file:**
 
 ```typescript
-import { decodeStream } from '@toon-format/toon';
+import { decodeStream } from "@toon-format/toon";
 
-const toonFile = fs.createReadStream('input.toon');
-const jsonFile = fs.createWriteStream('output.json');
+const toonFile = fs.createReadStream("input.toon");
+const jsonFile = fs.createWriteStream("output.json");
 const writer = jsonFile.getWriter();
 
 for await (const value of decodeStream(toonFile)) {
@@ -189,9 +189,9 @@ await writer.close();
 **With replacer:**
 
 ```typescript
-const user = { name: 'Alice', password: 'secret', email: 'alice@example.com' };
+const user = { name: "Alice", password: "secret", email: "alice@example.com" };
 const safe = encode(user, {
-  replacer: (key, value) => (key === 'password' ? undefined : value)
+  replacer: (key, value) => (key === "password" ? undefined : value),
 });
 ```
 
@@ -228,7 +228,7 @@ const safe = encode(user, {
    - battle-tested production library
    - 24,261 GitHub stars, active development
    - TypeScript SDK streaming support
-   - MIT license
+   - GPL-3.0-or-later license
 
 2. **Apply TOON selectively based on tabular eligibility:**
    - Detect array uniformity (all objects have identical fields, primitive values)
@@ -253,7 +253,7 @@ const safe = encode(user, {
 **Example integration:**
 
 ```typescript
-import { encode, decode, encodeLines } from '@toon-format/toon';
+import { encode, decode, encodeLines } from "@toon-format/toon";
 
 // Detect tabular eligibility
 function detectTabularEligibility(data: any): number {
@@ -267,8 +267,10 @@ function detectTabularEligibility(data: any): number {
     const itemKeys = Object.keys(item);
     if (
       itemKeys.length === keys.length &&
-      itemKeys.every(k => keys.includes(k)) &&
-      Object.values(item).every(v => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean')
+      itemKeys.every((k) => keys.includes(k)) &&
+      Object.values(item).every(
+        (v) => typeof v === "string" || typeof v === "number" || typeof v === "boolean",
+      )
     ) {
       uniformCount++;
     }
@@ -313,14 +315,18 @@ export async function encodeLargeDataset(data: unknown[], outputPath: string): P
 
    ```typescript
    export interface EncodingFormat {
-     type: 'json' | 'json-compact' | 'toon' | 'yaml';
+     type: "json" | "json-compact" | "toon" | "yaml";
    }
 
-   export function encodeData(data: unknown, format: EncodingFormat, options?: EncodingOptions): string {
+   export function encodeData(
+     data: unknown,
+     format: EncodingFormat,
+     options?: EncodingOptions,
+   ): string {
      switch (format.type) {
-       case 'toon':
+       case "toon":
          return encode(data, options);
-       case 'json-compact':
+       case "json-compact":
          return JSON.stringify(data);
        default:
          return JSON.stringify(data, null, 2);
@@ -336,16 +342,16 @@ export async function encodeLargeDataset(data: unknown[], outputPath: string): P
 
      if (eligibility > 60 && context.tokenBudget < 50000) {
        // Use TOON for uniform arrays when token budget tight
-       return { type: 'toon' };
+       return { type: "toon" };
      }
 
      if (context.tokenBudget < 20000) {
        // Use JSON-compact for tight budgets on nested data
-       return { type: 'json-compact' };
+       return { type: "json-compact" };
      }
 
      // Default to pretty JSON for readability
-     return { type: 'json' };
+     return { type: "json" };
    }
    ```
 

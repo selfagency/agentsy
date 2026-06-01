@@ -1,0 +1,24 @@
+---
+engines:
+  duplication:
+    minTokenMatch: 20
+    skipLexicalErrors: false
+    ignoreLiterals: false
+    ignoreIdentifiers: true
+    ignoreAnnotations: false
+    ignoreUsings: false
+exclude_paths:
+  - config/**
+  - .agents/**
+  - .fallow/**
+  - .vscode/**
+  - .gh-pages/**
+  - .rumdl_cache/**
+  - .turbo/**
+  - coverage/**
+  - dist/**
+  - node_modules/**
+  - plan/**
+  - **/*.md
+include_paths:
+  - packages/**

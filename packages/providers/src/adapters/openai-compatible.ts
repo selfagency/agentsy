@@ -9,18 +9,22 @@ export function isOpenAICompatibleProvider(value: string): value is OpenAICompat
 }
 
 export interface OpenAICompatibleToolCall {
-  id: string;
-  type: 'function';
   function: {
     name: string;
     arguments: string;
   };
+  id: string;
+  type: 'function';
 }
 
 export type OpenAICompatibleMessage =
   | { role: 'system'; content: string }
   | { role: 'user'; content: string }
-  | { role: 'assistant'; content: string | null; tool_calls?: OpenAICompatibleToolCall[] }
+  | {
+      role: 'assistant';
+      content: string | null;
+      tool_calls?: OpenAICompatibleToolCall[];
+    }
   | { role: 'tool'; content: string; tool_call_id: string };
 
 /**
@@ -41,33 +45,37 @@ export function toOpenAICompatibleMessages(
 
     if (toolResultPart?.type === 'tool-result') {
       return {
-        role: 'tool',
         content: toolResultPart.content,
+        role: 'tool',
         tool_call_id: toolResultPart.callId
       };
     }
 
-    if (msg.role === 'system') return { role: 'system', content: text };
-    if (msg.role === 'user') return { role: 'user', content: text };
+    if (msg.role === 'system') {
+      return { content: text, role: 'system' };
+    }
+    if (msg.role === 'user') {
+      return { content: text, role: 'user' };
+    }
 
     if (toolCallPart?.type === 'tool-call') {
       return {
-        role: 'assistant',
         content: text || null,
+        role: 'assistant',
         tool_calls: [
           {
-            id: toolCallPart.callId,
-            type: 'function',
             function: {
-              name: toolCallPart.name,
-              arguments: JSON.stringify(toolCallPart.input ?? {})
-            }
+              arguments: JSON.stringify(toolCallPart.input ?? {}),
+              name: toolCallPart.name
+            },
+            id: toolCallPart.callId,
+            type: 'function'
           }
         ]
       };
     }
 
-    return { role: 'assistant', content: text };
+    return { content: text, role: 'assistant' };
   });
 }
 

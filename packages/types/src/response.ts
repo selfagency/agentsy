@@ -2,9 +2,9 @@
  * LLM response types.
  */
 
-import type { UsageInfo, NativeToolCallDelta } from './usage.js';
-import type { FinishReason } from './tool-calls.js';
 import type { StreamChunk } from './stream.js';
+import type { FinishReason } from './tool-calls.js';
+import type { NativeToolCallDelta, UsageInfo } from './usage.js';
 
 /**
  * Standardized non-streaming result from any LLM.
@@ -17,23 +17,23 @@ export interface CompletionResponse {
   /** Finish reason for generation stopping. */
   finishReason?: FinishReason;
 
-  /** Token usage information. */
-  usage?: UsageInfo;
-
-  /** Tool calls made during generation (for function calling). */
-  toolCalls?: NativeToolCallDelta[];
+  /** ID of the completion (for provider tracking). */
+  id?: string;
 
   /** Model configuration used for the request. */
   model?: string;
-
-  /** ID of the completion (for provider tracking). */
-  id?: string;
 
   /** Rejected flag for safety filtering. */
   rejected?: boolean;
 
   /** Filter reason for rejected completions. */
   rejectReason?: string;
+
+  /** Tool calls made during generation (for function calling). */
+  toolCalls?: NativeToolCallDelta[];
+
+  /** Token usage information. */
+  usage?: UsageInfo;
 }
 
 /**

@@ -22,18 +22,23 @@ These documents establish the human-rights, safety, privacy, accountability, and
 ## Usage
 
 ```typescript
-import { GuardrailsConfig, GuardrailProvider, PiiRedactionProvider, RetryBlockedError } from '@agentsy/guardrails';
+import {
+  GuardrailsConfig,
+  GuardrailProvider,
+  PiiRedactionProvider,
+  RetryBlockedError,
+} from "@agentsy/guardrails";
 
 async function enforceGuardrails(userMessage: string, config: GuardrailsConfig) {
   // PII redaction
   const piiProvider = new PiiRedactionProvider();
-  const redactedMessage = await piiProvider.redact(userMessage, ['email', 'phone']);
+  const redactedMessage = await piiProvider.redact(userMessage, ["email", "phone"]);
 
   // Token quota enforcement
   if (config.tokenQuota) {
     const currentUsage = await getSessionTokenUsage();
     if (currentUsage > config.tokenQuota.maxSessionTokens) {
-      throw new QuotaExceededError('Token quota exceeded for current session');
+      throw new QuotaExceededError("Token quota exceeded for current session");
     }
   }
 
@@ -55,7 +60,7 @@ interface GuardrailsConfig {
     maxSessionTokens: number;
   };
   retrievalDomains?: string[];
-  trustHierarchy?: 'system' | 'user' | 'retrieved';
+  trustHierarchy?: "system" | "user" | "retrieved";
   egressAllowList?: string[];
   crossUserDataAccess?: boolean;
   stripUntrustedContext?: string;

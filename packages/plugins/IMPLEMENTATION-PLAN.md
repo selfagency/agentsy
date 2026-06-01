@@ -2,7 +2,7 @@
 goal: @agentsy/plugins production implementation plan
 version: 1.0
 date_created: 2026-05-15
-last_updated: 2026-05-15
+last_updated: 2026-05-25
 owner: plugins-maintainers
 status: In progress
 tags: [feature, architecture, plugins, registry, commands]
@@ -25,6 +25,7 @@ This plan defines the production implementation order for `@agentsy/plugins` as 
 - **REQ-PLUGINS-007**: Plugin discovery must merge bundled plugins with user/project plugin directories, including `~/.agents`, project `.agents`, and `~/.config/agentsy`.
 - **SEC-PLUGINS-001**: Privileged plugin capabilities are deny-by-default.
 - **SEC-PLUGINS-002**: Third-party plugin content is validated and sandboxed at activation boundaries.
+- **SEC-PLUGINS-003**: Plugin security model has 4 layers: (1) context-injection allowlist — plugins can only access context fields on an explicit allowlist; (2) capability declarations — plugins declare required capabilities in their manifest; (3) hook registration bounds — plugins can only register hooks in allowed categories (no runtime-scope hooks from plugins); (4) resource sandboxing — plugin resources are scoped to the plugin directory.
 - **CON-PLUGINS-001**: CLI owns shell UX composition; plugins own manifests and registry.
 - **CON-PLUGINS-002**: Tool execution remains in runtime/tools despite plugin discovery.
 
@@ -34,12 +35,13 @@ This plan defines the production implementation order for `@agentsy/plugins` as 
 
 - GOAL-PLUGINS-001: Contract stabilization.
 
-| Task             | Description                                                                                                                                                   | Completed | Date |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-PLUGINS-001 | Finalize plugin manifest schema and capability model contracts.                                                                                               |           |      |
-| TASK-PLUGINS-002 | Stabilize slash-command registry/discovery APIs and alias resolution behavior.                                                                                |           |      |
-| TASK-PLUGINS-003 | Document package boundaries with CLI/orchestrator/runtime.                                                                                                    |           |      |
-| TASK-PLUGINS-013 | Extend manifest schema for official-plugin provenance, mode metadata, picker labels, and install-source markers (`bundled`, `user`, `workspace`, `external`). |           |      |
+| Task             | Description                                                                                                                                                                                                  | Completed | Date       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---------- |
+| TASK-091         | DOGFOOD Phase 1: Define official superagents plugin contract — AgentManifest, PluginProvenance, ExternalInstallation, AgentManifestRegistry + 3 built-in manifests (research/plan/agent). 8 files, 15 tests. | ✅        | 2026-05-25 |
+| TASK-PLUGINS-001 | Finalize plugin manifest schema and capability model contracts.                                                                                                                                              |           |            |
+| TASK-PLUGINS-002 | Stabilize slash-command registry/discovery APIs and alias resolution behavior.                                                                                                                               |           |            |
+| TASK-PLUGINS-003 | Document package boundaries with CLI/orchestrator/runtime.                                                                                                                                                   |           |            |
+| TASK-PLUGINS-013 | Extend manifest schema for official-plugin provenance, mode metadata, picker labels, and install-source markers (`bundled`, `user`, `workspace`, `external`).                                                |           |            |
 
 ### Implementation Phase 2
 
@@ -68,11 +70,33 @@ This plan defines the production implementation order for `@agentsy/plugins` as 
 
 - GOAL-PLUGINS-004: Hardening and release gates.
 
-| Task             | Description                                                             | Completed | Date |
-| ---------------- | ----------------------------------------------------------------------- | --------- | ---- |
-| TASK-PLUGINS-010 | Add regression suites for plugin compatibility and conflict edge cases. |           |      |
-| TASK-PLUGINS-011 | Align docs and plugin-author guidance.                                  |           |      |
-| TASK-PLUGINS-012 | Pass package and monorepo release gates.                                |           |      |
+| Task             | Description                                                                                                                                                                  | Completed | Date |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PLUGINS-010 | Add regression suites for plugin compatibility and conflict edge cases.                                                                                                      |           |      |
+| TASK-PLUGINS-011 | Align docs and plugin-author guidance.                                                                                                                                       |           |      |
+| TASK-PLUGINS-012 | Pass package and monorepo release gates.                                                                                                                                     |           |      |
+| TASK-092         | DOGFOOD Phase 4: Implement bundled-superagent registration — official plugin ships with CLI defaults but resolves through standard discovery/loading paths.                  |           |      |
+| TASK-093         | DOGFOOD Phase 4: Add agent-mode selection flows (/agent-mode, picker UI, config persistence) backed by plugin manifests and discovery from bundled/user/project directories. |           |      |
+| TASK-PLUGIN-020  | Audit all context-injection points in plugin loader before Phase 4 launch.                                                                                                   |           |      |
+| TASK-PLUGIN-021  | Add allowlist-based context field filtering — only explicitly permitted fields pass through context injection.                                                               |           |      |
+| TASK-PLUGIN-022  | Document plugin security model in README — context injection rules, allowlist configuration, audit procedure.                                                                |           |      |
+| TASK-SKILL-015   | Extend plugin manifest schema to include optional `skills` field pointing to published SKILL.md files.                                                                       |           |      |
+| TASK-SKILL-016   | Implement SKILL.md discovery during plugin load — walk plugin directories, parse frontmatter, register with skill registry.                                                  |           |      |
+| TASK-SKILL-017   | Surface discovered skills in agent definition resolution.                                                                                                                    |           |      |
+
+### Implementation Phase 5 — Skills/Instructions/Agent Discovery (agentskills.io)
+
+- GOAL-PLUGINS-005: Implement skills, instructions, and agent discovery following the agentskills.io open standard.
+
+| Task             | Description                                                                                                                                                                                                                                                 | Completed | Date |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-PLUGINS-013 | Define `SkillManifest` Zod schema (agentskills.io frontmatter: name, description, triggers, resources) and `SkillDiscoverer` — walk discovery roots, parse SKILL.md files, build metadata index.                                                            |           |      |
+| TASK-PLUGINS-014 | Implement `SkillActivator` (semantic matching + full-body loading) and `createSkillsHook` returning `beforeInit` callback for AgentLoopOptions.                                                                                                             |           |      |
+| TASK-PLUGINS-015 | Define `InstructionFile` type (path, content, root, scope) and `InstructionsDiscoverer` — walk standard instruction file locations (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `~/.agentsy/instructions.md`), return `InstructionFile[]`. |           |      |
+| TASK-PLUGINS-016 | Export `createInstructionsHook(discoverer)` from `src/instructions/hook.ts` — `beforeInit` callback for AgentLoopOptions.                                                                                                                                   |           |      |
+| TASK-PLUGINS-017 | Define `AgentDefinition` Zod schema and implement `AgentLoader` + `AgentRegistry` in `src/agents/` — discover `AGENT.md` files from discovery roots, merge with built-in agent definitions.                                                                 |           |      |
+| TASK-PLUGINS-018 | Implement built-in agent definitions in `src/agents/builtins/` — `default`, `research`, `code`, `plan`, `superagent`. Each satisfies `AgentDefinition` with system prompt, tool set, memory scope, model preferences, hook set.                             |           |      |
+| TASK-PLUGINS-019 | Add integration tests: discovery root precedence, SKILL.md parsing, instructions file collection, agent definition loading, agent merge + override semantics.                                                                                               |           |      |
 
 ## 3. Acceptance Criteria
 
@@ -133,6 +157,7 @@ The package fulfills its role by providing:
 
 - **Hooks**: `load`, `initialize`, `activate`, `deactivate`, and `unload`.
 - **Registry**: `PluginHost` manages the collection of active plugins and their permissions.
+- **Hook registration**: Plugins can register hooks by declaring them in their manifest or programmatically during activation. Plugin-registered hooks are scoped to the session the plugin contributes to and cannot register runtime-global hooks.
 
 ### 2. Tool Registry (`src/registry/`)
 
@@ -182,6 +207,7 @@ Agentspan-style skill management is a good fit for the plugin layer because it a
 - **Context-based activation**: enable skills only when the current task matches their scope.
 - **Permission scoping**: attach explicit tool and filesystem permissions to each skill bundle.
 - **Collaboration metadata**: preserve skill provenance, version, and activation history for review.
+- **SKILL.md discovery**: Plugin manifests can declare an optional `skills` field listing SKILL.md file paths. During plugin load, the skills layer discovers and indexes any referenced SKILL.md files for agent resolution.
 
 **Implementation notes:**
 
@@ -258,7 +284,7 @@ export interface Extension {
 ```typescript
 export interface WorkspaceSkillManifest {
   id: string;
-  source: 'workspace' | 'user' | 'bundled';
+  source: "workspace" | "user" | "bundled";
   path: string;
   capabilities: string[];
   instructionFiles: string[];
@@ -294,14 +320,14 @@ Every plugin or scaffold must have at least one minimal test (`src/index.test.ts
 - **CON-011**: `caveman-shrink` must not require any `@agentsy/*` packages at runtime.
 - **SEC-010**: `inputSchema` must never be altered by `caveman-shrink`; enforce with startup validation assertion.
 - **ADR-019**: Caveman as bundled SKILL.md, not runtime filter. Post-processing token compression is fragile and destructive; prompt-side compression leverages the model's own language capabilities at zero inference-time overhead.
-- **ASSUMPTION-009**: JuliusBrussee/caveman v1.7.0 SKILL.md files are MIT licensed and redistributable. Verify before TASK-F6-003.
-- **DEP-011**: JuliusBrussee/caveman v1.7.0 SKILL.md files — bundled as static assets. MIT license. No runtime import.
+- **ASSUMPTION-009**: JuliusBrussee/caveman v1.7.0 SKILL.md files are GPL-3.0-or-later licensed and redistributable. Verify before TASK-F6-003.
+- **DEP-011**: JuliusBrussee/caveman v1.7.0 SKILL.md files — bundled as static assets. GPL-3.0-or-later license. No runtime import.
 
 ### Types (`src/types.ts`)
 
 ```ts
-type CavemanMode = 'lite' | 'full' | 'ultra' | 'wenyan-lite' | 'wenyan-full' | 'wenyan-ultra';
-const DEFAULT_CAVEMAN_MODE: CavemanMode = 'full';
+type CavemanMode = "lite" | "full" | "ultra" | "wenyan-lite" | "wenyan-full" | "wenyan-ultra";
+const DEFAULT_CAVEMAN_MODE: CavemanMode = "full";
 ```
 
 ### Implementation Tasks
@@ -310,7 +336,7 @@ const DEFAULT_CAVEMAN_MODE: CavemanMode = 'full';
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | TASK-F6-001 | Create `packages/caveman/`. Add `package.json` (`@agentsy/caveman`, peerDep: `@agentsy/core@workspace:*`), `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`.                                                                                                                                   |
 | TASK-F6-002 | Define `CavemanMode` in `packages/caveman/src/types.ts`. Export `DEFAULT_CAVEMAN_MODE: CavemanMode = 'full'`.                                                                                                                                                                                       |
-| TASK-F6-003 | Bundle JuliusBrussee/caveman v1.7.0 SKILL.md files under `packages/caveman/src/skills/`: `caveman.md`, `caveman-lite.md`, `caveman-ultra.md`, `wenyan.md`. Each must include `source_url`, `version: "1.7.0"`, `license: "MIT"` frontmatter (GUD-008).                                              |
+| TASK-F6-003 | Bundle JuliusBrussee/caveman v1.7.0 SKILL.md files under `packages/caveman/src/skills/`: `caveman.md`, `caveman-lite.md`, `caveman-ultra.md`, `wenyan.md`. Each must include `source_url`, `version: "1.7.0"`, `license: "GPL-3.0-or-later"` frontmatter (GUD-008).                                 |
 | TASK-F6-004 | Bundle cavecrew subagent SKILL.md files under `packages/caveman/src/skills/cavecrew/`: `investigator.md`, `builder.md`, `reviewer.md`. Each targets ~60% fewer output tokens than vanilla equivalents.                                                                                              |
 | TASK-F6-005 | Create slash command SKILL.md files under `packages/caveman/src/skills/commands/`: `/caveman.md`, `/caveman-lite.md`, `/caveman-ultra.md`.                                                                                                                                                          |
 | TASK-F6-006 | Implement `CavemanManager` in `packages/caveman/src/manager.ts`. Methods: `activate(mode: CavemanMode): SkillContent`, `deactivate(): void`, `getActiveMode(): CavemanMode \| null`, `listSkills(): CavemanSkillManifest[]`. Export `createCavemanManager()` factory.                               |

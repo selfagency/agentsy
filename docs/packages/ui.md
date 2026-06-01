@@ -35,7 +35,9 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
-const bridge = createConversationStoreFromProcessor(processor, { conversationId: 'conversation-1' });
+const bridge = createConversationStoreFromProcessor(processor, {
+  conversationId: 'conversation-1'
+});
 
 for await (const rawChunk of stream) {
   processor.process(normalizeOpenAIChatChunk(rawChunk));

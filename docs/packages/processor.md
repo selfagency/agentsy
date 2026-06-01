@@ -44,7 +44,9 @@ import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 import { createPipeline } from '@agentsy/providers/pipeline';
 
 const processor = new LLMStreamProcessor();
-for await (const event of createPipeline(openAiSseStream, { provider: 'openai' })) {
+for await (const event of createPipeline(openAiSseStream, {
+  provider: 'openai'
+})) {
   console.log(event);
 }
 ```
@@ -57,7 +59,9 @@ import { LLMStreamProcessor } from '@agentsy/core/processor';
 import { createConversationStoreFromProcessor } from '@agentsy/ui';
 
 const processor = new LLMStreamProcessor({ parseThinkTags: true });
-const bridge = createConversationStoreFromProcessor(processor, { conversationId: 'demo-conversation' });
+const bridge = createConversationStoreFromProcessor(processor, {
+  conversationId: 'demo-conversation'
+});
 
 for await (const event of anthropicEventStream) {
   processor.process(normalizeAnthropicEvent(event));

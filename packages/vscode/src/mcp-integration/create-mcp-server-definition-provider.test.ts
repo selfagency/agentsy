@@ -1,29 +1,30 @@
 import { describe, expect, it } from 'vitest';
+
 import { createMcpServerDefinitionProvider } from './create-mcp-server-definition-provider.js';
 
-describe('createMcpServerDefinitionProvider', () => {
+describe(createMcpServerDefinitionProvider, () => {
   it('enriches server definitions with API key env/header values', async () => {
     const provider = createMcpServerDefinitionProvider({
+      formatApiKeyHeaderValue: apiKey => `Bearer ${apiKey}`,
+      getApiKey: async () => 'secret-key',
       servers: [
         {
-          name: 'zai-mcp',
-          command: 'node',
-          args: ['server.js'],
           apiKeyEnvVar: 'ZAI_API_KEY',
-          apiKeyHeader: 'Authorization'
+          apiKeyHeader: 'Authorization',
+          args: ['server.js'],
+          command: 'node',
+          name: 'zai-mcp'
         }
-      ],
-      getApiKey: async () => 'secret-key',
-      formatApiKeyHeaderValue: apiKey => `Bearer ${apiKey}`
+      ]
     });
 
     const servers = await provider.provide();
 
     expect(servers).toHaveLength(1);
     expect(servers[0]).toMatchObject({
-      name: 'zai-mcp',
       env: { ZAI_API_KEY: 'secret-key' },
-      headers: { Authorization: 'Bearer secret-key' }
+      headers: { Authorization: 'Bearer secret-key' },
+      name: 'zai-mcp'
     });
   });
 
@@ -31,9 +32,9 @@ describe('createMcpServerDefinitionProvider', () => {
     const provider = createMcpServerDefinitionProvider({
       servers: [
         {
-          name: 'disabled-by-setting',
           command: 'node',
-          enabledSettingKey: 'mcp.disabledBySetting.enabled'
+          enabledSettingKey: 'mcp.disabledBySetting.enabled',
+          name: 'disabled-by-setting'
         }
       ],
       settings: {
@@ -49,6 +50,6 @@ describe('createMcpServerDefinitionProvider', () => {
     const servers = await provider.provide();
 
     expect(servers).toHaveLength(1);
-    expect(servers[0]?.disabled).toBe(true);
+    expect(servers[0]?.disabled).toBeTruthy();
   });
 });

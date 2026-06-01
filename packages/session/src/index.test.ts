@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { createSessionStore } from './index.js';
 
 describe('createSessionStore', () => {
@@ -6,14 +7,20 @@ describe('createSessionStore', () => {
     const store = createSessionStore({ id: 's1', values: {} });
     store.setValue('topic', 'agents');
 
-    expect(store.getState()).toEqual({ id: 's1', values: { topic: 'agents' } });
+    expect(store.getState()).toStrictEqual({
+      id: 's1',
+      values: { topic: 'agents' }
+    });
   });
 
   it('returns typed values when requested', () => {
-    const store = createSessionStore({ id: 's1', values: { retries: 2, enabled: true } });
+    const store = createSessionStore({
+      id: 's1',
+      values: { enabled: true, retries: 2 }
+    });
 
-    expect(store.getValue<number>('retries')).toBe(2);
-    expect(store.getValue<boolean>('enabled')).toBe(true);
+    expect(store.getValue('retries')).toBe(2);
+    expect(store.getValue('enabled')).toBeTruthy();
     expect(store.getValue('missing')).toBeUndefined();
   });
 

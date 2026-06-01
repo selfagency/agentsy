@@ -1,26 +1,5 @@
-import type { NormalizerResult } from './types.js';
 import { normalizeOpenAIChatChunk } from './openai.js';
-
-/**
- * Extracts text and thinking content from a Mistral structured content block.
- * @returns [text, thinking] tuple
- */
-function extractContentFromBlock(block: unknown): [string, string] {
-  let text = '';
-  let thinking = '';
-
-  if (!block || typeof block !== 'object') return [text, thinking];
-
-  const b = block as Record<string, unknown>;
-
-  if (b.type === 'text' && typeof b.text === 'string') {
-    text = b.text;
-  } else if (b.type === 'thinking' && Array.isArray(b.thinking)) {
-    thinking = extractThinkingContent(b.thinking);
-  }
-
-  return [text, thinking];
-}
+import type { NormalizerResult } from './types.js';
 
 /**
  * Extracts thinking content from a nested thinking array.
@@ -38,6 +17,29 @@ function extractThinkingContent(thinkingArray: unknown[]): string {
   }
 
   return result;
+}
+
+/**
+ * Extracts text and thinking content from a Mistral structured content block.
+ * @returns [text, thinking] tuple
+ */
+function extractContentFromBlock(block: unknown): [string, string] {
+  let text = '';
+  let thinking = '';
+
+  if (!block || typeof block !== 'object') {
+    return [text, thinking];
+  }
+
+  const b = block as Record<string, unknown>;
+
+  if (b.type === 'text' && typeof b.text === 'string') {
+    ({ text } = b);
+  } else if (b.type === 'thinking' && Array.isArray(b.thinking)) {
+    thinking = extractThinkingContent(b.thinking);
+  }
+
+  return [text, thinking];
 }
 
 /**
@@ -70,12 +72,18 @@ export function normalizeMistralChunk(raw: unknown): NormalizerResult | null {
 
   // Slow path: check for Mistral's structured content array (2509/2507 format).
   try {
-    if (!raw || typeof raw !== 'object') return standard;
-    const choices = (raw as Record<string, unknown>).choices;
-    if (!Array.isArray(choices) || choices.length === 0) return standard;
+    if (!raw || typeof raw !== 'object') {
+      return standard;
+    }
+    const { choices } = raw as Record<string, unknown>;
+    if (!Array.isArray(choices) || choices.length === 0) {
+      return standard;
+    }
 
     const delta = (choices[0] as Record<string, unknown>).delta as Record<string, unknown> | undefined;
-    if (!Array.isArray(delta?.content)) return standard;
+    if (!Array.isArray(delta?.content)) {
+      return standard;
+    }
 
     let text = '';
     let thinking = '';
@@ -86,7 +94,9 @@ export function normalizeMistralChunk(raw: unknown): NormalizerResult | null {
       thinking += blockThinking;
     }
 
-    if (!text && !thinking) return standard;
+    if (!(text || thinking)) {
+      return standard;
+    }
 
     const base = standard ?? { chunk: {}, rawEvent: raw };
     return {

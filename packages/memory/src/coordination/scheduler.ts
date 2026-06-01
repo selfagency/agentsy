@@ -1,13 +1,27 @@
 export interface Scheduler {
-  schedule(jobId: string, delayMs: number, callback: () => void): void;
   cancel(jobId: string): void;
   pendingCount(): number;
+  schedule(jobId: string, delayMs: number, callback: () => void): void;
 }
 
 export function createInMemoryScheduler(): Scheduler {
   const jobs = new Map<string, ReturnType<typeof setTimeout>>();
 
   return {
+    cancel(jobId: string) {
+      const timeout = jobs.get(jobId);
+      if (!timeout) {
+        return;
+      }
+
+      clearTimeout(timeout);
+      jobs.delete(jobId);
+    },
+
+    pendingCount() {
+      return jobs.size;
+    },
+
     schedule(jobId: string, delayMs: number, callback: () => void) {
       const existing = jobs.get(jobId);
       if (existing) {
@@ -27,20 +41,6 @@ export function createInMemoryScheduler(): Scheduler {
       );
 
       jobs.set(jobId, timeout);
-    },
-
-    cancel(jobId: string) {
-      const timeout = jobs.get(jobId);
-      if (!timeout) {
-        return;
-      }
-
-      clearTimeout(timeout);
-      jobs.delete(jobId);
-    },
-
-    pendingCount() {
-      return jobs.size;
     }
   };
 }

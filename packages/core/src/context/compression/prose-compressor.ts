@@ -16,12 +16,20 @@ const ULTRA_REMOVALS = [...FULL_REMOVALS, 'you should', 'it might be worth', 'yo
  */
 export function getRemovalWords(level: CompressionLevel): readonly string[] {
   switch (level) {
-    case 'lite':
+    case 'lite': {
       return LITE_REMOVALS;
-    case 'full':
+    }
+    case 'full': {
       return FULL_REMOVALS;
-    case 'ultra':
+    }
+    case 'ultra': {
       return ULTRA_REMOVALS;
+    }
+    // This should never happen because of the type definition, but TypeScript needs it
+    default: {
+      const _exhaustiveCheck: never = level;
+      return [];
+    }
   }
 }
 
@@ -31,8 +39,8 @@ export function getRemovalWords(level: CompressionLevel): readonly string[] {
 export function removeWordList(input: string, words: readonly string[]): string {
   let output = input;
   for (const word of words) {
-    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
-    output = output.replace(new RegExp(String.raw`\b${escaped}\b`, 'gi'), '');
+    const escaped = word.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
+    output = output.replaceAll(new RegExp(String.raw`\b${escaped}\b`, 'gi'), '');
   }
 
   return output;
@@ -80,22 +88,22 @@ export function compressProse(input: string, level: CompressionLevel): string {
   let output = removeWordList(input, removals);
 
   if (level !== 'lite') {
-    output = output.replace(/\b(a|an|the)\b/gi, '');
+    output = output.replaceAll(/\b(a|an|the)\b/giu, '');
   }
 
   if (level === 'ultra') {
     output = output
-      .replace(/\bin order to\b/gi, 'to')
-      .replace(/\bmake sure to\b/gi, 'ensure')
-      .replace(/\bthat\b/gi, '');
+      .replaceAll(/\bin order to\b/giu, 'to')
+      .replaceAll(/\bmake sure to\b/giu, 'ensure')
+      .replaceAll(/\bthat\b/giu, '');
   }
 
   output = output
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\s([,.;:!?])/g, '$1')
-    .replace(/\n[ \t]+/g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .replace(/ {2,}/g, ' ')
+    .replaceAll(/[ \t]+/gu, ' ')
+    .replaceAll(/\s([,.;:!?])/gu, '$1')
+    .replaceAll(/\n[ \t]+/gu, '\n')
+    .replaceAll(/\n{3,}/gu, '\n\n')
+    .replaceAll(/ {2,}/gu, ' ')
     .trim();
 
   return output;

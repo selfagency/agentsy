@@ -1,0 +1,12 @@
+config/
+.agents/
+.fallow/
+.vscode/
+.gh-pages/
+.rumdl_cache/
+.turbo/
+coverage/
+dist/
+node_modules/
+plan/
+.git/

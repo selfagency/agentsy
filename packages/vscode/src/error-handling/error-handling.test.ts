@@ -1,10 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
+
 import { ProviderErrorCode } from '../types/errors.js';
 import { createProviderError, errorCodeToMessage, errorToProviderCode, httpStatusToErrorCode } from './error-mapper.js';
 import { calculateRetryDelay, isRetryableError, withRetry } from './error-recovery.js';
 
 describe('error-mapper', () => {
-  describe('httpStatusToErrorCode', () => {
+  describe(httpStatusToErrorCode, () => {
     it('maps 401 to InvalidApiKey', () => {
       expect(httpStatusToErrorCode(401)).toBe(ProviderErrorCode.InvalidApiKey);
     });
@@ -43,7 +44,7 @@ describe('error-mapper', () => {
     });
   });
 
-  describe('errorToProviderCode', () => {
+  describe(errorToProviderCode, () => {
     it('returns InternalError for null', () => {
       expect(errorToProviderCode(null)).toBe(ProviderErrorCode.InternalError);
     });
@@ -85,17 +86,17 @@ describe('error-mapper', () => {
     });
   });
 
-  describe('errorCodeToMessage', () => {
+  describe(errorCodeToMessage, () => {
     it('returns a non-empty message for each error code', () => {
       for (const code of Object.values(ProviderErrorCode)) {
         const msg = errorCodeToMessage(code as ProviderErrorCode);
-        expect(typeof msg).toBe('string');
+        expectTypeOf(msg).toBeString();
         expect(msg.length).toBeGreaterThan(0);
       }
     });
   });
 
-  describe('createProviderError', () => {
+  describe(createProviderError, () => {
     it('creates an Error with the mapped message', () => {
       const err = createProviderError(ProviderErrorCode.InvalidApiKey);
       expect(err).toBeInstanceOf(Error);
@@ -123,49 +124,55 @@ describe('error-mapper', () => {
     });
 
     it('can attach provider code metadata and message prefix', () => {
-      const err = createProviderError(ProviderErrorCode.InvalidRequest, undefined, { attachCode: true }) as Error & {
+      const err = createProviderError(ProviderErrorCode.InvalidRequest, undefined, {
+        attachCode: true
+      }) as Error & {
         code?: ProviderErrorCode;
       };
 
-      expect(err.message.startsWith(`[${ProviderErrorCode.InvalidRequest}]`)).toBe(true);
+      expect(err.message.startsWith(`[${ProviderErrorCode.InvalidRequest}]`)).toBeTruthy();
       expect(err.code).toBe(ProviderErrorCode.InvalidRequest);
     });
   });
 });
 
 describe('error-recovery', () => {
-  describe('isRetryableError', () => {
+  describe(isRetryableError, () => {
     it('RateLimited is retryable', () => {
-      expect(isRetryableError(new Error('rate limit exceeded'))).toBe(true);
+      expect(isRetryableError(new Error('rate limit exceeded'))).toBeTruthy();
     });
 
     it('Timeout is retryable', () => {
-      expect(isRetryableError(new Error('request timed out'))).toBe(true);
+      expect(isRetryableError(new Error('request timed out'))).toBeTruthy();
     });
 
     it('ConnectionError is retryable', () => {
-      expect(isRetryableError(new Error('ECONNREFUSED'))).toBe(true);
+      expect(isRetryableError(new Error('ECONNREFUSED'))).toBeTruthy();
     });
 
     it('InternalError is retryable', () => {
-      expect(isRetryableError(new Error('unknown error'))).toBe(true);
+      expect(isRetryableError(new Error('unknown error'))).toBeTruthy();
     });
 
     it('InvalidApiKey is not retryable', () => {
-      expect(isRetryableError(new Error('Invalid API key'))).toBe(false);
+      expect(isRetryableError(new Error('Invalid API key'))).toBeFalsy();
     });
 
     it('ModelNotFound is not retryable', () => {
-      expect(isRetryableError(new Error('model not found'))).toBe(false);
+      expect(isRetryableError(new Error('model not found'))).toBeFalsy();
     });
 
     it('InvalidRequest is not retryable', () => {
-      expect(isRetryableError(new Error('bad request'))).toBe(false);
+      expect(isRetryableError(new Error('bad request'))).toBeFalsy();
     });
   });
 
-  describe('calculateRetryDelay', () => {
-    const opts = { initialDelayMs: 1000, backoffMultiplier: 2, maxDelayMs: 30000 };
+  describe(calculateRetryDelay, () => {
+    const opts = {
+      backoffMultiplier: 2,
+      initialDelayMs: 1000,
+      maxDelayMs: 30_000
+    };
 
     it('returns initialDelayMs for attempt 0', () => {
       expect(calculateRetryDelay(0, opts)).toBe(1000);
@@ -176,11 +183,11 @@ describe('error-recovery', () => {
     });
 
     it('does not exceed maxDelayMs', () => {
-      expect(calculateRetryDelay(100, opts)).toBe(30000);
+      expect(calculateRetryDelay(100, opts)).toBe(30_000);
     });
   });
 
-  describe('withRetry', () => {
+  describe(withRetry, () => {
     beforeEach(() => {
       vi.useFakeTimers();
     });
@@ -191,20 +198,27 @@ describe('error-recovery', () => {
 
     it('returns value immediately on success', async () => {
       const op = vi.fn().mockResolvedValue('ok');
-      const result = await withRetry(op, { maxAttempts: 3, initialDelayMs: 0 });
+      const result = await withRetry(op, { initialDelayMs: 0, maxAttempts: 3 });
       expect(result).toBe('ok');
-      expect(op).toHaveBeenCalledTimes(1);
+      expect(op).toHaveBeenCalledOnce();
     });
 
     it('retries on retryable errors', async () => {
       let calls = 0;
-      const op = vi.fn().mockImplementation(async () => {
+      const op = vi.fn().mockImplementation(() => {
         calls++;
-        if (calls < 3) throw new Error('rate limit exceeded');
+        if (calls < 3) {
+          throw new Error('rate limit exceeded');
+        }
         return 'success';
       });
 
-      const promise = withRetry(op, { maxAttempts: 3, initialDelayMs: 10, backoffMultiplier: 1, maxDelayMs: 100 });
+      const promise = withRetry(op, {
+        backoffMultiplier: 1,
+        initialDelayMs: 10,
+        maxAttempts: 3,
+        maxDelayMs: 100
+      });
       await vi.runAllTimersAsync();
       const result = await promise;
       expect(result).toBe('success');
@@ -213,13 +227,18 @@ describe('error-recovery', () => {
 
     it('throws immediately for non-retryable errors', async () => {
       const op = vi.fn().mockRejectedValue(new Error('Invalid API key'));
-      await expect(withRetry(op, { maxAttempts: 3, initialDelayMs: 0 })).rejects.toThrow('Invalid API key');
-      expect(op).toHaveBeenCalledTimes(1);
+      await expect(withRetry(op, { initialDelayMs: 0, maxAttempts: 3 })).rejects.toThrow('Invalid API key');
+      expect(op).toHaveBeenCalledOnce();
     });
 
     it('exhausts retries and throws last error', async () => {
       const op = vi.fn().mockRejectedValue(new Error('rate limit exceeded'));
-      const retryPromise = withRetry(op, { maxAttempts: 3, initialDelayMs: 10, backoffMultiplier: 1, maxDelayMs: 100 });
+      const retryPromise = withRetry(op, {
+        backoffMultiplier: 1,
+        initialDelayMs: 10,
+        maxAttempts: 3,
+        maxDelayMs: 100
+      });
       const rejectionAssertion = (async () => {
         await expect(retryPromise).rejects.toThrow('rate limit exceeded');
       })();

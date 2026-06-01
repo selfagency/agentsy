@@ -4,287 +4,214 @@ Provider adapters, normalizers, and pipeline utilities for LLM stream processing
 
 ## Overview
 
-This package consolidates three previous packages into a unified providers API:
+This package provides a unified API for normalizing provider-specific streaming responses into the canonical `StreamChunk` format used across the agentsy ecosystem:
 
-- `@agentsy/adapters` → `/adapters` subpath export
-- `@agentsy/normalizers` → `/normalizers` subpath export
-- `@agentsy/processor/pipeline` → `/pipeline` subpath export
-- Universal client utilities → `/universal-client` subpath export
+- **Normalizers** — Convert raw provider chunks into `StreamChunk`
+- **Adapters** — Outbound message formatting (e.g. toMistralMessages)
+- **Pipeline** — High-level streaming pipeline with auto-normalizer routing
+- **Universal client** — Generic provider client with format conversion
+- **Capability bridge** — Provider capability matching and selection
 
 ## Available Exports
 
 ```typescript
-// Core provider pipeline
-import { createPipeline, type PipelineOptions, type PipelinedStream } from '@agentsy/providers/pipeline';
-
-// Normalized provider adapters
+// Normalizers — convert raw provider chunks to StreamChunk
 import {
-  adaptToAnthropic,
-  adaptToBedrock,
-  adaptToCohere,
-  adaptToDeepSeek,
-  adaptToGemini,
-  adaptToHfTgi,
-  adaptToMistral,
-  adaptToOpenAI,
-  adaptToOllama,
-  adaptOpenAIResponses,
-  adaptToZai,
-  type GenericAdapterOptions
-} from '@agentsy/providers/adapters';
-
-// Provider-specific normalizers
-import {
-  normalizeAnthropicChunk,
-  normalizeBedrockChunk,
-  normalizeCohereChunk,
+  normalizeAnthropicEvent,
+  normalizeBedrockConverseEvent,
+  normalizeCohereEvent,
   normalizeDeepSeekChunk,
   normalizeGeminiChunk,
-  normalizeHfTgiChunk,
+  normalizeHuggingFaceTGIChunk,
   normalizeMistralChunk,
-  normalizeOpenaiChunk,
-  normalizeOllamaChunk,
-  normalizeZaiChunk,
-  type Normalizer,
-  type NormalizerProvider
-} from '@agentsy/providers/normalizers';
+  normalizeOllamaChatChunk,
+  normalizeOllamaGenerateChunk,
+  normalizeOpenAIChatChunk,
+  normalizeOpenAICompatibleChunk,
+  normalizeOpenAIResponseEvent,
+  normalizeZAiChunk,
+  type NormalizerResult,
+} from "@agentsy/providers/normalizers";
 
-// Universal client utilities
-import { createUniversalClient, type UniversalClientOptions } from '@agentsy/providers/universal-client';
+// Adapters — outbound message formatting
+import {
+  createGenericAdapter,
+  toMistralMessages,
+  toOpenAICompatibleMessages,
+  isOpenAICompatibleProvider,
+} from "@agentsy/providers/adapters";
+
+// Pipeline — high-level streaming pipeline
+import { createPipeline, type PipelineOptions } from "@agentsy/providers/pipeline";
+
+// Request path — provider routing + request handling
+import { createRequestHandler, type RequestPathProvider } from "@agentsy/providers/request-path";
+
+// Universal client — generic provider client
+import { createUniversalClient, type UniversalClientConfig } from "@agentsy/providers/universal-client";
+
+// Capability bridge — provider capability matching
+import {
+  matchCapabilities,
+  filterProvidersByCapabilities,
+  selectBestProvider,
+  buildProviderCapabilityProfile,
+  modelCapabilitiesToProviderRequirements,
+} from "@agentsy/providers";
 ```
 
 ## Quick Start
 
-### Using the Pipeline
+### Using Normalizers
 
 ```typescript
-import { createPipeline, PipelinedStream } from '@agentsy/providers';
-import { normalizeOpenaiChunk } from '@agentsy/providers/normalizers';
+import { normalizeOpenAIChatChunk } from "@agentsy/providers/normalizers";
 
-const stream = await fetch('/api/v1/chat/completions', {
-  /* ... */
-});
-
-const pipelined = createPipeline(stream, {
-  provider: 'openai',
-  maxJsonDepth: 64,
-  maxJsonKeys: 10000,
-
-  // Optional: Processor options passed through
-  parseThinkTags: true,
-  scrubContextTags: true,
-  knownTools: new Set(['weather', 'calculator']),
-  modelId: 'gpt-4'
-});
-
-pipelined.addEventListener('delta', chunk => {
-  console.log('Text:', chunk.content);
-});
-
-pipelined.addEventListener('tool_call', call => {
-  console.log('Tool:', call.name, call.parameters);
-});
-
-pipelined.addEventListener('thinking', content => {
-  console.log('Thinking:', content);
-});
-```
-
-### Using Adapters Directly
-
-```typescript
-import { adaptToGemini, type GenericAdapterOptions } from '@agentsy/providers/adapters';
-
-const adapter = adaptToGemini({
-  maxInputLength: 262144,
-  maxToolCallsPerMessage: 64
-  // ... other ProcessorOptions
-});
-
-const stream = adapter.transform(providerStream);
-```
-
-### Using Normalizers Only
-
-```typescript
-import { normalizeAnthropicChunk, type NormalizerProvider } from '@agentsy/providers/normalizers';
-
-const normalizer: NormalizerProvider = 'anthropic';
-const result = normalizeAnthropicChunk(rawChunk);
-```
-
-## API Reference
-
-### Pipeline Options
-
-Extends `ProcessorOptions` from `@agentsy/core/processor` with:
-
-```typescript
-interface PipelineOptions extends ProcessorOptions {
-  provider: NormalizerProvider;
-  /** Maximum nesting depth for SSE JSON payloads (default: 64) */
-  maxJsonDepth?: number;
-  /** Maximum number of keys in SSE JSON payloads (default: 10000) */
-  maxJsonKeys?: number;
+for await (const rawChunk of responseStream) {
+  const result = normalizeOpenAIChatChunk(rawChunk);
+  if (result) {
+    console.log("Content:", result.content);
+    console.log("Thinking:", result.thinking);
+    console.log("Done:", result.done);
+  }
 }
 ```
 
-### Supported Providers
+### Using the Pipeline
 
-All normalizers support these providers:
+```typescript
+import { createPipeline } from "@agentsy/providers/pipeline";
 
-| Provider           | Normalizer                       | Adapter                 |
-| ------------------ | -------------------------------- | ----------------------- |
-| `openai`           | ✅ normalizeOpenaiChunk          | ✅ adaptToOpenAI        |
-| `anthropic`        | ✅ normalizeAnthropicChunk       | ✅ adaptToAnthropic     |
-| `gemini`           | ✅ normalizeGeminiChunk          | ✅ adaptToGemini        |
-| `bedrock`          | ✅ normalizeBedrockChunk         | ✅ adaptToBedrock       |
-| `cohere`           | ✅ normalizeCohereChunk          | ✅ adaptToCohere        |
-| `mistral`          | ✅ normalizeMistralChunk         | ✅ adaptToMistral       |
-| `ollama`           | ✅ normalizeOllamaChunk          | ✅ adaptToOllama        |
-| `deepseek`         | ✅ normalizeDeepSeekChunk        | ✅ adaptToDeepSeek      |
-| `zai`              | ✅ normalizeZaiChunk             | ✅ adaptToZai           |
-| `hftgi`            | ✅ normalizeHfTgiChunk           | ✅ adaptToHfTgi         |
-| `openai-responses` | ✅ normalizeOpenaiResponsesChunk | ✅ adaptOpenAIResponses |
+const pipeline = createPipeline(responseStream, {
+  provider: "openai",
+  maxJsonDepth: 64,
+  maxJsonKeys: 10000,
+  parseThinkTags: true,
+  scrubContextTags: true,
+  knownTools: new Set(["weather", "calculator"]),
+  modelId: "gpt-4",
+});
+
+pipeline.addEventListener("delta", (chunk) => {
+  console.log("Text:", chunk.content);
+});
+```
+
+### Using Outbound Adapters
+
+```typescript
+import { toMistralMessages, type MistralOutboundMessage } from "@agentsy/providers/adapters";
+
+const messages: MistralOutboundMessage[] = toMistralMessages(conversationHistory);
+```
+
+### Using the Request Path
+
+```typescript
+import { createRequestHandler } from "@agentsy/providers/request-path";
+
+const handler = createRequestHandler({
+  providers: [
+    { id: "openai", baseUrl: "https://api.openai.com/v1", apiKey: process.env.OPENAI_API_KEY },
+  ],
+  model: "gpt-4",
+});
+
+const response = await handler.send({ messages: [{ role: "user", content: "Hello" }] });
+```
+
+## Supported Providers
+
+| Provider           | Normalizer Function                      | Notes                                |
+| ------------------ | ---------------------------------------- | ------------------------------------ |
+| OpenAI             | `normalizeOpenAIChatChunk`               | Chat Completions API                 |
+| OpenAI Responses   | `normalizeOpenAIResponseEvent`           | Responses API                        |
+| OpenAI-Compatible  | `normalizeOpenAICompatibleChunk`         | Generic for DeepInfra, Groq, etc.    |
+| Anthropic          | `normalizeAnthropicEvent`                | Messages API with content blocks     |
+| Gemini             | `normalizeGeminiChunk`                   | Generate Content API                 |
+| Bedrock            | `normalizeBedrockConverseEvent`          | AWS Bedrock Converse API             |
+| Mistral            | `normalizeMistralChunk`                  | Chat API with thinking support       |
+| Cohere             | `normalizeCohereEvent`                   | Chat API with tool plan              |
+| Ollama             | `normalizeOllamaChatChunk`               | Chat API                             |
+| Ollama Generate    | `normalizeOllamaGenerateChunk`           | Generate API                         |
+| DeepSeek           | `normalizeDeepSeekChunk`                 | Chat API (OpenAI-compatible variant) |
+| Hugging Face TGI   | `normalizeHuggingFaceTGIChunk`           | Text Generation Inference            |
+| ZAI                | `normalizeZAiChunk`                      | ZAI API (OpenAI-compatible variant)  |
 
 ## Migration Guide
 
 ### From `@agentsy/processor/pipeline`
 
 ```diff
-- import { createPipeline, type PipelineOptions } from '@agentsy/processor/pipeline';
-
-+ import { createPipeline, type PipelineOptions } from '@agentsy/providers/pipeline';
+- import { createPipeline } from '@agentsy/processor/pipeline';
++ import { createPipeline } from '@agentsy/providers/pipeline';
 ```
-
-The API is **identical** - only the import path changed.
-
-### From `@agentsy/adapters`
-
-```diff
-- import { adaptToGemini } from '@agentsy/adapters';
-
-+ import { adaptToGemini } from '@agentsy/providers/adapters';
-```
-
-All adapters are exported from `/adapters` subpath.
 
 ### From `@agentsy/normalizers`
 
 ```diff
-- import { normalizeOpenaiChunk } from '@agentsy/normalizers';
-
-+ import { normalizeOpenaiChunk } from '@agentsy/providers/normalizers';
+- import { normalizeOpenAIChatChunk } from '@agentsy/normalizers';
++ import { normalizeOpenAIChatChunk } from '@agentsy/providers/normalizers';
 ```
-
-All normalizers are exported from `/normalizers` subpath.
 
 ## Architecture
 
 ```text
 @agentsy/providers
-├── /adapters          # Provider-specific stream transformations
-│   ├── generic.ts     # Generic adapter utilities
-│   ├── anthropic.ts   # Anthropic adapter
-│   ├── bedrock.ts     # AWS Bedrock adapter
-│   ├── cohere.ts      # Cohere adapter
-│   ├── deepseek.ts    # DeepSeek adapter
-│   ├── gemini.ts      # Google Gemini adapter
-│   ├── openai.ts      # OpenAI adapter
-│   └── ...
-├── /normalizers      # Provider-specific chunk normalizers
-│   ├── openai.ts      # OpenAI normalization
-│   ├── anthropic.ts   # Anthropic normalization
-│   ├── gemini.ts      # Gemini normalization
-│   └── ...
-├── /pipeline         # High-level pipeline orchestration
-│   ├── createPipeline.ts
-│   └── transform.ts
-└── /universal-client # Generic provider client utilities
-    └── index.ts
+├── /adapters            # Outbound message formatting + generic adapter
+│   ├── generic.ts       # createGenericAdapter factory
+│   ├── mistral.ts       # toMistralMessages
+│   └── openai-compatible.ts  # toOpenAICompatibleMessages
+├── /normalizers         # Inbound chunk normalization (12 providers)
+│   ├── anthropic.ts
+│   ├── bedrock.ts
+│   ├── cohere.ts
+│   ├── deepseek.ts
+│   ├── gemini.ts
+│   ├── hf-tgi.ts
+│   ├── mistral.ts
+│   ├── ollama.ts
+│   ├── openai.ts
+│   ├── openai-compatible.ts
+│   ├── openai-responses.ts
+│   └── zai.ts
+├── /pipeline            # Streaming pipeline orchestration
+├── /universal-client    # Generic provider client
+├── capability-bridge.ts # Provider capability matching
+└── request-path.ts      # Provider routing + request handling
 ```
 
 ## Relationships with Other Packages
 
-- **@agentsy/core**: Exports `ProcessorOptions`, `StreamChunk`, and processor utilities
-- **@agentsy/testing**: Integration tests validate cross-package functionality
-- **@agentsy/runtime**: Uses pipelines in runtime orchestrations
+- **@agentsy/core** — `StreamChunk`, `ProcessorOptions`, processor utilities
+- **@agentsy/types** — `NativeToolCallDelta`, `UsageInfo`, shared type definitions
+- **@agentsy/gateway** — Multi-provider routing, circuit-breaking, failover (transport layer)
 
 ## Error Handling
 
-All adapters and normalizers throw `PipelineError` with contextual information:
+Normalizers return `undefined` for unrecognized or malformed chunks rather than throwing. This enables graceful degradation — unrecognized events are silently skipped.
 
-```typescript
-import { createPipeline } from '@agentsy/providers/pipeline';
-
-try {
-  const pipeline = createPipeline(stream, { provider: 'openai' });
-} catch (error) {
-  if (error instanceof PipelineError) {
-    console.error('Pipeline error:', error.message, { cause: error.cause });
-  }
-}
-```
-
-## Advanced Usage
-
-### Custom Normalizers
-
-```typescript
-import { type Normalizer } from '@agentsy/providers/normalizers';
-
-const customNormalizer: Normalizer = (data): { chunk: StreamChunk } | null => {
-  if (typeof data !== 'object' || data === null) return null;
-  // Custom normalization logic
-  return {
-    chunk: {
-      /* ... */
-    }
-  };
-};
-```
-
-### Pipeline Composition
-
-```typescript
-import { createPipeline } from '@agentsy/providers/pipeline';
-import { TransformStream } from 'web/stream';
-
-const customTransform = new TransformStream({
-  transform(chunk, controller) {
-    // Custom transformation
-    controller.enqueue(chunk);
-  }
-});
-
-createPipeline(stream, {
-  provider: 'openai'
-  // Note: transforms are not documented in current PipelineOptions interface
-  // Add to interface if needed
-});
-```
+The pipeline and request path throw descriptive errors for invalid configuration or unreachable providers.
 
 ## Testing
 
-The package includes comprehensive tests:
-
 ```bash
 pnpm test              # Run all tests
-pnpm test:coverage     # Run tests with coverage
+pnpm coverage          # Run with coverage
+pnpm check-types       # TypeScript type check
+pnpm build             # Build all entry points
 ```
-
-Integration tests in `@agentsy/testing` validate cross-package pipelines.
 
 ## Contributing
 
 When adding new provider support:
 
-1. Add normalizer to `/normalizers/your-provider.ts`
-2. Add adapter to `/adapters/your-provider.ts`
-3. Add tests for both normalizer and adapter
-4. Update provider list in documentation
-5. Add integration test in `@agentsy/testing`
+1. Add normalizer to `src/normalizers/<provider>.ts`
+2. Export from `src/normalizers/index.ts`
+3. Add tests alongside the normalizer
+4. Register in the pipeline's `NORMALIZERS` map if auto-routing is needed
+5. Update the provider table in this README
 
 ## License
 
-MIT
+GPL-3.0-or-later

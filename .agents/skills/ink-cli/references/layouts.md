@@ -18,26 +18,26 @@ Center content both horizontally and vertically.
 
 ```tsx
 <Box justifyContent="center" alignItems="center" height="100%">
-	<Text>Centered</Text>
+  <Text>Centered</Text>
 </Box>
 ```
 
 For full-screen centering:
 
 ```tsx
-function CenteredLayout({children}: {children: React.ReactNode}) {
-	const {stdout} = useStdout();
+function CenteredLayout({ children }: { children: React.ReactNode }) {
+  const { stdout } = useStdout();
 
-	return (
-		<Box
-			width={stdout.columns}
-			height={stdout.rows}
-			justifyContent="center"
-			alignItems="center"
-		>
-			{children}
-		</Box>
-	);
+  return (
+    <Box
+      width={stdout.columns}
+      height={stdout.rows}
+      justifyContent="center"
+      alignItems="center"
+    >
+      {children}
+    </Box>
+  );
 }
 ```
 
@@ -47,16 +47,16 @@ Fixed-width sidebar with flexible main content.
 
 ```tsx
 <Box flexDirection="row" height="100%">
-	<Box width={30} borderStyle="single" padding={1}>
-		<Text bold>Menu</Text>
-		<Newline />
-		<Text>Item 1</Text>
-		<Text>Item 2</Text>
-		<Text>Item 3</Text>
-	</Box>
-	<Box flexGrow={1} padding={1}>
-		<Text>Main content area</Text>
-	</Box>
+  <Box width={30} borderStyle="single" padding={1}>
+    <Text bold>Menu</Text>
+    <Newline />
+    <Text>Item 1</Text>
+    <Text>Item 2</Text>
+    <Text>Item 3</Text>
+  </Box>
+  <Box flexGrow={1} padding={1}>
+    <Text>Main content area</Text>
+  </Box>
 </Box>
 ```
 
@@ -66,20 +66,20 @@ Fixed header and footer with scrollable content.
 
 ```tsx
 <Box flexDirection="column" height="100%">
-	{/* Header */}
-	<Box height={3} borderStyle="single" padding={1}>
-		<Text bold>Application Header</Text>
-	</Box>
+  {/* Header */}
+  <Box height={3} borderStyle="single" padding={1}>
+    <Text bold>Application Header</Text>
+  </Box>
 
-	{/* Content */}
-	<Box flexGrow={1} padding={1} overflow="hidden">
-		<Text>{content}</Text>
-	</Box>
+  {/* Content */}
+  <Box flexGrow={1} padding={1} overflow="hidden">
+    <Text>{content}</Text>
+  </Box>
 
-	{/* Footer */}
-	<Box height={1} padding={1}>
-		<Text dimColor>Status: Ready</Text>
-	</Box>
+  {/* Footer */}
+  <Box height={1} padding={1}>
+    <Text dimColor>Status: Ready</Text>
+  </Box>
 </Box>
 ```
 
@@ -89,17 +89,17 @@ Left sidebar, main content, right sidebar.
 
 ```tsx
 <Box flexDirection="row" height="100%">
-	<Box width="20%" borderStyle="single" padding={1}>
-		<Text>Left Panel</Text>
-	</Box>
+  <Box width="20%" borderStyle="single" padding={1}>
+    <Text>Left Panel</Text>
+  </Box>
 
-	<Box flexGrow={1} padding={2}>
-		<Text>Main Content</Text>
-	</Box>
+  <Box flexGrow={1} padding={2}>
+    <Text>Main Content</Text>
+  </Box>
 
-	<Box width="25%" borderStyle="single" padding={1}>
-		<Text>Right Panel</Text>
-	</Box>
+  <Box width="25%" borderStyle="single" padding={1}>
+    <Text>Right Panel</Text>
+  </Box>
 </Box>
 ```
 
@@ -109,12 +109,12 @@ Left sidebar, main content, right sidebar.
 
 ```tsx
 <Box flexDirection="row" gap={2}>
-	<Box width="50%">
-		<Text>Column 1</Text>
-	</Box>
-	<Box width="50%">
-		<Text>Column 2</Text>
-	</Box>
+  <Box width="50%">
+    <Text>Column 1</Text>
+  </Box>
+  <Box width="50%">
+    <Text>Column 2</Text>
+  </Box>
 </Box>
 ```
 
@@ -122,11 +122,11 @@ Left sidebar, main content, right sidebar.
 
 ```tsx
 <Box flexDirection="row" gap={1}>
-	{[1, 2, 3].map(i => (
-		<Box key={i} width="33%" borderStyle="single" padding={1}>
-			<Text>Column {i}</Text>
-		</Box>
-	))}
+  {[1, 2, 3].map((i) => (
+    <Box key={i} width="33%" borderStyle="single" padding={1}>
+      <Text>Column {i}</Text>
+    </Box>
+  ))}
 </Box>
 ```
 
@@ -136,11 +136,11 @@ Columns automatically size to content.
 
 ```tsx
 <Box flexDirection="row" flexWrap="wrap" gap={1}>
-	{items.map(item => (
-		<Box key={item.id} width={20} borderStyle="round" padding={1}>
-			<Text>{item.name}</Text>
-		</Box>
-	))}
+  {items.map((item) => (
+    <Box key={item.id} width={20} borderStyle="round" padding={1}>
+      <Text>{item.name}</Text>
+    </Box>
+  ))}
 </Box>
 ```
 
@@ -152,9 +152,9 @@ Use Spacer to push elements to opposite edges.
 
 ```tsx
 <Box>
-	<Text>Left content</Text>
-	<Spacer />
-	<Text>Right content</Text>
+  <Text>Left content</Text>
+  <Spacer />
+  <Text>Right content</Text>
 </Box>
 ```
 
@@ -162,9 +162,9 @@ Use Spacer to push elements to opposite edges.
 
 ```tsx
 <Box justifyContent="space-between">
-	<Text>Item 1</Text>
-	<Text>Item 2</Text>
-	<Text>Item 3</Text>
+  <Text>Item 1</Text>
+  <Text>Item 2</Text>
+  <Text>Item 3</Text>
 </Box>
 ```
 
@@ -172,9 +172,9 @@ Or with equal spacing around items:
 
 ```tsx
 <Box justifyContent="space-around">
-	<Text>Item 1</Text>
-	<Text>Item 2</Text>
-	<Text>Item 3</Text>
+  <Text>Item 1</Text>
+  <Text>Item 2</Text>
+  <Text>Item 3</Text>
 </Box>
 ```
 
@@ -184,9 +184,9 @@ Modern approach using gap (similar to CSS Grid/Flexbox gap).
 
 ```tsx
 <Box flexDirection="column" gap={1}>
-	<Text>Item 1</Text>
-	<Text>Item 2</Text>
-	<Text>Item 3</Text>
+  <Text>Item 1</Text>
+  <Text>Item 2</Text>
+  <Text>Item 3</Text>
 </Box>
 ```
 
@@ -196,9 +196,9 @@ Modern approach using gap (similar to CSS Grid/Flexbox gap).
 
 ```tsx
 <Box borderStyle="round" borderColor="green" padding={1} width={40}>
-	<Text bold>Card Title</Text>
-	<Newline />
-	<Text>Card content goes here.</Text>
+  <Text bold>Card Title</Text>
+  <Newline />
+  <Text>Card content goes here.</Text>
 </Box>
 ```
 
@@ -206,11 +206,11 @@ Modern approach using gap (similar to CSS Grid/Flexbox gap).
 
 ```tsx
 <Box borderStyle="double" padding={2} width={50}>
-	<Text bold color="blue">
-		Important Notice
-	</Text>
-	<Newline />
-	<Text>{message}</Text>
+  <Text bold color="blue">
+    Important Notice
+  </Text>
+  <Newline />
+  <Text>{message}</Text>
 </Box>
 ```
 
@@ -218,13 +218,13 @@ Modern approach using gap (similar to CSS Grid/Flexbox gap).
 
 ```tsx
 <Box flexDirection="row" flexWrap="wrap" gap={2}>
-	{cards.map(card => (
-		<Box key={card.id} width={30} borderStyle="single" padding={1}>
-			<Text bold>{card.title}</Text>
-			<Newline />
-			<Text>{card.description}</Text>
-		</Box>
-	))}
+  {cards.map((card) => (
+    <Box key={card.id} width={30} borderStyle="single" padding={1}>
+      <Text bold>{card.title}</Text>
+      <Newline />
+      <Text>{card.description}</Text>
+    </Box>
+  ))}
 </Box>
 ```
 
@@ -234,13 +234,13 @@ Modern approach using gap (similar to CSS Grid/Flexbox gap).
 
 ```tsx
 <Box flexDirection="column">
-	{items.map((item, index) => (
-		<Box key={item.id} paddingY={1}>
-			<Text>
-				{index + 1}. {item.name}
-			</Text>
-		</Box>
-	))}
+  {items.map((item, index) => (
+    <Box key={item.id} paddingY={1}>
+      <Text>
+        {index + 1}. {item.name}
+      </Text>
+    </Box>
+  ))}
 </Box>
 ```
 
@@ -248,11 +248,11 @@ Modern approach using gap (similar to CSS Grid/Flexbox gap).
 
 ```tsx
 <Box flexDirection="row" gap={2}>
-	{tags.map(tag => (
-		<Box key={tag} paddingX={1} borderStyle="round">
-			<Text>{tag}</Text>
-		</Box>
-	))}
+  {tags.map((tag) => (
+    <Box key={tag} paddingX={1} borderStyle="round">
+      <Text>{tag}</Text>
+    </Box>
+  ))}
 </Box>
 ```
 
@@ -260,18 +260,18 @@ Modern approach using gap (similar to CSS Grid/Flexbox gap).
 
 ```tsx
 <Box flexDirection="column">
-	{items.map((item, index) => (
-		<Box
-			key={item.id}
-			paddingY={1}
-			backgroundColor={selectedIndex === index ? 'gray' : undefined}
-		>
-			<Text bold={selectedIndex === index}>
-				{selectedIndex === index ? '> ' : '  '}
-				{item.name}
-			</Text>
-		</Box>
-	))}
+  {items.map((item, index) => (
+    <Box
+      key={item.id}
+      paddingY={1}
+      backgroundColor={selectedIndex === index ? "gray" : undefined}
+    >
+      <Text bold={selectedIndex === index}>
+        {selectedIndex === index ? "> " : "  "}
+        {item.name}
+      </Text>
+    </Box>
+  ))}
 </Box>
 ```
 
@@ -281,23 +281,23 @@ Modern approach using gap (similar to CSS Grid/Flexbox gap).
 
 ```tsx
 <Box flexDirection="column" gap={1} width={50}>
-	<Box>
-		<Text bold>Name:</Text>
-		<Box borderStyle="single" padding={1}>
-			<Text>{name || ' '}</Text>
-		</Box>
-	</Box>
+  <Box>
+    <Text bold>Name:</Text>
+    <Box borderStyle="single" padding={1}>
+      <Text>{name || " "}</Text>
+    </Box>
+  </Box>
 
-	<Box>
-		<Text bold>Email:</Text>
-		<Box borderStyle="single" padding={1}>
-			<Text>{email || ' '}</Text>
-		</Box>
-	</Box>
+  <Box>
+    <Text bold>Email:</Text>
+    <Box borderStyle="single" padding={1}>
+      <Text>{email || " "}</Text>
+    </Box>
+  </Box>
 
-	<Box>
-		<Text color="green">Submit</Text>
-	</Box>
+  <Box>
+    <Text color="green">Submit</Text>
+  </Box>
 </Box>
 ```
 
@@ -305,11 +305,11 @@ Modern approach using gap (similar to CSS Grid/Flexbox gap).
 
 ```tsx
 <Box flexDirection="row" gap={2} alignItems="center">
-	<Text bold>Filter:</Text>
-	<Box borderStyle="single" paddingX={1} width={20}>
-		<Text>{filter}</Text>
-	</Box>
-	<Text dimColor>(Press Enter to apply)</Text>
+  <Text bold>Filter:</Text>
+  <Box borderStyle="single" paddingX={1} width={20}>
+    <Text>{filter}</Text>
+  </Box>
+  <Text dimColor>(Press Enter to apply)</Text>
 </Box>
 ```
 
@@ -319,19 +319,19 @@ Modern approach using gap (similar to CSS Grid/Flexbox gap).
 
 ```tsx
 function ResponsiveLayout() {
-	const {stdout} = useStdout();
-	const isWide = stdout.columns > 80;
+  const { stdout } = useStdout();
+  const isWide = stdout.columns > 80;
 
-	return (
-		<Box flexDirection={isWide ? 'row' : 'column'}>
-			<Box width={isWide ? 30 : '100%'}>
-				<Text>Sidebar</Text>
-			</Box>
-			<Box flexGrow={1}>
-				<Text>Main Content</Text>
-			</Box>
-		</Box>
-	);
+  return (
+    <Box flexDirection={isWide ? "row" : "column"}>
+      <Box width={isWide ? 30 : "100%"}>
+        <Text>Sidebar</Text>
+      </Box>
+      <Box flexGrow={1}>
+        <Text>Main Content</Text>
+      </Box>
+    </Box>
+  );
 }
 ```
 
@@ -339,7 +339,7 @@ function ResponsiveLayout() {
 
 ```tsx
 <Box width="100%">
-	<Text wrap="truncate">{veryLongText}</Text>
+  <Text wrap="truncate">{veryLongText}</Text>
 </Box>
 ```
 
@@ -347,11 +347,11 @@ function ResponsiveLayout() {
 
 ```tsx
 <Box height={20} overflow="hidden">
-	<Box flexDirection="column">
-		{longList.map(item => (
-			<Text key={item.id}>{item.name}</Text>
-		))}
-	</Box>
+  <Box flexDirection="column">
+    {longList.map((item) => (
+      <Text key={item.id}>{item.name}</Text>
+    ))}
+  </Box>
 </Box>
 ```
 
@@ -361,33 +361,33 @@ function ResponsiveLayout() {
 
 ```tsx
 <Box flexDirection="column">
-	{/* Header */}
-	<Box flexDirection="row" borderStyle="single" paddingX={1}>
-		<Box width={20}>
-			<Text bold>Name</Text>
-		</Box>
-		<Box width={15}>
-			<Text bold>Status</Text>
-		</Box>
-		<Box width={10}>
-			<Text bold>Age</Text>
-		</Box>
-	</Box>
+  {/* Header */}
+  <Box flexDirection="row" borderStyle="single" paddingX={1}>
+    <Box width={20}>
+      <Text bold>Name</Text>
+    </Box>
+    <Box width={15}>
+      <Text bold>Status</Text>
+    </Box>
+    <Box width={10}>
+      <Text bold>Age</Text>
+    </Box>
+  </Box>
 
-	{/* Rows */}
-	{data.map(row => (
-		<Box key={row.id} flexDirection="row" paddingX={1}>
-			<Box width={20}>
-				<Text>{row.name}</Text>
-			</Box>
-			<Box width={15}>
-				<Text>{row.status}</Text>
-			</Box>
-			<Box width={10}>
-				<Text>{row.age}</Text>
-			</Box>
-		</Box>
-	))}
+  {/* Rows */}
+  {data.map((row) => (
+    <Box key={row.id} flexDirection="row" paddingX={1}>
+      <Box width={20}>
+        <Text>{row.name}</Text>
+      </Box>
+      <Box width={15}>
+        <Text>{row.status}</Text>
+      </Box>
+      <Box width={10}>
+        <Text>{row.age}</Text>
+      </Box>
+    </Box>
+  ))}
 </Box>
 ```
 
@@ -395,35 +395,35 @@ function ResponsiveLayout() {
 
 ```tsx
 <Box flexDirection="column" borderStyle="single">
-	<Box flexDirection="row" borderBottom>
-		<Box width={20} padding={1} borderRight>
-			<Text bold>Name</Text>
-		</Box>
-		<Box width={15} padding={1} borderRight>
-			<Text bold>Status</Text>
-		</Box>
-		<Box width={10} padding={1}>
-			<Text bold>Age</Text>
-		</Box>
-	</Box>
+  <Box flexDirection="row" borderBottom>
+    <Box width={20} padding={1} borderRight>
+      <Text bold>Name</Text>
+    </Box>
+    <Box width={15} padding={1} borderRight>
+      <Text bold>Status</Text>
+    </Box>
+    <Box width={10} padding={1}>
+      <Text bold>Age</Text>
+    </Box>
+  </Box>
 
-	{data.map((row, index) => (
-		<Box
-			key={row.id}
-			flexDirection="row"
-			borderBottom={index < data.length - 1}
-		>
-			<Box width={20} padding={1} borderRight>
-				<Text>{row.name}</Text>
-			</Box>
-			<Box width={15} padding={1} borderRight>
-				<Text>{row.status}</Text>
-			</Box>
-			<Box width={10} padding={1}>
-				<Text>{row.age}</Text>
-			</Box>
-		</Box>
-	))}
+  {data.map((row, index) => (
+    <Box
+      key={row.id}
+      flexDirection="row"
+      borderBottom={index < data.length - 1}
+    >
+      <Box width={20} padding={1} borderRight>
+        <Text>{row.name}</Text>
+      </Box>
+      <Box width={15} padding={1} borderRight>
+        <Text>{row.status}</Text>
+      </Box>
+      <Box width={10} padding={1}>
+        <Text>{row.age}</Text>
+      </Box>
+    </Box>
+  ))}
 </Box>
 ```
 
@@ -433,24 +433,24 @@ function ResponsiveLayout() {
 
 ```tsx
 function FullScreenApp() {
-	const {stdout} = useStdout();
+  const { stdout } = useStdout();
 
-	return (
-		<Box width={stdout.columns} height={stdout.rows} flexDirection="column">
-			{/* App content */}
-		</Box>
-	);
+  return (
+    <Box width={stdout.columns} height={stdout.rows} flexDirection="column">
+      {/* App content */}
+    </Box>
+  );
 }
 ```
 
 ### Responsive Padding
 
 ```tsx
-function ResponsiveContainer({children}: {children: React.ReactNode}) {
-	const {stdout} = useStdout();
-	const padding = stdout.columns > 100 ? 4 : stdout.columns > 60 ? 2 : 1;
+function ResponsiveContainer({ children }: { children: React.ReactNode }) {
+  const { stdout } = useStdout();
+  const padding = stdout.columns > 100 ? 4 : stdout.columns > 60 ? 2 : 1;
 
-	return <Box padding={padding}>{children}</Box>;
+  return <Box padding={padding}>{children}</Box>;
 }
 ```
 

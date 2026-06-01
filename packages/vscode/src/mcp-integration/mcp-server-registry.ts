@@ -6,17 +6,22 @@ import type { McpServerDefinition, McpServerRegistryConfig } from '../types/erro
  * Uses dynamic import to degrade gracefully when VS Code is unavailable.
  */
 export class McpServerRegistry {
+  private readonly config: McpServerRegistryConfig;
   private readonly servers = new Map<string, McpServerDefinition>();
-  private readonly disposables: Array<{ dispose(): void }> = [];
+  private readonly disposables: { dispose(): void }[] = [];
 
-  constructor(private readonly config: McpServerRegistryConfig) {}
+  constructor(config: McpServerRegistryConfig) {
+    this.config = config;
+  }
 
   /**
    * Register a single MCP server definition.
    * Returns false if already registered.
    */
   register(server: McpServerDefinition): boolean {
-    if (this.servers.has(server.name)) return false;
+    if (this.servers.has(server.name)) {
+      return false;
+    }
     this.servers.set(server.name, server);
     return true;
   }
@@ -46,14 +51,16 @@ export class McpServerRegistry {
    * Get all registered server definitions.
    */
   getAll(): McpServerDefinition[] {
-    return Array.from(this.servers.values());
+    return [...this.servers.values()];
   }
 
   /**
    * Load and register servers from all configured providers.
    */
   async loadFromProviders(): Promise<void> {
-    if (!this.config.providers) return;
+    if (!this.config.providers) {
+      return;
+    }
     for (const provider of this.config.providers) {
       const definitions = await provider.provide();
       for (const def of definitions) {
@@ -83,13 +90,14 @@ export class McpServerRegistry {
       const vscode = await import('vscode');
       const config = vscode.workspace.getConfiguration();
 
-      const existing: Record<string, unknown> =
-        (config.get<Record<string, unknown>>(this.config.namespace) as Record<string, unknown>) ?? {};
+      const existing: Record<string, unknown> = config.get<Record<string, unknown>>(this.config.namespace) ?? {};
 
       const merged: Record<string, unknown> = { ...existing };
 
       for (const server of this.servers.values()) {
-        if (server.disabled) continue;
+        if (server.disabled) {
+          continue;
+        }
         merged[server.name] = this.toWorkspaceServerConfig(server);
       }
 
@@ -118,7 +126,9 @@ export class McpServerRegistry {
   }
 
   dispose(): void {
-    for (const d of this.disposables) d.dispose();
+    for (const d of this.disposables) {
+      d.dispose();
+    }
     this.disposables.length = 0;
     this.servers.clear();
   }

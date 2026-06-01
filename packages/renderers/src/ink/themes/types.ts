@@ -1,15 +1,15 @@
 export interface ThinkingTheme {
   borderColor: string;
-  textColor: string;
   spinnerColor: string;
   spinnerIntervalMs?: number;
+  textColor: string;
 }
 
 export interface ToolCallTheme {
-  pendingColor: string;
   doneColor: string;
-  pendingSymbol: string;
   doneSymbol: string;
+  pendingColor: string;
+  pendingSymbol: string;
   spinnerIntervalMs?: number;
 }
 
@@ -19,8 +19,8 @@ export interface TextTheme {
 }
 
 export interface BorderTheme {
-  style: 'single' | 'double' | 'round' | 'none';
   color: string;
+  style: 'single' | 'double' | 'round' | 'bold' | 'none';
 }
 
 export interface HighlightTheme {
@@ -28,11 +28,11 @@ export interface HighlightTheme {
 }
 
 export interface Theme {
-  thinking: ThinkingTheme;
-  toolCall: ToolCallTheme;
-  text: TextTheme;
   border: BorderTheme;
   highlight: HighlightTheme;
+  text: TextTheme;
+  thinking: ThinkingTheme;
+  toolCall: ToolCallTheme;
 }
 
 export type ThemeName =
@@ -49,4 +49,9 @@ export type ThemeName =
   | 'houston'
   | 'one-dark'
   | 'one-candy'
-  | 'github-dark';
+  | 'github-dark'
+  /* ── BBS scene themes ─────────────────────────── */
+  | 'bbs-ice'
+  | 'bbs-amber'
+  | 'bbs-phosphor'
+  | 'bbs-cga';

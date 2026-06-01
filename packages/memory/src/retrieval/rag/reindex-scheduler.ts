@@ -4,10 +4,10 @@ export interface ReindexSchedulerOptions {
 }
 
 export interface ReindexScheduler {
+  isRunning(): boolean;
   start(): void;
   stop(): void;
   triggerNow(): Promise<void>;
-  isRunning(): boolean;
 }
 
 export function createReindexScheduler(options: ReindexSchedulerOptions): ReindexScheduler {
@@ -22,6 +22,10 @@ export function createReindexScheduler(options: ReindexSchedulerOptions): Reinde
   };
 
   return {
+    isRunning() {
+      return timer !== null;
+    },
+
     start() {
       if (timer) {
         return;
@@ -29,7 +33,9 @@ export function createReindexScheduler(options: ReindexSchedulerOptions): Reinde
 
       timer = setInterval(
         () => {
-          void runSafely();
+          runSafely().catch(() => {
+            // Reindex errors are handled internally
+          });
         },
         Math.max(250, options.intervalMs)
       );
@@ -46,10 +52,6 @@ export function createReindexScheduler(options: ReindexSchedulerOptions): Reinde
 
     async triggerNow() {
       await runSafely();
-    },
-
-    isRunning() {
-      return timer !== null;
     }
   };
 }

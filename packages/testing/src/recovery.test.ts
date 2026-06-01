@@ -1,13 +1,12 @@
+import { LLMStreamProcessor } from '@agentsy/core/processor';
+import type { StreamSnapshot } from '@agentsy/core/recovery';
+import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
 /**
  * Integration: recovery — captureStreamState + buildContinuationPrompt
  *
  * Verifies stream snapshot creation and provider-specific continuation prompts.
  */
 import { describe, expect, it } from 'vitest';
-
-import { LLMStreamProcessor } from '@agentsy/core/processor';
-import type { StreamSnapshot } from '@agentsy/core/recovery';
-import { buildContinuationPrompt, captureStreamState } from '@agentsy/core/recovery';
 
 function makeSnapshot(content: string): StreamSnapshot {
   const processor = new LLMStreamProcessor({ scrubContextTags: false });
@@ -21,7 +20,7 @@ function makeSnapshot(content: string): StreamSnapshot {
 // captureStreamState
 // ---------------------------------------------------------------------------
 
-describe('captureStreamState', () => {
+describe('captureStreamState' as const, () => {
   it('captures empty state on a fresh processor', () => {
     const processor = new LLMStreamProcessor({ scrubContextTags: false });
     const snapshot = captureStreamState(processor);
@@ -57,7 +56,11 @@ describe('captureStreamState', () => {
   it('captures usage when the processor has received it', () => {
     const processor = new LLMStreamProcessor({ scrubContextTags: false });
 
-    processor.process({ content: 'hi', done: true, usage: { inputTokens: 10, outputTokens: 5 } });
+    processor.process({
+      content: 'hi',
+      done: true,
+      usage: { inputTokens: 10, outputTokens: 5 }
+    });
     processor.flush();
 
     const snapshot = captureStreamState(processor);
@@ -67,7 +70,10 @@ describe('captureStreamState', () => {
   });
 
   it('captures completed tool calls', () => {
-    const processor = new LLMStreamProcessor({ knownTools: new Set(['search']), scrubContextTags: false });
+    const processor = new LLMStreamProcessor({
+      knownTools: new Set(['search']),
+      scrubContextTags: false
+    });
 
     processor.processComplete({
       content: '<search><query>test</query></search>',
@@ -94,7 +100,7 @@ describe('captureStreamState', () => {
 // buildContinuationPrompt
 // ---------------------------------------------------------------------------
 
-describe('buildContinuationPrompt', () => {
+describe('buildContinuationPrompt' as const, () => {
   it('returns a single user message when snapshot has no content', () => {
     const messages = buildContinuationPrompt(makeSnapshot(''));
 
@@ -112,7 +118,7 @@ describe('buildContinuationPrompt', () => {
     expect(messages[0]?.role).toBe('assistant');
     expect(messages[0]?.content).toContain('Partial answer');
     expect(messages[1]?.role).toBe('user');
-    expect(messages[1]?.content).toMatch(/continue/i);
+    expect(messages[1]?.content).toMatch(/continue/iu);
   });
 
   it('defaults to openai format when provider is omitted', () => {
@@ -160,11 +166,15 @@ describe('captureStreamState + buildContinuationPrompt round-trip', () => {
 
     expect(snapshot.content).toBe('The capital of France is Paris,');
     expect(messages[0]?.content).toContain('Paris');
-    expect(messages[1]?.content).toMatch(/continue/i);
+    expect(messages[1]?.content).toMatch(/continue/iu);
   });
 
   it('preserves processor options in the snapshot', () => {
-    const opts = { knownTools: new Set(['ping']), parseThinkTags: true, scrubContextTags: false };
+    const opts = {
+      knownTools: new Set(['ping']),
+      parseThinkTags: true,
+      scrubContextTags: false
+    };
     const processor = new LLMStreamProcessor(opts);
     const snapshot = captureStreamState(processor, opts);
 

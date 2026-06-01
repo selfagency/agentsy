@@ -128,6 +128,8 @@ The package fulfills its role by providing:
 - **Stdio**: Managing subprocesses with robust stdin/stdout piping.
 - **SSE/HTTP**: Connecting to remote MCP servers over network protocols.
 
+Target MCP protocol version 2025-06-18 (Streamable HTTP transport), which deprecates the earlier 2025-03-26 stdio-only transport. Streamable HTTP enables MCP servers to operate as long-lived HTTP endpoints with SSE push for tool result streaming.
+
 ### 2. Orchestrator (`src/orchestrator/`)
 
 - **Responsibility**: Lifecycle and trust.
@@ -151,6 +153,10 @@ The package fulfills its role by providing:
 - **Ratify**: carry trust metadata and delegation evidence alongside server trust levels when a consumer needs cryptographic receipts.
 
 These bridges should stay adapter-only. The actual protocol or skill logic should continue to live in the owning package.
+
+### 5. CLI-as-MCP-server
+
+Package-private CLI tooling exposes agentsy itself as an MCP server (stdin/stdout transport for local use). This allows any MCP host (VS Code, Claude Desktop, Cursor) to discover and invoke agentsy tools, skills, and session management directly.
 
 ## Logic & Data Flow
 
@@ -187,11 +193,11 @@ export interface MCPOrchestrator {
 ```typescript
 export interface ServerConfig {
   id: string;
-  transport: 'stdio' | 'sse';
+  transport: "stdio" | "sse";
   command?: string;
   args?: string[];
   url?: string;
-  trustLevel: 'trusted' | 'untrusted' | 'readonly';
+  trustLevel: "trusted" | "untrusted" | "readonly";
 }
 ```
 
@@ -283,8 +289,8 @@ We are **not** creating `@agentsy/fileops-mcp` as a separate package. File opera
 ### Orchestrator and server contracts
 
 ```typescript
-type MCPTransport = 'stdio' | 'websocket' | 'http';
-type MCPTrustLevel = 'trusted' | 'untrusted' | 'readonly';
+type MCPTransport = "stdio" | "websocket" | "http";
+type MCPTrustLevel = "trusted" | "untrusted" | "readonly";
 
 interface MCPServerConfig {
   name: string;

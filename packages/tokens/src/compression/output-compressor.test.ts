@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+
 import { compressOutput } from './output-compressor.js';
 
-describe('compressOutput', () => {
+describe(compressOutput, () => {
   it('preserves code fences, inline code, and URLs while compressing prose', () => {
     const input = [
       'This is basically a simple response that actually contains fluff.',
