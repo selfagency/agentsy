@@ -11,6 +11,11 @@
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
+    "./llm-stats-client": {
+      "import": "./dist/llm-stats-client.js",
+      "require": "./dist/llm-stats-client.cjs",
+      "types": "./dist/llm-stats-client.d.ts"
+    },
     "./search-contracts": {
       "import": "./dist/search-contracts.js",
       "require": "./dist/search-contracts.cjs",

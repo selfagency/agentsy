@@ -13,6 +13,8 @@ import type {
   TaskRequirements
 } from './types.js';
 
+export { LLMStatsClient } from './llm-stats-client.js';
+
 export type {
   ModelRefinementRequest,
   ModelSearchQuery,
