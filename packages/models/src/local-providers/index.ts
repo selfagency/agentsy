@@ -3,6 +3,12 @@
  */
 
 export { probeOllama } from './ollama.js';
+export { getLocalProviderProfile, listLocalProviderProfiles } from './profiles.js';
+export type {
+  LocalProviderProfile,
+  ProviderProtocol
+} from './profiles.types.js';
+
 export type {
   LocalModelInfo,
   LocalProviderDiscoveryResult,
