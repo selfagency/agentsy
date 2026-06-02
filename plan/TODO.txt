@@ -1,7 +1,7 @@
 # @agentsy Monorepo TODO
 # Revised: Mon May 26 2026 (PHASE R1 COMPLETE — PLAN FILES UPDATED)
-# Status: PHASE 0 VERIFIED COMPLETE ✅ | PHASE R1 COMPLETE ✅ | PHASE 1 READY TO START 🟢
-# 
+# Status: PHASE 0 VERIFIED COMPLETE ✅ | PHASE R1 COMPLETE ✅ | PHASE 1 COMPLETE ✅ | PHASE 2 COMPLETE ✅ | PHASE 3 READY TO START 🟢
+#
 # This TODO reflects the VERIFIED status per 2026-05-26 codebase audit and plan file updates
 # Previous TODO entries based on incomplete compliance analysis have been replaced
 # with verified completion marks per the actual implementation audit
@@ -37,10 +37,10 @@ All 8 package implementation plan files updated with verified completion marks:
 
 ====================================================================
 
-## 🟢 PHASE 1 — READY TO START
+## ✅ PHASE 1 — COMPLETE
 
 ### TASK-090: Manifest API Posture Audit
-**Status:** 🟢 READY TO START
+**Status:** ✅ COMPLETE
 **Effort:** ~1 hour
 **Scope:** Cross-package API stabilization for 8 critical packages
 
@@ -56,10 +56,10 @@ All 8 package implementation plan files updated with verified completion marks:
 5. @agentsy/orchestrator (needs verification)
 6. @agentsy/session (needs verification)
 7. @agentsy/observability (needs verification)
-8. @agentsy/tokens (needs verification)
+8. @agentsy/context (needs verification)
 
 ### TASK-095: MSW v2 Bootstrap
-**Status:** 🟢 READY TO START
+**Status:** ✅ COMPLETE
 **Effort:** ~1 hour
 **Scope:** Shared HTTP mock layer for cross-package tests
 
@@ -70,10 +70,10 @@ All 8 package implementation plan files updated with verified completion marks:
 
 ====================================================================
 
-## 🚀 PHASE 2 — UNBLOCKED READY (FIRST DOGFOODABLE)
+## ✅ PHASE 2 — COMPLETE (FIRST DOGFOODABLE)
 
 **Effort:** ~11 hours
-**Status:** UNBLOCKED READY TO START once Phase 1 complete
+**Status:** COMPLETE
 
 **Deliverables:**
 - Streaming chat TUI with Acid ANSI visual system
@@ -90,11 +90,13 @@ Phase 0  ✅ VERIFIED COMPLETE (observability, runtime, orchestrator, memory)
          ↓
 Phase R1 ✅ COMPLETE (plan file sync, 1 hour)
          ↓
-Phase 1  🟢 READY (contract stabilization, 2 hours)
-         ↓
-Phase 2  🚀 UNBLOCKED (TUI vertical slice, 11 hours) ← FIRST DOGFOODABLE
-         ↓
-Phase 3  (Model selection — 5 hrs) + Phase 3.5 (Gateway — 8 hrs)
+Phase 1  ✅ COMPLETE (contract stabilization, 2 hours)
+          ↓
+Phase 2  ✅ COMPLETE (TUI vertical slice, 11 hours) ← FIRST DOGFOODABLE
+          ↓
+Phase 3  🟢 READY (Model selection — 5 hrs)
+          ↓
+Phase 3.5 (Gateway — 8 hrs)
          ↓
 Phase 4  (Orchestration — 24 hrs) ← GATE BEFORE TOOLS
          ↓
@@ -133,12 +135,13 @@ TOTAL FORWARD WORK: ~150 hours (starting Phase 1)
 ## NEXT STEPS
 
 1. ✅ **Phase R1 Complete** — All plan files updated with verified completion marks
-2. 🟢 **Start Phase 1** — Cross-package API stabilization (2 hours)
-3. 🚀 **Phase 2 Unblocked** — TUI vertical slice (11 hours) — FIRST DOGFOODABLE
-4. Continue phases 3-12 per sequencing in unified implementation plan
+2. ✅ **Phase 1 Complete** — Cross-package API stabilization (2 hours)
+3. ✅ **Phase 2 Complete** — TUI vertical slice (11 hours) — FIRST DOGFOODABLE
+4. 🟢 **Start Phase 3** — Model selection & provider routing (5 hours)
+5. Continue phases 3.5-12 per sequencing in unified implementation plan
 
 ====================================================================
 
 **Last Updated:** 2026-05-26
-**Status:** Phase 0 ✅ COMPLETE | Phase R1 ✅ COMPLETE | Phase 1 🟢 READY
+**Status:** Phase 0 ✅ COMPLETE | Phase R1 ✅ COMPLETE | Phase 1 ✅ COMPLETE | Phase 2 ✅ COMPLETE | Phase 3 🟢 READY
 **Authority:** 2026-05-26 codebase audit + verified implementation status

@@ -2,7 +2,7 @@
 
 **Effort:** ~24 hours  
 **Milestone:** Gate before autonomous tool usage; approval path + policy engine complete  
-**Packages:** `@agentsy/orchestrator`, `@agentsy/plugins`, `@agentsy/runtime`, `@agentsy/prompts`, `@agentsy/tokens`, `@agentsy/secrets`, `@agentsy/renderers`, `@agentsy/cli`  
+**Packages:** `@agentsy/orchestrator`, `@agentsy/plugins`, `@agentsy/runtime`, `@agentsy/prompts`, `@agentsy/context`, `@agentsy/secrets`, `@agentsy/renderers`, `@agentsy/cli`  
 **Gate:** All hooks, plan mode, plugin security, agent/skill commands complete  
 **Next:** Phase 5
 
@@ -30,21 +30,21 @@ Verified in Phase 0. Phase 4 adds built-in hook implementations.
 #### 1. Memory Pre-Turn Hook
 
 ```typescript
-export function createMemoryPreTurnHook(): HookDefinition<'pre-turn'> {
+export function createMemoryPreTurnHook(): HookDefinition<"pre-turn"> {
   return {
-    name: 'memory:pre-turn',
-    event: 'pre-turn',
+    name: "memory:pre-turn",
+    event: "pre-turn",
     priority: 100,
-    handler: async ctx => {
+    handler: async (ctx) => {
       const relevant = await ctx.memory.retrieve({
         sessionId: ctx.sessionId,
         limit: 10,
-        minRelevance: 0.6
+        minRelevance: 0.6,
       });
 
       ctx.context.memory = formatMemorySegment(relevant);
       return ctx;
-    }
+    },
   };
 }
 ```
@@ -54,20 +54,20 @@ Location: `packages/runtime/src/hooks/memory-pre-turn.ts`
 #### 2. Memory Post-Turn Hook
 
 ```typescript
-export function createMemoryPostTurnHook(): HookDefinition<'post-turn'> {
+export function createMemoryPostTurnHook(): HookDefinition<"post-turn"> {
   return {
-    name: 'memory:post-turn',
-    event: 'post-turn',
+    name: "memory:post-turn",
+    event: "post-turn",
     priority: 100,
-    handler: async ctx => {
+    handler: async (ctx) => {
       const observations = extractObservations(ctx.lastTurn);
       await ctx.memory.capture({
         sessionId: ctx.sessionId,
         observations,
-        sourceMessageId: ctx.lastMessageId
+        sourceMessageId: ctx.lastMessageId,
       });
       return ctx;
-    }
+    },
   };
 }
 ```
@@ -97,17 +97,17 @@ export function createSkillsHook(discoverer, activator): HookDefinition<'prepare
 #### 4. Instructions Hook
 
 ```typescript
-export function createInstructionsHook(discoverer): HookDefinition<'beforeInit'> {
+export function createInstructionsHook(discoverer): HookDefinition<"beforeInit"> {
   return {
-    name: 'instructions:inject',
-    event: 'beforeInit',
+    name: "instructions:inject",
+    event: "beforeInit",
     priority: 100,
-    handler: async ctx => {
+    handler: async (ctx) => {
       const allInstructions = discoverer.discover(); // merged, precedence applied
       ctx.systemPrompt = composeSystemPrompt(allInstructions, ctx.model);
-      ctx.budget.allocate('baseline', allInstructions.tokenCost);
+      ctx.budget.allocate("baseline", allInstructions.tokenCost);
       return ctx;
-    }
+    },
   };
 }
 ```
@@ -115,24 +115,24 @@ export function createInstructionsHook(discoverer): HookDefinition<'beforeInit'>
 #### 5. Budget Hook
 
 ```typescript
-export function createBudgetHook(budgetConfig): HookDefinition<'prepareStep'> {
+export function createBudgetHook(budgetConfig): HookDefinition<"prepareStep"> {
   return {
-    name: 'budget:enforce',
-    event: 'prepareStep',
+    name: "budget:enforce",
+    event: "prepareStep",
     priority: 10, // runs last
-    handler: async ctx => {
+    handler: async (ctx) => {
       const remaining = ctx.budget.remaining();
 
       if (remaining < 100) {
-        return { ...ctx, shouldAbort: true, reason: 'Budget exhausted' };
+        return { ...ctx, shouldAbort: true, reason: "Budget exhausted" };
       }
 
       if (ctx.inputTokens > remaining * 0.5) {
-        ctx.warningLevel = 'yellow';
+        ctx.warningLevel = "yellow";
       }
 
       return ctx;
-    }
+    },
   };
 }
 ```
@@ -140,27 +140,27 @@ export function createBudgetHook(budgetConfig): HookDefinition<'prepareStep'> {
 #### 6. Approval Hook
 
 ```typescript
-export function createApprovalHook(): HookDefinition<'pre-tool-call'> {
+export function createApprovalHook(): HookDefinition<"pre-tool-call"> {
   return {
-    name: 'runtime:approval-gate',
-    event: 'pre-tool-call',
+    name: "runtime:approval-gate",
+    event: "pre-tool-call",
     priority: 100,
     enabled: true,
-    handler: async ctx => {
+    handler: async (ctx) => {
       if (ctx.toolCall.annotations.destructiveHint) {
         const approved = await ctx.requestApproval({
           toolCallId: ctx.toolCall.id,
           toolName: ctx.toolCall.name,
-          timeoutMs: 30000
+          timeoutMs: 30000,
         });
 
         if (!approved) {
-          return { ...ctx, blocked: true, reason: 'User rejected' };
+          return { ...ctx, blocked: true, reason: "User rejected" };
         }
       }
 
       return ctx;
-    }
+    },
   };
 }
 ```
@@ -168,21 +168,21 @@ export function createApprovalHook(): HookDefinition<'pre-tool-call'> {
 #### 7. Observability Hook
 
 ```typescript
-export function createObservabilityHook(tracer): HookDefinition<'onStep'> {
+export function createObservabilityHook(tracer): HookDefinition<"onStep"> {
   return {
-    name: 'observability:trace',
-    event: 'onStep',
+    name: "observability:trace",
+    event: "onStep",
     priority: 5, // lowest; observes others
-    handler: async ctx => {
-      const span = tracer.startSpan('agent-step', {
-        'agent.id': ctx.agentId,
-        'session.id': ctx.sessionId,
-        'step.count': ctx.stepCount
+    handler: async (ctx) => {
+      const span = tracer.startSpan("agent-step", {
+        "agent.id": ctx.agentId,
+        "session.id": ctx.sessionId,
+        "step.count": ctx.stepCount,
       });
 
       ctx.span = span;
       return ctx;
-    }
+    },
   };
 }
 ```
@@ -207,13 +207,16 @@ export interface SessionOptions {
   approvalPolicy?: ApprovalPolicy;
 }
 
-export async function createAgentSession(agentDef: AgentDefinition, config: SessionOptions): Promise<AgentLoopHandle> {
+export async function createAgentSession(
+  agentDef: AgentDefinition,
+  config: SessionOptions,
+): Promise<AgentLoopHandle> {
   const session = new AgentSession(agentDef, config);
 
   if (config.plan) {
     // Initialize session, set plan flag, skip tool execution
-    session.mode = 'plan';
-    session.hooks.disable('pre-tool-call'); // Tools → no-op
+    session.mode = "plan";
+    session.hooks.disable("pre-tool-call"); // Tools → no-op
   }
 
   return session.handle();
@@ -301,13 +304,13 @@ export class SkillActivator {
 // packages/plugins/src/skills/hook.ts
 export function createSkillsHook(discoverer, activator) {
   return {
-    name: 'skills:activate',
-    event: 'prepareStep',
-    handler: async ctx => {
+    name: "skills:activate",
+    event: "prepareStep",
+    handler: async (ctx) => {
       const metadata = discoverer.discover();
       const active = await activator.activate(ctx.userMessage, metadata);
       ctx.activeSkills = active;
-    }
+    },
   };
 }
 ```
@@ -350,13 +353,13 @@ export class InstructionsDiscoverer {
 // packages/plugins/src/instructions/hook.ts
 export function createInstructionsHook(discoverer) {
   return {
-    name: 'instructions:inject',
-    event: 'beforeInit',
-    handler: async ctx => {
+    name: "instructions:inject",
+    event: "beforeInit",
+    handler: async (ctx) => {
       const instructions = await discoverer.discover();
       ctx.systemPrompt = composeSystemPrompt(instructions);
-      ctx.baselineBudget = instructions.sum(i => tokenCount(i.content));
-    }
+      ctx.baselineBudget = instructions.sum((i) => tokenCount(i.content));
+    },
   };
 }
 ```
@@ -370,12 +373,12 @@ export interface AgentDefinition {
   name: string;
   description: string;
   systemPromptTemplate?: string;
-  allowedTools?: string[] | '*';
-  memoryScopes?: ('session' | 'workspace' | 'user')[];
-  orchestrationMode?: 'single' | 'orchestrated' | 'autonomous';
+  allowedTools?: string[] | "*";
+  memoryScopes?: ("session" | "workspace" | "user")[];
+  orchestrationMode?: "single" | "orchestrated" | "autonomous";
   defaultModel?: string;
   hooks?: Record<string, string>; // named hook refs
-  source: 'bundled' | 'user' | 'workspace';
+  source: "bundled" | "user" | "workspace";
 }
 
 // packages/plugins/src/agents/loader.ts
@@ -403,45 +406,45 @@ export class AgentRegistry {
 // packages/plugins/src/agents/builtins/
 export const BUILTIN_AGENTS: AgentDefinition[] = [
   {
-    id: 'default',
-    name: 'Default Agent',
-    description: 'General-purpose multi-mode',
-    allowedTools: '*',
-    orchestrationMode: 'single',
-    source: 'bundled'
+    id: "default",
+    name: "Default Agent",
+    description: "General-purpose multi-mode",
+    allowedTools: "*",
+    orchestrationMode: "single",
+    source: "bundled",
   },
   {
-    id: 'research',
-    name: 'Research Agent',
-    description: 'Iterative search + synthesis',
-    allowedTools: ['search', 'memory_search', 'memory_append'],
-    orchestrationMode: 'orchestrated',
-    source: 'bundled'
+    id: "research",
+    name: "Research Agent",
+    description: "Iterative search + synthesis",
+    allowedTools: ["search", "memory_search", "memory_append"],
+    orchestrationMode: "orchestrated",
+    source: "bundled",
   },
   {
-    id: 'code',
-    name: 'Code Agent',
-    description: 'Structured code development',
-    allowedTools: ['repl', 'fs_read', 'fs_write', 'git_*'],
-    orchestrationMode: 'orchestrated',
-    source: 'bundled'
+    id: "code",
+    name: "Code Agent",
+    description: "Structured code development",
+    allowedTools: ["repl", "fs_read", "fs_write", "git_*"],
+    orchestrationMode: "orchestrated",
+    source: "bundled",
   },
   {
-    id: 'plan',
-    name: 'Planner Agent',
-    description: 'Interview-driven planning',
-    allowedTools: ['memory_append'],
-    orchestrationMode: 'single',
-    source: 'bundled'
+    id: "plan",
+    name: "Planner Agent",
+    description: "Interview-driven planning",
+    allowedTools: ["memory_append"],
+    orchestrationMode: "single",
+    source: "bundled",
   },
   {
-    id: 'superagent',
-    name: 'Superagent',
-    description: 'Multi-step orchestration with subagents',
-    allowedTools: '*',
-    orchestrationMode: 'autonomous',
-    source: 'bundled'
-  }
+    id: "superagent",
+    name: "Superagent",
+    description: "Multi-step orchestration with subagents",
+    allowedTools: "*",
+    orchestrationMode: "autonomous",
+    source: "bundled",
+  },
 ];
 ```
 
@@ -463,41 +466,41 @@ export const BUILTIN_AGENTS: AgentDefinition[] = [
 ```typescript
 // packages/plugins/src/agents/superagents/research.ts
 export const researchAgentMode: AgentDefinition = {
-  id: 'research',
-  name: 'Research Mode',
-  description: 'Iterative retrieval, synthesis, citation',
+  id: "research",
+  name: "Research Mode",
+  description: "Iterative retrieval, synthesis, citation",
   systemPromptTemplate: `You are a research agent.
 ...
 Mode: Iterative search → summarize → reflect with citations.`,
-  allowedTools: ['search', 'memory_search', 'memory_append', 'retrieval_query'],
-  orchestrationMode: 'orchestrated',
-  source: 'bundled'
+  allowedTools: ["search", "memory_search", "memory_append", "retrieval_query"],
+  orchestrationMode: "orchestrated",
+  source: "bundled",
 };
 
 // packages/plugins/src/agents/superagents/plan.ts
 export const planAgentMode: AgentDefinition = {
-  id: 'plan',
-  name: 'Plan Mode',
-  description: 'Interview-driven clarification + approval gates',
+  id: "plan",
+  name: "Plan Mode",
+  description: "Interview-driven clarification + approval gates",
   systemPromptTemplate: `You are a planning agent.
 ...
 Interview the user, clarify requirements, propose plan, request approval.`,
-  allowedTools: ['memory_append'],
-  orchestrationMode: 'single',
-  source: 'bundled'
+  allowedTools: ["memory_append"],
+  orchestrationMode: "single",
+  source: "bundled",
 };
 
 // packages/plugins/src/agents/superagents/agent.ts
 export const superagentMode: AgentDefinition = {
-  id: 'superagent',
-  name: 'Superagent Mode',
-  description: 'Investigation, review, test gates, completion enforcement',
+  id: "superagent",
+  name: "Superagent Mode",
+  description: "Investigation, review, test gates, completion enforcement",
   systemPromptTemplate: `You are a superagent.
 ...
 Investigate problem, create plan, delegate tasks, review results, enforce quality.`,
-  allowedTools: '*',
-  orchestrationMode: 'autonomous',
-  source: 'bundled'
+  allowedTools: "*",
+  orchestrationMode: "autonomous",
+  source: "bundled",
 };
 ```
 
@@ -524,13 +527,13 @@ Pattern sources:
 ```typescript
 // packages/plugins/src/security/allowed-context-fields.ts
 const ALLOWED_CONTEXT_INJECTION_FIELDS = [
-  'sessionId',
-  'agentId',
-  'model',
-  'userMessage',
-  'orchestrationMode',
-  'memoryScopes',
-  'timestamp'
+  "sessionId",
+  "agentId",
+  "model",
+  "userMessage",
+  "orchestrationMode",
+  "memoryScopes",
+  "timestamp",
   // NOT: systemPrompt, inputTokens, activeHooks, etc
 ];
 
@@ -551,7 +554,7 @@ export interface ContextInjectionRecord {
   timestamp: Date;
   pluginId: string;
   pluginVersion: string;
-  injectionPoint: 'system_prompt' | 'user_message' | 'tool_result' | 'assistant_message';
+  injectionPoint: "system_prompt" | "user_message" | "tool_result" | "assistant_message";
   contentHash: string; // SHA-256, never raw content
   contentLength: number;
 }
@@ -564,7 +567,7 @@ export class ContextInjectionAuditor {
       pluginVersion: plugin.version,
       injectionPoint: injection.point,
       contentHash: sha256(injection.content),
-      contentLength: injection.content.length
+      contentLength: injection.content.length,
     };
 
     this.log.append(record);
@@ -590,21 +593,21 @@ export async function runPluginInSandbox(
   plugin: Plugin,
   entrypoint: string,
   args: unknown[],
-  options: SandboxOptions = {}
+  options: SandboxOptions = {},
 ): Promise<unknown> {
   const vm = new IsolatedVM({
-    memoryLimitMb: options.memoryLimitMb || 64
+    memoryLimitMb: options.memoryLimitMb || 64,
   });
 
   // Expose only allowed APIs
   const hostAPI = {
-    log: plugin.config.trusted ? console.log : undefined
+    log: plugin.config.trusted ? console.log : undefined,
     // memory, time, etc — restricted
   };
 
   return vm.run(plugin.code, entrypoint, args, {
     timeout: options.timeoutMs || 5000,
-    hostAPI
+    hostAPI,
   });
 }
 ```
@@ -727,7 +730,7 @@ export async function executeToolCall(toolCall: ToolCall, ctx: AgentLoopContext)
       sessionId: ctx.sessionId,
       resourceType: toolCall.requiresCredential,
       requestedScopes: toolCall.scopes,
-      justification: `Tool ${toolCall.name} requires ${toolCall.requiresCredential}`
+      justification: `Tool ${toolCall.name} requires ${toolCall.requiresCredential}`,
     });
 
     // Pass decrypted credential to tool
@@ -749,7 +752,7 @@ export function detectSecrets(text: string): SecretMatch[] {
     // Anthropic: sk-ant-[a-zA-Z0-9\-]{95}
     ...detectAnthropicKeys(text),
     // OpenAI: sk-[a-zA-Z0-9]{48}
-    ...detectOpenaiKeys(text)
+    ...detectOpenaiKeys(text),
   ];
 }
 
@@ -765,27 +768,27 @@ export function redactSecrets(text: string): { redacted: string; matches: Secret
 }
 
 // Hook into PostToolCall
-export function createSecretDetectionHook(): HookDefinition<'post-tool-call'> {
+export function createSecretDetectionHook(): HookDefinition<"post-tool-call"> {
   return {
-    name: 'security:secret-detection',
-    event: 'post-tool-call',
+    name: "security:secret-detection",
+    event: "post-tool-call",
     priority: 100,
-    handler: async ctx => {
+    handler: async (ctx) => {
       const { redacted, matches } = redactSecrets(ctx.toolResult);
 
       if (matches.length > 0) {
-        ctx.tracer.warn('secret_detected', {
+        ctx.tracer.warn("secret_detected", {
           matchCount: matches.length,
-          types: matches.map(m => m.type)
+          types: matches.map((m) => m.type),
         });
 
         // Redact in context before returning
         ctx.toolResult = redacted;
-        ctx.warningLevel = 'yellow';
+        ctx.warningLevel = "yellow";
       }
 
       return ctx;
-    }
+    },
   };
 }
 ```
@@ -798,7 +801,7 @@ export function createSecretDetectionHook(): HookDefinition<'post-tool-call'> {
 
 **Owner:** Tokens team  
 **Effort:** ~1 hour  
-**Location:** `packages/tokens/src/budget.ts`
+**Location:** `packages/context/src/budget.ts`
 
 ```typescript
 export interface TokenBudget {
@@ -827,7 +830,7 @@ export class BudgetEnforcer {
       // Yellow warning
     }
     if (this.spent.output > this.budget.outputCap) {
-      throw new BudgetExceededError('Output tokens exceeded');
+      throw new BudgetExceededError("Output tokens exceeded");
     }
   }
 
@@ -844,25 +847,25 @@ export class BudgetEnforcer {
 **Wire into phase prepareStep:**
 
 ```typescript
-export function createBudgetHook(budget: TokenBudget): HookDefinition<'prepareStep'> {
+export function createBudgetHook(budget: TokenBudget): HookDefinition<"prepareStep"> {
   const enforcer = new BudgetEnforcer(budget);
 
   return {
-    name: 'budget:enforce',
-    event: 'prepareStep',
+    name: "budget:enforce",
+    event: "prepareStep",
     priority: 10, // runs last
-    handler: async ctx => {
+    handler: async (ctx) => {
       if (
         !enforcer.canAccommodate({
           inputTokens: ctx.inputTokens,
-          estimatedOutputTokens: 1000 // conservative
+          estimatedOutputTokens: 1000, // conservative
         })
       ) {
-        return { ...ctx, shouldAbort: true, reason: 'Budget insufficient' };
+        return { ...ctx, shouldAbort: true, reason: "Budget insufficient" };
       }
 
       return ctx;
-    }
+    },
   };
 }
 ```
@@ -880,7 +883,7 @@ export function createBudgetHook(budget: TokenBudget): HookDefinition<'prepareSt
 ```typescript
 // packages/prompts/src/layers/instructions.ts
 export interface InstructionsLayer {
-  type: 'instructions';
+  type: "instructions";
   content: string;
   tokenCount: number;
   priority: number;
@@ -891,20 +894,20 @@ export class InstructionsComposer {
     // Deterministic assembly
     // Highest priority first
     return {
-      type: 'instructions',
+      type: "instructions",
       content: instructions
         .sort((a, b) => b.priority - a.priority)
-        .map(i => i.content)
-        .join('\n\n'),
-      tokenCount: instructions.sum(i => tokenCount(i.content)),
-      priority: instructions[0]?.priority || 0
+        .map((i) => i.content)
+        .join("\n\n"),
+      tokenCount: instructions.sum((i) => tokenCount(i.content)),
+      priority: instructions[0]?.priority || 0,
     };
   }
 }
 
 // packages/prompts/src/layers/skills.ts
 export interface SkillsLayer {
-  type: 'skills';
+  type: "skills";
   skills: { name: string; description: string }[];
   tokenCount: number;
 }
@@ -912,12 +915,12 @@ export interface SkillsLayer {
 export class SkillsComposer {
   compose(activeSkills: ActiveSkill[]): SkillsLayer {
     return {
-      type: 'skills',
-      skills: activeSkills.map(s => ({
+      type: "skills",
+      skills: activeSkills.map((s) => ({
         name: s.name,
-        description: s.description
+        description: s.description,
       })),
-      tokenCount: activeSkills.sum(s => s.tokenCount)
+      tokenCount: activeSkills.sum((s) => s.tokenCount),
     };
   }
 }
@@ -926,15 +929,18 @@ export class SkillsComposer {
 **Budget model:**
 
 ```typescript
-export function allocateBudget(totalBudget: number, layers: (InstructionsLayer | SkillsLayer)[]): BudgetAllocation {
-  const baselineTokens = layers.filter(l => l.type === 'instructions').sum(l => l.tokenCount);
+export function allocateBudget(
+  totalBudget: number,
+  layers: (InstructionsLayer | SkillsLayer)[],
+): BudgetAllocation {
+  const baselineTokens = layers.filter((l) => l.type === "instructions").sum((l) => l.tokenCount);
 
   const taskTokens = totalBudget - baselineTokens;
 
   return {
     baseline: baselineTokens,
     task: taskTokens,
-    remaining: 0
+    remaining: 0,
   };
 }
 ```

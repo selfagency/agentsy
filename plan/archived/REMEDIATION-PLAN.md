@@ -42,7 +42,7 @@ Three severity classes:
 | `@agentsy/memory`        | 98% compliance (compliance matrix), dedicated plan phases                     | Stable, production-ready                                    |
 | `@agentsy/runtime`       | 200%+ plan coverage, 32+ files                                                | Execution loop, sandbox, AG-UI, approval engine all present |
 | `@agentsy/session`       | 60% compliance — entity detection beyond plan                                 | State store and manager exist, no plan changes needed       |
-| `@agentsy/tokens`        | 10% but no plan changes — compression done, cost tracking deferred to Phase 4 | Matches DOGFOOD sequencing                                  |
+| `@agentsy/context`       | 10% but no plan changes — compression done, cost tracking deferred to Phase 4 | Matches DOGFOOD sequencing                                  |
 | `@agentsy/tools`         | 15% but scaffold matches DOGFOOD Phase 5 schedule                             | Tools implementation correctly deferred                     |
 | `@agentsy/secrets`       | 8% but scaffold matches DOGFOOD Phase 4 schedule                              | Secrets correctly deferred                                  |
 | `@agentsy/guardrails`    | 12% but scaffold matches DOGFOOD Phase 5+11 schedule                          | Guardrails correctly deferred                               |

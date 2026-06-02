@@ -25,7 +25,7 @@
   - Validation: `packages/memory` tests and typecheck pass; monorepo `pnpm check-types` + `pnpm test` pass
 
 - **Phase 0 status:** ✅ **COMPLETE - All tests passing with validated metrics**
-  - Output compression API implemented in `@agentsy/tokens` (`compressOutput`) - 12.8-17.2% reduction achieved
+  - Output compression API implemented in `@agentsy/context` (`compressOutput`) - 12.8-17.2% reduction achieved
   - Memory-file compression implemented in `@agentsy/core/context` (`compressMemoryFile`) - 0.47% reduction with backup
   - CLI commands implemented in `@agentsy/cli`: `compress` and `compress-memory` - all commands working
   - Comprehensive benchmark suite: 27 dedicated tests across 3 packages (22 tokens + 10 core + 9 cli + 3 cli index = 312 total tests)
@@ -43,7 +43,7 @@
 ### Available Components
 
 - ✅ `@agentsy/core/context` - Context management foundation for memory compression
-- ✅ `@agentsy/tokens` - Token budget and cost estimation foundation
+- ✅ `@agentsy/context` - Token budget and cost estimation foundation
 - ✅ `@agentsy/memory` - local-first memory foundation + sync layer implemented for Phases 1-2 scope
 - ✅ Honker extension integration, local coordination primitives, and Turso sync modules are implemented
 - ⚠️ Missing: mcp-rag-server integration, AgentFS filesystem
@@ -64,7 +64,7 @@
 ## Scope: Standalone compression utility
 
 ```typescript
-// packages/tokens/src/compression/
+// packages/context/src/compression/
 -output -
   compressor.ts - // Caveman-style output compression
   compression -
@@ -81,10 +81,10 @@
    export function compressOutput(
      response: string,
      options: {
-       level: 'lite' | 'full' | 'ultra';
+       level: "lite" | "full" | "ultra";
        preserve: string[]; // code, technical, URLs
        intensity?: number;
-     }
+     },
    ): string;
    ```
 
@@ -114,7 +114,7 @@
 
 **Deliverables:**
 
-- `@agentsy/tokens/compression` module
+- `@agentsy/context/compression` module
 - CLI: `agentsy compress --level full --file response.json`
 - Tests: 10-task benchmark suite with accuracy validation
 
@@ -144,7 +144,7 @@
      options: {
        preserve: string[]; // code, urls, paths
        backup: boolean; // Create .original.md backup
-     }
+     },
    ): Promise<{ original: string; compressed: string; savings: number }>;
    ```
 
@@ -224,11 +224,11 @@
    export function loadHonkerExtension(dbPath: string): Promise<LoadableExtension>;
 
    // Load extension and configure BLAKE3
-   const extension = await loadHonkerExtension('./memory.db');
-   await extension.load('./honker.so');
+   const extension = await loadHonkerExtension("./memory.db");
+   await extension.load("./honker.so");
 
    // Initialize BLAKE3 for content addressing
-   await extension.load('./blake3.so');
+   await extension.load("./blake3.so");
    ```
 
 2. **Three-tier wiki system:**
@@ -237,24 +237,24 @@
    interface ThreeTierWiki {
      // Tier 1: Raw content layer (immediate data sources)
      raw: {
-       captures: 'Document and file contents as they arrive';
-       schedule: 'Scheduled ingestion and processing';
-       streaming: 'Real-time content streams';
+       captures: "Document and file contents as they arrive";
+       schedule: "Scheduled ingestion and processing";
+       streaming: "Real-time content streams";
      };
 
      // Tier 2: Wiki layer (processed, structured knowledge)
      wiki: {
-       article: 'Normalized articles and documentation';
-       concept: 'Related concepts and entity relationships';
-       conversation: 'Conversation summaries and exchanges';
-       technical: 'Technical documentation and code snippets';
+       article: "Normalized articles and documentation";
+       concept: "Related concepts and entity relationships";
+       conversation: "Conversation summaries and exchanges";
+       technical: "Technical documentation and code snippets";
      };
 
      // Tier 3: Vector index layer (semantic search capable)
      vector: {
-       embeddings: 'Nomic v1.5 local embeddings';
-       index: 'Vector search capabilities';
-       retrieval: 'Semantic search and ranking';
+       embeddings: "Nomic v1.5 local embeddings";
+       index: "Vector search capabilities";
+       retrieval: "Semantic search and ranking";
      };
    }
    ```
@@ -603,7 +603,7 @@
 
 **Token Reduction Components:**
 
-- `@agentsy/tokens` - Output compression, budget tracking
+- `@agentsy/context` - Output compression, budget tracking
 - `@agentsy/core/context` - Memory compression, context management
 - `@agentsy/runtime` - Execution environment for later integration
 
@@ -619,38 +619,38 @@
 
 ```typescript
 // Standalone memory service usage
-import { SQLiteManager } from '@agentsy/memory/coordination';
-import { PubSubManager } from '@agentsy/memory/coordination';
+import { SQLiteManager } from "@agentsy/memory/coordination";
+import { PubSubManager } from "@agentsy/memory/coordination";
 
 // Initialize with honker
-const manager = await SQLiteManager.initialize('./memory.db', {
-  withHonkExtension: true
+const manager = await SQLiteManager.initialize("./memory.db", {
+  withHonkExtension: true,
 });
 
 // Setup coordination
 const pubSub = new PubSubManager(manager);
 
 // Use for cross-process coordination
-await pubSub.notify('agent-startup', { agentId: 'agent-1' });
+await pubSub.notify("agent-startup", { agentId: "agent-1" });
 ```
 
 **As Standalone Token Optimizer:**
 
 ```typescript
 // Standalone token optimization
-import { compressOutput } from '@agentsy/tokens/compression';
-import { compressMemoryFile } from '@agentsy/core/context/compression';
+import { compressOutput } from "@agentsy/context/compression";
+import { compressMemoryFile } from "@agentsy/core/context/compression";
 
 // Compress output
 const compressedResponse = compressOutput(rawResponse, {
-  level: 'full',
-  preserve: ['code', 'technical', 'urls']
+  level: "full",
+  preserve: ["code", "technical", "urls"],
 });
 
 // Compress memory
-const { compressed, savings } = await compressMemoryFile('./CLAUDE.md', {
-  preserve: ['code', 'urls', 'paths'],
-  backup: true
+const { compressed, savings } = await compressMemoryFile("./CLAUDE.md", {
+  preserve: ["code", "urls", "paths"],
+  backup: true,
 });
 ```
 

@@ -152,7 +152,7 @@ export default defineConfig({
             { link: "/packages/adapters", text: "@agentsy/adapters" },
             { link: "/packages/providers", text: "@agentsy/providers" },
             { link: "/packages/renderers", text: "@agentsy/renderers" },
-            { link: "/packages/tokens", text: "@agentsy/tokens" },
+            { link: "/packages/context", text: "@agentsy/context" },
             { link: "/packages/vscode", text: "@agentsy/vscode" },
           ],
           text: "Catalog",

@@ -22,7 +22,7 @@ This plan defines exhaustive implementation work for Phase 3 in `plan/IMPLEMENTA
 - **REQ-004**: Implement manual and scheduled document ingestion/update/remove operations with deterministic IDs and versioning.
 - **REQ-005**: Implement web-search augmentation behind explicit configuration gates with source attribution and citation metadata.
 - **REQ-006**: Implement hybrid retrieval and ranking (`vector + lexical + entity + temporal`) with configurable weighting.
-- **REQ-007**: Implement re-ranking and context packing logic constrained by token budgets from `@agentsy/tokens`.
+- **REQ-007**: Implement re-ranking and context packing logic constrained by token budgets from `@agentsy/context`.
 - **REQ-008**: Implement retrieval evidence classes with confidence and provenance metadata for downstream injection.
 - **REQ-009**: Implement observability for recall quality, latency, source mix, and citation coverage.
 - **REQ-010**: Implement failure-tolerant fallback path (local-only retrieval when remote/web sources fail).
@@ -108,7 +108,7 @@ This plan defines exhaustive implementation work for Phase 3 in `plan/IMPLEMENTA
 ## 4. Dependencies
 
 - **DEP-001**: `@agentsy/memory` wiki and indexing layers from Phase 1/2.
-- **DEP-002**: `@agentsy/tokens` budgeting APIs for context packing and truncation policies.
+- **DEP-002**: `@agentsy/context` budgeting APIs for context packing and truncation policies.
 - **DEP-003**: `@agentsy/runtime` memory injection hooks for retrieval context consumption.
 - **DEP-004**: `@agentsy/providers` adapters for optional external retrieval transport abstractions.
 - **DEP-005**: `@agentsy/observability` conventions for metrics/event naming.
@@ -169,7 +169,7 @@ This plan defines exhaustive implementation work for Phase 3 in `plan/IMPLEMENTA
 - `packages/memory/MEMORY-ARCHITECTURE.md`
 - `packages/memory/MEMORY-STRATEGY-SYNTHESIS.md`
 - `packages/memory/UPDATED-IMPLEMENTATION-PLAN.md`
-- `packages/tokens/IMPLEMENTATION-PLAN.md`
+- `packages/context/IMPLEMENTATION-PLAN.md`
 - `packages/runtime/IMPLEMENTATION-PLAN.md`
 - `packages/providers/IMPLEMENTATION-PLAN.md`
 - `packages/observability/IMPLEMENTATION-PLAN.md`

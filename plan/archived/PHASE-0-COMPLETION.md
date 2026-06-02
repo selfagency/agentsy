@@ -21,9 +21,9 @@ Phase 0 compression system implementation is **COMPLETE AND VALIDATED** with com
 
 ## Implementation Metrics
 
-### 1. Output Compression (`@agentsy/tokens`)
+### 1. Output Compression (`@agentsy/context`)
 
-**Package**: `packages/tokens/src/compression.perf.test.ts`
+**Package**: `packages/context/src/compression.perf.test.ts`
 
 **Tests**: 8/8 passing ✅
 
@@ -110,7 +110,7 @@ This demonstrates the compression working on actual verbose documentation files.
 ```text
 Package          Tests  Passed  Status
 ─────────────────────────────────────
-@agentsy/tokens    22     22    ✅ 100%
+@agentsy/context    22     22    ✅ 100%
 @agentsy/core     278    278    ✅ 100%
 @agentsy/cli       12     12    ✅ 100%
 ─────────────────────────────────────
@@ -121,7 +121,7 @@ TOTAL            312    312    ✅ 100%
 
 ### Compression Performance Proof
 
-From `@agentsy/tokens compression.perf.test.ts`:
+From `@agentsy/context compression.perf.test.ts`:
 
 - **Full-level test fixture** (LARGE_RESPONSE ~1400 chars):
   - Original: ~1400 characters
@@ -156,25 +156,25 @@ From `@agentsy/cli commands.perf.test.ts`:
 ### Output Compression
 
 ```typescript
-import { compressOutput } from '@agentsy/tokens';
+import { compressOutput } from "@agentsy/context";
 
 // Full-level compression (12% reduction typical)
-const result = compressOutput(content, { level: 'full', preserve: ['code'] });
+const result = compressOutput(content, { level: "full", preserve: ["code"] });
 console.log(`${result.compressionRatio * 100}% reduced`);
 
 // Ultra-level compression (17% reduction typical)
-const aggressive = compressOutput(content, { level: 'ultra' });
+const aggressive = compressOutput(content, { level: "ultra" });
 ```
 
 ### Memory File Compression
 
 ```typescript
-import { compressMemoryFile } from '@agentsy/core/context';
+import { compressMemoryFile } from "@agentsy/core/context";
 
 // Compress memory file with backup
-const result = await compressMemoryFile('/path/to/file.md', {
+const result = await compressMemoryFile("/path/to/file.md", {
   backup: true, // Creates file.md.original.md
-  writeCompressed: true
+  writeCompressed: true,
 });
 console.log(`Saved ${result.savingsRatio * 100}%`);
 console.log(`Backup: ${result.backupPath}`);
@@ -200,12 +200,12 @@ agentsy compress-memory --help
 
 ```bash
 # Individual packages
-cd packages/tokens && pnpm test -- compression
+cd packages/context && pnpm test -- compression
 cd packages/core && pnpm test -- compressMemoryFile.perf
 cd packages/cli && pnpm test -- commands.perf
 
 # All packages together
-pnpm --filter @agentsy/tokens --filter @agentsy/core --filter @agentsy/cli test
+pnpm --filter @agentsy/context --filter @agentsy/core --filter @agentsy/cli test
 ```
 
 ### Expected Output

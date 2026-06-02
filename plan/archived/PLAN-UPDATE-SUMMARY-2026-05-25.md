@@ -43,7 +43,7 @@
 
 | Component                | Package                  | Tasks     | Status | Files  |
 | ------------------------ | ------------------------ | --------- | ------ | ------ |
-| **Token Infrastructure** | `@agentsy/tokens`        | Phase 0   | ✅     | 7 TS   |
+| **Token Infrastructure** | `@agentsy/context`       | Phase 0   | ✅     | 7 TS   |
 | **Memory Foundation**    | `@agentsy/memory`        | Phase 0-1 | ✅     | 214 TS |
 | **Type Stability**       | `@agentsy/types`         | TASK-067  | ✅     | 19 TS  |
 | **Observability P0-1**   | `@agentsy/observability` | 8 tasks   | ✅     | 13 TS  |

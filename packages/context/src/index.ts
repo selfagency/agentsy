@@ -1,4 +1,4 @@
-// @agentsy/tokens — Token budgets, context reduction, and output shaping.
+// @agentsy/context — Token budgets, context reduction, and output shaping.
 
 import { randomUUID } from 'node:crypto';
 

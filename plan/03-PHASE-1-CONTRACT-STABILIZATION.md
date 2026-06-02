@@ -40,7 +40,7 @@ Stabilize cross-package APIs. All manifest-bearing packages export reusable, typ
 5. `@agentsy/orchestrator` — createAgentSession, HookCompiler stable?
 6. `@agentsy/session` — SessionStore interface, SessionState schema stable?
 7. `@agentsy/observability` — Tracer, Logger, Span types stable?
-8. `@agentsy/tokens` — Compression, TokenBudget types stable?
+8. `@agentsy/context` — Compression, TokenBudget types stable?
 
 **Delivery:**
 

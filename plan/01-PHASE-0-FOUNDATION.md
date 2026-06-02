@@ -21,11 +21,11 @@ Phase 0 established all foundational infrastructure that subsequent phases depen
 
 **Intensity modes:** `lite|full|ultra`
 
-**Location:** `@agentsy/tokens` + `@agentsy/core/context`
+**Location:** `@agentsy/context` + `@agentsy/core/context`
 
 **Evidence:**
 
-- `packages/tokens/src/compression.ts` — Caveman-style compression
+- `packages/context/src/compression.ts` — Caveman-style compression
 - `packages/core/src/context.ts` — Token-aware context assembly
 - Tests validate 75% output token reduction, 46% memory footprint reduction vs uncompressed
 
@@ -347,7 +347,7 @@ Each tier (sensory, register, working, STM, LTM) has its own interface. Retrieva
 
 ### Observability Is Always-On
 
-Every package logs through `@agentsy/observability`. No console.* in production paths.
+Every package logs through `@agentsy/observability`. No console.\* in production paths.
 
 **Implication:** Debuggability at scale; cost tracking possible; auditable.
 

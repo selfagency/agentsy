@@ -28,7 +28,7 @@ For the high-level architecture behind these packages, start with the [Architect
 | `@agentsy/runtime`               | Runtime loops, workflow checkpoints, and spawned task execution     | Published | [Package page](./packages/runtime.md)     |
 | `@agentsy/runtime/ag-ui`         | AG-UI protocol adapters and event projection helpers                | Published | [Package page](./packages/ag-ui.md)       |
 | `@agentsy/orchestrator/agent`    | Multi-step agent loop and stop-condition helpers                    | Published | [Package page](./packages/agent.md)       |
-| `@agentsy/tokens`                | Token budgets, pacing, and conversation compression                 | Published | [Package page](./packages/tokens.md)      |
+| `@agentsy/context`               | Token budgets, pacing, and conversation compression                 | Published | [Package page](./packages/context.md)     |
 | `@agentsy/providers/adapters`    | Integration-oriented wrappers around the stream-processing pipeline | Published | [Package page](./packages/adapters.md)    |
 | `@agentsy/renderers`             | Plain-text rendering plus shared renderer primitives                | Published | [Package page](./packages/renderers.md)   |
 

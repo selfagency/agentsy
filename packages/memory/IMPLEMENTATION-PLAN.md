@@ -19,7 +19,7 @@ This plan defines the production implementation order for `@agentsy/memory` with
 - **REQ-MEMORY-001**: Memory capture supports episodic, semantic, and procedural classes with clear promotion rules.
 - **REQ-MEMORY-002**: Retrieval/injection follows deterministic XML/tagged context contracts and budget-aware packing.
 - **REQ-MEMORY-003**: Scope isolation across user/workspace/project/session contexts is enforced.
-- **REQ-MEMORY-004**: Cache-aware reuse and context compression integrate with `@agentsy/core`, `@agentsy/runtime`, and `@agentsy/tokens`.
+- **REQ-MEMORY-004**: Cache-aware reuse and context compression integrate with `@agentsy/core`, `@agentsy/runtime`, and `@agentsy/context`.
 - **REQ-MEMORY-005**: Memory workflows are observable and auditable with redacted traces.
 - **SEC-MEMORY-001**: Sensitive memory fields support redaction/encryption and selective recall restrictions.
 - **SEC-MEMORY-002**: Imported/synced memory content requires provenance validation.

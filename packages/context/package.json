@@ -1,5 +1,5 @@
 {
-  "name": "@agentsy/tokens",
+  "name": "@agentsy/context",
   "version": "0.2.0-alpha.0",
   "description": "Token budgets, context reduction, and output shaping",
   "keywords": [
@@ -11,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/selfagency/agentsy.git",
-    "directory": "packages/tokens"
+    "directory": "packages/context"
   },
   "type": "module",
   "main": "./dist/index.cjs",

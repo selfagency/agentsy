@@ -334,7 +334,7 @@ export interface EccIntegrationConfig {
 | `@agentsy/runtime` | Hook profiles + loop guard | No |
 | `@agentsy/cli` | Install advisor + status command | No |
 | `@agentsy/memory` | Continuous learning | No |
-| `@agentsy/tokens` | Cost audit skill | No |
+| `@agentsy/context` | Cost audit skill | No |
 | `@agentsy/orchestrator` | Loop prevention | No |
 
 ---

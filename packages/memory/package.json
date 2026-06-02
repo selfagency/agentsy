@@ -60,7 +60,7 @@
     "coverage": "vitest --run --coverage --passWithNoTests"
   },
   "dependencies": {
-    "@agentsy/tokens": "workspace:*",
+    "@agentsy/context": "workspace:*",
     "@agentsy/types": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@oclif/core": "^4.11.3",

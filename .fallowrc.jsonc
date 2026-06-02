@@ -42,6 +42,6 @@
     "@agentsy/memory",
     "@agentsy/providers",
     "@agentsy/session",
-    "@agentsy/tokens"
+    "@agentsy/context"
   ]
 }

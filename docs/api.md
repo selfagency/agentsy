@@ -31,7 +31,7 @@ Detailed API breakdowns, examples, and composition guidance live on the individu
 - [`@agentsy/core/xml-filter`](./packages/xml-filter.md) — `createXmlStreamFilter`, `tagLists`, `XmlStreamFilter`
 - [`@agentsy/core/sse`](./packages/sse.md) — `SSEParser`, `parseSSEStream`
 - [`@agentsy/types`](./packages/types.md) — shared conversation, stream, tool-call, and usage types
-- [`@agentsy/tokens`](./packages/tokens.md) — `createTokenLedger`, `createInMemoryTokenManager`, `compressConversation`, `PacingController`
+- [`@agentsy/context`](./packages/context.md) — `createTokenLedger`, `createInMemoryTokenManager`, `compressConversation`, `PacingController`
 
 ## State and integration surfaces
 

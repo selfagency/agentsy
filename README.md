@@ -34,7 +34,7 @@ This workspace currently contains:
 - `@agentsy/secrets`
 - `@agentsy/session`
 - `@agentsy/testing` (private)
-- `@agentsy/tokens`
+- `@agentsy/context`
 - `@agentsy/tools`
 - `@agentsy/types`
 - `@agentsy/ui`
@@ -45,7 +45,7 @@ This workspace currently contains:
 - **Core stream/transformation primitives**: `@agentsy/core`
 - **Provider adaptation + normalization boundary**: `@agentsy/providers`, `@agentsy/mcp`
 - **Orchestration and execution**: `@agentsy/orchestrator`, `@agentsy/runtime`, `@agentsy/guardrails`
-- **Durability and long-horizon state**: `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`, `@agentsy/retrieval`
+- **Durability and long-horizon state**: `@agentsy/session`, `@agentsy/memory`, `@agentsy/context`, `@agentsy/retrieval`
 - **Surface and presentation**: `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`, `@agentsy/connectors`
 - **Extensibility**: `@agentsy/plugins`
 

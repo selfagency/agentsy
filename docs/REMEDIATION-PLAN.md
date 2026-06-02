@@ -17,7 +17,7 @@
 | Build warnings (unused imports)                | 3 imports              | LOW      |
 | Packages with no tests                         | 3 packages             | LOW      |
 
-**Healthy packages** (build + tests pass): `@agentsy/types`, `@agentsy/tokens`, `@agentsy/providers`, `@agentsy/models`, `@agentsy/plugins`, `@agentsy/retrieval`, `@agentsy/ui`, `@agentsy/connectors`, `@agentsy/guardrails`, `@agentsy/mcp`  
+**Healthy packages** (build + tests pass): `@agentsy/types`, `@agentsy/context`, `@agentsy/providers`, `@agentsy/models`, `@agentsy/plugins`, `@agentsy/retrieval`, `@agentsy/ui`, `@agentsy/connectors`, `@agentsy/guardrails`, `@agentsy/mcp`  
 **Passing test total**: 280+ of ~298 tests
 
 ---
@@ -41,10 +41,10 @@ error TS2554: Expected 2 arguments, but got 1.
 
 ```typescript
 // Before
-this.notifyListeners('deleted');
+this.notifyListeners("deleted");
 
 // After
-this.notifyListeners('deleted', undefined);
+this.notifyListeners("deleted", undefined);
 ```
 
 **Error B** — `src/testing/mock-builders.ts:36`
@@ -58,10 +58,10 @@ error TS2554: Expected 2 arguments, but got 1.
 
 ```typescript
 // Before
-emit('deleted');
+emit("deleted");
 
 // After
-emit('deleted', undefined);
+emit("deleted", undefined);
 ```
 
 ---
@@ -105,12 +105,12 @@ Root cause: The `vi.mock` factory return type is inferred against the full `type
 
 ```typescript
 // Before
-vi.mock('node:fs', () => ({ constants: { F_OK: 0 } }));
+vi.mock("node:fs", () => ({ constants: { F_OK: 0 } }));
 
 // After
-vi.mock('node:fs', async () => ({
-  ...(await vi.importActual<typeof import('node:fs')>('node:fs')),
-  constants: { F_OK: 0 }
+vi.mock("node:fs", async () => ({
+  ...(await vi.importActual<typeof import("node:fs")>("node:fs")),
+  constants: { F_OK: 0 },
 }));
 ```
 
@@ -146,7 +146,7 @@ expect(spy).toHaveBeenCalledWith();
 expect(spy).toHaveBeenCalled();
 
 // After — option 2: verify specific args (more precise)
-expect(spy).toHaveBeenCalledWith('expected arg value');
+expect(spy).toHaveBeenCalledWith("expected arg value");
 ```
 
 ---
@@ -176,10 +176,10 @@ Confirmed error message: `AssertionError: expected { path: 'package.json' } to s
 
 ```typescript
 // Option 1: toMatchObject — checks shape only, ignores prototype
-expect(result.parameters).toMatchObject({ path: 'package.json' });
+expect(result.parameters).toMatchObject({ path: "package.json" });
 
 // Option 2: toEqual — deep equality ignoring prototype (recommended for most cases)
-expect(result.parameters).toEqual({ path: 'package.json' });
+expect(result.parameters).toEqual({ path: "package.json" });
 
 // Option 3 (if implementation should be fixed): Change extractXmlToolCalls.ts
 // to produce a plain object instead of null-prototype object.

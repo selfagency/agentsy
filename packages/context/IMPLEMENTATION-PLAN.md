@@ -1,5 +1,5 @@
 ---
-goal: @agentsy/tokens production implementation plan
+goal: @agentsy/context production implementation plan
 version: 1.0
 date_created: 2026-05-15
 last_updated: 2026-05-15
@@ -12,7 +12,7 @@ tags: [feature, architecture, tokens, budget, compression]
 
 ![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
 
-This plan defines the production implementation order for `@agentsy/tokens` as the canonical budget, accounting, and compression authority.
+This plan defines the production implementation order for `@agentsy/context` as the canonical budget, accounting, and compression authority.
 
 ## 1. Requirements & Constraints
 
@@ -79,10 +79,10 @@ This plan defines the production implementation order for `@agentsy/tokens` as t
 - `plan/MASTER-IMPLEMENTATION-PLAN.md`
 - `plan/feature-cli-dogfood-production-order-1.md`
 - `plan/feature-memory-token-reduction-phase0-1.md`
-- `docs/packages/tokens.md`
-- `packages/tokens/README.md`
-- `packages/tokens/TOON-INSIGHTS.md`
-- `packages/tokens/IMPLEMENTATION-PLAN.md`
+- `docs/packages/context.md`
+- `packages/context/README.md`
+- `packages/context/TOON-INSIGHTS.md`
+- `packages/context/IMPLEMENTATION-PLAN.md`
 
 ## 5. Existing Package Deep-Dive (Preserved)
 
@@ -109,7 +109,7 @@ This plan defines the production implementation order for `@agentsy/tokens` as t
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        @agentsy/tokens                               │
+│                        @agentsy/context                               │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  ┌──────────────────────┐      ┌──────────────────────┐           │
@@ -156,7 +156,7 @@ This plan defines the production implementation order for `@agentsy/tokens` as t
 **Scope:** Caveman-style output compression with intensity levels
 
 ````typescript
-// packages/tokens/src/compression/output-compressor.ts
+// packages/context/src/compression/output-compressor.ts
 export interface CompressionOptions {
   level: "lite" | "full" | "ultra"; // 40-50%, 65-75%, 75-87% savings
   preserve: PreservedElements;
@@ -235,7 +235,7 @@ export function compressOutput(response: string, options: CompressionOptions): C
 **Scope:** Caveman-style memory compression with backup and validation
 
 ```typescript
-// packages/tokens/src/compression/memory-compressor.ts
+// packages/context/src/compression/memory-compressor.ts
 export interface MemoryCompressionOptions {
   preserve: PreservedElements;
   backup: boolean; // Create .original.md backup
@@ -371,7 +371,7 @@ export async function compressMemoryFile(
 **Scope:** Validation pipeline before compression finalize
 
 ```typescript
-// packages/tokens/src/compression/validation.ts
+// packages/context/src/compression/validation.ts
 export class ValidationResult {
   isValid: boolean;
   errors: string[]; // Critical failures
@@ -550,7 +550,7 @@ Return ONLY the fixed compressed file. No explanation.
 
 **Deliverables:**
 
-- `@agentsy/tokens/compression` module complete
+- `@agentsy/context/compression` module complete
 - CLI: `agentsy compress --level full <response>`
 - CLI: `agentsy compress-memory --file CLAUDE.md --backup`
 - Test coverage: 10-task output benchmark + 5-file memory benchmark
@@ -562,7 +562,7 @@ Return ONLY the fixed compressed file. No explanation.
 **Inspiration:** Headroom's `StructureMask` / `MaskSpan` / `EntropyScore` architecture — adapted to TypeScript without ML dependencies.
 
 ```typescript
-// packages/tokens/src/compression/structure-mask.ts
+// packages/context/src/compression/structure-mask.ts
 
 /** Boolean mask aligned 1:1 to text characters. */
 export class StructureMask {
@@ -575,19 +575,29 @@ export class StructureMask {
   }
 
   /** Mark a contiguous region as structural (preserve). */
-  mark(offset: number, span: number): void { /* ... */ }
+  mark(offset: number, span: number): void {
+    /* ... */
+  }
 
   /** Combine: structural = this OR other. */
-  union(other: StructureMask): StructureMask { /* ... */ }
+  union(other: StructureMask): StructureMask {
+    /* ... */
+  }
 
   /** Combine: structural = this AND other. */
-  intersection(other: StructureMask): StructureMask { /* ... */ }
+  intersection(other: StructureMask): StructureMask {
+    /* ... */
+  }
 
   /** Invert: structural ↔ non-structural. */
-  invert(): StructureMask { /* ... */ }
+  invert(): StructureMask {
+    /* ... */
+  }
 
   /** Convert to ordered span list for region-based processing. */
-  toSpans(): MaskSpan[] { /* ... */ }
+  toSpans(): MaskSpan[] {
+    /* ... */
+  }
 }
 
 /** Contiguous region with structural flag. */
@@ -599,12 +609,12 @@ export interface MaskSpan {
 ```
 
 ```typescript
-// packages/tokens/src/compression/entropy.ts
+// packages/context/src/compression/entropy.ts
 
 export interface EntropyScore {
   token: string;
-  entropy: number;       // raw Shannon bits
-  normalized: number;    // 0–1
+  entropy: number; // raw Shannon bits
+  normalized: number; // 0–1
 }
 
 /**
@@ -614,8 +624,10 @@ export interface EntropyScore {
  */
 export function computeEntropyScores(
   tokens: readonly string[],
-  options?: { normalizeBound?: number }
-): EntropyScore[] { /* ... */ }
+  options?: { normalizeBound?: number },
+): EntropyScore[] {
+  /* ... */
+}
 
 /**
  * Build a StructureMask that auto-preserves high-entropy tokens.
@@ -623,8 +635,10 @@ export function computeEntropyScores(
  */
 export function computeEntropyMask(
   text: string,
-  options?: { threshold?: number; tokenizer?: 'word' | 'char' }
-): StructureMask { /* ... */ }
+  options?: { threshold?: number; tokenizer?: "word" | "char" },
+): StructureMask {
+  /* ... */
+}
 ```
 
 **Integration with existing `protectPattern()`:**
@@ -648,8 +662,8 @@ Existing placeholder-based preservation will be refactored to build a `Structure
 
 **Deliverables:**
 
-- `@agentsy/tokens/compression/structure-mask` module
-- `@agentsy/tokens/compression/entropy` module
+- `@agentsy/context/compression/structure-mask` module
+- `@agentsy/context/compression/entropy` module
 - Refactored `compressOutput()` using mask pipeline
 
 ## Phase 2: JSON Minification & TOON Format Encoding (Days 7-10)
@@ -672,7 +686,7 @@ Existing placeholder-based preservation will be refactored to build a `Structure
 ```
 
 ```typescript
-// packages/tokens/src/encoding/toon-integration.ts
+// packages/context/src/encoding/toon-integration.ts
 import { encode, decode, encodeLines } from "@toon-format/toon";
 
 export interface EncodingOptions {
@@ -976,7 +990,7 @@ agentsy analyze-structure input.json
 
 **Deliverables:**
 
-- `@agentsy/tokens/encoding` module complete
+- `@agentsy/context/encoding` module complete
 - CLI: `agentsy encode-toon <input> --output <output>`
 - CLI: `agentsy encode-optimal <input> --budget <amount>`
 - CLI: `agentsy analyze-structure <input>`
@@ -992,7 +1006,7 @@ agentsy analyze-structure input.json
 **Scope:** Accurate token counting for different models
 
 ```typescript
-// packages/tokens/src/budget/token-counter.ts
+// packages/context/src/budget/token-counter.ts
 export interface TokenCountOptions {
   model: ModelName;
   encoding?: "gpt2" | "cl100k_base" | "p50k_base";
@@ -1041,9 +1055,9 @@ export enum ModelName {
 **Inspiration:** Headroom's `ContentRouter` + `SmartCrusher` — adapted to TypeScript with heuristic detection (no ML dependency). Existing regex-based approach remains the prose fallback.
 
 ```typescript
-// packages/tokens/src/compression/content-router.ts
+// packages/context/src/compression/content-router.ts
 
-export type ContentType = 'json' | 'code' | 'prose' | 'mixed' | 'markdown';
+export type ContentType = "json" | "code" | "prose" | "mixed" | "markdown";
 
 export interface ContentDetectionResult {
   type: ContentType;
@@ -1056,15 +1070,24 @@ export interface ContentDetectionResult {
  * Uses JSON parse attempts, bracket ratios, keyword density.
  * Target: <2ms detection for typical agent outputs.
  */
-export function detectContentType(content: string): ContentDetectionResult { /* ... */ }
+export function detectContentType(content: string): ContentDetectionResult {
+  /* ... */
+}
 ```
 
 ```typescript
-// packages/tokens/src/compression/json-crusher.ts
+// packages/context/src/compression/json-crusher.ts
 
 export type JsonTokenType =
-  | 'KEY' | 'STRING_VALUE' | 'NUMBER' | 'BOOLEAN' | 'NULL'
-  | 'BRACKET' | 'COLON' | 'COMMA' | 'WHITESPACE';
+  | "KEY"
+  | "STRING_VALUE"
+  | "NUMBER"
+  | "BOOLEAN"
+  | "NULL"
+  | "BRACKET"
+  | "COLON"
+  | "COMMA"
+  | "WHITESPACE";
 
 export interface JsonCrushResult {
   original: string;
@@ -1082,16 +1105,21 @@ export interface JsonCrushResult {
  * Preserves: keys, brackets, booleans, nulls, short values, high-entropy strings
  * Compresses: long values, excessive whitespace, numeric precision
  */
-export function crushJson(json: string, options?: {
-  maxPreservedArrayItems?: number;   // default 5
-  shortValueThreshold?: number;      // default 20
-  maxDecimalPlaces?: number;         // default 4
-  entropyThreshold?: number;         // default 0.75
-}): JsonCrushResult { /* ... */ }
+export function crushJson(
+  json: string,
+  options?: {
+    maxPreservedArrayItems?: number; // default 5
+    shortValueThreshold?: number; // default 20
+    maxDecimalPlaces?: number; // default 4
+    entropyThreshold?: number; // default 0.75
+  },
+): JsonCrushResult {
+  /* ... */
+}
 ```
 
 ```typescript
-// packages/tokens/src/compression/compression-router.ts
+// packages/context/src/compression/compression-router.ts
 
 export interface CompressionResult {
   compressed: string;
@@ -1106,8 +1134,13 @@ export interface CompressionResult {
  * Routes content to best handler based on type detection.
  * Falls back to existing compressOutput() for prose/markdown.
  */
-export function compressWithRouter(content: string, level: CompressionLevel,
-  options?: { preferHandler?: ContentType }): CompressionResult { /* ... */ }
+export function compressWithRouter(
+  content: string,
+  level: CompressionLevel,
+  options?: { preferHandler?: ContentType },
+): CompressionResult {
+  /* ... */
+}
 ```
 
 **Implementation Tasks:**
@@ -1128,9 +1161,9 @@ export function compressWithRouter(content: string, level: CompressionLevel,
 
 **Deliverables:**
 
-- `@agentsy/tokens/compression/content-router` module
-- `@agentsy/tokens/compression/json-crusher` module
-- `@agentsy/tokens/compression/compression-router` orchestrator
+- `@agentsy/context/compression/content-router` module
+- `@agentsy/context/compression/json-crusher` module
+- `@agentsy/context/compression/compression-router` orchestrator
 
 ### Day 13-14: Cost Estimator
 
@@ -1141,7 +1174,7 @@ Support a separate reasoning budget for the model's internal reasoning/chain-of-
 The token counter tracks instruction overhead separately from task tokens. BASELINE_TOKENS represents the remaining budget after all always-injected instructions are accounted for. Include reporting for overhead-vs-reasoning breakdown.
 
 ```typescript
-// packages/tokens/src/budget/cost-estimator.ts
+// packages/context/src/budget/cost-estimator.ts
 export interface CostEstimateOptions {
   model: ModelName;
   region?: string; // AWS Bedrock, GCP Vertex, etc.
@@ -1213,7 +1246,7 @@ const PRICING: Record<string, ModelPricing> = {
 **Scope:** Real-time budget tracking with alerts and enforcement
 
 ```typescript
-// packages/tokens/src/budget/budget-manager.ts
+// packages/context/src/budget/budget-manager.ts
 export interface BudgetConfig {
   totalBudget: number; // USD per time period
   period: "hour" | "day" | "week" | "month";
@@ -1307,7 +1340,7 @@ export function generateBudgetAlert(status: BudgetStatus): BudgetAlert | null {
 
 **Deliverables:**
 
-- `@agentsy/tokens/budget` module complete
+- `@agentsy/context/budget` module complete
 - Real-time budget tracking
 - Budget alert system
 - Model routing recommendations
@@ -1323,7 +1356,7 @@ export function generateBudgetAlert(status: BudgetStatus): BudgetAlert | null {
 **Scope:** Cache recent tokens and content with LRU eviction
 
 ```typescript
-// packages/tokens/src/cache/token-cache.ts
+// packages/context/src/cache/token-cache.ts
 export interface CacheConfig {
   maxTokens: number; // Maximum cached tokens (default 10k)
   maxContentItems: number; // Maximum content items (default 100)
@@ -1432,7 +1465,7 @@ export class LRUCache<K, V> {
 **Scope:** Content addressing using BLAKE3 for deduplication
 
 ```typescript
-// packages/tokens/src/cache/content-addressing.ts
+// packages/context/src/cache/content-addressing.ts
 export interface ContentAddressOptions {
   algorithm: "blake3" | "sha256";
   cacheEnabled: boolean;
@@ -1514,7 +1547,7 @@ export async function computeBLAKE3(content: string): Promise<string> {
 
 **Deliverables:**
 
-- `@agentsy/tokens/cache` module complete
+- `@agentsy/context/cache` module complete
 - Token-level LRU cache
 - Content-addressed storage
 - Deduplication system
@@ -1574,7 +1607,7 @@ Use keywords and concepts
 **Implementation:**
 
 ```typescript
-// packages/tokens/src/liveness/compact-memory.ts
+// packages/context/src/liveness/compact-memory.ts
 export interface CompactMemoryConfig {
   maxCompactLevels: number; // Default 3
   retentionWindow: number; // Default 24h
@@ -1640,7 +1673,7 @@ COLD: 1.0   - 100% concreteness (Retain complete context and steps)
 **Scope:** Smart context segmentation with priority retention
 
 ```typescript
-// packages/tokens/src/liveness/priority-segmentation.ts
+// packages/context/src/liveness/priority-segmentation.ts
 export interface SegmentPriority {
   level: "critical" | "high" | "medium" | "low";
   preserve: boolean;
@@ -1734,7 +1767,7 @@ export class PrioritySegmenter {
 
 **Deliverables:**
 
-- `@agentsy/tokens/liveness` module complete
+- `@agentsy/context/liveness` module complete
 - Multi-stage compact memory implementation
 - Priority segmentation system
 - Smart truncation with preservation
@@ -1750,7 +1783,7 @@ export class PrioritySegmenter {
 **Scope:** Cross-process memory stage coordination
 
 ```typescript
-// packages/tokens/src/coordination/honker-pubsub.ts
+// packages/context/src/coordination/honker-pubsub.ts
 export interface PubSubConfig {
   channel: string; // 'memory-liveness'
   honkerPath: string;
@@ -1798,7 +1831,7 @@ memory-liveness-archive   - Decision summary updates
 **Scope:** Unified coordination API for memory management
 
 ```typescript
-// packages/tokens/src/coordination/coordination-api.ts
+// packages/context/src/coordination/coordination-api.ts
 export class MemoryCoordinationAPI {
   compactManager: CompactMemoryManager;
   segmenter: PrioritySegmenter;
@@ -1861,7 +1894,7 @@ await coordination.broadcastStageChange({
 
 **Deliverables:**
 
-- `@agentsy/tokens/coordination` module complete
+- `@agentsy/context/coordination` module complete
 - Honker pub/sub integration
 - Multi-stage liveness coordination
 - Memory management API
@@ -1941,7 +1974,7 @@ Examples:
 // Integration examples
 
 // 1. Simple compression usage
-import { compressOutput } from "@agentsy/tokens/compression";
+import { compressOutput } from "@agentsy/context/compression";
 
 const compressed = compressOutput(rawResponse, {
   level: "full",
@@ -1950,7 +1983,7 @@ const compressed = compressOutput(rawResponse, {
 });
 
 // 2. Budget tracking
-import { BudgetManager } from "@agentsy/tokens/budget";
+import { BudgetManager } from "@agentsy/context/budget";
 
 const budget = new BudgetManager({
   totalBudget: 100.0,
@@ -1962,20 +1995,20 @@ budget.trackUsage({ inputTokens: 1000, outputTokens: 500 }, { model: "claude-3-5
 const status = budget.getStatus();
 
 // 3. Memory liveness
-import { MemoryCoordinationAPI } from "@agentsy/tokens/liveness";
+import { MemoryCoordinationAPI } from "@agentsy/context/liveness";
 
 const coordination = new MemoryCoordinationAPI();
 const memoryId = await coordination.addMemory("Current task context", CompactStage.COLD);
 
 // 4. Cache management
-import { TokenCache } from "@agentsy/tokens/cache";
+import { TokenCache } from "@agentsy/context/cache";
 
 const cache = new TokenCache({ maxTokens: 10000, ttl: 3600 });
 cache.setContent("response-123", compressedResponse, 7200);
 const cached = cache.getContent("response-123");
 
 // 5. JSON minification
-import { minifyJSON } from "@agentsy/tokens/encoding";
+import { minifyJSON } from "@agentsy/context/encoding";
 
 const minified = minifyJSON(rawJSON, { preserveOrder: true, aggressive: true });
 ```
@@ -2222,15 +2255,15 @@ Tokens package is successful when:
 
 ## Timeline Summary
 
-| Phase   | Days   | Focus                             | Target                          |
-| ------- | ------ | --------------------------------- | ------------------------------- |
-| Phase 1 | 1-8    | Core compression + masks/entropy  | 75% output / 46% memory         |
-| Phase 2 | 9-12   | JSON TOON encoding                | 40% JSON savings                |
-| Phase 3 | 13-20  | Budget mgmt + router/JSON crusher | Real-time tracking + type-aware |
-| Phase 4 | 21-24  | Cache management                  | >70% hit rate                   |
-| Phase 5 | 25-28  | Multi-stage liveness              | Priority segments               |
-| Phase 6 | 29-32  | Honker coordination               | <5ms latency                    |
-| Phase 7 | 33-36  | CLI integration                   | Production ready                |
+| Phase   | Days  | Focus                             | Target                          |
+| ------- | ----- | --------------------------------- | ------------------------------- |
+| Phase 1 | 1-8   | Core compression + masks/entropy  | 75% output / 46% memory         |
+| Phase 2 | 9-12  | JSON TOON encoding                | 40% JSON savings                |
+| Phase 3 | 13-20 | Budget mgmt + router/JSON crusher | Real-time tracking + type-aware |
+| Phase 4 | 21-24 | Cache management                  | >70% hit rate                   |
+| Phase 5 | 25-28 | Multi-stage liveness              | Priority segments               |
+| Phase 6 | 29-32 | Honker coordination               | <5ms latency                    |
+| Phase 7 | 33-36 | CLI integration                   | Production ready                |
 
 **Total implementation time:** 36 days (extended +4 days for structure mask, entropy, content router, and JSON crusher additions)
 

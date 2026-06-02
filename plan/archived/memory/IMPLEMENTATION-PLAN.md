@@ -19,7 +19,7 @@ This plan defines the production implementation order for `@agentsy/memory` with
 - **REQ-MEMORY-001**: Memory capture supports episodic, semantic, and procedural classes with clear promotion rules.
 - **REQ-MEMORY-002**: Retrieval/injection follows deterministic XML/tagged context contracts and budget-aware packing.
 - **REQ-MEMORY-003**: Scope isolation across user/workspace/project/session contexts is enforced.
-- **REQ-MEMORY-004**: Cache-aware reuse and context compression integrate with `@agentsy/core`, `@agentsy/runtime`, and `@agentsy/tokens`.
+- **REQ-MEMORY-004**: Cache-aware reuse and context compression integrate with `@agentsy/core`, `@agentsy/runtime`, and `@agentsy/context`.
 - **REQ-MEMORY-005**: Memory workflows are observable and auditable with redacted traces.
 - **SEC-MEMORY-001**: Sensitive memory fields support redaction/encryption and selective recall restrictions.
 - **SEC-MEMORY-002**: Imported/synced memory content requires provenance validation.
@@ -227,7 +227,7 @@ export interface MemoryStore {
 ```typescript
 export interface MemoryEntry {
   id: MemoryId;
-  type: 'semantic' | 'episodic' | 'procedural';
+  type: "semantic" | "episodic" | "procedural";
   scope: MemoryScope;
   content: string;
   embedding?: number[];
@@ -398,21 +398,21 @@ Following cognitive science research and Letta's agent memory insights:
 ```typescript
 // Memory hierarchy tiers (Enhanced with research insights)
 export enum MemoryTier {
-  SENSORY = 'sensory', // Raw input buffer (seconds to minutes)
-  WORKING = 'working', // Active context window (hours)
-  SHORT_TERM = 'short-term', // Message buffer + recent memories (days)
-  LONG_TERM = 'long-term', // Semantic + episodic consolidated (months)
-  PERMANENT = 'permanent', // Core procedural knowledge (years)
-  ARCHIVAL = 'archival' // External database storage (indefinite)
+  SENSORY = "sensory", // Raw input buffer (seconds to minutes)
+  WORKING = "working", // Active context window (hours)
+  SHORT_TERM = "short-term", // Message buffer + recent memories (days)
+  LONG_TERM = "long-term", // Semantic + episodic consolidated (months)
+  PERMANENT = "permanent", // Core procedural knowledge (years)
+  ARCHIVAL = "archival", // External database storage (indefinite)
 }
 
 // Memory types based on cognitive science research
 export enum MemoryType {
-  SEMANTIC = 'semantic', // Facts, concepts, relationships
-  EPISODIC = 'episodic', // Events, experiences, conversations
-  PROCEDURAL = 'procedural', // Skills, routines, processes
-  WORKING = 'working', // Active context window content
-  SENSORY = 'sensory' // Raw, unfiltered input
+  SEMANTIC = "semantic", // Facts, concepts, relationships
+  EPISODIC = "episodic", // Events, experiences, conversations
+  PROCEDURAL = "procedural", // Skills, routines, processes
+  WORKING = "working", // Active context window content
+  SENSORY = "sensory", // Raw, unfiltered input
 }
 
 // Memory entry with rich metadata (Enhanced)
@@ -432,7 +432,7 @@ export interface MemoryEntry {
   importance: number;
   decayRate: number;
   // New fields from research insights
-  temperature: 'hot' | 'warm' | 'cold'; // Access frequency indicator
+  temperature: "hot" | "warm" | "cold"; // Access frequency indicator
   compressionRatio?: number; // For summarized content
   consolidationLevel: number; // Processing depth (0-raw, 10-permanent)
   editHistory: MemoryEdit[]; // Track changes over time
@@ -443,7 +443,7 @@ export interface MemoryEntry {
 
 // Multi-modal content support
 export interface MultiModalContent {
-  type: 'text' | 'image' | 'audio' | 'code' | 'structured' | 'conversation';
+  type: "text" | "image" | "audio" | "code" | "structured" | "conversation";
   data: unknown;
   metadata: {
     mimeType?: string;
@@ -570,12 +570,12 @@ export interface TokenBudget {
 }
 
 export interface EvictionPolicy {
-  strategy: 'importance' | 'temperature' | 'recency' | 'hybrid';
+  strategy: "importance" | "temperature" | "recency" | "hybrid";
   preservePercentage: number;
   targetReduction: number;
 }
 
-export type MemoryTemperature = 'hot' | 'warm' | 'cold';
+export type MemoryTemperature = "hot" | "warm" | "cold";
 
 export interface SleepOptimizationCriteria {
   timeBudget: number;
@@ -594,51 +594,51 @@ export interface SleepOptimizationCriteria {
 const memoryTiers = {
   // Sensory memory - raw input buffer
   sensory: {
-    store: new InMemoryStore({ maxSize: 100, ttl: '5m' }),
-    evictionPolicy: 'fifo',
-    compression: false
+    store: new InMemoryStore({ maxSize: 100, ttl: "5m" }),
+    evictionPolicy: "fifo",
+    compression: false,
   },
 
   // Working memory - active context window
   working: {
-    store: new InMemoryStore({ maxSize: 10000, ttl: '4h' }),
+    store: new InMemoryStore({ maxSize: 10000, ttl: "4h" }),
     blockManagement: new MemoryBlockManager(),
     contextWindowAware: true,
-    smartEviction: new IntelligentEviction()
+    smartEviction: new IntelligentEviction(),
   },
 
   // Short-term memory - message buffer + recent
   shortTerm: {
-    store: new SQLiteStore({ path: './short-term.db', maxSize: '50MB' }),
-    includes: ['message_buffer', 'recent_experiences'],
+    store: new SQLiteStore({ path: "./short-term.db", maxSize: "50MB" }),
+    includes: ["message_buffer", "recent_experiences"],
     vectorSearch: true,
-    temperatureTracking: true
+    temperatureTracking: true,
   },
 
   // Long-term memory - semantic + episodic consolidated
   longTerm: {
-    store: new SQLiteStore({ path: './long-term.db', maxSize: '500MB' }),
-    includes: ['semantic_knowledge', 'episodic_memories'],
+    store: new SQLiteStore({ path: "./long-term.db", maxSize: "500MB" }),
+    includes: ["semantic_knowledge", "episodic_memories"],
     vectorIndex: true,
     relationshipGraph: true,
-    compression: 'automatic'
+    compression: "automatic",
   },
 
   // Permanent memory - procedural knowledge
   permanent: {
-    store: new SQLiteStore({ path: './permanent.db', maxSize: '2GB' }),
-    includes: ['procedural_skills', 'core_facts'],
+    store: new SQLiteStore({ path: "./permanent.db", maxSize: "2GB" }),
+    includes: ["procedural_skills", "core_facts"],
     versioned: true,
-    backupRequired: true
+    backupRequired: true,
   },
 
   // Archival memory - external database
   archival: {
     store: new VectorDBStore({ connectionString: process.env.VECTOR_DB }),
-    includes: ['processed_knowledge', 'indexed_content'],
+    includes: ["processed_knowledge", "indexed_content"],
     searchOptimized: true,
-    scalable: true
-  }
+    scalable: true,
+  },
 };
 
 // Context engineering system (NEW)
@@ -646,36 +646,36 @@ const contextEngineering = {
   builder: new ContextBuilder({
     informationGatherer: new RichContextGatherer(),
     formatter: new ContextFormatter(),
-    validator: new ContextValidator()
+    validator: new ContextValidator(),
   }),
   windowManager: new ContextWindowManager({
     budgetManager: new TokenBudgetManager(),
     evictionStrategy: new SmartEvictionStrategy({ preservePercentage: 30 }),
-    optimizer: new ContextOptimizer()
+    optimizer: new ContextOptimizer(),
   }),
   qualityAssurance: new ContextQualityAssurance({
     completenessChecker: new CompletenessChecker(),
     relevanceScorer: new RelevanceScorer(),
-    formatOptimizer: new FormatOptimizer()
-  })
+    formatOptimizer: new FormatOptimizer(),
+  }),
 };
 
 // Sleep-time compute system (NEW)
 const sleepTimeSystem = {
   scheduler: new SleepScheduler({
     idleDetection: new IdleDetector(),
-    timeBudgetManager: new TimeBudgetManager()
+    timeBudgetManager: new TimeBudgetManager(),
   }),
   memoryOptimizer: new MemoryOptimizer({
     consolidationEngine: new ConsolidationEngine(),
     relationshipRefiner: new RelationshipRefiner(),
-    compressionEngine: new AdvancedCompressionEngine()
+    compressionEngine: new AdvancedCompressionEngine(),
   }),
   learningEngine: new SleepLearningEngine({
     patternDetector: new PatternDetector(),
     preferenceLearner: new PreferenceLearner(),
-    feedbackProcessor: new FeedbackProcessor()
-  })
+    feedbackProcessor: new FeedbackProcessor(),
+  }),
 };
 ```
 
@@ -685,10 +685,10 @@ const sleepTimeSystem = {
 // Git-backed memory with automatic sync
 const gitIntegration = {
   autoCommit: true,
-  hookType: ['pre-commit', 'post-merge', 'post-checkout'],
+  hookType: ["pre-commit", "post-merge", "post-checkout"],
   conflictResolution: true,
   branchTracking: true,
-  decisionLogging: true
+  decisionLogging: true,
 };
 ```
 

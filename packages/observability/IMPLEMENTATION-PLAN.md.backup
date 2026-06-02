@@ -28,7 +28,7 @@ It should adapt the strongest OpenLLMetry-style patterns in a way that fits Agen
 
 - **REQ-OBS-001**: Trace schema covers model, tool, approval, memory, retrieval, runtime, and orchestration events with stable semantic conventions.
 - **REQ-OBS-002**: Span/event payload contracts are stable and versioned for downstream tooling and external OTEL sinks.
-- **REQ-OBS-003**: Token/cost/latency telemetry integrates with `@agentsy/tokens` and operator surfaces.
+- **REQ-OBS-003**: Token/cost/latency telemetry integrates with `@agentsy/context` and operator surfaces.
 - **REQ-OBS-004**: Export paths support local logs, console/file sinks, and OTEL-compatible destinations.
 - **REQ-OBS-005**: The package exposes a lightweight bootstrap path (e.g. `createObservabilityEngine`/`getDefaultEngine`) plus direct composition for already-instrumented consumers.
 - **REQ-OBS-006**: Replay/debug artifacts preserve content-addressable linkage between traces, session snapshots, and incident review workflows.
@@ -179,7 +179,7 @@ The package should expose a redaction-first span processor and sink boundary so 
 - **Functionality**:
   - `recordLatency`: Millisecond resolution of every operation.
   - `recordTokens`: Breakdown of input/output tokens per provider.
-  - `recordCost`: Real-time USD estimates based on `@agentsy/tokens`.
+  - `recordCost`: Real-time USD estimates based on `@agentsy/context`.
 
 ### 4. Redaction & Safety (`src/privacy/`)
 
@@ -203,7 +203,7 @@ The package should expose a redaction-first span processor and sink boundary so 
 
 ### 2. Metric Aggregation
 
-1. Every time `@agentsy/tokens` records usage, it also emits a metric event.
+1. Every time `@agentsy/context` records usage, it also emits a metric event.
 2. `@agentsy/observability` aggregates these into histograms and counters.
 3. These metrics are exposed via a `Meter` for consumption by Prometheus or Grafana.
 

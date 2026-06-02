@@ -36,7 +36,7 @@ Source plan Role in this document `MASTER-IMPLEMENTATION-PLAN.md` v2026-05-15 Ca
 
 ### 2.1 Layer Model
 
-Layer Packages **Core stream & transform primitives** `@agentsy/core` **Provider integration boundary** `@agentsy/providers`, `@agentsy/llm-gateway` **Execution & orchestration** `@agentsy/runtime`, `@agentsy/orchestrator` **Session, memory & token governance** `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens` **Rendering & interaction surfaces** `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli` **Extensibility & policy** `@agentsy/plugins`, `@agentsy/prompts`, `@agentsy/secrets`, `@agentsy/tools`, `@agentsy/guardrails`, `@agentsy/mcp`, `@agentsy/connectors`, `@agentsy/retrieval` **Catalog, scoring & model selection** `@agentsy/models` **Foundations (cross-cutting)** `@agentsy/types`, `@agentsy/observability`, `@agentsy/testing`, `@agentsy/scripts`
+Layer Packages **Core stream & transform primitives** `@agentsy/core` **Provider integration boundary** `@agentsy/providers`, `@agentsy/llm-gateway` **Execution & orchestration** `@agentsy/runtime`, `@agentsy/orchestrator` **Session, memory & token governance** `@agentsy/session`, `@agentsy/memory`, `@agentsy/context` **Rendering & interaction surfaces** `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli` **Extensibility & policy** `@agentsy/plugins`, `@agentsy/prompts`, `@agentsy/secrets`, `@agentsy/tools`, `@agentsy/guardrails`, `@agentsy/mcp`, `@agentsy/connectors`, `@agentsy/retrieval` **Catalog, scoring & model selection** `@agentsy/models` **Foundations (cross-cutting)** `@agentsy/types`, `@agentsy/observability`, `@agentsy/testing`, `@agentsy/scripts`
 
 ### 2.2 Data Flow (Canonical)
 
@@ -84,7 +84,7 @@ Plus the `UserPromptSubmit` (input classification/guardrails) and `SubagentStop`
 
 ### 2.6 Verified Compliance Snapshot (2026-05-17 audit, updated through 2026-05-25)
 
-Package Compliance Status `@agentsy/memory` ~98% 🟢 Production-ready (AgentFS migration pending) `@agentsy/runtime` 200%+ 🟢 Beyond plan scope; hooks pending `@agentsy/types` 100% 🟢 TASK-067 ✅ (17 modules audited 2026-05-25) `@agentsy/observability` ✅ P0-1 done 🟡 Tracer + instruments + exporters complete; tslog logger factory pending `@agentsy/session` ~60% 🟡 Typed state schema/branching/pause pending `@agentsy/tokens` ~10% 🟡 Compression done; cost tracking deferred to Phase 9 `@agentsy/core` partial 🟠 Stream-to-events missing `@agentsy/providers` partial 🟠 Request path partial, gateway integration pending `@agentsy/orchestrator` ~40% 🟠 ✅ P0-2 hook taxonomy done; HookRegistry compilation/builtins pending `@agentsy/cli` ~37% 🔴 Readline chat exists (~10%); Ink TUI missing `@agentsy/renderers` low 🔴 All Ink components missing `@agentsy/plugins` partial 🔴 TASK-091 ✅ AgentManifest registry; Skills/Instructions/Agent loaders missing `@agentsy/prompts` low 🔴 Layer types missing `@agentsy/tools` ~15% 🔴 No baseline tools `@agentsy/secrets` ~8% 🔴 Single interface; broker missing `@agentsy/guardrails` ~12% 🔴 Two error classes only; policy engine missing `@agentsy/llm-gateway` partial 🟡 TASK-LB-001-004,006-009 ✅; remaining LB tasks open `@agentsy/models` stable 🟢 `@agentsy/{mcp,connectors,retrieval}` plan-only manifest promotion deferred to Phase 10 `@agentsy/{ui,vscode,scripts,testing}` adapter/host scoped to later phases
+Package Compliance Status `@agentsy/memory` ~98% 🟢 Production-ready (AgentFS migration pending) `@agentsy/runtime` 200%+ 🟢 Beyond plan scope; hooks pending `@agentsy/types` 100% 🟢 TASK-067 ✅ (17 modules audited 2026-05-25) `@agentsy/observability` ✅ P0-1 done 🟡 Tracer + instruments + exporters complete; tslog logger factory pending `@agentsy/session` ~60% 🟡 Typed state schema/branching/pause pending `@agentsy/context` ~10% 🟡 Compression done; cost tracking deferred to Phase 9 `@agentsy/core` partial 🟠 Stream-to-events missing `@agentsy/providers` partial 🟠 Request path partial, gateway integration pending `@agentsy/orchestrator` ~40% 🟠 ✅ P0-2 hook taxonomy done; HookRegistry compilation/builtins pending `@agentsy/cli` ~37% 🔴 Readline chat exists (~10%); Ink TUI missing `@agentsy/renderers` low 🔴 All Ink components missing `@agentsy/plugins` partial 🔴 TASK-091 ✅ AgentManifest registry; Skills/Instructions/Agent loaders missing `@agentsy/prompts` low 🔴 Layer types missing `@agentsy/tools` ~15% 🔴 No baseline tools `@agentsy/secrets` ~8% 🔴 Single interface; broker missing `@agentsy/guardrails` ~12% 🔴 Two error classes only; policy engine missing `@agentsy/llm-gateway` partial 🟡 TASK-LB-001-004,006-009 ✅; remaining LB tasks open `@agentsy/models` stable 🟢 `@agentsy/{mcp,connectors,retrieval}` plan-only manifest promotion deferred to Phase 10 `@agentsy/{ui,vscode,scripts,testing}` adapter/host scoped to later phases
 
 ---
 
@@ -105,7 +105,7 @@ Package Compliance Status `@agentsy/memory` ~98% 🟢 Production-ready (AgentFS 
 
 ### 3.2 Patterns to Adopt
 
-- **Caveman** token compression (75% output / 46% memory) — implemented in `@agentsy/tokens`, `@agentsy/core/context`.
+- **Caveman** token compression (75% output / 46% memory) — implemented in `@agentsy/context`, `@agentsy/core/context`.
 - **Flue** virtual sandbox (90% infra savings) + role orchestration + task delegation — implemented in `@agentsy/runtime` (Phase 4 complete).
 - **re_gent** BLAKE3 content addressing & dedup — implemented in `@agentsy/memory/content-addressing`.
 - **SpiceAI** structural sandboxing (undeclared paths unmountable).
@@ -158,7 +158,7 @@ Pattern sources adapted (**not** rebranded as built-in agent packs): minds-platf
 
 ## 4. Phase 0 — Foundation Baseline (✅ Complete / Verified)
 
-Outcome Owner Evidence Token compression (75% output / 46% memory, intensity `lite|full|ultra`) `@agentsy/tokens`, `@agentsy/core/context` `PHASE-0-COMPLETION.md` Memory foundation (5-tier: sensory/register/working/STM/LTM + wiki + RAG + coordination + scope + tools + observability) `@agentsy/memory` `PHASE-1-COMPLETION.md`, 98% compliance Turso sync (conflict resolution, scheduler, backup/restore, integrity, redacted logging) `@agentsy/memory/sync` `PHASE-2-COMPLETION.md` Mcp-rag-server RAG enhancement (hybrid ranking, auto-ingest, citation, allowlist) `@agentsy/memory/retrieval/rag` `archived/feature-memory-rag-enhancement-phase3-1.md` (complete) AgentFS in-memory layer + BLAKE3 content addressing + virtual sandbox + container detector + dynamic trigger `@agentsy/memory/filesystem/agentfs`, `@agentsy/memory/content-addressing`, `@agentsy/runtime/sandbox/virtual` `PHASE-4-COMPLETION.md` Linting/dead-code baseline (oxlint + Fallow); 17 packages type-safe monorepo `archived/upgrade-system-linting-remediation-1.md`, `archived/session-3026-1569678996-ANCHORED.md` Types audit: 17 modules, 7 TSDoc annotations, duplicate export removed, typo fixed `@agentsy/types` (TASK-067) ✅ 2026-05-25 Observability foundation P0-1: tracer singleton + spans + instruments (runtime, provider) + exporters (console/OTLP/Langfuse) + subpath exports `@agentsy/observability` ✅ ARCHITECTURE-UPGRADE-PLAN Runtime hook taxonomy P0-2: 8-event discriminated union, `createRuntimeHookRegistry()` with priority/block-chain/transform, guardrail interfaces, interruption/checkpoint system `@agentsy/runtime` ✅ ARCHITECTURE-UPGRADE-PLAN Cache-aware context fingerprint contracts (`ContextFingerprint`, `MemoryReuseHint`) `@agentsy/memory`, `@agentsy/core`, `@agentsy/session` `archived/2026-05-15-cache-aware-context-reuse.md` Official superagents plugin contract: `AgentManifest`, `PluginProvenance`, `ExternalInstallation`, `AgentManifestRegistry` + 3 built-in manifests (research/plan/agent), 8 files, 15 tests `@agentsy/plugins` (TASK-091) ✅ 2026-05-25
+Outcome Owner Evidence Token compression (75% output / 46% memory, intensity `lite|full|ultra`) `@agentsy/context`, `@agentsy/core/context` `PHASE-0-COMPLETION.md` Memory foundation (5-tier: sensory/register/working/STM/LTM + wiki + RAG + coordination + scope + tools + observability) `@agentsy/memory` `PHASE-1-COMPLETION.md`, 98% compliance Turso sync (conflict resolution, scheduler, backup/restore, integrity, redacted logging) `@agentsy/memory/sync` `PHASE-2-COMPLETION.md` Mcp-rag-server RAG enhancement (hybrid ranking, auto-ingest, citation, allowlist) `@agentsy/memory/retrieval/rag` `archived/feature-memory-rag-enhancement-phase3-1.md` (complete) AgentFS in-memory layer + BLAKE3 content addressing + virtual sandbox + container detector + dynamic trigger `@agentsy/memory/filesystem/agentfs`, `@agentsy/memory/content-addressing`, `@agentsy/runtime/sandbox/virtual` `PHASE-4-COMPLETION.md` Linting/dead-code baseline (oxlint + Fallow); 17 packages type-safe monorepo `archived/upgrade-system-linting-remediation-1.md`, `archived/session-3026-1569678996-ANCHORED.md` Types audit: 17 modules, 7 TSDoc annotations, duplicate export removed, typo fixed `@agentsy/types` (TASK-067) ✅ 2026-05-25 Observability foundation P0-1: tracer singleton + spans + instruments (runtime, provider) + exporters (console/OTLP/Langfuse) + subpath exports `@agentsy/observability` ✅ ARCHITECTURE-UPGRADE-PLAN Runtime hook taxonomy P0-2: 8-event discriminated union, `createRuntimeHookRegistry()` with priority/block-chain/transform, guardrail interfaces, interruption/checkpoint system `@agentsy/runtime` ✅ ARCHITECTURE-UPGRADE-PLAN Cache-aware context fingerprint contracts (`ContextFingerprint`, `MemoryReuseHint`) `@agentsy/memory`, `@agentsy/core`, `@agentsy/session` `archived/2026-05-15-cache-aware-context-reuse.md` Official superagents plugin contract: `AgentManifest`, `PluginProvenance`, `ExternalInstallation`, `AgentManifestRegistry` + 3 built-in manifests (research/plan/agent), 8 files, 15 tests `@agentsy/plugins` (TASK-091) ✅ 2026-05-25
 
 ---
 
@@ -438,7 +438,7 @@ renderers Ink TUI → providers wire path → core stream norm
 
 **TASK-064** — Prompt policy stack integration: deterministic system prompt composition + token-aware truncation/compression before every provider call.
 
-### 10.5 `@agentsy/tokens` — Hard Budget Enforcement
+### 10.5 `@agentsy/context` — Hard Budget Enforcement
 
 - **TASK-063** — Hard token restriction middleware in runtime request path: input/output/context caps + per-turn/per-session spend ceilings with **fail-closed behavior** (REQ-014).
 - Budget-aware packing: `@agentsy/prompts` receives token budget, truncates/compresses accordingly.
@@ -750,7 +750,7 @@ Per-instrument span attributes:
 
 **TASK-047 — Regression tests:** Trace completeness — model selected, provider used, tools called, approvals requested, memory injected, retrieval source counts.
 
-### 15.2 `@agentsy/tokens` — Cost Tracking
+### 15.2 `@agentsy/context` — Cost Tracking
 
 - **TASK-044** — Token/cost telemetry integration into CLI status bar + post-turn summaries (input/output/cost/latency).
 - Completes the cost-tracking deferred from Phase 0.
@@ -955,7 +955,7 @@ Phase 12 (hardening + cross-surface parity + release)
 
 ## 23. Package Completion Reference
 
-Package Phases Current Priority `@agentsy/types` 1 ✅ Complete (2026-05-25) — `@agentsy/memory` 7-8 🟢 98% — AgentFS migration pending Medium `@agentsy/runtime` 2, 4-7, 9 🟢 200%+ code, hooks needed Medium `@agentsy/observability` 5, 9 ✅ P0-1 done; tslog + redaction pending High `@agentsy/session` 6-7 🟡 60% — typed state pending Medium `@agentsy/tokens` 1, 4, 9 🟡 Compression done; cost tracking Phase 9 Medium `@agentsy/core` 2, 7 🟠 Stream events missing High `@agentsy/providers` 2, 3 🟠 Request path partial High `@agentsy/llm-gateway` 3.5 🟡 Foundation done Medium `@agentsy/models` 3 🟢 Stable Low `@agentsy/renderers` 2, 5 🔴 All Ink components missing Critical `@agentsy/cli` 2-12 🔴 Readline partial Critical `@agentsy/plugins` 4 🔴 Skills/Instructions/Agent loaders missing Critical `@agentsy/orchestrator` 4 🟠 P0-2 done; compileHooks + builtins missing Critical `@agentsy/prompts` 4 🔴 Layer types missing Critical `@agentsy/tools` 5 🔴 15% — Phase 5 High `@agentsy/secrets` 4 🔴 8% — Phase 4 broker High `@agentsy/guardrails` 5, 10-11 🔴 12% — policy engine missing High `@agentsy/mcp` 10-11 plan-only → promote Phase 10 Low `@agentsy/connectors` 10-11 plan-only → promote Phase 10 Low `@agentsy/retrieval` 8, 10-11 plan-only → promote Phase 8 Medium `@agentsy/ui` 5, 9 adapters needed Medium `@agentsy/vscode` 12 deferred Low `@agentsy/scripts` 12 release automation Low `@agentsy/testing` 1, 11 MSW bootstrap needed High
+Package Phases Current Priority `@agentsy/types` 1 ✅ Complete (2026-05-25) — `@agentsy/memory` 7-8 🟢 98% — AgentFS migration pending Medium `@agentsy/runtime` 2, 4-7, 9 🟢 200%+ code, hooks needed Medium `@agentsy/observability` 5, 9 ✅ P0-1 done; tslog + redaction pending High `@agentsy/session` 6-7 🟡 60% — typed state pending Medium `@agentsy/context` 1, 4, 9 🟡 Compression done; cost tracking Phase 9 Medium `@agentsy/core` 2, 7 🟠 Stream events missing High `@agentsy/providers` 2, 3 🟠 Request path partial High `@agentsy/llm-gateway` 3.5 🟡 Foundation done Medium `@agentsy/models` 3 🟢 Stable Low `@agentsy/renderers` 2, 5 🔴 All Ink components missing Critical `@agentsy/cli` 2-12 🔴 Readline partial Critical `@agentsy/plugins` 4 🔴 Skills/Instructions/Agent loaders missing Critical `@agentsy/orchestrator` 4 🟠 P0-2 done; compileHooks + builtins missing Critical `@agentsy/prompts` 4 🔴 Layer types missing Critical `@agentsy/tools` 5 🔴 15% — Phase 5 High `@agentsy/secrets` 4 🔴 8% — Phase 4 broker High `@agentsy/guardrails` 5, 10-11 🔴 12% — policy engine missing High `@agentsy/mcp` 10-11 plan-only → promote Phase 10 Low `@agentsy/connectors` 10-11 plan-only → promote Phase 10 Low `@agentsy/retrieval` 8, 10-11 plan-only → promote Phase 8 Medium `@agentsy/ui` 5, 9 adapters needed Medium `@agentsy/vscode` 12 deferred Low `@agentsy/scripts` 12 release automation Low `@agentsy/testing` 1, 11 MSW bootstrap needed High
 
 ---
 
@@ -1063,7 +1063,7 @@ This document is the **single source of truth** for:
 | `@agentsy/memory`                     | 0-1     | 🟢 Production Ready ✅ | 214 TS | 5-tier cognitive, wiki, RAG, coordination, sync     |
 | `@agentsy/types`                      | 0       | 🟢 Complete ✅         | 19 TS  | TASK-067 verified 2026-05-25                        |
 | `@agentsy/session`                    | 1       | 🟡 Typed Scaffold ✅   | 3 TS   | State contracts, snapshot, reusable segments        |
-| `@agentsy/tokens`                     | 0       | 🟢 Phase 0 Complete ✅ | 7 TS   | Compression done; cost tracking Phase 9             |
+| `@agentsy/context`                    | 0       | 🟢 Phase 0 Complete ✅ | 7 TS   | Compression done; cost tracking Phase 9             |
 | `@agentsy/core`                       | 0-2     | 🟡 85% Complete        | 84 TS  | TASK-009 ✅; stream-to-events done                  |
 | `@agentsy/providers`                  | 0-3     | 🟡 70% Complete        | 31 TS  | TASK-008 ✅; request path exists                    |
 | `@agentsy/plugins`                    | 1-4     | 🟠 TASK-091 ✅         | 8 TS   | Manifest registry done; skills/instructions pending |
@@ -1106,7 +1106,7 @@ This document is the **single source of truth** for:
 | **Core stream & transform primitives** | `@agentsy/core`                                                                                                                                                  | 🟡 85% (stream-to-events ✅)    |
 | **Provider integration boundary**      | `@agentsy/providers`, `@agentsy/llm-gateway`                                                                                                                     | 🟡 70% (request path ✅)        |
 | **Execution & orchestration**          | `@agentsy/runtime`, `@agentsy/orchestrator`                                                                                                                      | 🟢 P0-2 ✅ (hooks done)         |
-| **Session, memory & token governance** | `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`                                                                                                         | 🟢 Ready (memory production ✅) |
+| **Session, memory & token governance** | `@agentsy/session`, `@agentsy/memory`, `@agentsy/context`                                                                                                        | 🟢 Ready (memory production ✅) |
 | **Rendering & interaction surfaces**   | `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`                                                                                           | 🟠 Phase 2+ (TUI pending)       |
 | **Extensibility & policy**             | `@agentsy/plugins`, `@agentsy/prompts`, `@agentsy/secrets`, `@agentsy/tools`, `@agentsy/guardrails`, `@agentsy/mcp`, `@agentsy/connectors`, `@agentsy/retrieval` | 🔴 Phase 4-5+ deferred          |
 | **Catalog, scoring & model selection** | `@agentsy/models`                                                                                                                                                | 🟢 Stable                       |
@@ -1117,14 +1117,14 @@ This document is the **single source of truth** for:
 
 #### Phase 0 — Foundation (✅ VERIFIED COMPLETE)
 
-| Component                                   | Status | Evidence                                    | Date       |
-| ------------------------------------------- | ------ | ------------------------------------------- | ---------- |
-| Token compression (75% output / 46% memory) | ✅     | `@agentsy/tokens` + `@agentsy/core/context` | 2026-05-17 |
-| Memory 5-tier foundation                    | ✅     | `@agentsy/memory` — 214 TS files            | 2026-05-25 |
-| Types audit + stability                     | ✅     | TASK-067 — 17 modules, 7 TSDoc, zero `any`  | 2026-05-25 |
-| Observability P0-1 (tracer + logger)        | ✅     | `@agentsy/observability` — 13 TS files      | 2026-05-25 |
-| Runtime hook taxonomy P0-2                  | ✅     | `@agentsy/runtime` — hooks/registry/types   | 2026-05-25 |
-| Orchestrator P0-2 (hook compilation)        | ✅     | `@agentsy/orchestrator` — compileHooks done | 2026-05-25 |
+| Component                                   | Status | Evidence                                     | Date       |
+| ------------------------------------------- | ------ | -------------------------------------------- | ---------- |
+| Token compression (75% output / 46% memory) | ✅     | `@agentsy/context` + `@agentsy/core/context` | 2026-05-17 |
+| Memory 5-tier foundation                    | ✅     | `@agentsy/memory` — 214 TS files             | 2026-05-25 |
+| Types audit + stability                     | ✅     | TASK-067 — 17 modules, 7 TSDoc, zero `any`   | 2026-05-25 |
+| Observability P0-1 (tracer + logger)        | ✅     | `@agentsy/observability` — 13 TS files       | 2026-05-25 |
+| Runtime hook taxonomy P0-2                  | ✅     | `@agentsy/runtime` — hooks/registry/types    | 2026-05-25 |
+| Orchestrator P0-2 (hook compilation)        | ✅     | `@agentsy/orchestrator` — compileHooks done  | 2026-05-25 |
 
 #### Phase 1 — Cross-Package Contract Stabilization (✅ VERIFIED IN PROGRESS)
 

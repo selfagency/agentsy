@@ -43,7 +43,7 @@ The workspace currently has two package maturity classes:
 - `@agentsy/secrets`
 - `@agentsy/session`
 - `@agentsy/testing` (private)
-- `@agentsy/tokens`
+- `@agentsy/context`
 - `@agentsy/tools`
 - `@agentsy/types`
 - `@agentsy/ui`
@@ -78,7 +78,7 @@ Current exports from providers include:
 1. **Core stream and transformation primitives** — `@agentsy/core`
 2. **Provider integration boundary** — `@agentsy/providers`
 3. **Execution and orchestration** — `@agentsy/runtime`, `@agentsy/orchestrator`
-4. **Session, memory, and token governance** — `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`
+4. **Session, memory, and token governance** — `@agentsy/session`, `@agentsy/memory`, `@agentsy/context`
 5. **Rendering and interaction surfaces** — `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`
 6. **Extensibility and policy** — `@agentsy/plugins`, plus planned domains (`connectors`, `guardrails`, `mcp`, `retrieval`)
 
@@ -91,7 +91,7 @@ Current exports from providers include:
 3. Multi-step policy and loop behavior run in `@agentsy/orchestrator`
 4. Tool execution/approval runtime concerns run in `@agentsy/runtime`
 5. Session durability and resume semantics run in `@agentsy/session`
-6. Long-horizon memory and token policy feed optimization and continuity (`@agentsy/memory`, `@agentsy/tokens`)
+6. Long-horizon memory and token policy feed optimization and continuity (`@agentsy/memory`, `@agentsy/context`)
 7. Surface adapters and presentation layers consume event/state outputs (`renderers`, `ui`, `vscode`, `cli`)
 
 ### 3.3 Recommended external integration targets (UPDATED)
@@ -289,7 +289,7 @@ Packages below are classified by whether they should expose a reusable, framewor
 | `@agentsy/runtime`       | External API required                     | Execution policy/runtime orchestration should be host-agnostic.                                   |
 | `@agentsy/secrets`       | External API required                     | Secrets lifecycle helpers should be reusable by other hosts.                                      |
 | `@agentsy/session`       | External API required                     | Persistence/resume state models should be available to other integrations.                        |
-| `@agentsy/tokens`        | External API required                     | Token accounting and budget policy helpers are cross-host utilities.                              |
+| `@agentsy/context`       | External API required                     | Token accounting and budget policy helpers are cross-host utilities.                              |
 | `@agentsy/tools`         | External API required                     | Tool schemas/registry contracts should be reusable outside the CLI.                               |
 | `@agentsy/types`         | External API required                     | Shared contracts are the foundation of external consumption.                                      |
 | `@agentsy/ui`            | External API required                     | Shared UI state/contracts should be consumable by other surfaces.                                 |
@@ -304,7 +304,7 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 
 ## Phase 0 (Weeks 1-16): Token Optimization Foundation (CRITICAL)
 
-- Output compression (75% savings) in `@agentsy/tokens`
+- Output compression (75% savings) in `@agentsy/context`
 - Memory file compression (46% savings) in `@agentsy/core/context`
 - Virtual sandbox mode (90% savings) in `@agentsy/runtime` sandbox
 - BLAKE3 content addressing in `@agentsy/memory`
@@ -401,13 +401,13 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 - Runtime-owned local automodel selection routing may delegate to llama-swap when multiple backends are viable.
 - Orchestration logic belongs in `@agentsy/orchestrator`; runtime execution controls belong in `@agentsy/runtime`.
 - `ag-ui` exists as runtime capability (`@agentsy/runtime/ag-ui`), not a standalone package.
-- `token-economy` naming is reconciled to `@agentsy/tokens`.
+- `token-economy` naming is reconciled to `@agentsy/context`.
 - Extension concepts formerly spread across standalone plan artifacts map into `@agentsy/plugins` plus package-level implementation plans.
 
 ### 4.2 Legacy-name reconciliation
 
 - `context-manager` -> core context + orchestration/runtime integration policy
-- `cost-tracker` -> `@agentsy/tokens`
+- `cost-tracker` -> `@agentsy/context`
 - `telemetry` -> `@agentsy/observability`
 - standalone `ag-ui` -> `@agentsy/runtime/ag-ui`
 - legacy standalone extension package ideas (skills/superpowers/caveman/slash-commands) -> plugin extension domains
@@ -441,7 +441,7 @@ Planned package domains (`packages/connectors`, `packages/guardrails`, `packages
 | **@agentsy/memory**        | 52           | 51+ implementations | 98%        | 🟢 HIGH - Nearly complete                  |
 | **@agentsy/runtime**       | 6 plan tasks | 32 files+           | 200%+      | 🟢 BONUS - Beyond plan scope               |
 | **@agentsy/session**       | 30           | 6 interfaces        | 60%        | 🟡 MEDIUM - Entity detection beyond plan   |
-| **@agentsy/tokens**        | 28           | 7 files             | 10%        | 🟡 MEDIUM - Compression only               |
+| **@agentsy/context**       | 28           | 7 files             | 10%        | 🟡 MEDIUM - Compression only               |
 
 ### 5.3 Active implementation streams
 

@@ -264,7 +264,7 @@ const span = tracer.startSpan('agent.task-execution', {
 
 ### 3.2 Cost Tracking Integration
 
-**Planned**: Real-time USD estimates based on @agentsy/tokens
+**Planned**: Real-time USD estimates based on @agentsy/context
 
 **Actual**: No cost tracking mechanism
 
@@ -393,7 +393,7 @@ Internal package; surface area is intentionally minimal for now.
 4. **Implement Token & Cost Tracking**
    - Create metrics for token usage (input, output, total)
    - Add cost estimation capabilities
-   - Integrate with @agentsy/tokens if available
+   - Integrate with @agentsy/context if available
 
 5. **Add Essential Tests**
    - Unit tests for ObservabilityEngine
@@ -452,11 +452,11 @@ Internal package; surface area is intentionally minimal for now.
 
 ### Dependencies Risks
 
-| Dependency                     | Risk Level | Mitigation                         |
-| ------------------------------ | ---------- | ---------------------------------- |
-| @opentelemetry/\* packages     | Low        | Well-maintained, industry standard |
-| No @agentsy/tokens package yet | Medium     | Create abstraction layer           |
-| No integration packages yet    | Medium     | Design clear contracts upfront     |
+| Dependency                      | Risk Level | Mitigation                         |
+| ------------------------------- | ---------- | ---------------------------------- |
+| @opentelemetry/\* packages      | Low        | Well-maintained, industry standard |
+| No @agentsy/context package yet | Medium     | Create abstraction layer           |
+| No integration packages yet     | Medium     | Design clear contracts upfront     |
 
 ---
 

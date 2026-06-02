@@ -1,7 +1,7 @@
 # @agentsy Unified Implementation Plan — Executive Summary
 
 **Last Updated:** 2026-05-26  
-**Status:** Phase 0 ✅ VERIFIED COMPLETE; Phase R1 ✅ PLAN SYNC COMPLETE; Phase 1 🟢 READY TO START; Phases 2-12 in planning/progress  
+**Status:** Phase 0 ✅ VERIFIED COMPLETE; Phase R1 ✅ PLAN SYNC COMPLETE; Phase 1 ✅ COMPLETE; Phase 2 ✅ COMPLETE; Phase 3 🟢 READY TO START; Phases 3.5-12 in planning/progress  
 **Authority Document:** Master plan consolidating 25+ planning artifacts + codebase audit
 
 ---
@@ -13,9 +13,9 @@
 | **00-AUTHORITY-ARCHITECTURE.md**         | Layer model, package boundaries, ecosystem decisions    | Architects, TLs                |
 | **01-PHASE-0-FOUNDATION.md**             | ✅ Verified complete baseline                           | Reference                      |
 | **02-PHASE-R1-PLAN-SYNC.md**             | ✅ Plan sync complete (8 files updated)                 | Plan owners                    |
-| **03-PHASE-1-CONTRACT-STABILIZATION.md** | Cross-package API contracts, MSW bootstrap              | Teams on core packages         |
-| **04-PHASE-2-TUI-VERTICAL-SLICE.md**     | FIRST DOGFOODABLE: streaming chat TUI                   | CLI, renderers, core teams     |
-| **05-PHASE-3-MODEL-SELECTION.md**        | Provider routing, local LLM discovery                   | Models, providers, renderers   |
+| **03-PHASE-1-CONTRACT-STABILIZATION.md** | ✅ Complete cross-package API contracts, MSW bootstrap  | Teams on core packages         |
+| **04-PHASE-2-TUI-VERTICAL-SLICE.md**     | ✅ Complete FIRST DOGFOODABLE: streaming chat TUI       | CLI, renderers, core teams     |
+| **05-PHASE-3-MODEL-SELECTION.md**        | 🟢 Ready: provider routing, local LLM discovery         | Models, providers, renderers   |
 | **06-PHASE-3.5-LLM-GATEWAY.md**          | Semantic gateway, failover, quota tracking              | Gateway team                   |
 | **07-PHASE-4-ORCHESTRATION.md**          | Hooks, skills, instructions, agents, secrets, budget    | Orchestrator, plugins, runtime |
 | **08-PHASE-5-TOOLS-APPROVALS.md**        | Safe tool execution, deny-by-default, guardrails        | Runtime, tools, guardrails     |
@@ -38,12 +38,14 @@ Phase 0  ✅ DONE (observability, runtime, orchestrator, memory) — VERIFIED 20
          ↓
 Phase R1 ✅ DONE (plan sync — 1 hr) — COMPLETE 2026-05-26
          ↓
-Phase 1  🟢 READY (contract stabilization — 2 hrs) — READY TO START
-         ↓
-Phase 2  (TUI vertical slice — 11 hrs) ← FIRST DOGFOODABLE MILESTONE
-         ↓
-Phase 3  (Model selection — 5 hrs) + Phase 3.5 (Gateway — 8 hrs)
-         ↓
+Phase 1  ✅ DONE (contract stabilization — 2 hrs) — COMPLETE
+          ↓
+Phase 2  ✅ DONE (TUI vertical slice — 11 hrs) ← FIRST DOGFOODABLE MILESTONE
+          ↓
+Phase 3  🟢 READY (Model selection — 5 hrs)
+          ↓
+Phase 3.5 (Gateway — 8 hrs)
+          ↓
 Phase 4  (Orchestration — 24 hrs) ← GATE BEFORE TOOLS
          ↓
 Phase 5  (Tools+approvals — 16 hrs)
@@ -62,7 +64,11 @@ Phase 11 (Integration — 8 hrs)
          ↓
 Phase 12 (Hardening+release — 10 hrs)
 
-TOTAL FORWARD WORK: ~150 hours (starting Phase 1)
+TOTAL FORWARD WORK: ~197 hours (starting Phase 1)
+         ↓
+Phase 19 (tokens→context rename — 1 hr)
+         ↓
+Phase 20 (tokenomics — 46 hrs) ← SPEND vs VALUE MILESTONE
 ```
 
 ---
@@ -82,13 +88,13 @@ TOTAL FORWARD WORK: ~150 hours (starting Phase 1)
 
 ---
 
-## Verified Completion Status (2026-05-26 Codebase Audit)
+## Verified Completion Status (2026-06-02 Plan Reconciliation)
 
 ### Phase 0 — ✅ COMPLETE (VERIFIED 2026-05-26)
 
 | Component                                   | Evidence                                           |
 | ------------------------------------------- | -------------------------------------------------- |
-| Token compression (75% output / 46% memory) | `@agentsy/tokens` + `@agentsy/core/context`        |
+| Token compression (75% output / 46% memory) | `@agentsy/context` + `@agentsy/core/context`        |
 | Memory 5-tier foundation                    | `@agentsy/memory` — 214 TS files, production-ready |
 | Types audit + stability                     | TASK-067 — 17 modules, 7 TSDoc, zero `any`         |
 | Observability P0-1 (tracer + logger)        | `@agentsy/observability` — 13 TS files ✅          |
@@ -136,9 +142,12 @@ All 8 `IMPLEMENTATION-PLAN.md` files updated with verified completion marks:
 ## Immediate Next Steps
 
 1. ✅ **Phase R1** — Update 8 package IMPLEMENTATION-PLAN.md files with verified marks ✅ COMPLETE
-2. 🟢 **Phase 1** — Stabilize cross-package contracts + MSW bootstrap (2 hrs) — **READY TO START**
-3. 🚀 **Phase 2** — TUI vertical slice (11 hrs) ← **UNBLOCKED READY TO START**
-4. Continue phases 3-12 per sequencing
+2. ✅ **Phase 1** — Stabilize cross-package contracts + MSW bootstrap (2 hrs) — **COMPLETE**
+3. ✅ **Phase 2** — TUI vertical slice (11 hrs) ← **COMPLETE**
+4. 🟢 **Phase 3** — Model selection & provider routing (5 hrs) — **READY TO START**
+5. Continue phases 3.5-12 per sequencing
+6. 🟡 **Phase 19** — Rename @agentsy/context → @agentsy/context (1 hr) — unblocked after Phase 1
+7. 🟡 **Phase 20** — @agentsy/tokenomics spend ledger + frustration tracking (46 hrs) — unblocked after Phase 9
 
 ---
 
@@ -153,4 +162,4 @@ All 8 `IMPLEMENTATION-PLAN.md` files updated with verified completion marks:
 
 ---
 
-**Read next:** `03-PHASE-1-CONTRACT-STABILIZATION.md` (READY TO START) or `04-PHASE-2-TUI-VERTICAL-SLICE.md` (unblocked work)
+**Read next:** `05-PHASE-3-MODEL-SELECTION.md` (READY TO START)

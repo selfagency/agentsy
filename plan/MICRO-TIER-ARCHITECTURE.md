@@ -230,7 +230,7 @@
 
 | Target | Package | Use Case | Savings |
 |--------|---------|----------|---------|
-| Compression | `@agentsy/tokens` | Stale-turn summarization | 50–70% (per summary) |
+| Compression | `@agentsy/context` | Stale-turn summarization | 50–70% (per summary) |
 | Fact Extraction | `@agentsy/memory` | Event log → facts | 30–50% (per chunk) |
 | Wiki Synthesis | `@agentsy/memory` | Facts → wiki entries | 20–40% (per synthesis) |
 | Guardrail Classification | `@agentsy/guardrails` | Intent/safety gating | 10–20% (per input) |

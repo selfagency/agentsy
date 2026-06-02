@@ -4,7 +4,7 @@
 **Created:** 2026-05-28
 **Status:** Planned
 **Effort:** ~48 hours
-**Packages:** `@agentsy/models`, `@agentsy/providers`, `@agentsy/gateway`, `@agentsy/orchestrator`, `@agentsy/tokens`, `@agentsy/memory`, `@agentsy/guardrails`, `@agentsy/retrieval`, `@agentsy/cli`, `@agentsy/observability`, `@agentsy/testing`
+**Packages:** `@agentsy/models`, `@agentsy/providers`, `@agentsy/gateway`, `@agentsy/orchestrator`, `@agentsy/context`, `@agentsy/memory`, `@agentsy/guardrails`, `@agentsy/retrieval`, `@agentsy/cli`, `@agentsy/observability`, `@agentsy/testing`
 **Gate:** Micro-tier routing live; platform-agnostic fallback chain verified; cost-reduction measured across macOS/Windows/Linux
 **Next:** Phase 18 (TBD)
 
@@ -14,7 +14,7 @@
 
 Route **low-value, high-volume** LLM calls (classification, extraction, summarization, titling, query rewriting, JSON repair, intent gating) to **available on-device accelerators** (Apple Neural Engine, Windows NPU, or CPU-based local models), reducing token spend against paid frontier/cloud providers without degrading quality on the reasoning-heavy calls that actually need them.
 
-This is **not** a frontier replacement. It owns the "free, local, fast, good-enough" tier — the **`micro` tier** — beneath the `small` tier defined in `plan/25-PHASE-16-SMALL-MODEL-PARITY.md`. The leverage is in the **orchestrator routing the right *kinds* of calls to it**, not in clever model usage.
+This is **not** a frontier replacement. It owns the "free, local, fast, good-enough" tier — the **`micro` tier** — beneath the `small` tier defined in `plan/25-PHASE-16-SMALL-MODEL-PARITY.md`. The leverage is in the **orchestrator routing the right _kinds_ of calls to it**, not in clever model usage.
 
 **Platform-agnostic design:**
 
@@ -39,12 +39,12 @@ Source: <https://github.com/Arthur-Ficial/apfel>
 
 **Constraints:**
 
-| Constraint | Value | Implication |
-|------------|-------|-------------|
-| Context window | ~4,096 tokens (input + output combined, ~3,000 words) | Hard-cap routed input at ~3,000 tokens; auto-escalate larger payloads |
-| Platform | Apple Silicon + macOS 26 + Apple Intelligence enabled | Mandatory non-Darwin / Intel / disabled fallback chain |
+| Constraint         | Value                                                                                                                | Implication                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Context window     | ~4,096 tokens (input + output combined, ~3,000 words)                                                                | Hard-cap routed input at ~3,000 tokens; auto-escalate larger payloads    |
+| Platform           | Apple Silicon + macOS 26 + Apple Intelligence enabled                                                                | Mandatory non-Darwin / Intel / disabled fallback chain                   |
 | Capability ceiling | Sweet spot: summarize, extract, classify, tag, compose, revise, short dialog, guided/structured output, tool calling | Never route multi-hop reasoning, math, codegen, or world-knowledge tasks |
-| Port collision | `11434` is Ollama's default | Profile must support a configurable port; detect/avoid Ollama collision |
+| Port collision     | `11434` is Ollama's default                                                                                          | Profile must support a configurable port; detect/avoid Ollama collision  |
 
 ### Windows + NPU / GPU: Ollama / LM Studio / LocalAI
 
@@ -65,13 +65,13 @@ All expose `http://localhost:{port}/v1` (configurable, not hardcoded to 11434).
 
 **Constraints:**
 
-| Constraint | Value | Implication |
-|------------|-------|-------------|
-| Context window | 4K–32K (model-dependent) | Typically 8K–16K for 3–7B; same 3,000-token safe budget as Apfel |
-| Platform | Windows 11 + NPU/GPU (or CPU fallback) | Graceful degradation to CPU inference if no accelerator |
-| Capability ceiling | Same as Apfel (summarize, extract, classify, tag, etc.) | Model quality varies; Q4 quantization acceptable for micro tier |
-| Port collision | Configurable; detect running instance | Avoid port conflicts with Apfel (11434), Ollama (11434), vLLM (8000) |
-| Setup friction | Requires user to download/run Ollama/LM Studio | Mitigate with auto-discovery + clear setup guidance in CLI |
+| Constraint         | Value                                                   | Implication                                                          |
+| ------------------ | ------------------------------------------------------- | -------------------------------------------------------------------- |
+| Context window     | 4K–32K (model-dependent)                                | Typically 8K–16K for 3–7B; same 3,000-token safe budget as Apfel     |
+| Platform           | Windows 11 + NPU/GPU (or CPU fallback)                  | Graceful degradation to CPU inference if no accelerator              |
+| Capability ceiling | Same as Apfel (summarize, extract, classify, tag, etc.) | Model quality varies; Q4 quantization acceptable for micro tier      |
+| Port collision     | Configurable; detect running instance                   | Avoid port conflicts with Apfel (11434), Ollama (11434), vLLM (8000) |
+| Setup friction     | Requires user to download/run Ollama/LM Studio          | Mitigate with auto-discovery + clear setup guidance in CLI           |
 
 ### Linux + GPU/CPU: Ollama / vLLM
 
@@ -98,7 +98,7 @@ Copilot in Windows is:
 - **Tenant/M365-tied** (data governance, licensing, compliance boundaries)
 - **End-user UX** (taskbar, Win+C, voice), not headless
 
-So it doesn't fit the "cheap local tier" design. Treat it as a *tool* (e.g., "generate PowerPoint via Graph API"), not as a `ModelProvider`.
+So it doesn't fit the "cheap local tier" design. Treat it as a _tool_ (e.g., "generate PowerPoint via Graph API"), not as a `ModelProvider`.
 
 ### Sources reviewed
 
@@ -118,7 +118,7 @@ So it doesn't fit the "cheap local tier" design. Treat it as a *tool* (e.g., "ge
 
 ## Design Philosophy
 
-1. **Tier-routed, not model-routed** — the orchestrator selects a *capability tier* (`micro | small | mid | frontier`); the system probes for available local accelerators (Apfel, Ollama, LM Studio, etc.) and uses the first healthy one. Call sites declare *intent*, never a hardcoded model.
+1. **Tier-routed, not model-routed** — the orchestrator selects a _capability tier_ (`micro | small | mid | frontier`); the system probes for available local accelerators (Apfel, Ollama, LM Studio, etc.) and uses the first healthy one. Call sites declare _intent_, never a hardcoded model.
 
 2. **Accelerator-first, cloud-fallback** — when a task is `micro` and a local accelerator is healthy, use it. Cost is zero (or near-zero) and latency is sub-second on-device. If no accelerator is available or reachable, gracefully fall through to the next tier (small-local or cloud) without surfacing an error.
 
@@ -150,63 +150,63 @@ Unified platform detection that probes for available accelerators in priority or
 
 ```typescript
 export interface AcceleratorCapability {
-  type: 'apple-ne' | 'windows-npu' | 'gpu-cuda' | 'gpu-rocm' | 'gpu-metal' | 'cpu';
+  type: "apple-ne" | "windows-npu" | "gpu-cuda" | "gpu-rocm" | "gpu-metal" | "cpu";
   available: boolean;
   estimatedMemoryGb: number;
   estimatedPeakThroughputTokensPerSec?: number;
 }
 
 export interface PlatformProfile {
-  os: 'darwin' | 'win32' | 'linux';
-  arch: 'arm64' | 'x64';
+  os: "darwin" | "win32" | "linux";
+  arch: "arm64" | "x64";
   accelerators: AcceleratorCapability[];
-  recommendedMicroBackend: 'apfel' | 'ollama' | 'lm-studio' | 'localai' | 'vllm' | 'cpu-only';
+  recommendedMicroBackend: "apfel" | "ollama" | "lm-studio" | "localai" | "vllm" | "cpu-only";
   appleIntelligenceEnabled?: boolean;
   reason: string;
 }
 
 export async function detectPlatform(): Promise<PlatformProfile> {
-  const os = process.platform as 'darwin' | 'win32' | 'linux';
-  const arch = process.arch as 'arm64' | 'x64';
+  const os = process.platform as "darwin" | "win32" | "linux";
+  const arch = process.arch as "arm64" | "x64";
   const accelerators: AcceleratorCapability[] = [];
 
   // macOS + Apple Silicon: probe Apfel
-  if (os === 'darwin' && arch === 'arm64') {
+  if (os === "darwin" && arch === "arm64") {
     const apfel = await detectApfel();
     if (apfel.reachable && apfel.platformEligible) {
-      accelerators.push({ type: 'apple-ne', available: true, estimatedMemoryGb: 8 });
+      accelerators.push({ type: "apple-ne", available: true, estimatedMemoryGb: 8 });
     }
   }
 
   // Windows: probe NPU, then GPU
-  if (os === 'win32') {
+  if (os === "win32") {
     const npu = await detectWindowsNpu();
     if (npu.available) {
-      accelerators.push({ type: 'windows-npu', available: true, estimatedMemoryGb: npu.memoryGb });
+      accelerators.push({ type: "windows-npu", available: true, estimatedMemoryGb: npu.memoryGb });
     }
     const gpu = await detectWindowsGpu();
     if (gpu.available) {
-      accelerators.push({ type: 'gpu-cuda', available: true, estimatedMemoryGb: gpu.memoryGb });
+      accelerators.push({ type: "gpu-cuda", available: true, estimatedMemoryGb: gpu.memoryGb });
     }
   }
 
   // Linux: probe GPU (CUDA/ROCm)
-  if (os === 'linux') {
+  if (os === "linux") {
     const cuda = await detectCuda();
     if (cuda.available) {
-      accelerators.push({ type: 'gpu-cuda', available: true, estimatedMemoryGb: cuda.memoryGb });
+      accelerators.push({ type: "gpu-cuda", available: true, estimatedMemoryGb: cuda.memoryGb });
     }
     const rocm = await detectRocm();
     if (rocm.available) {
-      accelerators.push({ type: 'gpu-rocm', available: true, estimatedMemoryGb: rocm.memoryGb });
+      accelerators.push({ type: "gpu-rocm", available: true, estimatedMemoryGb: rocm.memoryGb });
     }
   }
 
   // macOS: Metal GPU fallback
-  if (os === 'darwin') {
+  if (os === "darwin") {
     const metal = await detectMetal();
     if (metal.available) {
-      accelerators.push({ type: 'gpu-metal', available: true, estimatedMemoryGb: metal.memoryGb });
+      accelerators.push({ type: "gpu-metal", available: true, estimatedMemoryGb: metal.memoryGb });
     }
   }
 
@@ -214,34 +214,41 @@ export async function detectPlatform(): Promise<PlatformProfile> {
   const recommended = recommendBackend(os, arch, accelerators);
 
   return {
-    os, arch, accelerators, recommendedMicroBackend: recommended.backend,
+    os,
+    arch,
+    accelerators,
+    recommendedMicroBackend: recommended.backend,
     appleIntelligenceEnabled: recommended.appleIntelligenceEnabled,
-    reason: recommended.reason
+    reason: recommended.reason,
   };
 }
 
 function recommendBackend(
   os: string,
   arch: string,
-  accelerators: AcceleratorCapability[]
+  accelerators: AcceleratorCapability[],
 ): { backend: string; appleIntelligenceEnabled?: boolean; reason: string } {
   // Priority: Apfel > NPU > GPU > CPU
-  if (accelerators.some(a => a.type === 'apple-ne' && a.available)) {
-    return { backend: 'apfel', appleIntelligenceEnabled: true, reason: 'Apple Neural Engine detected' };
+  if (accelerators.some((a) => a.type === "apple-ne" && a.available)) {
+    return {
+      backend: "apfel",
+      appleIntelligenceEnabled: true,
+      reason: "Apple Neural Engine detected",
+    };
   }
-  if (accelerators.some(a => a.type === 'windows-npu' && a.available)) {
-    return { backend: 'ollama', reason: 'Windows NPU detected; recommend Ollama with NPU support' };
+  if (accelerators.some((a) => a.type === "windows-npu" && a.available)) {
+    return { backend: "ollama", reason: "Windows NPU detected; recommend Ollama with NPU support" };
   }
-  if (accelerators.some(a => a.type === 'gpu-cuda' && a.available)) {
-    return { backend: 'ollama', reason: 'NVIDIA GPU detected; recommend Ollama with CUDA' };
+  if (accelerators.some((a) => a.type === "gpu-cuda" && a.available)) {
+    return { backend: "ollama", reason: "NVIDIA GPU detected; recommend Ollama with CUDA" };
   }
-  if (accelerators.some(a => a.type === 'gpu-rocm' && a.available)) {
-    return { backend: 'ollama', reason: 'AMD GPU detected; recommend Ollama with ROCm' };
+  if (accelerators.some((a) => a.type === "gpu-rocm" && a.available)) {
+    return { backend: "ollama", reason: "AMD GPU detected; recommend Ollama with ROCm" };
   }
-  if (accelerators.some(a => a.type === 'gpu-metal' && a.available)) {
-    return { backend: 'ollama', reason: 'Metal GPU detected; recommend Ollama with Metal' };
+  if (accelerators.some((a) => a.type === "gpu-metal" && a.available)) {
+    return { backend: "ollama", reason: "Metal GPU detected; recommend Ollama with Metal" };
   }
-  return { backend: 'cpu-only', reason: 'No accelerators detected; CPU fallback' };
+  return { backend: "cpu-only", reason: "No accelerators detected; CPU fallback" };
 }
 ```
 
@@ -253,27 +260,27 @@ function recommendBackend(
 Implement the apfel profile that is already specified (but unimplemented) in `packages/models/IMPLEMENTATION-PLAN.md`. Apfel is the preferred `micro` backend on macOS + Apple Silicon:
 
 ```typescript
-import type { LocalProviderProfile } from '../types.js';
+import type { LocalProviderProfile } from "../types.js";
 
 export const APFEL_PROFILE: LocalProviderProfile = {
-  id: 'apfel',
-  displayName: 'Apple Foundation Model (apfel)',
-  protocol: 'openai-compatible',
-  defaultBaseUrl: 'http://localhost:11434/v1',
-  healthEndpoint: '/models',
-  modelsEndpoint: '/models',
+  id: "apfel",
+  displayName: "Apple Foundation Model (apfel)",
+  protocol: "openai-compatible",
+  defaultBaseUrl: "http://localhost:11434/v1",
+  healthEndpoint: "/models",
+  modelsEndpoint: "/models",
   supportsApiKey: false,
   requiresApiKeyByDefault: false,
   supportsTools: true,
   supportsStreaming: true,
   supportsEmbeddings: false,
   notes: [
-    'On-device Apple Intelligence ~3B model via FoundationModels.',
-    'Apple Silicon + macOS 26 only; requires Apple Intelligence enabled.',
-    '~4096 token context (input + output combined).',
-    'Default port 11434 collides with Ollama — configurable via APFEL_BASE_URL.',
-    'Model id reported as apple-foundationmodel.'
-  ]
+    "On-device Apple Intelligence ~3B model via FoundationModels.",
+    "Apple Silicon + macOS 26 only; requires Apple Intelligence enabled.",
+    "~4096 token context (input + output combined).",
+    "Default port 11434 collides with Ollama — configurable via APFEL_BASE_URL.",
+    "Model id reported as apple-foundationmodel.",
+  ],
 };
 ```
 
@@ -286,14 +293,14 @@ Inject a synthetic catalog entry (apfel is not on models.dev) so the selector ca
 
 ```typescript
 export interface ModelTier {
-  tier: 'micro' | 'small' | 'mid' | 'frontier';
+  tier: "micro" | "small" | "mid" | "frontier";
 }
 
 export const APFEL_MODEL_ENTRY = {
-  id: 'apple-foundationmodel',
-  provider: 'apfel',
-  tier: 'micro' as const,
-  contextWindow: 4096,          // hard ceiling
+  id: "apple-foundationmodel",
+  provider: "apfel",
+  tier: "micro" as const,
+  contextWindow: 4096, // hard ceiling
   recommendedMaxInputTokens: 3000,
   capabilities: {
     summarization: true,
@@ -303,16 +310,16 @@ export const APFEL_MODEL_ENTRY = {
     composition: true,
     revision: true,
     shortDialog: true,
-    guidedGeneration: true,     // typed structured output
+    guidedGeneration: true, // typed structured output
     toolCalling: true,
-    reasoning: false,           // multi-hop NOT supported
+    reasoning: false, // multi-hop NOT supported
     math: false,
     codeGeneration: false,
-    worldKnowledge: false
+    worldKnowledge: false,
   },
   cost: { input: 0, output: 0 }, // on-device, zero marginal cost
-  provenance: 'local-http' as const,
-  platform: { os: 'darwin', arch: 'arm64', requiresAppleIntelligence: true }
+  provenance: "local-http" as const,
+  platform: { os: "darwin", arch: "arm64", requiresAppleIntelligence: true },
 };
 ```
 
@@ -324,17 +331,17 @@ export const APFEL_MODEL_ENTRY = {
 ```typescript
 export interface ApfelAvailability {
   reachable: boolean;
-  platformEligible: boolean;   // darwin + arm64
+  platformEligible: boolean; // darwin + arm64
   appleIntelligenceLikely: boolean;
   baseUrl: string;
-  reportedModelId?: string;    // expect 'apple-foundationmodel'
+  reportedModelId?: string; // expect 'apple-foundationmodel'
   collidesWithOllama: boolean; // 11434 in use by a non-apfel server
   reason?: string;
 }
 
 export async function detectApfel(
-  baseUrl = process.env.APFEL_BASE_URL ?? 'http://localhost:11434/v1',
-  timeoutMs = 2000
+  baseUrl = process.env.APFEL_BASE_URL ?? "http://localhost:11434/v1",
+  timeoutMs = 2000,
 ): Promise<ApfelAvailability> {
   // 1. platform gate (process.platform === 'darwin' && process.arch === 'arm64')
   // 2. GET {baseUrl}/models with timeout
@@ -354,18 +361,18 @@ Probe for running instances of popular local model servers. Each returns the sam
 
 ```typescript
 export interface LocalModelServerAvailability {
-  type: 'ollama' | 'lm-studio' | 'localai' | 'vllm';
+  type: "ollama" | "lm-studio" | "localai" | "vllm";
   reachable: boolean;
   baseUrl: string;
   models: Array<{ id: string; contextWindow: number; quantization?: string }>;
   estimatedMemoryGb: number;
-  supportedAccelerators: Array<'npu' | 'gpu-cuda' | 'gpu-rocm' | 'gpu-metal' | 'cpu'>;
+  supportedAccelerators: Array<"npu" | "gpu-cuda" | "gpu-rocm" | "gpu-metal" | "cpu">;
   reason?: string;
 }
 
 export async function detectOllama(
-  baseUrl = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434/v1',
-  timeoutMs = 2000
+  baseUrl = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1",
+  timeoutMs = 2000,
 ): Promise<LocalModelServerAvailability> {
   // GET {baseUrl}/models
   // Check for running models
@@ -373,16 +380,16 @@ export async function detectOllama(
 }
 
 export async function detectLmStudio(
-  baseUrl = process.env.LM_STUDIO_BASE_URL ?? 'http://localhost:1234/v1',
-  timeoutMs = 2000
+  baseUrl = process.env.LM_STUDIO_BASE_URL ?? "http://localhost:1234/v1",
+  timeoutMs = 2000,
 ): Promise<LocalModelServerAvailability> {
   // GET {baseUrl}/models
   // Check for running models
 }
 
 export async function detectLocalAi(
-  baseUrl = process.env.LOCALAI_BASE_URL ?? 'http://localhost:8080/v1',
-  timeoutMs = 2000
+  baseUrl = process.env.LOCALAI_BASE_URL ?? "http://localhost:8080/v1",
+  timeoutMs = 2000,
 ): Promise<LocalModelServerAvailability> {
   // GET {baseUrl}/models
   // Check for running models
@@ -414,7 +421,7 @@ export interface MicroBackendSelection {
 
 export async function selectMicroBackend(
   platform: PlatformProfile,
-  availableBackends: LocalModelServerAvailability[]
+  availableBackends: LocalModelServerAvailability[],
 ): Promise<MicroBackendSelection> {
   // Priority: Apfel > Ollama (with accelerator) > LM Studio > LocalAI > vLLM > CPU-only
   // Build fallback chain: primary → next-best-local → cloud-small → cloud-frontier
@@ -455,21 +462,21 @@ All profiles share the same wire protocol (OpenAI-compatible), so the adapter la
 Extend `TaskRequirements` / `ModelSelectionResult` with an explicit tier:
 
 ```typescript
-export type CapabilityTier = 'micro' | 'small' | 'mid' | 'frontier';
+export type CapabilityTier = "micro" | "small" | "mid" | "frontier";
 
 export interface TaskRequirements {
   // ...existing fields
-  tier?: CapabilityTier;          // requested floor
-  maxInputTokens?: number;        // routing uses this to gate micro tier
-  allowLocalOffload?: boolean;    // default true
+  tier?: CapabilityTier; // requested floor
+  maxInputTokens?: number; // routing uses this to gate micro tier
+  allowLocalOffload?: boolean; // default true
 }
 
 export interface ModelSelectionResult {
   // ...existing fields
   tier: CapabilityTier;
   offloadedToLocal: boolean;
-  offloadBackend?: 'apfel' | 'ollama' | 'lm-studio' | 'localai' | 'vllm';
-  escalationReason?: string;      // populated when tier was bumped up
+  offloadBackend?: "apfel" | "ollama" | "lm-studio" | "localai" | "vllm";
+  escalationReason?: string; // populated when tier was bumped up
 }
 ```
 
@@ -489,7 +496,7 @@ Deterministic, side-effect-free routing decision that tries backends in priority
 
 ```typescript
 export interface MicroRouteDecision {
-  backend: 'apfel' | 'ollama' | 'lm-studio' | 'localai' | 'vllm' | 'cpu-only' | 'cloud-small';
+  backend: "apfel" | "ollama" | "lm-studio" | "localai" | "vllm" | "cpu-only" | "cloud-small";
   modelId: string;
   providerId: string;
   baseUrl: string;
@@ -506,12 +513,12 @@ export async function routeMicroTask(input: {
   const { requirements, estimatedInputTokens, platform, microBackendSelection } = input;
 
   // Escalate if not a micro task
-  if (requirements.tier && requirements.tier !== 'micro') {
-    return escalate('requested tier above micro');
+  if (requirements.tier && requirements.tier !== "micro") {
+    return escalate("requested tier above micro");
   }
   // Escalate oversized payloads (3000 safe budget across all backends)
   if (estimatedInputTokens > 3000) {
-    return escalate('input exceeds safe context budget for micro tier');
+    return escalate("input exceeds safe context budget for micro tier");
   }
   // Try primary backend
   if (await isHealthy(microBackendSelection.primary)) {
@@ -524,7 +531,7 @@ export async function routeMicroTask(input: {
     }
   }
   // All local backends exhausted; escalate to cloud
-  return escalate('no local micro backends available');
+  return escalate("no local micro backends available");
 }
 ```
 
@@ -542,8 +549,8 @@ export async function runMicroWithEscalation<T>(opts: {
   validate: (output: string) => { ok: boolean; issues: RepairIssue[]; confidence: number };
   repair?: (output: string, issues: RepairIssue[]) => Promise<string>;
   escalateTo: { providerId: string; modelId: string; tier: CapabilityTier };
-  minConfidence?: number;          // default 0.6
-  maxRepairAttempts?: number;      // default 2
+  minConfidence?: number; // default 0.6
+  maxRepairAttempts?: number; // default 2
 }): Promise<{ result: T; backendUsed: string; escalated: boolean }>;
 ```
 
@@ -559,7 +566,7 @@ Extend Phase-3.5 `retryWithFailover` (TASK-LB-014) so micro-backend circuit-open
 ### TASK-APF-011: Tokens — compression & conversation summarization offload
 
 **Effort:** 2h
-**Location:** `packages/tokens/src/compression/`
+**Location:** `packages/context/src/compression/`
 
 Route `compressConversation()` summarization passes and DCP `compress`-tool summary generation (TASK-DCP-001/007) through the micro tier. Biggest single savings lever: every stale-turn summary that would have hit a paid model now runs on-device. Falls back to `compressOutput()` (deterministic, non-LLM) if no micro backend reachable.
 
@@ -577,14 +584,14 @@ Route `FactExtractor.extract()` (TASK-032) and `wiki.synthesize()` (TASK-031 wik
 
 Pre-flight classification: safe/on-topic/toxicity/PII tagging on input and streamed output, plus tool-call-vs-chat intent gating. Runs synchronously on-device with no network hop. Uses guided generation (typed enum output) for a hard format contract.
 
-> **Hook/Prompt Axiom (00-AUTHORITY §8.6):** guardrail *classification* may run on micro backends, but the **blocking decision** remains in a deterministic `block: true` hook. The model's classification is advisory input to the deterministic gate — never the gate itself.
+> **Hook/Prompt Axiom (00-AUTHORITY §8.6):** guardrail _classification_ may run on micro backends, but the **blocking decision** remains in a deterministic `block: true` hook. The model's classification is advisory input to the deterministic gate — never the gate itself.
 
 ### TASK-APF-014: Retrieval — query rewriting & chunk summarization offload
 
 **Effort:** 2h
 **Location:** `packages/retrieval/src/query/`, `packages/retrieval/src/index/`
 
-Route HyDE-style query expansion (Phase 8) and index-time chunk summarization through the micro tier. Short input, short output, embarrassingly parallel — ideal on-device workload. Reranking *scoring* stays in retrieval; only the natural-language rewrite/summarize steps offload.
+Route HyDE-style query expansion (Phase 8) and index-time chunk summarization through the micro tier. Short input, short output, embarrassingly parallel — ideal on-device workload. Reranking _scoring_ stays in retrieval; only the natural-language rewrite/summarize steps offload.
 
 ### TASK-APF-015: Core/Session/CLI — structured repair, titling, slugs
 
@@ -608,9 +615,9 @@ Route HyDE-style query expansion (Phase 8) and index-time chunk summarization th
 
 ```typescript
 export interface MicroTierConfig {
-  enabled: boolean;             // default true
-  autoDetect: boolean;          // default true; probe for available backends
-  preferredBackend?: 'apfel' | 'ollama' | 'lm-studio' | 'localai' | 'vllm';  // override auto-selection
+  enabled: boolean; // default true
+  autoDetect: boolean; // default true; probe for available backends
+  preferredBackend?: "apfel" | "ollama" | "lm-studio" | "localai" | "vllm"; // override auto-selection
 
   // Per-backend overrides
   backends: {
@@ -622,7 +629,7 @@ export interface MicroTierConfig {
   };
 
   // Global micro-tier settings
-  maxInputTokens: number;       // default 3000
+  maxInputTokens: number; // default 3000
   offloadTargets: {
     compression: boolean;
     factExtraction: boolean;
@@ -682,8 +689,8 @@ Emit structured fields through tslog (00-AUTHORITY §8.11): per offload target �
 
 ```typescript
 export interface OffloadMetrics {
-  target: string;                 // 'compression' | 'fact-extraction' | ...
-  backend: string;                // 'apfel' | 'ollama' | 'lm-studio' | ...
+  target: string; // 'compression' | 'fact-extraction' | ...
+  backend: string; // 'apfel' | 'ollama' | 'lm-studio' | ...
   routedToMicro: number;
   escalated: number;
   escalationReasons: Record<string, number>;
@@ -739,50 +746,50 @@ Extend the Phase-16 scorecard (TASK-SM-010) to measure micro-tier quality per of
 
 ## Timeline
 
-| Task | Effort | Dependencies |
-|------|--------|--------------|
-| APF-001: Platform detection & accelerator probing | 3h | None |
-| APF-002: Apfel LocalProviderProfile | 2h | APF-001 |
-| APF-003: Apfel-specific detection | 1.5h | None |
-| APF-004: Ollama/LM Studio/LocalAI detection | 2h | None |
-| APF-005: Micro-backend selection & fallback chain | 2h | APF-001..004 |
-| APF-006: Gateway multi-backend profile registration | 2h | APF-002..005, Phase 3.5 |
-| APF-007: Tier annotation on selection contracts | 2h | Phase 16 SM-003 |
-| APF-008: Micro-tier router (platform-agnostic) | 4h | APF-001..007 |
-| APF-009: Escalation-on-failure wrapper | 3h | APF-008, Phase 16 SM-007 |
-| APF-010: Gateway tier-aware failover | 2h | APF-006, APF-008 |
-| APF-011: Tokens compression offload | 2h | APF-008, Phase 21 DCP-007 |
-| APF-012: Memory wiki/fact offload | 3h | APF-008, Phase 7 |
-| APF-013: Guardrails classification offload | 3h | APF-008 |
-| APF-014: Retrieval rewrite/summarize offload | 2h | APF-008, Phase 8 |
-| APF-015: Core/Session/CLI structured offload | 2h | APF-008 |
-| APF-016: Config schema (multi-backend) | 2h | APF-008 |
-| APF-017: CLI commands & status (multi-backend) | 2h | APF-001..005, APF-016 |
-| APF-018: Observability offload metrics | 2h | APF-008, Phase 9 |
-| APF-019: aImock fixtures for all micro backends | 3h | APF-008, Phase 18 |
-| APF-020: Multi-backend integration tests | 2h | APF-019 |
-| APF-021: Offload scorecard (multi-backend) | 2h | APF-019, Phase 16 SM-010 |
-| **Total** | **~48 hours** | |
+| Task                                                | Effort        | Dependencies              |
+| --------------------------------------------------- | ------------- | ------------------------- |
+| APF-001: Platform detection & accelerator probing   | 3h            | None                      |
+| APF-002: Apfel LocalProviderProfile                 | 2h            | APF-001                   |
+| APF-003: Apfel-specific detection                   | 1.5h          | None                      |
+| APF-004: Ollama/LM Studio/LocalAI detection         | 2h            | None                      |
+| APF-005: Micro-backend selection & fallback chain   | 2h            | APF-001..004              |
+| APF-006: Gateway multi-backend profile registration | 2h            | APF-002..005, Phase 3.5   |
+| APF-007: Tier annotation on selection contracts     | 2h            | Phase 16 SM-003           |
+| APF-008: Micro-tier router (platform-agnostic)      | 4h            | APF-001..007              |
+| APF-009: Escalation-on-failure wrapper              | 3h            | APF-008, Phase 16 SM-007  |
+| APF-010: Gateway tier-aware failover                | 2h            | APF-006, APF-008          |
+| APF-011: Tokens compression offload                 | 2h            | APF-008, Phase 21 DCP-007 |
+| APF-012: Memory wiki/fact offload                   | 3h            | APF-008, Phase 7          |
+| APF-013: Guardrails classification offload          | 3h            | APF-008                   |
+| APF-014: Retrieval rewrite/summarize offload        | 2h            | APF-008, Phase 8          |
+| APF-015: Core/Session/CLI structured offload        | 2h            | APF-008                   |
+| APF-016: Config schema (multi-backend)              | 2h            | APF-008                   |
+| APF-017: CLI commands & status (multi-backend)      | 2h            | APF-001..005, APF-016     |
+| APF-018: Observability offload metrics              | 2h            | APF-008, Phase 9          |
+| APF-019: aImock fixtures for all micro backends     | 3h            | APF-008, Phase 18         |
+| APF-020: Multi-backend integration tests            | 2h            | APF-019                   |
+| APF-021: Offload scorecard (multi-backend)          | 2h            | APF-019, Phase 16 SM-010  |
+| **Total**                                           | **~48 hours** |                           |
 
 ---
 
 ## Integration Points
 
-| Component | Integration |
-|-----------|-------------|
-| `@agentsy/models` | Platform detection, all micro-backend profiles, synthetic catalog entries, tier metadata, multi-backend selection |
-| `@agentsy/providers` | Reuse OpenAI-compatible `UniversalClient` against all micro-backend base URLs (no new protocol) |
-| `@agentsy/gateway` | Tier-0 profiles for all backends, tier-aware failover, platform-OPEN circuit semantics |
-| `@agentsy/orchestrator` | Micro-tier router + escalation wrapper; tags call sites with tier intent |
-| `@agentsy/tokens` | Conversation summarization + DCP compress-tool summaries offloaded |
-| `@agentsy/memory` | Fact extraction + wiki synthesis offloaded (PII stays on-device) |
-| `@agentsy/guardrails` | Classification advisory only; blocking stays in deterministic hook |
-| `@agentsy/retrieval` | Query rewrite + chunk summarization offloaded |
-| `@agentsy/core` | Guided-generation JSON repair pass |
-| `@agentsy/session` | Auto-titling, slugs, conversation summaries |
-| `@agentsy/cli` | Config, `micro`/`/micro` commands, status table, backend detection |
-| `@agentsy/observability` | Offload metrics + estimated-savings accounting per backend |
-| `@agentsy/testing` | aImock fixtures for all backends, multi-backend integration tests, offload scorecard |
+| Component                | Integration                                                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `@agentsy/models`        | Platform detection, all micro-backend profiles, synthetic catalog entries, tier metadata, multi-backend selection |
+| `@agentsy/providers`     | Reuse OpenAI-compatible `UniversalClient` against all micro-backend base URLs (no new protocol)                   |
+| `@agentsy/gateway`       | Tier-0 profiles for all backends, tier-aware failover, platform-OPEN circuit semantics                            |
+| `@agentsy/orchestrator`  | Micro-tier router + escalation wrapper; tags call sites with tier intent                                          |
+| `@agentsy/context`       | Conversation summarization + DCP compress-tool summaries offloaded                                                |
+| `@agentsy/memory`        | Fact extraction + wiki synthesis offloaded (PII stays on-device)                                                  |
+| `@agentsy/guardrails`    | Classification advisory only; blocking stays in deterministic hook                                                |
+| `@agentsy/retrieval`     | Query rewrite + chunk summarization offloaded                                                                     |
+| `@agentsy/core`          | Guided-generation JSON repair pass                                                                                |
+| `@agentsy/session`       | Auto-titling, slugs, conversation summaries                                                                       |
+| `@agentsy/cli`           | Config, `micro`/`/micro` commands, status table, backend detection                                                |
+| `@agentsy/observability` | Offload metrics + estimated-savings accounting per backend                                                        |
+| `@agentsy/testing`       | aImock fixtures for all backends, multi-backend integration tests, offload scorecard                              |
 
 ---
 
@@ -803,17 +810,17 @@ Extend the Phase-16 scorecard (TASK-SM-010) to measure micro-tier quality per of
 
 ## Risks & Mitigations
 
-| Risk | Mitigation |
-|------|------------|
+| Risk                                                                             | Mitigation                                                                                          |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Port collisions (11434 Apfel vs Ollama, 1234 LM Studio, 8080 LocalAI, 8000 vLLM) | Env var overrides; detection distinguishes backends by reported model id; status surfaces conflicts |
-| Apple-Silicon/macOS-26-only — no CI coverage for Apfel | Fixture-only tests (aImock); platform gate forces circuit permanently OPEN off-platform |
-| Windows NPU support immature in Ollama | Graceful fallback to GPU/CPU; Ollama already supports CUDA/ROCm; NPU support added incrementally |
-| 4k context overflow mid-stream | Hard 3,000-token routing cap; oversized payloads auto-escalate before invocation |
-| Quality regression on a target | Offload scorecard gates each target; Red rubric disables offload for that target |
-| Savings overstated | Metrics price avoided tokens against the *actual* fallback model from models.dev, not a fixed rate |
-| Boundary leakage (selection doing wire calls) | Strict `models` vs `providers` contract tests (existing repo rule) |
-| Guardrail safety weakened | Hook/Prompt Axiom enforced: micro-backend classification is advisory; blocking stays deterministic |
-| User friction: "I have to install Ollama/LM Studio" | Auto-detection + clear setup guidance in CLI; fallback to cloud if no local backend available |
+| Apple-Silicon/macOS-26-only — no CI coverage for Apfel                           | Fixture-only tests (aImock); platform gate forces circuit permanently OPEN off-platform             |
+| Windows NPU support immature in Ollama                                           | Graceful fallback to GPU/CPU; Ollama already supports CUDA/ROCm; NPU support added incrementally    |
+| 4k context overflow mid-stream                                                   | Hard 3,000-token routing cap; oversized payloads auto-escalate before invocation                    |
+| Quality regression on a target                                                   | Offload scorecard gates each target; Red rubric disables offload for that target                    |
+| Savings overstated                                                               | Metrics price avoided tokens against the _actual_ fallback model from models.dev, not a fixed rate  |
+| Boundary leakage (selection doing wire calls)                                    | Strict `models` vs `providers` contract tests (existing repo rule)                                  |
+| Guardrail safety weakened                                                        | Hook/Prompt Axiom enforced: micro-backend classification is advisory; blocking stays deterministic  |
+| User friction: "I have to install Ollama/LM Studio"                              | Auto-detection + clear setup guidance in CLI; fallback to cloud if no local backend available       |
 
 ---
 

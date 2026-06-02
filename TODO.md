@@ -8,7 +8,7 @@
 
 ### Token & Memory Infrastructure ✅
 
-- [x] Output compression (75% savings) — `@agentsy/tokens`
+- [x] Output compression (75% savings) — `@agentsy/context`
 - [x] Memory file compression (46% savings) — `@agentsy/core/context`
 - [x] Memory 5-tier foundation — `@agentsy/memory` (214 TS files, production-ready)
 - [x] Type stability audit — TASK-067 (17 modules, 7 TSDoc, zero `any`)

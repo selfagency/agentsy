@@ -9,45 +9,45 @@
 
 Based on actual source code inspection, the following packages have implementation evidence matching their plan claims:
 
-| Package | Status | Key Evidence |
-|---------|---------|--------------|
-| **@agentsy/runtime** | ✅ IMPLEMENTED | `packages/runtime/src/sandbox/virtual/router.ts`, `virtual-sandbox.ts` - Virtual sandbox with Phase 0-4 tasks completed |
-| **@agentsy/memory** | ✅ IMPLEMENTED | `packages/memory/src/sync/turso-manager.ts`, `turso-client.ts`, `coordination/pub-sub-manager.ts`, `tasks.ts` - Full Turso sync + coordination (Phase 1 completed) |
-| **@agentsy/tokens** | ✅ IMPLEMENTED | `packages/tokens/src/compression/output-compressor.ts` with `compressProse`, `protectPattern`, `restoreProtectedSegments` - Output compression (Phase 0 completed) |
-| **@agentsy/core** | ✅ IMPLEMENTED | `packages/core/src/` has core processor/normalizer/adapter-subpath modules - Core streaming/adapter primitives (Phase 0-4 completed) |
+| Package              | Status         | Key Evidence                                                                                                                                                        |
+| -------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **@agentsy/runtime** | ✅ IMPLEMENTED | `packages/runtime/src/sandbox/virtual/router.ts`, `virtual-sandbox.ts` - Virtual sandbox with Phase 0-4 tasks completed                                             |
+| **@agentsy/memory**  | ✅ IMPLEMENTED | `packages/memory/src/sync/turso-manager.ts`, `turso-client.ts`, `coordination/pub-sub-manager.ts`, `tasks.ts` - Full Turso sync + coordination (Phase 1 completed)  |
+| **@agentsy/context** | ✅ IMPLEMENTED | `packages/context/src/compression/output-compressor.ts` with `compressProse`, `protectPattern`, `restoreProtectedSegments` - Output compression (Phase 0 completed) |
+| **@agentsy/core**    | ✅ IMPLEMENTED | `packages/core/src/` has core processor/normalizer/adapter-subpath modules - Core streaming/adapter primitives (Phase 0-4 completed)                                |
 
 ---
 
 ## PARTIAL IMPLEMENTATION (⚠️ NEEDS VERIFICATION)
 
-| Package | Has Code | Has Tests | State |
-|---------|----------|-----------|-------|
-| @agentsy/secrets | ✅ | ✅ | Files exist but phase completion status unclear |
-| @agentsy/mcp | ✅ | ✅ | Integration layer exists but completion status unclear |
-| @agentsy/orchestrator | ✅ | ✅ | Multi-agent coordination exists but completion status unclear |
-| @agentsy/providers | ✅ | ✅ | Protocol adapters exist but completion status unclear |
-| @agentsy/tools | ✅ | ✅ | Tool definitions exist but completion status unclear |
-| @agentsy/types | ✅ | ✅ | Core types only - likely foundational (not fully implemented) |
+| Package               | Has Code | Has Tests | State                                                         |
+| --------------------- | -------- | --------- | ------------------------------------------------------------- |
+| @agentsy/secrets      | ✅       | ✅        | Files exist but phase completion status unclear               |
+| @agentsy/mcp          | ✅       | ✅        | Integration layer exists but completion status unclear        |
+| @agentsy/orchestrator | ✅       | ✅        | Multi-agent coordination exists but completion status unclear |
+| @agentsy/providers    | ✅       | ✅        | Protocol adapters exist but completion status unclear         |
+| @agentsy/tools        | ✅       | ✅        | Tool definitions exist but completion status unclear          |
+| @agentsy/types        | ✅       | ✅        | Core types only - likely foundational (not fully implemented) |
 
 ---
 
 ## NO IMPLEMENTATION EVIDENCE YET (❌ NEW WORK)
 
-| Package | Has Plan | Status |
-|---------|----------|--------|
-| @agentsy/cli | ✅ | No source code observed for core implementation |
-| @agentsy/connectors | ✅ | No source code observed |
-| @agentsy/guardrails | ✅ | No source code observed |
-| @agentsy/models | ✅ | No source code observed for planned features |
-| @agentsy/observability | ✅ | No source code observed |
-| @agentsy/plugins | ✅ | No source code observed |
-| @scripts | ✅ | No full source code observed |
-| @agentsy/prompts | ✅ | No comprehensive plan execution observed |
-| @agentsy/renderers | ✅ | No comprehensive plan execution observed |
-| @agentsy/retrieval | ✅ | No comprehensive plan execution observed |
-| @agentsy/session | ✅ | No comprehensive plan execution observed |
-| @agentsy/ui | ✅ | No comprehensive plan execution observed |
-| @agentsy/vscode | ✅ | No comprehensive plan execution observed |
+| Package                | Has Plan | Status                                          |
+| ---------------------- | -------- | ----------------------------------------------- |
+| @agentsy/cli           | ✅       | No source code observed for core implementation |
+| @agentsy/connectors    | ✅       | No source code observed                         |
+| @agentsy/guardrails    | ✅       | No source code observed                         |
+| @agentsy/models        | ✅       | No source code observed for planned features    |
+| @agentsy/observability | ✅       | No source code observed                         |
+| @agentsy/plugins       | ✅       | No source code observed                         |
+| @scripts               | ✅       | No full source code observed                    |
+| @agentsy/prompts       | ✅       | No comprehensive plan execution observed        |
+| @agentsy/renderers     | ✅       | No comprehensive plan execution observed        |
+| @agentsy/retrieval     | ✅       | No comprehensive plan execution observed        |
+| @agentsy/session       | ✅       | No comprehensive plan execution observed        |
+| @agentsy/ui            | ✅       | No comprehensive plan execution observed        |
+| @agentsy/vscode        | ✅       | No comprehensive plan execution observed        |
 
 **@agentsy/models** - No local LLM provider profiles implemented yet (Phase 3 plan exists but no code)
 
@@ -59,7 +59,7 @@ Based on actual source code inspection, the following packages have implementati
 
 - ✅ Runtime (virtual sandbox in `packages/runtime/src/sandbox/virtual/`)
 - ✅ Memory (Turso sync + coordination in `packages/memory/src/`)
-- ✅ Tokens (output compression in `packages/tokens/src/compression/`)
+- ✅ Tokens (output compression in `packages/context/src/compression/`)
 - ✅ Core (core streaming primitives in `packages/core/src/`)
 
 **Phase 1 - Memory & Coordination:**

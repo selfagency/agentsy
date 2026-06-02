@@ -1,4 +1,4 @@
-# @agentsy/tokens
+# @agentsy/context
 
 Token accounting and token-budget utilities.
 
