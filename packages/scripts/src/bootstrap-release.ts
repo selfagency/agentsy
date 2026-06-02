@@ -120,7 +120,7 @@ async function main() {
   await $`pnpm --filter ${fullPackageName} build`;
   const packagePath = `packages/${pkgShortName}`;
   const distPath = `${packagePath}/dist`;
-  await $`node scripts/write-dist-package.js ${packagePath}`;
+  await $`pnpm dlx tsx packages/scripts/src/write-dist-package.ts ${packagePath}`;
   const publishArgs = ['publish', distPath, '--access', 'public', `--tag=${distTag}`];
   if (otp) {
     publishArgs.push(`--otp=${otp}`);
