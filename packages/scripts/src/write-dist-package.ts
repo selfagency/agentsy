@@ -2,7 +2,7 @@
 import { access, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const ROOT = process.cwd();
+const ROOT = resolve(import.meta.dirname!, '../../..');
 
 function rewriteDistExports(
   rootExports: Record<string, unknown>

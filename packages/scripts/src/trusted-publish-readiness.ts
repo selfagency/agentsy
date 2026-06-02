@@ -4,7 +4,7 @@ import { parseArgs as parseNodeArgs } from 'node:util';
 
 import { getPackageReleaseState, readReleaseState } from './release-state.js';
 
-const ROOT = process.cwd();
+const ROOT = resolve(import.meta.dirname!, '../../..');
 
 /** @param {unknown} repository */
 export function getRepositoryField(repository: unknown): string {
