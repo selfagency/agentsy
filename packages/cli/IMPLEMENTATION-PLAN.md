@@ -184,9 +184,10 @@ The package fulfills its role by providing:
 2. **Indexing Pipelines**: Multi-modal indexing for files (TS/JS/PY), web content, and conversation history.
 3. **Hybrid Search**: A user interface for combining SQL precision with vector similarity.
 4. **Rich Rendering**: Support for spinners, progress bars, and streaming markdown via `@agentsy/renderers`.
-5. **Workspace UX composition**: Composes renderer-owned Ink components for dialog, stream events, document/diff viewing, git worktree status, and terminal panes.
-6. **Command routing**: Presents plugin-owned slash commands plus `@`-based file/folder insertion from the active project.
-7. **Configuration Authority**: Durable user config at `~/.agentsy/agentsy.yml` and workspace/project overrides with interactive editing.
+  1. **Workspace UX composition**: Composes renderer-owned Ink components for dialog, stream events, document/diff viewing, git worktree status, and terminal panes.
+  2. **Ink UI base components**: Prefer `@inkjs/ui` primitives for reusable interactive controls (input, select, badge, spinner, progress, alert, lists) and wrap them only when a project-specific composition is required.
+5. **Command routing**: Presents plugin-owned slash commands plus `@`-based file/folder insertion from the active project.
+6. **Configuration Authority**: Durable user config at `~/.agentsy/agentsy.yml` and workspace/project overrides with interactive editing.
 
 ## Detailed Functionality
 
@@ -194,6 +195,7 @@ The package fulfills its role by providing:
 
 - **Interactive Mode**: A TUI-focused interactive shell (OpenCode pattern) supporting:
   - **Agent Mode Selection**: Using a picker/search flow to switch between bundled and discovered agent modes (including `research`, `plan`, `agent`, and user/project-installed modes).
+  - **Shared widget stack**: Reuse `@inkjs/ui` primitives for searchable selects, inputs, badges, lists, alerts, spinners, and progress controls in command UX.
   - **Natural Language Interaction**: Streaming chat interface.
   - **Permission Prompts**: Explicit user approval for file edits or shell commands.
 - **Headless Mode**: Support for single-command execution (e.g., `agentsy -p "your question"`).

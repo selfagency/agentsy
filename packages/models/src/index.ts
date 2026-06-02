@@ -14,6 +14,19 @@ import type {
 } from './types.js';
 
 export type {
+  ModelRefinementRequest,
+  ModelSearchQuery,
+  ModelSearchResult,
+  RecommendationCriteria
+} from './search-contracts.js';
+
+export {
+  mergeModelRefinementRequest,
+  normalizeModelSearchQuery,
+  searchModels
+} from './search-contracts.js';
+
+export type {
   LLMStatsLocalModel,
   LocalModelRecommendation,
   LocalRecommendationCriteria,

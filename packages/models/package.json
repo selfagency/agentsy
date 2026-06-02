@@ -10,6 +10,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
+    },
+    "./search-contracts": {
+      "import": "./dist/search-contracts.js",
+      "require": "./dist/search-contracts.cjs",
+      "types": "./dist/search-contracts.d.ts"
     }
   },
   "scripts": {

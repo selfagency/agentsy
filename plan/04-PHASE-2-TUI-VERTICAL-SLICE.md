@@ -15,6 +15,8 @@ Ship first interactive streaming TUI chat. Single provider, no tools yet. All in
 
 **Key Principle:** Every component is wire-up + polish, not architectural change.
 
+**UI Base:** Compose custom Ink components from `@inkjs/ui` primitives wherever the package already provides the needed control.
+
 ---
 
 ## Vertical Slice Sequence
@@ -172,6 +174,7 @@ export const StatusFooter: React.FC<StatusFooterProps> = ({ connection, model, e
 - ✅ All components tested in `__tests__/chat/`
 - ✅ Snapshot tests for consistent output
 - ✅ Prop types validated
+- ✅ `@inkjs/ui` primitives used for matching controls before custom implementations
 
 ---
 
@@ -250,6 +253,7 @@ export const ApprovalState: React.FC<ApprovalStateProps> = ({ pending, onApprove
 - ✅ All components tested
 - ✅ Stream animation smooth (no jank)
 - ✅ Proper ANSI color usage
+- ✅ Base selection/status controls use `@inkjs/ui` where applicable
 
 ---
 
