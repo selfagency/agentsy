@@ -3,10 +3,12 @@
  * Per-package release orchestrator for monorepo.
  *
  * Usage: pnpm release <package-name> <version> [--dry-run]
+ *        pnpm release --package @agentsy/vscode --version 0.2.0 [--dry-run]
  *
  * Examples:
  *   pnpm release @agentsy/vscode 0.2.0
  *   pnpm release @agentsy/vscode 0.1.5 --dry-run
+ *   pnpm release --package @agentsy/vscode --version 0.2.0
  *
  * Flow:
  *   1.  Parse package name and version arguments.
@@ -59,9 +61,18 @@ $.verbose = false;
 const RELEASE_STATE_PATH = resolve(ROOT, 'config', 'release-state.json');
 cd(ROOT);
 
-const packageName = argv._[0];
-const version = parseVersionArg(typeof argv._[1] === 'string' ? argv._[1] : undefined);
+const packageName = resolvePackageName(argv);
+const versionArg = typeof argv._[1] === 'string' ? argv._[1] : undefined;
+const version = parseVersionArg(versionArg ?? (typeof argv.version === 'string' ? argv.version : undefined));
 const isDryRun = Boolean(argv['dry-run'] ?? argv.dryRun);
+
+function resolvePackageName(argv: Record<string, unknown>): string | null {
+  const positionalArgs = argv._ as unknown[];
+  if (typeof positionalArgs[0] === 'string') {
+    return positionalArgs[0];
+  }
+  return typeof argv.package === 'string' ? argv.package : null;
+}
 
 if (!packageName) {
   console.error('Usage: pnpm release <package-name> <version> [--dry-run]');

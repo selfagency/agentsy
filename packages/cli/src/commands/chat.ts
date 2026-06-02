@@ -16,7 +16,7 @@
  * ```
  */
 
-import { createInterface } from 'node:readline/promises';
+import { createInterface, type Interface } from 'node:readline/promises';
 
 import { discoverLocalProviders } from '@agentsy/models';
 import type { TurnHandler } from '@agentsy/runtime/loop';
@@ -167,6 +167,19 @@ function createProviderClient(isMock: boolean, argv: readonly string[], options?
 /**
  * Execute the chat command.
  */
+/**
+ * Safely call rl.prompt() — Node 24 throws "readline was closed" after
+ * input stream ends if test code uses setImmediate deferral combined
+ * with stream.end(). Catch and ignore the error.
+ */
+function safePrompt(rl: Interface): void {
+  try {
+    rl.prompt();
+  } catch {
+    // readline was closed — safe to ignore in test/end-of-stream scenarios
+  }
+}
+
 export async function runChatCommand(
   argv: readonly string[],
   io: CliIO,
@@ -198,7 +211,7 @@ export async function runChatCommand(
     prompt: `${cyan('> ')}`
   });
 
-  rl.prompt();
+  safePrompt(rl);
 
   // ── Command handlers ──────────────────────────────────────────────────────────────
 
@@ -250,14 +263,14 @@ export async function runChatCommand(
   async function dispatchLine(trimmed: string): Promise<boolean> {
     // Empty input
     if (trimmed === '') {
-      rl.prompt();
+      safePrompt(rl);
       return false;
     }
 
     // /model uses startsWith — handle before exact map lookup
     if (trimmed.startsWith('/model ')) {
       handleModelCommand([trimmed.slice(7).trim()]);
-      rl.prompt();
+      safePrompt(rl);
       return false;
     }
 
@@ -268,20 +281,20 @@ export async function runChatCommand(
       if (shouldExit) {
         return true;
       }
-      rl.prompt();
+      safePrompt(rl);
       return false;
     }
 
     // Unknown slash command
     if (trimmed.startsWith('/')) {
       handleUnknownCommand(trimmed);
-      rl.prompt();
+      safePrompt(rl);
       return false;
     }
 
     // Send to LLM
     await processUserMessage(trimmed);
-    rl.prompt();
+    safePrompt(rl);
     return false;
   }
 

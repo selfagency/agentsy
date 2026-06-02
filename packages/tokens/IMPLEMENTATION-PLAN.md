@@ -555,6 +555,103 @@ Return ONLY the fixed compressed file. No explanation.
 - CLI: `agentsy compress-memory --file CLAUDE.md --backup`
 - Test coverage: 10-task output benchmark + 5-file memory benchmark
 
+### Day 6+: Structure Mask System & Entropy Preservation
+
+**Scope:** Replace regex-only preservation with a boolean mask system aligned to text regions. Add entropy-based auto-preservation for high-signal tokens (UUIDs, hashes, identifiers).
+
+**Inspiration:** Headroom's `StructureMask` / `MaskSpan` / `EntropyScore` architecture — adapted to TypeScript without ML dependencies.
+
+```typescript
+// packages/tokens/src/compression/structure-mask.ts
+
+/** Boolean mask aligned 1:1 to text characters. */
+export class StructureMask {
+  private readonly mask: boolean[];
+  readonly length: number;
+
+  constructor(length: number, initialValue = false) {
+    this.mask = new Array<boolean>(length).fill(initialValue);
+    this.length = length;
+  }
+
+  /** Mark a contiguous region as structural (preserve). */
+  mark(offset: number, span: number): void { /* ... */ }
+
+  /** Combine: structural = this OR other. */
+  union(other: StructureMask): StructureMask { /* ... */ }
+
+  /** Combine: structural = this AND other. */
+  intersection(other: StructureMask): StructureMask { /* ... */ }
+
+  /** Invert: structural ↔ non-structural. */
+  invert(): StructureMask { /* ... */ }
+
+  /** Convert to ordered span list for region-based processing. */
+  toSpans(): MaskSpan[] { /* ... */ }
+}
+
+/** Contiguous region with structural flag. */
+export interface MaskSpan {
+  offset: number;
+  length: number;
+  isStructural: boolean;
+}
+```
+
+```typescript
+// packages/tokens/src/compression/entropy.ts
+
+export interface EntropyScore {
+  token: string;
+  entropy: number;       // raw Shannon bits
+  normalized: number;    // 0–1
+}
+
+/**
+ * Compute Shannon entropy for each token.
+ * High normalized entropy (≥ threshold) indicates self-signal:
+ * UUIDs, hashes, base64 identifiers — no classifier needed.
+ */
+export function computeEntropyScores(
+  tokens: readonly string[],
+  options?: { normalizeBound?: number }
+): EntropyScore[] { /* ... */ }
+
+/**
+ * Build a StructureMask that auto-preserves high-entropy tokens.
+ * Default threshold: 0.75 (catches UUIDs, hashes, short IDs).
+ */
+export function computeEntropyMask(
+  text: string,
+  options?: { threshold?: number; tokenizer?: 'word' | 'char' }
+): StructureMask { /* ... */ }
+```
+
+**Integration with existing `protectPattern()`:**
+Existing placeholder-based preservation will be refactored to build a `StructureMask` first, then compress only non-structural spans.
+
+**Implementation Tasks:**
+
+1. Implement `StructureMask` with union/intersection/invert/toSpans
+2. Implement `computeEntropyScores()` with Shannon entropy
+3. Implement `computeEntropyMask()` with word-level tokenization
+4. Refactor `compressOutput()` to accept and apply a `StructureMask`
+5. Add mask-based preservation tests for UUIDs, hashes, base64, paths
+6. Benchmark: mask-based vs regex-based preservation overhead (<2ms added)
+
+**Testing:**
+
+- StructureMask unit tests: mark, union, intersection, invert, toSpans
+- Entropy: UUIDs → high, common words → low
+- Mask-based compression preserves high-entropy tokens (100% recall)
+- Performance: mask construction + compression <12ms total
+
+**Deliverables:**
+
+- `@agentsy/tokens/compression/structure-mask` module
+- `@agentsy/tokens/compression/entropy` module
+- Refactored `compressOutput()` using mask pipeline
+
 ## Phase 2: JSON Minification & TOON Format Encoding (Days 7-10)
 
 - **Target:** 40% JSON savings, TOON format 76.4% accuracy with ~40% fewer tokens
@@ -936,6 +1033,104 @@ export enum ModelName {
 - Section counting validation
 - Streaming token counting
 - Performance benchmarking
+
+### Day 12+: Content Router & Smart JSON Crusher
+
+**Scope:** Add content-type-aware routing and JSON-structure-aware compression to the pipeline.
+
+**Inspiration:** Headroom's `ContentRouter` + `SmartCrusher` — adapted to TypeScript with heuristic detection (no ML dependency). Existing regex-based approach remains the prose fallback.
+
+```typescript
+// packages/tokens/src/compression/content-router.ts
+
+export type ContentType = 'json' | 'code' | 'prose' | 'mixed' | 'markdown';
+
+export interface ContentDetectionResult {
+  type: ContentType;
+  confidence: number;
+  indicators: string[];
+}
+
+/**
+ * Detect content type using structural heuristics.
+ * Uses JSON parse attempts, bracket ratios, keyword density.
+ * Target: <2ms detection for typical agent outputs.
+ */
+export function detectContentType(content: string): ContentDetectionResult { /* ... */ }
+```
+
+```typescript
+// packages/tokens/src/compression/json-crusher.ts
+
+export type JsonTokenType =
+  | 'KEY' | 'STRING_VALUE' | 'NUMBER' | 'BOOLEAN' | 'NULL'
+  | 'BRACKET' | 'COLON' | 'COMMA' | 'WHITESPACE';
+
+export interface JsonCrushResult {
+  original: string;
+  compressed: string;
+  tokensBefore: number;
+  tokensAfter: number;
+  compressionRatio: number;
+  preservedKeys: number;
+  compressedValues: number;
+}
+
+/**
+ * JSON-structure-aware compressor.
+ * Tokenizes JSON → typed tokens → boolean mask.
+ * Preserves: keys, brackets, booleans, nulls, short values, high-entropy strings
+ * Compresses: long values, excessive whitespace, numeric precision
+ */
+export function crushJson(json: string, options?: {
+  maxPreservedArrayItems?: number;   // default 5
+  shortValueThreshold?: number;      // default 20
+  maxDecimalPlaces?: number;         // default 4
+  entropyThreshold?: number;         // default 0.75
+}): JsonCrushResult { /* ... */ }
+```
+
+```typescript
+// packages/tokens/src/compression/compression-router.ts
+
+export interface CompressionResult {
+  compressed: string;
+  compressionRatio: number;
+  tokensBefore: number;
+  tokensAfter: number;
+  contentType: ContentType;
+  preservationRatio: number;
+}
+
+/**
+ * Routes content to best handler based on type detection.
+ * Falls back to existing compressOutput() for prose/markdown.
+ */
+export function compressWithRouter(content: string, level: CompressionLevel,
+  options?: { preferHandler?: ContentType }): CompressionResult { /* ... */ }
+```
+
+**Implementation Tasks:**
+
+1. Implement detectContentType() with heuristic rules (JSON parse, bracket ratio)
+2. Implement JSON tokenizer producing typed JsonToken[]
+3. Implement crushJson() with boolean mask + selective compression
+4. Implement compressWithRouter() orchestrator
+5. Integrate with existing compressOutput() as prose fallback
+6. Round-trip validation: crushed JSON must remain parseable
+
+**Testing:**
+
+- Detection accuracy ≥95% on labeled json/code/prose corpus
+- JSON crusher preserves all keys + structural tokens (100%)
+- ≥40% token reduction on structured outputs
+- Content detection <2ms, crush <5ms for 10KB
+
+**Deliverables:**
+
+- `@agentsy/tokens/compression/content-router` module
+- `@agentsy/tokens/compression/json-crusher` module
+- `@agentsy/tokens/compression/compression-router` orchestrator
 
 ### Day 13-14: Cost Estimator
 
@@ -1873,6 +2068,9 @@ const minified = minifyJSON(rawJSON, { preserveOrder: true, aggressive: true });
 - [ ] 100% technical accuracy maintained
 - [ ] <10ms compression performance
 - [ ] 10-task benchmark passed
+- [ ] StructureMask union/intersection/invert operations correct
+- [ ] Entropy auto-preservation: 100% recall for UUIDs, hashes, base64 IDs
+- [ ] Mask-based compression overhead <2ms vs regex-only baseline
 
 **Phase 2 Gates:**
 
@@ -1883,10 +2081,14 @@ const minified = minifyJSON(rawJSON, { preserveOrder: true, aggressive: true });
 
 **Phase 3 Gates:**
 
-- [ ] JSON minification 40% savings
-- [ ] TOON encoding reversible
-- [ ] All encoding operations round-trip correctly
-- [ ] <5ms encoding performance
+- [ ] Token count accuracy ±1% per model
+- [ ] Cost estimate accuracy ±5%
+- [ ] Budget alerts fire at correct thresholds
+- [ ] Real-time tracking <5ms overhead
+- [ ] Content type detection ≥95% accuracy on labeled corpus
+- [ ] JSON crusher preserves all keys and structural tokens (100%)
+- [ ] JSON crusher ≥40% token reduction on structured outputs
+- [ ] Content detection <2ms, JSON crush <5ms for 10KB
 
 **Phase 4 Gates:**
 
@@ -2020,22 +2222,24 @@ Tokens package is successful when:
 
 ## Timeline Summary
 
-| Phase   | Days  | Focus                | Target                  |
-| ------- | ----- | -------------------- | ----------------------- |
-| Phase 1 | 1-6   | Core compression     | 75% output / 46% memory |
-| Phase 2 | 7-10  | JSON TOON encoding   | 40% JSON savings        |
-| Phase 3 | 11-16 | Budget management    | Real-time tracking      |
-| Phase 4 | 17-20 | Cache management     | >70% hit rate           |
-| Phase 5 | 21-24 | Multi-stage liveness | Priority segments       |
-| Phase 6 | 25-28 | Honker coordination  | <5ms latency            |
-| Phase 7 | 29-32 | CLI integration      | Production ready        |
+| Phase   | Days   | Focus                             | Target                          |
+| ------- | ------ | --------------------------------- | ------------------------------- |
+| Phase 1 | 1-8    | Core compression + masks/entropy  | 75% output / 46% memory         |
+| Phase 2 | 9-12   | JSON TOON encoding                | 40% JSON savings                |
+| Phase 3 | 13-20  | Budget mgmt + router/JSON crusher | Real-time tracking + type-aware |
+| Phase 4 | 21-24  | Cache management                  | >70% hit rate                   |
+| Phase 5 | 25-28  | Multi-stage liveness              | Priority segments               |
+| Phase 6 | 29-32  | Honker coordination               | <5ms latency                    |
+| Phase 7 | 33-36  | CLI integration                   | Production ready                |
 
-**Total implementation time:** 32 days
+**Total implementation time:** 36 days (extended +4 days for structure mask, entropy, content router, and JSON crusher additions)
 
 **Parallel opportunities:**
 
-- Phase 1-2 can run in parallel with memory Phase 1 (Days 1-8)
-- Phase 3-4 can run in parallel with memory Phase 2 (Days 9-20)
-- Phase 5-6 coordinate with memory Phase 3 (Days 21-32)
+- Phase 1-2 can run in parallel with memory Phase 1 (Days 1-12)
+- Phase 3-4 can run in parallel with memory Phase 2 (Days 13-24)
+- Phase 5-6 coordinate with memory Phase 3 (Days 25-36)
+- Structure mask + entropy (Phase 1 tail) can develop alongside JSON TOON (Phase 2)
+- Content router + JSON crusher (Phase 3 tail) can develop alongside cache management (Phase 4)
 
-**Theoretical acceleration:** With full parallelization, tokens package can complete in ~24 days, enabling early token savings while memory system builds.
+**Theoretical acceleration:** With full parallelization, tokens package can complete in ~28 days, enabling early token savings while memory system builds.

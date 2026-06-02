@@ -83,6 +83,19 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 | TASK-ORCH-016 | Implement `createAgentSession(agentDef, config)` in `src/session.ts` — loads agent definition, builds hook registry, compiles hooks, returns `AgentLoopHandle`.                                               |           |      |
 | TASK-ORCH-017 | Add integration tests: hook lifecycle (register/unregister/disable), compile merge order, builtin hook coverage, agent session creation with all builtin hooks.                                               |           |      |
 
+### Implementation Phase 5 — tier-based delegation & call cap enforcement
+
+- GOAL-ORCH-005: Implement task-complexity tier routing, per-session call caps with redundancy detection, and plan annotation for cost-aware delegation.
+
+| Task          | Description                                                                                                                                                                                                                                   | Completed | Date |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-ORCH-018 | Implement `decomposeForTiers(task, profile)` in `src/intelligence/decomposer.ts` — splits composite tasks into sub-tasks, annotates each with a tier (micro/small/mid/frontier) based on complexity heuristics (explore→micro, execute→mid).   |           |      |
+| TASK-ORCH-019 | Implement `CallCapTracker` class in `src/caps/tracker.ts` — per-session counters for grep/read/glob/ls calls, configurable caps per tier (micro=8, small=5, mid=5, frontier=3), fingerprinting for redundancy detection (same file/pattern).  |           |      |
+| TASK-ORCH-020 | Implement banner injection utility in `src/caps/banner.ts` — injects `[cap: N/MAX]`, `[⚠ REDUNDANT]`, `[⚠ CAP REACHED — escalate tier]` markers into agent prompt context at session boundaries.                                              |           |      |
+| TASK-ORCH-021 | Implement `annotatePlan(plan: string, tiers: Map<string,string>)` in `src/plan/annotator.ts` — tags markdown plan steps with `[tier:micro]`, `[tier:mid]` etc. based on keyword analysis, returns annotated markdown.                        |           |      |
+| TASK-ORCH-022 | Implement tier escalation wrapper — when CallCapTracker reports cap reached, automatically escalate remaining subtasks to next tier and re-route via gateway tier-aware strategy.                                                              |           |      |
+| TASK-ORCH-023 | Add integration tests: decomposeForTiers accuracy, call cap enforcement, banner injection format, plan annotation with sample plans, tier escalation flow.                                                                                     |           |      |
+
 ## 3. Acceptance Criteria
 
 - **ACC-ORCH-001**: Execution-mode semantics and planner outcomes are deterministic and test-validated.

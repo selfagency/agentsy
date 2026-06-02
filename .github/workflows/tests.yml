@@ -9,6 +9,8 @@ on:
       - "turbo.json"
       - "package.json"
       - "pnpm-lock.yaml"
+      - "plan/**"
+      - ".github/workflows/**"
   pull_request:
     paths:
       - "packages/**"
@@ -16,6 +18,8 @@ on:
       - "turbo.json"
       - "package.json"
       - "pnpm-lock.yaml"
+      - "plan/**"
+      - ".github/workflows/**"
   workflow_dispatch:
 
 permissions:
@@ -66,7 +70,7 @@ jobs:
             --outputFile.junit=test-report.junit.xml
         env:
           CI: true
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Upload test results to GitHub
         if: always()

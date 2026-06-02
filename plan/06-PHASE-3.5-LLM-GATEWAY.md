@@ -549,6 +549,88 @@ export class MetricsCollector {
 
 Integrated into runtime turn loop as structured log fields (Phase 9).
 
+### TASK-LB-022: Tier-Aware Routing Strategy
+
+**Scope:** Add a routing strategy that filters providers by task complexity tier. Integrates with `@agentsy/models` Phase 6 task classification and Phase 17 local provider detection.
+
+**Key aspects:**
+
+- Implement `tierAwareStrategy(options: TierAwareOptions)` as a new `RoutingStrategy`
+- Accept `taskTier: 'micro' | 'small' | 'mid' | 'frontier'` as input
+- Filter provider candidates by their assigned tier (from `DEFAULT_PROVIDER_TIERS`)
+- **micro** tier: prefer local-first (apfel → ollama → lm-studio → localai → vllm)
+- **small** tier: prefer low-cost cloud (T4/L4 GPUs, budget providers)
+- **mid** tier: standard cloud (A10G/A100, standard providers)
+- **frontier** tier: best available (H100/B200, premium providers)
+- Fallback chain: micro → small → mid → frontier (escalate on failure/context overrun)
+
+```typescript
+interface TierAwareOptions {
+  defaultStrategy: RoutingStrategy;
+  tierPreferredProviders: Record<string, string[]>;  // tier → ordered provider list
+  escalationRules?: {
+    onOverload?: boolean;     // escalate on rate limits
+    onContextOverrun?: boolean; // escalate when context too large for tier
+    maxEscalationSteps?: number;
+  };
+}
+```
+
+**Cross-reference:** `@agentsy/models` Phase 6 for tier classification, `plan/26-PHASE-17-APFEL-ONDEVICE-OFFLOAD.md` for micro-tier provider registration.
+
+**Testing:**
+
+- Tier-aware selection prefers correct tier's providers
+- Escalation falls through tiers in order
+- No-op when tier is unknown (passes through to default strategy)
+
+**Deliverables:**
+
+- `tierAwareStrategy()` function in `src/strategies/`
+- Configuration types for tier-provider mapping
+- Unit and integration tests
+
+### TASK-LB-023: Register Local Providers via Phase 17 PlatformProfile
+
+**Scope:** Auto-detect and register local inference backends (apfel, ollama, vllm, lm-studio) using Phase 17's PlatformProfile infrastructure.
+
+**Key aspects:**
+
+- Implement `registerLocalProviders(profile: PlatformProfile)` that:
+  - Detects available local backends from `profile.accelerators[].capabilities`
+  - Creates provider configs for each detected backend
+  - Registers them in the Gateway's ProviderRegistry
+  - Sets `tier: 'micro'` on each registered provider
+- Handle graceful degradation: if no local backends detected, continue with cloud-only
+- Integrate with TASK-LB-022 tier-aware routing so micro/small tasks prefer local first
+
+```typescript
+import type { PlatformProfile } from '@agentsy/orchestrator/on-device';
+
+async function registerLocalProviders(
+  profile: PlatformProfile,
+  registry: ProviderRegistry,
+  options?: {
+    preferProvider?: 'apfel' | 'ollama' | 'vllm' | 'lm-studio';
+    defaultContextWindow?: number;
+  }
+): Promise<{ registered: number; providers: string[] }>;
+```
+
+**Dependencies:** Phase 17 adoption 1 (APF-001..006 — platform detection, backend discovery).
+
+**Testing:**
+
+- Registers correct provider for known platform profiles
+- Handles empty/no-accelerator profiles gracefully (0 registered)
+- Provider configs have correct tier annotation
+- Registered providers appear in gateway status commands
+
+**Deliverables:**
+
+- `registerLocalProviders()` function
+- Integration test with PlatformProfile fixtures
+
 ---
 
 ## Quality Gates
