@@ -132,24 +132,6 @@ Features
 
 Quick Start
 
-### Token Budget Management (existing API, unchanged)
-
-\`\`\`typescript
-import { createInMemoryTokenManager } from '@agentsy/context';
-
-const manager = createInMemoryTokenManager();
-const budget = await manager.createBudget({
-maxTokens: 100000,
-maxCost: 5.0,
-model: 'gpt-4',
-name: 'default',
-provider: 'openai',
-periodMs: 3600000, // 1 hour
-resetStrategy: 'rolling',
-priority: 'high'
-});
-\`\`\`
-
 ### Compression Strategies
 
 #### Naive Dropping (Default, for backward compatibility)
