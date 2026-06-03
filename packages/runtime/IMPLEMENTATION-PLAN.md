@@ -71,17 +71,29 @@ This plan defines the production implementation order for `@agentsy/runtime` as 
 
 ### Implementation Phase 5 — Memory hook wiring
 
-- GOAL-RUNTIME-005: Wire all memory layers as first-class pre-turn and post-turn hooks in the runtime agentic loop.
+- GOAL-RUNTIME-005: Wire memory hydration and capture hooks into the runtime agentic loop.
 
 | Task             | Description                                                                                                                                          | Completed | Date |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
-| TASK-RUNTIME-013 | Implement `createMemoryPreTurnHook()` in `src/hooks/` — retrieves relevant episodic, semantic, and procedural context and packs into prompt payload. |           |      |
-| TASK-RUNTIME-014 | Implement `createMemoryPostTurnHook()` in `src/hooks/` — captures turn observations for episodic (event log) and semantic (wiki) memory layers.      |           |      |
-| TASK-RUNTIME-015 | Implement `createWikiMemoryHook()` in `src/hooks/` — triggers wiki synthesis summarization when turn count threshold or relevance change is met.     |           |      |
+| TASK-RUNTIME-013 | Dispatch `PreCompact` and collect memory hydration candidates before compaction.                                                                  |           |      |
+| TASK-RUNTIME-014 | Inject hydrated memory context into the prompt path using runtime memory-injection utilities.                                                     |           |      |
+| TASK-RUNTIME-015 | Capture turn observations for episodic and semantic memory layers after execution.                                                                |           |      |
 | TASK-RUNTIME-016 | Export all hook factory functions from `src/hooks/index.ts` for use by orchestrator's builtin hook registry.                                         |           |      |
-| TASK-RUNTIME-017 | Add integration tests: pre-turn context retrieval from all memory layers, post-turn capture triggers, wiki synthesis threshold behavior.             |           |      |
+| TASK-RUNTIME-017 | Add integration tests: PreCompact dispatch, hydrated context injection, post-turn capture triggers, and wiki synthesis threshold behavior.          |           |      |
 
-Auto-compaction is a runtime-owned primitive. The runtime owns the compact cycle schedule and calls PreCompact hooks. Memory layer registers a PreCompact handler; it does not own the schedule.
+Auto-compaction is a runtime-owned primitive. The runtime owns the compact cycle schedule and calls `PreCompact` hooks. Memory layer registers `PreCompact` handlers and hydration candidates; it does not own the schedule.
+
+### Implementation Phase 6 — Provider-neutral cache orchestration
+
+- GOAL-RUNTIME-006: Convert reuse intent into provider-neutral cache plans that providers can adapt.
+
+| Task             | Description                                                                                                                            | Completed | Date |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-RUNTIME-018 | Define provider-neutral cache plan / reuse intent derived from reusable context segments.                                              |           |      |
+| TASK-RUNTIME-019 | Emit cache-friendly prefix stability hints alongside hydrated memory and compaction metadata.                                          |           |      |
+| TASK-RUNTIME-020 | Add integration tests covering cache plan generation independent of provider-specific payload shapes.                                  |           |      |
+
+Provider-specific prompt caching remains in provider adapters; runtime only owns the neutral reuse plan and prefix-stability intent.
 
 ## 3. Acceptance Criteria
 

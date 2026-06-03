@@ -19,7 +19,7 @@ This plan defines the production implementation order for `@agentsy/memory` with
 - **REQ-MEMORY-001**: Memory capture supports episodic, semantic, and procedural classes with clear promotion rules.
 - **REQ-MEMORY-002**: Retrieval/injection follows deterministic XML/tagged context contracts and budget-aware packing.
 - **REQ-MEMORY-003**: Scope isolation across user/workspace/project/session contexts is enforced.
-- **REQ-MEMORY-004**: Cache-aware reuse and context compression integrate with `@agentsy/core`, `@agentsy/runtime`, and `@agentsy/context`.
+- **REQ-MEMORY-004**: Cache-aware reuse and context compression integrate with `@agentsy/core`, `@agentsy/runtime`, and `@agentsy/context`; memory owns retrieval and hydration, context owns compression.
 - **REQ-MEMORY-005**: Memory workflows are observable and auditable with redacted traces.
 - **SEC-MEMORY-001**: Sensitive memory fields support redaction/encryption and selective recall restrictions.
 - **SEC-MEMORY-002**: Imported/synced memory content requires provenance validation.
@@ -224,7 +224,7 @@ export interface MemoryStore {
 }
 ```
 
-Memory layer registers a PreCompact hook handler that the runtime calls before each compact cycle. The handler evaluates which memory entries to retain vs discard based on relevance scoring.
+Runtime owns the compact cycle schedule and dispatches `PreCompact`. Memory registers the `PreCompact` handler, evaluates which memory entries should be retained, and returns hydration candidates / recall payloads for runtime injection. Memory does not own provider-specific caching; it only supplies recall results and hydration candidates.
 
 ### MemoryEntry
 
@@ -246,7 +246,7 @@ export interface MemoryEntry {
 
 ### Injection Safety
 
-All content retrieved from memory must be treated as untrusted input. The system must sanitize entries for prompt injection patterns before splicing them into the system prompt.
+All content retrieved from memory must be treated as untrusted input. The system must sanitize entries for prompt injection patterns before runtime splices them into the system prompt.
 
 ### Karpathy Wiki
 

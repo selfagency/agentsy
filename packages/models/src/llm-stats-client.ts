@@ -3,6 +3,7 @@ import path from 'node:path';
 
 export interface LLMStatsClientOptions {
   baseUrl?: string;
+  cacheDir?: string;
   cacheTtlMs?: number;
 }
 
@@ -22,11 +23,13 @@ function isCacheEntry(value: unknown): value is CacheEntry {
 
 export class LLMStatsClient {
   private readonly baseUrl: string;
+  private readonly cacheDir: string;
   private readonly cacheTtlMs: number;
   private readonly cacheByEndpoint = new Map<string, CacheEntry>();
 
   constructor(options: LLMStatsClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? 'https://llm-stats.com';
+    this.cacheDir = options.cacheDir ?? os.tmpdir();
     this.cacheTtlMs = options.cacheTtlMs ?? 5 * 60 * 1000;
   }
 
@@ -88,7 +91,7 @@ export class LLMStatsClient {
 
   private getCachePath(endpoint: string): string {
     return path.join(
-      os.tmpdir(),
+      this.cacheDir,
       `llm-stats-${endpoint.replace(/[^a-z0-9/.-]/gi, '_').replaceAll('/', '__')}.cache.json`
     );
   }

@@ -1,0 +1,23 @@
+commands:
+  - name: /plugins
+    description: List installed plugins and status
+    instructions: packages/plugins/README.md
+    hooks:
+      - createAgentManifestRegistry
+    triggers:
+      - list
+  - name: /skills
+    description: Search, install, inspect, or manage skills
+    instructions: packages/plugins/IMPLEMENTATION-PLAN.md
+    hooks:
+      - createSkillsHook
+    triggers:
+      - search
+      - install
+  - name: /reload-skills
+    description: Re-scan installed skills
+    instructions: packages/plugins/IMPLEMENTATION-PLAN.md
+    hooks:
+      - createSkillsHook
+    triggers:
+      - reload

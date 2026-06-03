@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { compressOutput } from './index.js';
+import { compressOutput, compressOutputV2 } from './index.js';
 
 /**
  * Phase 0 Performance & Compression Validation
@@ -237,5 +237,34 @@ Additional explanation that is basically just verbose filler text.
     expect(result.compressed).toContain('Architecture');
     expect(result.compressed).toContain('maxRetries');
     expect(result.originalTokens).toBeGreaterThan(result.compressedTokens);
+  });
+
+  it('routes mixed content through v2 without regressions', () => {
+    const mixedContent = `
+# Architecture
+
+This is a really important architectural decision that basically affects the entire system design.
+
+\`\`\`
+type Config = {
+  maxRetries: 3;
+  timeout: 5000;
+}
+\`\`\`
+
+Additional explanation that is basically just verbose filler text.
+    `.trim();
+
+    const result = compressOutputV2(mixedContent, {
+      level: 'full',
+      preserve: {
+        codeFences: true,
+        inlineCode: true,
+        urls: true
+      }
+    });
+
+    expect(result.compressed).toContain('Architecture');
+    expect(result.route.kind).toBe('code');
   });
 });

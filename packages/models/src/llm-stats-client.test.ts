@@ -1,14 +1,28 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LLMStatsClient } from './llm-stats-client.js';
 
 describe('LLMStatsClient', () => {
+  const cacheDir = mkdtempSync(path.join(os.tmpdir(), 'llm-stats-test-'));
+
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterAll(() => {
+    rmSync(cacheDir, { force: true, recursive: true });
+  });
+
   it('fetches and caches models per endpoint', async () => {
-    const client = new LLMStatsClient({ baseUrl: 'https://example.test', cacheTtlMs: 60_000 });
+    const client = new LLMStatsClient({ baseUrl: 'https://example.test', cacheDir, cacheTtlMs: 60_000 });
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       json: async () => ({ ok: true }),
       ok: true,
@@ -23,7 +37,7 @@ describe('LLMStatsClient', () => {
   });
 
   it('supports distinct endpoint helpers', async () => {
-    const client = new LLMStatsClient({ baseUrl: 'https://example.test' });
+    const client = new LLMStatsClient({ baseUrl: 'https://example.test', cacheDir });
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       json: async () => ({ ok: true }),
       ok: true,

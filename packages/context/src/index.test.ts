@@ -3,9 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   compressConversation,
   compressOutput,
+  createDriftMonitor,
   createInMemoryTokenManager,
   createTokenLedger,
-  PacingController
+  findAnchors,
+  PacingController,
+  scoreCoherence
 } from './index.js';
 
 describe('createTokenLedger', () => {
@@ -245,6 +248,59 @@ describe('compressConversation', () => {
     expect(result.messages).toStrictEqual(['cccc', 'dddd']);
     expect(result.droppedCount).toBe(2);
     expect(result.estimatedTokens).toBe(8);
+  });
+
+  it('uses content-aware routing for diff-heavy input', () => {
+    const result = compressConversation(
+      [{ content: 'diff --git a/src/a.ts b/src/a.ts\n@@ -1 +1 @@\n-old\n+new' }, { content: '+++ b/src/a.ts' }],
+      {
+        estimateTokens: (value: { content: string }) => value.content.length,
+        maxTokens: 200,
+        preserveLast: 0
+      }
+    );
+
+    expect(result.compressed).toBeFalsy();
+    expect(result.messages).toHaveLength(2);
+  });
+});
+
+describe('drift foundation', () => {
+  it('scores coherent conversations higher than repetitive ones', () => {
+    const coherent = scoreCoherence([
+      { role: 'user', content: 'What is 2 + 2?' },
+      { role: 'assistant', content: '2 + 2 = 4.' },
+      { role: 'user', content: 'And 4 + 4?' },
+      { role: 'assistant', content: '4 + 4 = 8.' }
+    ]);
+
+    const repetitive = scoreCoherence([
+      { role: 'user', content: 'Explain recursion.' },
+      { role: 'assistant', content: 'Recursion is when a function calls itself.' },
+      { role: 'user', content: 'Explain recursion again.' },
+      { role: 'assistant', content: 'Recursion is when a function calls itself.' }
+    ]);
+
+    expect(coherent).toBeGreaterThan(repetitive);
+  });
+
+  it('detects anchors in tool calls and directives', () => {
+    const anchors = findAnchors([
+      { role: 'user', content: 'Use the new API endpoint.' },
+      { role: 'assistant', content: 'Switching now.', toolUse: { name: 'query_api', args: {} } }
+    ]);
+
+    expect(anchors.some(anchor => anchor.type === 'tool-call')).toBe(true);
+    expect(anchors.some(anchor => anchor.type === 'directive')).toBe(true);
+  });
+
+  it('tracks drift across repeated compression cycles', () => {
+    const monitor = createDriftMonitor({ driftThreshold: 0.7 });
+    monitor.recordCompression({ cycle: 1, coherence: 0.95, droppedMessages: 0 });
+    monitor.recordCompression({ cycle: 2, coherence: 0.65, droppedMessages: 5 });
+
+    expect(monitor.isDrifting()).toBe(true);
+    expect(monitor.getStats().cycles).toBe(2);
   });
 });
 

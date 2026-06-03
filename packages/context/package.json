@@ -1,7 +1,7 @@
 {
   "name": "@agentsy/context",
   "version": "0.2.0-alpha.0",
-  "description": "Token budgets, context reduction, and output shaping",
+  "description": "Compression, drift detection, and reversible output shaping",
   "keywords": [
     "agentsy",
     "typescript"
@@ -32,11 +32,22 @@
     "test": "vitest --run --passWithNoTests",
     "coverage": "vitest --run --coverage"
   },
-  "dependencies": {
-    "@agentsy/core": "workspace:*",
-    "@agentsy/types": "workspace:*"
+  "dependencies": {},
+  "peerDependencies": {
+    "@agentsy/core": "^0.2.0",
+    "@agentsy/types": "^0.1.1"
+  },
+  "peerDependenciesMeta": {
+    "@agentsy/core": {
+      "optional": false
+    },
+    "@agentsy/types": {
+      "optional": false
+    }
   },
   "devDependencies": {
+    "@agentsy/core": "workspace:*",
+    "@agentsy/types": "workspace:*",
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",

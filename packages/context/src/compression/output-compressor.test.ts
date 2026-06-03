@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { compressOutput } from './output-compressor.js';
+import { compressOutput, compressOutputDetailed, createOutputCompressionMetadata } from './output-compressor.js';
+import { compressOutputV2 } from './output-compressor-v2.js';
 
 describe(compressOutput, () => {
   it('preserves code fences, inline code, and URLs while compressing prose', () => {
@@ -42,5 +43,37 @@ describe(compressOutput, () => {
 
     expect(output).not.toContain('`agentsy`');
     expect(output).not.toContain('https://example.com/docs');
+  });
+
+  it('retains protected content markers through compression', () => {
+    const input = 'See https://example.com and `pnpm test`';
+
+    const output = compressOutput(input, { level: 'full' });
+
+    expect(output).toContain('https://example.com');
+    expect(output).toContain('`pnpm test`');
+  });
+
+  it('creates reversible markers for protected segments', () => {
+    const metadata = createOutputCompressionMetadata('See https://example.com and `pnpm test`');
+
+    expect(metadata.markers).toHaveLength(2);
+    expect(metadata.markers.map(marker => marker.kind)).toContain('preserved-url');
+  });
+
+  it('returns a richer content-aware result in v2', () => {
+    const result = compressOutputV2('diff --git a/a b/a\n@@ -1 +1 @@\n-old\n+new', { level: 'full' });
+
+    expect(result.contentKind).toBe('diff');
+    expect(result.route.strategy).toBe('anchored-iterative');
+    expect(result.metadata.markers.length).toBeGreaterThanOrEqual(0);
+    expect(result.compressedTokens).toBeGreaterThan(0);
+  });
+
+  it('returns the detailed compression shape for the base helper', () => {
+    const result = compressOutputDetailed('See https://example.com and `pnpm test`', { level: 'full' });
+
+    expect(result.compressed).toContain('https://example.com');
+    expect(result.metadata.markers).toHaveLength(2);
   });
 });

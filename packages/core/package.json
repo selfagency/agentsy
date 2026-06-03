@@ -53,6 +53,11 @@
       "import": "./dist/retry.js",
       "require": "./dist/retry.cjs"
     },
+    "./slash-commands": {
+      "types": "./dist/slash-commands.d.ts",
+      "import": "./dist/slash-commands.js",
+      "require": "./dist/slash-commands.cjs"
+    },
     "./sse": {
       "types": "./dist/sse.d.ts",
       "import": "./dist/sse.js",

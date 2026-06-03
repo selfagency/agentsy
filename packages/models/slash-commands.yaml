@@ -1,0 +1,22 @@
+commands:
+  - name: /model search
+    description: Search models by criteria
+    instructions: packages/models/README.md
+    hooks:
+      - searchModels
+    triggers:
+      - search
+  - name: /model select
+    description: Select a model
+    instructions: packages/models/README.md
+    hooks:
+      - selectModel
+    triggers:
+      - select
+  - name: /model refine
+    description: Adjust selection criteria
+    instructions: packages/models/README.md
+    hooks:
+      - refineModelSelection
+    triggers:
+      - refine

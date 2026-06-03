@@ -35,6 +35,11 @@
       "types": "./dist/manifest.d.ts",
       "import": "./dist/manifest.js",
       "require": "./dist/manifest.cjs"
+    },
+    "./slash": {
+      "types": "./dist/slash.d.ts",
+      "import": "./dist/slash.js",
+      "require": "./dist/slash.cjs"
     }
   },
   "scripts": {

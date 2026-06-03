@@ -2,6 +2,15 @@ import os from 'node:os';
 import path from 'node:path';
 
 import type {
+  LocalModelInfo,
+  LocalProviderDiscoveryResult,
+  LocalProviderProbeResult,
+  LocalProviderProfile,
+  OllamaProbeOptions,
+  ProviderProtocol,
+  VllmProbeOptions
+} from './local-providers/index.js';
+import type {
   LLMStatsLocalModel,
   LocalModelRecommendation,
   LocalRecommendationCriteria,
@@ -14,6 +23,12 @@ import type {
 } from './types.js';
 
 export { LLMStatsClient } from './llm-stats-client.js';
+export {
+  clearLocalProviderDiscoveryCache,
+  discoverLocalProviders,
+  probeOllama,
+  probeVllm
+} from './local-providers/index.js';
 
 export type {
   ModelRefinementRequest,
@@ -30,14 +45,21 @@ export {
 
 export type {
   LLMStatsLocalModel,
+  LocalModelInfo,
   LocalModelRecommendation,
+  LocalProviderDiscoveryResult,
+  LocalProviderProbeResult,
+  LocalProviderProfile,
   LocalRecommendationCriteria,
   ModelSelectionResult,
   ModelsDevAPI,
   ModelsDevModel,
   ModelsDevProvider,
+  OllamaProbeOptions,
+  ProviderProtocol,
   SystemCapabilities,
-  TaskRequirements
+  TaskRequirements,
+  VllmProbeOptions
 };
 
 // Cache structure
@@ -795,3 +817,4 @@ export class ModelSelector {
 }
 
 export * from './local-providers/index.js';
+export { selectModel, selectModelForProvider } from './search-contracts.js';

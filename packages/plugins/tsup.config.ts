@@ -6,7 +6,8 @@ export default defineConfig({
   entry: {
     agents: 'src/agents/index.ts',
     index: 'src/index.ts',
-    manifest: 'src/manifest/index.ts'
+    manifest: 'src/manifest/index.ts',
+    slash: 'src/slash/index.ts'
   },
   external: ['@agentsy/types'],
   format: ['esm', 'cjs'],

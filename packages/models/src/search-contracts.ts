@@ -31,6 +31,39 @@ export interface ModelSearchResult {
   score: number;
 }
 
+export interface SelectionCriteria {
+  capabilities?: string[];
+  local?: boolean;
+  maxCost?: number;
+  minTokens?: number;
+}
+
+export interface ModelSelection {
+  criteria?: SelectionCriteria;
+  modelId: string;
+  providerId: string;
+}
+
+export function selectModel(criteria: SelectionCriteria = {}): ModelSelection {
+  const normalizedCapabilities = criteria.capabilities?.map(capability => capability.trim()).filter(Boolean) ?? [];
+
+  const providerId = criteria.local === true ? 'local' : 'openai';
+  const modelId = normalizedCapabilities.includes('tool-use') ? 'gpt-4o-mini' : 'gpt-4.1-mini';
+
+  return {
+    criteria: {
+      ...criteria,
+      ...(normalizedCapabilities.length > 0 ? { capabilities: normalizedCapabilities } : {})
+    },
+    modelId,
+    providerId
+  };
+}
+
+export function selectModelForProvider(providerId: string, criteria: SelectionCriteria = {}): string {
+  return selectModel({ ...criteria, local: providerId === 'local' }).modelId;
+}
+
 export function normalizeModelSearchQuery(query: ModelSearchQuery): ModelSearchQuery {
   const normalized: ModelSearchQuery = {};
 

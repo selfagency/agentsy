@@ -10,7 +10,6 @@ export {
   type LogEvent,
   type LogEventKind
 } from './components/agent-log/index.js';
-/* ── Agent picker (TASK-SIA-013) ────────────────────────────────────── */
 export {
   type AgentEntry,
   AgentPicker,
@@ -42,7 +41,8 @@ export {
   CommandPalette,
   type CommandPaletteProps
 } from './components/command-palette/index.js';
-/* ── Framework components ───────────────────────────────────────── */
+export { Dropdown, type DropdownOption, type DropdownProps } from './components/dropdown/index.ts';
+/* ── Agent picker (TASK-SIA-013) ────────────────────────────────────── */
 export { FramedPanel, type FramedPanelProps } from './components/framed-panel.tsx';
 /* ── Existing components ────────────────────────────────────────── */
 export type { KeyboardOptions } from './components/keyboard-handler.js';
@@ -64,6 +64,11 @@ export {
   type ScopeValue
 } from './components/model-picker/scope-toggle.tsx';
 export { SearchInput, type SearchInputProps } from './components/model-picker/search-input.tsx';
+export {
+  CapabilityRefineFlow,
+  ModelSearchFlow,
+  ProviderDiscoveryFlow
+} from './components/model-selection-flows.js';
 export {
   type AgentConfig,
   OrchestratorConsole,

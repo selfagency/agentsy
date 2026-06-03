@@ -26,6 +26,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./caching": {
+      "types": "./dist/caching.d.ts",
+      "import": "./dist/caching.js",
+      "require": "./dist/caching.cjs"
+    },
     "./adapters": {
       "types": "./dist/adapters.d.ts",
       "import": "./dist/adapters.js",

@@ -17,8 +17,8 @@
  */
 
 import { createInterface, type Interface } from 'node:readline/promises';
-
-import { discoverLocalProviders } from '@agentsy/models';
+import { loadSlashCommands } from '@agentsy/core';
+import { discoverLocalProviders, selectModel } from '@agentsy/models';
 import type { TurnHandler } from '@agentsy/runtime/loop';
 import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
 
@@ -63,6 +63,16 @@ function getFlagValue(args: readonly string[], flag: string): string | null {
     return null;
   }
   return args.at(index + 1) ?? null;
+}
+
+function getSelectionCriteria(argv: readonly string[]) {
+  const local = hasFlag(argv, '--local');
+  const capabilities = hasFlag(argv, '--tools') ? ['tool-use'] : [];
+
+  return {
+    ...(local ? { local: true } : {}),
+    ...(capabilities.length > 0 ? { capabilities } : {})
+  };
 }
 
 function formatUsage(inputTokens: number | undefined, outputTokens: number | undefined): string {
@@ -143,11 +153,13 @@ function createProviderClient(isMock: boolean, argv: readonly string[], options?
   const model = getFlagValue(argv, '--model') ?? 'gpt-4o-mini';
   const baseUrl = getFlagValue(argv, '--base-url') ?? undefined;
   const apiKey = getFlagValue(argv, '--api-key') ?? undefined;
+  const providerId = getFlagValue(argv, '--provider') ?? 'openai';
+  const selection = selectModel(getSelectionCriteria(argv));
 
   const providerEntry: CliProviderConfig['providers'][number] = {
     id: 'default',
     name: 'Default provider',
-    provider: (getFlagValue(argv, '--provider') as CliProviderConfig['providers'][number]['provider']) ?? 'openai'
+    provider: (selection.providerId ?? providerId) as CliProviderConfig['providers'][number]['provider']
   };
   if (baseUrl !== undefined) {
     providerEntry.baseUrl = baseUrl;
@@ -157,7 +169,7 @@ function createProviderClient(isMock: boolean, argv: readonly string[], options?
   }
 
   const providerConfig: CliProviderConfig = options?.providerConfig ?? {
-    model,
+    model: selection.modelId ?? model,
     providers: [providerEntry]
   };
 
@@ -228,15 +240,32 @@ export async function runChatCommand(
 
   function handleHelpCommand(commands: Map<string, (args: string[]) => void | Promise<void>>): void {
     const cmdList = [...commands.keys()].sort((a, b) => a.localeCompare(b)).join(', ');
-    stderr(
-      `Commands:\n  ${cmdList}\n  /model <name>    Switch to a different model\n  /help            Show this help message\n`
-    );
+    const slashList = loadSlashCommands()
+      .map(command => `${command.name}    ${command.description}`)
+      .join('\n  ');
+    stderr(`Commands:\n  ${cmdList}\n  ${slashList}\n  /help            Show this help message\n`);
   }
 
   function handleModelCommand(args: string[]): void {
-    const newModel = args[0];
-    if (newModel) {
-      stderr(dim(`[model] model switching requires restart (current: ${model}, requested: ${newModel})\n`));
+    const [action, ...rest] = args;
+    if (action === 'search') {
+      stderr(dim(`[model] search query=${rest.join(' ')}\n`));
+      return;
+    }
+
+    if (action === 'select') {
+      const newModel = rest[0];
+      stderr(dim(`[model] requested=${newModel ?? '(missing)'} current=${model} (restart required)\n`));
+      return;
+    }
+
+    if (action === 'refine') {
+      stderr(dim('[model] refine selection criteria\n'));
+      return;
+    }
+
+    if (action) {
+      stderr(dim(`[model] unknown action: ${action}\n`));
     } else {
       stderr(dim(`[model] current model: ${model}\n`));
     }
@@ -269,7 +298,13 @@ export async function runChatCommand(
 
     // /model uses startsWith — handle before exact map lookup
     if (trimmed.startsWith('/model ')) {
-      handleModelCommand([trimmed.slice(7).trim()]);
+      handleModelCommand(trimmed.slice(7).trim().split(/\s+/u));
+      safePrompt(rl);
+      return false;
+    }
+
+    if (trimmed.startsWith('/provider ')) {
+      await handleProviderCommand(trimmed.slice(10).trim().split(/\s+/u));
       safePrompt(rl);
       return false;
     }

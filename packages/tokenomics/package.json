@@ -41,7 +41,7 @@
     "@agentsy/context": "workspace:*",
     "@agentsy/observability": "workspace:*",
     "@agentsy/types": "workspace:*",
-    "better-sqlite3": "^9.6.0"
+    "better-sqlite3": "^12.10.0"
   },
   "optionalDependencies": {
     "@libsql/client": "^0.14.0"

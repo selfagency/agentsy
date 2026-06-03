@@ -6,7 +6,9 @@ import {
   mergeModelRefinementRequest,
   normalizeModelSearchQuery,
   type RecommendationCriteria,
-  searchModels
+  searchModels,
+  selectModel,
+  selectModelForProvider
 } from './search-contracts.js';
 
 describe('model search contracts', () => {
@@ -60,5 +62,25 @@ describe('model search contracts', () => {
         score: 0.95
       }
     ]);
+  });
+
+  it('selects a local model when local is requested', () => {
+    expect(selectModel({ local: true })).toEqual({
+      criteria: { local: true },
+      modelId: 'gpt-4.1-mini',
+      providerId: 'local'
+    });
+  });
+
+  it('normalizes capabilities and prefers tool-use model ids', () => {
+    expect(selectModel({ capabilities: [' tool-use ', ''] })).toEqual({
+      criteria: { capabilities: ['tool-use'] },
+      modelId: 'gpt-4o-mini',
+      providerId: 'openai'
+    });
+  });
+
+  it('selects provider-specific models from provider id', () => {
+    expect(selectModelForProvider('local', { capabilities: ['tool-use'] })).toBe('gpt-4o-mini');
   });
 });

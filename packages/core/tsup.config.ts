@@ -10,6 +10,7 @@ export default defineConfig({
     processor: 'src/processor/index.ts',
     recovery: 'src/recovery/index.ts',
     retry: 'src/retry/index.ts',
+    'slash-commands': 'src/slash-commands/index.ts',
     sse: 'src/sse/index.ts',
     'stream-to-events': 'src/stream-to-events.ts',
     structured: 'src/structured/index.ts',

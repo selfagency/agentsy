@@ -5,6 +5,7 @@ export default defineConfig({
   dts: true,
   entry: {
     adapters: 'src/adapters/index.ts',
+    caching: 'src/caching/index.ts',
     index: 'src/index.ts',
     normalizers: 'src/normalizers/index.ts',
     pipeline: 'src/pipeline/index.ts',

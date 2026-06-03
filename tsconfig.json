@@ -23,6 +23,13 @@
     "jsxImportSource": "react",
     "paths": {
       "@agentsy/context": ["packages/context/src/index.ts"],
+      "@agentsy/models": ["packages/models/src/index.ts"],
+      "@agentsy/models/local-providers": [
+        "packages/models/src/local-providers/index.ts"
+      ],
+      "@agentsy/models/search-contracts": [
+        "packages/models/src/search-contracts.ts"
+      ],
       "@agentsy/types": ["packages/types/src/index.ts"]
     },
     "rewriteRelativeImportExtensions": true,

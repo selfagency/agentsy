@@ -5,3 +5,4 @@ export * from './agents/index.js';
 export { createAgentManifestRegistry } from './manifest/registry.js';
 // Plugin manifest types and registry
 export type * from './manifest/types.js';
+export * from './slash/index.js';

@@ -1,0 +1,219 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+
+export interface SlashCommandDefinition {
+  readonly description: string;
+  readonly hooks: readonly string[];
+  readonly instructions?: string;
+  readonly name: string;
+  readonly packageName: string;
+  readonly triggers: readonly string[];
+}
+
+interface SlashCommandDraft {
+  description?: string;
+  hooks: string[];
+  instructions?: string;
+  name?: string;
+  triggers: string[];
+}
+
+const WORKSPACE_MANIFESTS = [
+  'packages/cli/slash-commands.yaml',
+  'packages/models/slash-commands.yaml',
+  'packages/providers/slash-commands.yaml',
+  'packages/plugins/slash-commands.yaml'
+] as const;
+
+function findWorkspaceRoot(startDir: string): string {
+  let current = startDir;
+  while (true) {
+    if (existsSync(join(current, 'pnpm-workspace.yaml'))) {
+      return current;
+    }
+
+    const parent = dirname(current);
+    if (parent === current) {
+      return startDir;
+    }
+    current = parent;
+  }
+}
+
+function parseScalar(value: string): string {
+  const trimmed = value.trim();
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
+function createDraft(): SlashCommandDraft {
+  return { hooks: [], triggers: [] };
+}
+
+function pushCommand(commands: SlashCommandDefinition[], current: SlashCommandDraft | null, packageName: string): void {
+  if (current?.name && current.description) {
+    const command: SlashCommandDefinition = {
+      description: current.description,
+      hooks: current.hooks,
+      name: current.name,
+      packageName,
+      triggers: current.triggers
+    };
+
+    if (current.instructions !== undefined) {
+      commands.push({
+        ...command,
+        instructions: current.instructions
+      });
+      return;
+    }
+
+    commands.push(command);
+  }
+}
+
+function isBlankOrComment(trimmed: string): boolean {
+  return trimmed === '' || trimmed.startsWith('#');
+}
+
+function isCommandsHeader(trimmed: string): boolean {
+  return trimmed === 'commands:';
+}
+
+function isCommandStart(indent: number, trimmed: string): boolean {
+  return indent === 2 && trimmed.startsWith('- ');
+}
+
+function isListHeader(indent: number, trimmed: string): trimmed is 'hooks:' | 'triggers:' {
+  return indent === 4 && (trimmed === 'hooks:' || trimmed === 'triggers:');
+}
+
+function isListItem(indent: number, trimmed: string, currentListKey: 'hooks' | 'triggers' | null): boolean {
+  return indent === 6 && trimmed.startsWith('- ') && currentListKey !== null;
+}
+
+function applyCommandField(current: SlashCommandDraft, trimmed: string): boolean {
+  const nameMatch = trimmed.match(/^name:\s*(.+)$/u);
+  if (nameMatch !== null) {
+    current.name = parseScalar(nameMatch[1] ?? '');
+    return true;
+  }
+
+  const descriptionMatch = trimmed.match(/^description:\s*(.+)$/u);
+  if (descriptionMatch !== null) {
+    current.description = parseScalar(descriptionMatch[1] ?? '');
+    return true;
+  }
+
+  const instructionsMatch = trimmed.match(/^instructions:\s*(.+)$/u);
+  if (instructionsMatch !== null) {
+    current.instructions = parseScalar(instructionsMatch[1] ?? '');
+    return true;
+  }
+
+  return false;
+}
+
+function appendListItem(current: SlashCommandDraft, currentListKey: 'hooks' | 'triggers', trimmed: string): void {
+  const item = parseScalar(trimmed.slice(2));
+  if (currentListKey === 'hooks') {
+    current.hooks = [...current.hooks, item];
+    return;
+  }
+
+  current.triggers = [...current.triggers, item];
+}
+
+interface ManifestParseState {
+  current: SlashCommandDraft | null;
+  currentListKey: 'hooks' | 'triggers' | null;
+  inCommands: boolean;
+}
+
+function processManifestLine(
+  state: ManifestParseState,
+  rawLine: string,
+  commands: SlashCommandDefinition[],
+  packageName: string
+): void {
+  const indent = rawLine.length - rawLine.trimStart().length;
+  const trimmed = rawLine.trim();
+
+  if (isBlankOrComment(trimmed)) {
+    return;
+  }
+
+  if (isCommandsHeader(trimmed)) {
+    state.inCommands = true;
+    return;
+  }
+
+  if (!state.inCommands) {
+    return;
+  }
+
+  if (isCommandStart(indent, trimmed)) {
+    pushCommand(commands, state.current, packageName);
+    state.current = createDraft();
+    state.currentListKey = null;
+
+    const remainder = trimmed.slice(2).trim();
+    if (remainder.startsWith('name:')) {
+      state.current.name = parseScalar(remainder.slice('name:'.length));
+    }
+
+    return;
+  }
+
+  if (state.current === null) {
+    return;
+  }
+
+  if (isListHeader(indent, trimmed)) {
+    state.currentListKey = trimmed === 'hooks:' ? 'hooks' : 'triggers';
+    return;
+  }
+
+  if (state.currentListKey !== null && isListItem(indent, trimmed, state.currentListKey)) {
+    appendListItem(state.current, state.currentListKey, trimmed);
+    return;
+  }
+
+  state.currentListKey = null;
+  applyCommandField(state.current, trimmed);
+}
+
+function parseManifest(contents: string, packageName: string): SlashCommandDefinition[] {
+  const commands: SlashCommandDefinition[] = [];
+  const lines = contents.split(/\r?\n/u);
+  const state: ManifestParseState = {
+    current: null,
+    currentListKey: null,
+    inCommands: false
+  };
+
+  for (const rawLine of lines) {
+    processManifestLine(state, rawLine, commands, packageName);
+  }
+
+  pushCommand(commands, state.current, packageName);
+  return commands;
+}
+
+export function loadSlashCommands(workspaceRoot = findWorkspaceRoot(process.cwd())): readonly SlashCommandDefinition[] {
+  const loaded = WORKSPACE_MANIFESTS.flatMap(manifestPath => {
+    const fullPath = join(workspaceRoot, manifestPath);
+    const packageName = manifestPath.split('/').at(1) ?? 'unknown';
+    const contents = readFileSync(fullPath, 'utf8');
+    return parseManifest(contents, packageName);
+  });
+
+  const deduped = new Map<string, SlashCommandDefinition>();
+  for (const command of loaded) {
+    deduped.set(command.name, command);
+  }
+
+  return [...deduped.values()];
+}

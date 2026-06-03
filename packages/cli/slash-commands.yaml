@@ -1,0 +1,37 @@
+commands:
+  - name: /help
+    description: Show this help message
+    instructions: packages/cli/src/commands/chat.ts
+    hooks:
+      - onHelp
+  - name: /status
+    description: Show session status
+    instructions: packages/cli/src/commands/chat.ts
+    hooks:
+      - onStatus
+  - name: /model
+    description: Show or change the current model
+    instructions: packages/models/slash-commands.yaml
+    hooks:
+      - onModelCommand
+    triggers:
+      - model
+  - name: /provider
+    description: Discover available providers
+    instructions: packages/providers/slash-commands.yaml
+    hooks:
+      - onProviderCommand
+    triggers:
+      - provider
+  - name: /clear
+    description: Clear screen and start a new session
+  - name: /history
+    description: Show conversation history
+  - name: /save
+    description: Save the current conversation
+  - name: /retry
+    description: Retry the last message
+  - name: /undo
+    description: Remove the last user/assistant exchange
+  - name: /title
+    description: Set a title for the current session

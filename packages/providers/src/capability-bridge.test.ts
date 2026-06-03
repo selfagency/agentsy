@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildProviderCapabilityProfile,
+  extractModelCapabilities,
   filterProvidersByCapabilities,
   matchCapabilities,
   modelCapabilitiesToProviderRequirements,
@@ -18,46 +19,57 @@ describe('modelCapabilitiesToProviderRequirements', () => {
       streaming: true,
       toolCalling: true,
       reasoning: false,
-      batching: false
+      imageInput: true,
+      imageOutput: false,
+      audioInput: true,
+      audioOutput: false
     });
 
     expect(result.streaming).toBe(true);
     expect(result.toolCalling).toBe(true);
     expect(result.reasoning).toBe(false);
-    expect(result.batching).toBe(false);
   });
 
-  it('includes budgeting when costTracking or tokenBudgeting is set', () => {
+  it('ignores non-provider capability fields', () => {
     const result = modelCapabilitiesToProviderRequirements({
       streaming: true,
-      costTracking: true,
-      tokenBudgeting: false
+      toolCalling: false,
+      reasoning: true,
+      imageInput: true,
+      imageOutput: true,
+      audioInput: true,
+      audioOutput: true
     });
 
-    expect(result.budgeting).toBeDefined();
-    expect(result.budgeting?.supportsCostTracking).toBe(true);
-    expect(result.budgeting?.supportsTokenBudgeting).toBe(false);
+    expect(result).toEqual({
+      reasoning: true,
+      streaming: true,
+      toolCalling: false
+    });
   });
+});
 
-  it('excludes budgeting when neither costTracking nor tokenBudgeting is set', () => {
-    const result = modelCapabilitiesToProviderRequirements({
+// ---------------------------------------------------------------------------
+// extractModelCapabilities
+// ---------------------------------------------------------------------------
+
+describe('extractModelCapabilities', () => {
+  it('extracts capabilities from a models.dev model', () => {
+    const result = extractModelCapabilities({
+      modalities: { input: ['text', 'image'], output: ['text'] },
+      reasoning: true,
+      tool_call: true
+    });
+
+    expect(result).toEqual({
+      audioInput: false,
+      audioOutput: false,
+      imageInput: true,
+      imageOutput: false,
+      reasoning: true,
       streaming: true,
       toolCalling: true
     });
-
-    expect(result.budgeting).toBeUndefined();
-  });
-
-  it('includes budgeting with both sub-fields when both are set', () => {
-    const result = modelCapabilitiesToProviderRequirements({
-      streaming: true,
-      costTracking: true,
-      tokenBudgeting: true
-    });
-
-    expect(result.budgeting).toBeDefined();
-    expect(result.budgeting?.supportsCostTracking).toBe(true);
-    expect(result.budgeting?.supportsTokenBudgeting).toBe(true);
   });
 });
 

@@ -1,8 +1,15 @@
-// @agentsy/context — Token budgets, context reduction, and output shaping.
+// @agentsy/context — Compression, drift detection, and reversible output shaping.
 
 import { randomUUID } from 'node:crypto';
-
+import { createOutputCompressionMetadata } from './compression/output-compressor.js';
 import stopwords from './stopwords.json' with { type: 'json' };
+import { createAnchoredIterativeStrategy } from './strategies/anchored-iterative.js';
+import { routeCompressionStrategy } from './strategies/content-router.js';
+import { createLayeredPruningStrategy } from './strategies/layered-pruning.js';
+import { createNaiveDroppingStrategy } from './strategies/naive-dropping.js';
+
+export type { OutputCompressionV2Result } from './compression/output-compressor-v2.js';
+export { compressOutputV2 } from './compression/output-compressor-v2.js';
 
 export interface TokenLedgerBudget {
   limit: number;
@@ -130,7 +137,62 @@ export interface CompressionResult<TMessage> {
   droppedCount: number;
   estimatedTokens: number;
   messages: TMessage[];
+  metadata?: CompressionMetadata;
 }
+
+export interface CompressionMetadata {
+  coherenceScore: number;
+  driftDetected: boolean;
+  preservedAnchors: Array<{ importance: number; index: number; reason: string; type: string }>;
+  qualityScore: number;
+  strategy: string;
+}
+
+export type { ManualCompactionInput, ManualCompactionResult } from './compaction/manual-compaction.js';
+export { createManualCompaction } from './compaction/manual-compaction.js';
+export type {
+  CompactionSummaryInput,
+  CompactionSummarySchema,
+  CompactionSummarySchemaEntry
+} from './compaction/summary-schema.js';
+export { createCompactionSummarySchema } from './compaction/summary-schema.js';
+export type { OutputCompressionDetailedResult } from './compression/output-compressor.js';
+export { compressOutputDetailed } from './compression/output-compressor.js';
+export type { Anchor, AnchorFinderOptions } from './drift/anchor-finder.js';
+export { findAnchors } from './drift/anchor-finder.js';
+export type {
+  CompressionCycleRecord,
+  DriftMonitor,
+  DriftMonitorOptions,
+  DriftMonitorStats
+} from './drift/drift-monitor.js';
+export { createDriftMonitor } from './drift/drift-monitor.js';
+export type { CoherenceResult, CoherenceSignal, DriftMessageLike } from './drift/drift-scorer.js';
+export { scoreCoherence } from './drift/drift-scorer.js';
+export type { PrecompressionEvent, PrecompressionPlan } from './hooks/precompression.js';
+export { createPrecompressionPlan } from './hooks/precompression.js';
+export type {
+  CompressionMetricRecord,
+  CompressionMetricSummaryItem,
+  CompressionMetrics,
+  CompressionMetricsSummary
+} from './observability/compression-metrics.js';
+export { createCompressionMetrics } from './observability/compression-metrics.js';
+export type {
+  HydrationCandidate,
+  HydrationPolicyInput,
+  HydrationPolicyResult
+} from './observability/hydration-policy.js';
+export { createHydrationPolicy } from './observability/hydration-policy.js';
+export type { RewindMarker, RewindRecord, RewindStore } from './retrieval/rewind-store.js';
+export { createRewindStore } from './retrieval/rewind-store.js';
+export { createAnchoredIterativeStrategy } from './strategies/anchored-iterative.js';
+export { createCompressionStrategyRegistry } from './strategies/compression-strategy.js';
+export { routeCompressionStrategy } from './strategies/content-router.js';
+export { createHierarchicalSummarizationStrategy } from './strategies/hierarchical-summarization.js';
+export { createLayeredPruningStrategy } from './strategies/layered-pruning.js';
+export { createNaiveDroppingStrategy } from './strategies/naive-dropping.js';
+export { createThreeLayerOffloading } from './strategies/three-layer-offloading.js';
 
 export type OutputCompressionLevel = 'lite' | 'full' | 'ultra';
 
@@ -143,6 +205,9 @@ export interface OutputCompressionOptions {
 export interface OutputCompressionResult {
   compressed: string;
   compressedTokens: number;
+  metadata?: {
+    markers: Array<{ id: string; kind: 'preserved-code' | 'preserved-url' | 'preserved-inline-code' }>;
+  };
   original: string;
   originalTokens: number;
   savingsRatio: number;
@@ -351,27 +416,31 @@ export function compressConversation<TMessage>(
   options: CompressionOptions<TMessage>
 ): CompressionResult<TMessage> {
   const estimateTokens = options.estimateTokens ?? DEFAULT_ESTIMATE_TOKENS<TMessage>;
-  const preserveLast = Math.max(0, options.preserveLast ?? 0);
-  const retained = [...messages];
+  const route = routeCompressionStrategy(messages);
+  let selectedStrategy: ReturnType<typeof createAnchoredIterativeStrategy<TMessage>>;
 
-  let estimatedTokens = retained.reduce((total, message) => total + estimateTokens(message), 0);
-  let droppedCount = 0;
-
-  while (retained.length > preserveLast && estimatedTokens > options.maxTokens) {
-    const removed = retained.shift();
-    if (removed === undefined) {
-      break;
-    }
-
-    estimatedTokens -= estimateTokens(removed);
-    droppedCount += 1;
+  if (route.strategy === 'anchored-iterative') {
+    selectedStrategy = createAnchoredIterativeStrategy<TMessage>();
+  } else if (route.strategy === 'layered-pruning') {
+    selectedStrategy = createLayeredPruningStrategy<TMessage>();
+  } else {
+    selectedStrategy = createNaiveDroppingStrategy<TMessage>();
   }
+
+  const result = selectedStrategy.compress(messages, {
+    estimateTokens,
+    maxTokens: options.maxTokens,
+    preserveLast: Math.max(0, options.preserveLast ?? 0)
+  });
+
+  const estimatedTokens = result.messages.reduce((total, message) => total + estimateTokens(message), 0);
+  const droppedCount = Math.max(0, messages.length - result.messages.length);
 
   return {
     compressed: droppedCount > 0,
     droppedCount,
     estimatedTokens: Math.max(0, estimatedTokens),
-    messages: retained
+    messages: result.messages
   };
 }
 
@@ -687,6 +756,7 @@ function removeWhichClauses(source: string): string {
 export function compressOutput(response: string, options: OutputCompressionOptions): OutputCompressionResult {
   const preserve = new Set(options.preserve ?? [...DEFAULT_PRESERVATION_SET]);
   const { level } = options;
+  const metadata = createOutputCompressionMetadata(response);
 
   if (!preserve.has('code')) {
     const originalTokens = estimateTextTokens(response);
@@ -695,6 +765,7 @@ export function compressOutput(response: string, options: OutputCompressionOptio
     return {
       compressed,
       compressedTokens,
+      metadata,
       original: response,
       originalTokens,
       savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)
@@ -733,6 +804,7 @@ export function compressOutput(response: string, options: OutputCompressionOptio
   return {
     compressed,
     compressedTokens,
+    metadata,
     original: response,
     originalTokens,
     savingsRatio: originalTokens === 0 ? 0 : Math.max(0, (originalTokens - compressedTokens) / originalTokens)

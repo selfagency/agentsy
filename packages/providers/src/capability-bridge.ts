@@ -11,12 +11,22 @@ import type { ProviderCapabilities } from './index.js';
  * Model capability requirements from @agentsy/models
  */
 export interface ModelCapabilities {
-  batching?: boolean;
-  costTracking?: boolean;
+  audioInput?: boolean;
+  audioOutput?: boolean;
+  imageInput?: boolean;
+  imageOutput?: boolean;
   reasoning?: boolean;
   streaming?: boolean;
-  tokenBudgeting?: boolean;
   toolCalling?: boolean;
+}
+
+/**
+ * Minimal model shape needed to extract capabilities.
+ */
+export interface ModelRecordLike {
+  modalities: { input: readonly string[]; output: readonly string[] };
+  reasoning: boolean;
+  tool_call: boolean;
 }
 
 /**
@@ -52,16 +62,22 @@ export function modelCapabilitiesToProviderRequirements(modelCapabilities: Model
   return {
     streaming: modelCapabilities.streaming,
     toolCalling: modelCapabilities.toolCalling,
-    reasoning: modelCapabilities.reasoning,
-    batching: modelCapabilities.batching,
-    ...(modelCapabilities.costTracking || modelCapabilities.tokenBudgeting
-      ? {
-          budgeting: {
-            supportsCostTracking: modelCapabilities.costTracking,
-            supportsTokenBudgeting: modelCapabilities.tokenBudgeting
-          }
-        }
-      : {})
+    reasoning: modelCapabilities.reasoning
+  };
+}
+
+/**
+ * Extract model capabilities from a models.dev model record.
+ */
+export function extractModelCapabilities(model: ModelRecordLike): ModelCapabilities {
+  return {
+    audioInput: model.modalities.input.includes('audio'),
+    audioOutput: model.modalities.output.includes('audio'),
+    imageInput: model.modalities.input.includes('image'),
+    imageOutput: model.modalities.output.includes('image'),
+    reasoning: model.reasoning,
+    streaming: true,
+    toolCalling: model.tool_call
   };
 }
 
