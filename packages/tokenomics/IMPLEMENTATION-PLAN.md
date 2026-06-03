@@ -1077,23 +1077,7 @@ agentsy tokenomics adapters add <name>
 **Previous:** `plan/28-PHASE-19-CONTEXT-RENAME.md`  
 **Next:** Begin TASK-TKNM-001 after Phase 9 observability is complete.
 
-<!-- Migrated from packages/context IMPLEMENTATION-PLAN(s) -->
-
-## Migrated: **preamble**
-
-## @agentsy/context: Drift-Aware, Anchored Compression Implementation Plan
-
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
-**Goal:** Transform @agentsy/context from naive token-dropping to ACON-inspired anchored compression with drift detection, hierarchical summarization, and observability.
-
-**Architecture:** Implement a pluggable compression strategy pattern with drift scoring, anchor identification, and trajectory learning. Add three-layer offloading (results → inputs → messages) and Anthropic provider integration. Shift from token-count optimization to context-quality preservation.
-
-**Tech Stack:** TypeScript 6.0+, Vitest 4.1, pnpm workspaces, existing TokenManager interface, @agentsy/core context segments, no new external dependencies.
-
----
-
-### Migrated: Phase 1: Drift Detection & Quality Metrics (Foundation)
+### Phase 1: Drift Detection & Quality Metrics (Foundation)
 
 Phase 1: Drift Detection & Quality Metrics (Foundation)
 
@@ -1578,7 +1562,7 @@ git commit -m "feat(drift): implement session-level drift monitoring"
 
 ---
 
-### Migrated: Phase 2: ACON-Inspired Anchored Compression (Core)
+### Phase 2: ACON-Inspired Anchored Compression (Core)
 
 Phase 2: ACON-Inspired Anchored Compression (Core)
 
@@ -2221,7 +2205,7 @@ git commit -m "feat: integrate compression strategies with strategy selection"
 
 ---
 
-### Migrated: Phase 3: Three-Layer Offloading (Efficiency)
+### Phase 3: Three-Layer Offloading (Efficiency)
 
 Phase 3: Three-Layer Offloading (Efficiency)
 
@@ -2565,7 +2549,7 @@ git commit -m "feat(offloading): implement three-layer offloading strategy"
 
 ---
 
-### Migrated: Phase 4: Observability Loop (Continuous Improvement)
+### Phase 4: Observability Loop (Continuous Improvement)
 
 Phase 4: Observability Loop (Continuous Improvement)
 
@@ -2801,7 +2785,7 @@ Token budgets, context reduction, and output shaping for LLM applications — **
 
 
 
-## Migrated: Features
+## Features
 
 Features
 
@@ -2816,7 +2800,7 @@ Features
 
 
 
-## Migrated: Quick Start
+## Quick Start
 
 Quick Start
 
@@ -2940,7 +2924,7 @@ console.log(comparison);
 
 
 
-## Migrated: API Reference
+## API Reference
 
 API Reference
 
@@ -3022,7 +3006,7 @@ totalInputTokens: number;
 
 
 
-## Migrated: Design Principles
+## Design Principles
 
 Design Principles
 
@@ -3035,7 +3019,7 @@ Design Principles
 
 
 
-## Migrated: Remaining Phases (Stubs for Future Implementation)
+## Remaining Phases (Stubs for Future Implementation)
 
 Remaining Phases (Stubs for Future Implementation)
 
@@ -3071,7 +3055,7 @@ Remaining Phases (Stubs for Future Implementation)
 
 
 
-## Migrated: Testing & Validation Checklist
+## Testing & Validation Checklist
 
 Testing & Validation Checklist
 
@@ -3095,7 +3079,7 @@ pnpm run compression.bench.ts # If benchmarks added
 
 
 
-## Migrated: Scope Notes
+## Scope Notes
 
 Scope Notes
 
@@ -3124,7 +3108,7 @@ git commit -m "feat: integrate compression strategies with documentation"
 
 
 
-## Migrated: Summary
+## Summary
 
 Summary
 
