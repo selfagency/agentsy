@@ -7,6 +7,7 @@
     "target": "esnext",
     "lib": ["esnext"],
     "types": ["node"],
+    "baseUrl": ".",
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
@@ -20,6 +21,10 @@
     "skipLibCheck": true,
     "jsx": "react-jsx",
     "jsxImportSource": "react",
+    "paths": {
+      "@agentsy/context": ["packages/context/src/index.ts"],
+      "@agentsy/types": ["packages/types/src/index.ts"]
+    },
     "rewriteRelativeImportExtensions": true,
     "allowImportingTsExtensions": true
   },

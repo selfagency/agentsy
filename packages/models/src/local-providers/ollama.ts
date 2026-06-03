@@ -10,6 +10,7 @@ const DEFAULT_TIMEOUT = 5000;
 export async function probeOllama(options: OllamaProbeOptions = {}): Promise<LocalProviderProbeResult> {
   const baseUrl = options.baseUrl ?? DEFAULT_OLLAMA_URL;
   const timeout = options.timeout ?? DEFAULT_TIMEOUT;
+  const startedAt = Date.now();
 
   try {
     // Check if Ollama is running
@@ -65,6 +66,7 @@ export async function probeOllama(options: OllamaProbeOptions = {}): Promise<Loc
 
     return {
       available: true,
+      latencyMs: Date.now() - startedAt,
       version,
       models
     };
@@ -73,6 +75,7 @@ export async function probeOllama(options: OllamaProbeOptions = {}): Promise<Loc
     return {
       available: false,
       models: [],
+      latencyMs: Date.now() - startedAt,
       error: `Ollama probe failed: ${message}`
     };
   }

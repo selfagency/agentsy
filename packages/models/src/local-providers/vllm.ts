@@ -10,6 +10,7 @@ const DEFAULT_TIMEOUT = 5000;
 export async function probeVllm(options: VllmProbeOptions = {}): Promise<LocalProviderProbeResult> {
   const baseUrl = options.baseUrl ?? DEFAULT_VLLM_URL;
   const timeout = options.timeout ?? DEFAULT_TIMEOUT;
+  const startedAt = Date.now();
 
   try {
     // Check if vLLM is running via OpenAI-compatible API
@@ -56,6 +57,7 @@ export async function probeVllm(options: VllmProbeOptions = {}): Promise<LocalPr
 
     return {
       available: true,
+      latencyMs: Date.now() - startedAt,
       version,
       models
     };
@@ -64,6 +66,7 @@ export async function probeVllm(options: VllmProbeOptions = {}): Promise<LocalPr
     return {
       available: false,
       models: [],
+      latencyMs: Date.now() - startedAt,
       error: `vLLM probe failed: ${message}`
     };
   }

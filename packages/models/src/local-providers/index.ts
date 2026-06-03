@@ -8,7 +8,7 @@ export type {
   LocalProviderProfile,
   ProviderProtocol
 } from './profiles.types.js';
-
+export { routeLocalProviders } from './routing.js';
 export type {
   LocalModelInfo,
   LocalProviderDiscoveryResult,

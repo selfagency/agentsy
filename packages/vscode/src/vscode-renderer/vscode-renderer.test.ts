@@ -201,7 +201,6 @@ describe('VS Code Chat Renderer', () => {
       expect(onToolCall).toHaveBeenCalledOnce();
       expect(onToolCall).toHaveBeenCalledWith(
         expect.objectContaining({
-          // biome-ignore lint: typescript/no-unsafe-assignment -- vitest matcher returns any
           call: expect.objectContaining({ id: 'tc_callback', name: 'search' }),
           state: 'pending',
           type: 'tool_call'

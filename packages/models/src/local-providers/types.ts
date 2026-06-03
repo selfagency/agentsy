@@ -5,6 +5,7 @@
 export interface LocalProviderProbeResult {
   available: boolean;
   error?: string | undefined;
+  latencyMs?: number | undefined;
   models: LocalModelInfo[];
   version?: string | undefined;
 }

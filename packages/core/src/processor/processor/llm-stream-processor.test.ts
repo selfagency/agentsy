@@ -1,5 +1,4 @@
 import type { FinishReason, UsageInfo } from '@agentsy/types';
-// biome-ignore lint: xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import type { XmlToolCall } from '../../tool-calls/index.js';
