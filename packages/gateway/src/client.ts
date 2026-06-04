@@ -1,9 +1,10 @@
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 import { ProviderHealthRegistry } from './health/provider-health-registry.js';
 import { type QuotaTracker, QuotaTrackerRegistry } from './quota/tracker.js';
-import { createProviderRegistry, type ProviderRegistry } from './registry/index.js';
+import { createProviderRegistry } from './registry/index.js';
 import { buildStrategy, retryWithFailover } from './retry.js';
 import type { StrategyOptions } from './strategies/strategies.js';
+import { ModelSwitcher } from './switcher.js';
 import type { LoadBalancedClient, LoadBalancerConfig, ProviderEntry, RoutingState } from './types.js';
 
 function buildRoutingState(config: LoadBalancerConfig, health: ProviderHealthRegistry): RoutingState {
@@ -50,6 +51,9 @@ function buildNoopClient(): LoadBalancedClient {
         })
       );
     },
+    createModelSwitcher(): ModelSwitcher {
+      return new ModelSwitcher({ providers: [], setActiveModel: () => undefined });
+    },
     getRoutingState(): RoutingState {
       return routingState;
     },
@@ -66,12 +70,6 @@ function buildNoopClient(): LoadBalancedClient {
       return Promise.resolve();
     }
   };
-}
-
-export interface GatewayClientInternals {
-  readonly health: ProviderHealthRegistry;
-  readonly quota: QuotaTrackerRegistry;
-  readonly registry: ProviderRegistry;
 }
 
 /**
@@ -100,11 +98,15 @@ export function createLoadBalancedClient(
   const strategy = buildStrategy(config.strategy ?? 'adaptive', options.strategyOptions ?? {});
   const inFlight = new Map<string, number>();
   const maxAttempts = config.retry?.attempts ?? 2;
+  // Mutable model pointer: ModelSwitcher rewrites this without
+  // rebuilding the provider tree, so `config.model` (frozen) is
+  // not the source of truth. Defaults to the config value.
+  let currentModel: string = config.model ?? config.providers[0]?.model ?? '';
 
   function providersForRequest(request: CompletionRequest): ProviderEntry[] {
     const first = config.providers[0];
-    if (config.model !== undefined && first !== undefined) {
-      const overridden: ProviderEntry = { ...first, model: request.model ?? config.model };
+    if (currentModel.length > 0 && first !== undefined) {
+      const overridden: ProviderEntry = { ...first, model: request.model ?? currentModel };
       return [overridden, ...config.providers.slice(1)];
     }
     return config.providers;
@@ -155,6 +157,14 @@ export function createLoadBalancedClient(
   return {
     complete,
     stream,
+    createModelSwitcher(): ModelSwitcher {
+      return new ModelSwitcher({
+        providers: config.providers,
+        setActiveModel(upstreamModel: string, _provider: ProviderEntry): void {
+          currentModel = upstreamModel;
+        }
+      });
+    },
     getRoutingState(): RoutingState {
       return buildRoutingState(config, health);
     },

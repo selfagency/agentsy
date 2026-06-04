@@ -57,6 +57,7 @@ export interface LoadBalancerConfig {
 }
 
 export interface LoadBalancedClient extends UniversalClient {
+  createModelSwitcher(): import('./switcher.js').ModelSwitcher;
   getRoutingState(): RoutingState;
   getUsageSnapshot(): ProviderUsageSnapshot[];
   markProviderHealthy(providerId: string): void;

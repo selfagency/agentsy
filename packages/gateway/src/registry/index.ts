@@ -1,6 +1,7 @@
 import { createUniversalClient } from '@agentsy/providers';
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 
+import { ModelSwitcher } from '../switcher.js';
 import type { LoadBalancedClient, LoadBalancerConfig, RoutingState } from '../types.js';
 
 export interface ProviderRegistryEntry {
@@ -55,6 +56,9 @@ function buildNoopClient(): LoadBalancedClient {
           }
         })
       );
+    },
+    createModelSwitcher(): ModelSwitcher {
+      return new ModelSwitcher({ providers: [], setActiveModel: () => undefined });
     },
     getRoutingState(): RoutingState {
       return routingState;
@@ -112,6 +116,9 @@ export function createLoadBalancedClient(config: LoadBalancerConfig): LoadBalanc
     },
     stream(request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
       return client.stream(request);
+    },
+    createModelSwitcher(): ModelSwitcher {
+      return new ModelSwitcher({ providers: config.providers, setActiveModel: () => undefined });
     },
     getRoutingState(): RoutingState {
       return buildRoutingState(config);

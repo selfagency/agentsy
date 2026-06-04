@@ -44,6 +44,7 @@ export {
   type RoutingStrategy,
   type SelectionContext
 } from './strategies/strategy.js';
+export { type ModelInfo, type ModelSwitchConfig, ModelSwitcher, type ModelSwitcherOptions } from './switcher.js';
 export {
   type LoadBalancedClient,
   type LoadBalancerConfig,
