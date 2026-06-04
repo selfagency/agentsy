@@ -18,15 +18,15 @@ Build semantic routing layer between CLI and providers. Automatic failover, circ
 
 ## Completed Foundation (TASK-LB-001..009) ✅
 
-- ✅ Package scaffold
-- ✅ ProviderProfileConfigSchema (Zod)
-- ✅ ProfileRegistry
-- ✅ ModelAliasMap (gpt-4o, claude-opus-4, gemini-2.5-pro, llama-3.3-70b)
-- ✅ ProviderRegistry with UniversalClient creation
-- ✅ GatewayClient passthrough interface
-- ✅ GatewayConfigSchema
+- ✅ Package scaffold (`@agentsy/gateway` at `packages/gateway/`)
+- ✅ ProviderProfileConfigSchema (Zod) — `packages/providers/src/profiles/types.ts:53`
+- ✅ ProfileRegistry — `packages/providers/src/profiles/registry.ts`
+- ✅ ModelAliasMap (gpt-4o, claude-opus-4, gemini-2.5-pro, llama-3.3-70b) — `packages/gateway/src/registry/model-alias.ts`
+- ✅ ProviderRegistry with UniversalClient creation — `packages/gateway/src/registry/index.ts:99` (`createProviderRegistry`)
+- ✅ GatewayClient passthrough interface — `LoadBalancedClient` in `packages/gateway/src/types.ts:67`
+- ✅ GatewayConfigSchema — `LoadBalancerConfigSchema` in `packages/gateway/src/config.ts` (renamed for clarity)
 
-**Evidence:** `packages/llm-gateway/src/` partially complete
+**Evidence:** `packages/gateway/src/` and `packages/providers/src/profiles/` shipped.
 
 ---
 
@@ -74,11 +74,15 @@ export const genericOpenAiProfiles: ProviderProfile[] = [
 
 - `deepinfra.ts` — Open LLM Leaderboard models
 
+## Status: ✅ DONE
+
+The 12 built-in profile modules were moved from `packages/gateway` to `packages/providers/src/profiles/` in commit `5284c0bc` (refactor: move profile knowledge into `@agentsy/providers`). Each profile is a `ProviderProfile` record with `usageProbes: UsageProbe[]`, header parsing, error classification, and capability metadata. The CodexBar-style `usageProbes` shape replaced the original single-`path` field. Built-in profiles: `openai`, `anthropic`, `gemini`, `bedrock`, `mistral`, `deepseek`, `xai`, `perplexity`, `ollama`, `deepinfra`, `zai`, `generic-openai`. The `zai.ts` Zero-API mock and the `ollama.ts` local profile are the Tier 0 entries. Deepinfra remains the Tier 2 Open LLM Leaderboard route.
+
 **Quality gates:**
 
 - ✅ All profiles tested against mock responses
-- ✅ Header parsing validated
-- ✅ Error extraction tested
+- ✅ Header parsing validated (`parseRateLimitHeaders` in `packages/providers/src/profiles/header-parser.ts`)
+- ✅ Error extraction tested (`packages/providers/src/profiles/error-classifier.ts`)
 
 ---
 
@@ -102,6 +106,10 @@ export async function resolveProvider(config: CliConfig) {
 ```
 
 No breaking changes to CLI; gateway is transparent upgrade.
+
+## Status: ✅ DONE
+
+`packages/cli/src/providers/resolve-provider.ts` imports `createLoadBalancedClient` from `@agentsy/gateway` (the function was renamed from `createGatewayClient` to `createLoadBalancedClient` in the actual implementation; the plan's name was a placeholder). The CLI's `chat` command and every other consumer of `resolveProvider` now go through the gateway transparently. The returned `LoadBalancedClient` extends `UniversalClient`, so no breaking changes to call sites.
 
 ---
 
@@ -159,6 +167,10 @@ export class HealthTracker {
 }
 ```
 
+**Status: ✅ DONE** (with naming changes)
+
+`packages/gateway/src/health/circuit-breaker.ts` ships `CircuitBreaker` with state `'closed' | 'open' | 'half-open'` (lowercase per TypeScript style; semantics identical to the plan's `'CLOSED' | 'OPEN' | 'HALF_OPEN'`). `HealthTracker` and `LatencyTracker` sit alongside in `health-tracker.ts` and `latency-tracker.ts`. `ProviderHealthRegistry` (`provider-health-registry.ts`) wraps the breaker + tracker per provider and exposes `recordSuccess` / `recordFailure` / `canRequest` / `getStatus` / `resetCircuit`. Defaults: failureThreshold=5, resetAfterMs=30_000. The plan's pseudocode omits a `successCount >= 3` to close from half-open — the implementation closes immediately on any single `recordSuccess` (the more common circuit-breaker pattern). Configurable via `CircuitBreakerConfig`.
+
 ---
 
 ### TASK-LB-012: Rate Limit Header Parsing
@@ -191,6 +203,10 @@ export class UsageTracker {
 
 Support OpenAI, Anthropic, Meta, generic patterns.
 
+**Status: ✅ DONE** (renamed, scope expanded)
+
+`packages/gateway/src/quota/header-parser.ts` ships `parseRateLimitHeaders` supporting the OpenAI `x-ratelimit-*` family plus the Anthropic `anthropic-ratelimit-*` family, plus a generic `x-ratelimit-limit-tokens` fallback. `QuotaTracker` (in `quota/tracker.ts`) replaces the plan's `UsageTracker`; it tracks RPM/TPM remaining locally and updates from response headers via `QuotaTracker.parseFromResponse()`. `QuotaTrackerRegistry` (`quota/tracker.ts`) maps providerId → tracker. The plan's "use @agentsy/tokenomics" decision is reflected: `QuotaTracker` delegates rate-limit math to `@agentsy/tokenomics`'s `PacingController` + `createInMemoryTokenManager()`. This was the re-architecture in commit `5284c0bc`.
+
 ---
 
 ### TASK-LB-013: Routing Strategies
@@ -216,20 +232,11 @@ export class RoundRobinStrategy {
     return providers[next];
   }
 }
-
-export class WeightedStrategy {
-  selectProvider(providers: ProviderProfile[]): ProviderProfile {
-    // Weighted random selection
-  }
-}
-
-export class AdaptiveStrategy {
-  selectProvider(providers: ProviderProfile[]): ProviderProfile {
-    // Composite scorer: health + latency + cost + capability match
-    // Default for production
-  }
-}
 ```
+
+## Status: ✅ DONE (with one bonus)
+
+`packages/gateway/src/strategies/strategies.ts` ships the 7 named strategies + a `createStrategy(name, options)` factory: `RoundRobinStrategy`, `WeightedStrategy`, `LeastConnectionsStrategy`, `LatencyBasedStrategy`, `PriorityFallbackStrategy`, `CostBasedStrategy`, `AdaptiveStrategy` (composite scorer over health, latency, quota, cost — the default for production). All share a pre-filter that drops open-circuit, unhealthy, exhausted-RPM/TPM, and missing-capability providers before selection. `StrategyNameSchema` is a Zod enum of valid names. 30+ tests in `strategies.test.ts`.
 
 ---
 
@@ -237,32 +244,9 @@ export class AdaptiveStrategy {
 
 **Effort:** ~1 hour
 
-```typescript
-export async function retryWithFailover<T>(
-  providers: ProviderProfile[],
-  operation: (p: ProviderProfile) => Promise<T>,
-  maxRetries = 3
-): Promise<T> {
-  for (const provider of providers) {
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        return await operation(provider);
-      } catch (err) {
-        if (attempt === maxRetries - 1 && provider === providers[providers.length - 1]) {
-          throw new AllProvidersExhaustedError(/* diagnostic payload */);
-        }
-      }
-    }
-  }
-}
+## Status: ✅ DONE
 
-export async function retryStreamWithFailover<T>(
-  providers: ProviderProfile[],
-  operation: (p: ProviderProfile) => ReadableStream<T>
-): Promise<ReadableStream<T>> {
-  // Similar but for streaming
-}
-```
+`packages/gateway/src/retry.ts` ships `retryWithFailover<T>(context, operation, options)`. The implementation picks ONE provider via the strategy and appends the rest in declared order as explicit fallback; each provider is tried up to `maxAttemptsPerProvider` times before failover. Records health + quota side-effects via the registry hooks. Throws `AllProvidersExhaustedError` with `ProviderFailureDetail[]` on full exhaustion. 10+ tests in `retry.test.ts`. `retryStreamWithFailover` from the plan was not implemented as a separate function — `stream()` reuses the same `retryWithFailover` wrapper since the operation function returns a `Promise<ReadableStream<NormalizedChunk>>` and the wrap is generic. This is a small scope reduction (no streaming-specific failover) but the user-visible behavior is the same: stream errors fail over to the next provider.
 
 ---
 
@@ -270,27 +254,9 @@ export async function retryStreamWithFailover<T>(
 
 **Effort:** ~0.5 hours
 
-```typescript
-export interface ProbeConfig {
-  usageProbe?: {
-    path: string;
-    interval: number;
-  };
-}
+**Status: ✅ DONE** (CodexBar-style)
 
-export async function probeUsage(provider: ProviderProfile, config: ProbeConfig): Promise<UsageSnapshot> {
-  if (!config.usageProbe) return getCachedUsage(provider.id);
-
-  const url = `${provider.baseUrl}${config.usageProbe.path}`;
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${provider.apiKey}` }
-  });
-
-  return parseUsageResponse(response, provider.id);
-}
-```
-
-Example: DeepInfra `GET /v1/me/rate_limit`
+`packages/gateway/src/probes/run-probe.ts` ships `runProbe(probe, ctx)` with three kinds: `api` (HTTP fetch to `ctx.baseUrl + probe.path`), `local` (no-op, always null), `cli` (shell out via `node -e`). `defaultApiParse` is a heuristic parser for common JSON shapes; profiles can supply a custom `parse` function. `probeProvider(provider, ctx)` in `probe-provider.ts` merges snapshots across a profile's `usageProbes[]` and short-circuits on the first non-null result. 30+ tests covering each kind, header propagation, parse overrides, and the merge behavior. Replaces the plan's older single-path `usageProbe` field with the more general `usageProbes: UsageProbe[]` array shape (CodexBar's pattern). Shipped in commit `54d6a8a9`.
 
 ---
 
@@ -298,22 +264,9 @@ Example: DeepInfra `GET /v1/me/rate_limit`
 
 **Effort:** ~0.5 hours
 
-```text
-$ agentsy lb status
+## Status: ✅ DONE
 
-Provider           Status    Model Count    RPM Remaining    TPM Remaining
-─────────────────────────────────────────────────────────────────────────
-openai             ✓         3              4500/5000        100k/125k
-anthropic          ✓         2              4800/5000        100k/100k
-ollama (local)     ✓         5              ∞                ∞
-deepinfra          ⚠ HALF    10             8000/10000       400k/500k
-```
-
-Color-code status:
-
-- ✓ Green (CLOSED)
-- ⚠ Yellow (HALF_OPEN)
-- ✗ Red (OPEN)
+`packages/cli/src/commands/lb-status.ts` ships `runLbStatusCommand(argv, io)` with `agentsy lb status` (and the bare `lb` subcommand). Renders per-provider status (healthy / degraded / unhealthy), per-provider RPM/TPM remaining, per-provider latency, and the active strategy. Accepts `--provider`, `--model`, `--api-key`, `--base-url`, `--strategy`, `--json`, `--no-color`. ANSI colors: green (healthy), yellow (degraded), red (unhealthy), gray (unknown). 5 tests in `lb-status.test.ts`. The plan's tabular layout (Provider / Status / Model Count / RPM / TPM) was simplified to a list-style output for terminal width; all required fields are present. Shipped in commit `9fe00c3b`.
 
 ---
 
@@ -330,40 +283,39 @@ Color-code status:
 
 Register in `@agentsy/plugins` slash registry.
 
+## Status: ❌ NOT DONE
+
+The slash commands `/lb status`, `/lb providers`, `/lb strategy`, `/lb reset` are not registered in any TUI slash registry. The CLI shell subcommand `agentsy lb status` exists, but the in-REPL slash-command form used inside the chat TUI is missing. The `LoadBalancedClient.markProviderHealthy(providerId)` and `markProviderUnhealthy(providerId)` methods (which already implement "reset") are exposed but not wired to a slash handler. **Estimated remaining effort: ~0.5h** to add four slash handlers in `packages/cli/src/commands/chat.ts` near the existing `/model` and `/provider` handlers.
+
 ---
 
 ### TASK-LB-018: Unit Tests
 
 **Effort:** ~1 hour
 
-```typescript
-describe('Gateway', () => {
-  test('config validation', () => {
-    /* Zod */
-  });
-  test('registry lookup', () => {
-    /* provider/model by ID */
-  });
-  test('alias resolution', () => {
-    /* gpt-4o → openai */
-  });
-  test('circuit breaker transitions', () => {
-    /* CLOSED → OPEN → HALF_OPEN → CLOSED */
-  });
-  test('header parsing', () => {
-    /* rate limits */
-  });
-  test('quota pre-flight', () => {
-    /* can request? */
-  });
-  test('strategies', () => {
-    /* selection deterministic */
-  });
-  test('failover exhaustion', () => {
-    /* all fail → AllProvidersExhaustedError */
-  });
-});
-```
+## Status: ✅ DONE
+
+`packages/gateway/src/` ships 17 test files totaling ~150+ test cases:
+
+- `health/circuit-breaker.test.ts` — state machine transitions
+- `health/health-tracker.test.ts` — uptime / latency aggregation
+- `health/provider-health-registry.test.ts` — per-provider tracking, circuit open/close
+- `quota/tracker.test.ts` — RPM/TPM updates, canMakeRequest
+- `retry.test.ts` — failover, attempts, exhausted
+- `strategies/strategies.test.ts` — every strategy's selection
+- `strategies/tier-aware.test.ts` — tier filter + escalation
+- `switcher.test.ts` — alias resolution, model switch
+- `probes/run-probe.test.ts` — api/local/cli, header propagation
+- `probes/probe-provider.test.ts` — merge snapshots, short-circuit
+- `observability/metrics-collector.test.ts` — per-(provider, model) buckets
+- `__tests__/metrics-instrumentation.test.ts` — auto-instrumentation
+- `__tests__/load-balancer.test.ts` — end-to-end foundation
+- `__tests__/registry.test.ts` — ProviderRegistry lookup
+- `registry/local-providers.test.ts` — Phase 17 detection
+- `client.test.ts` — noop client + factory seam
+- `retry.test.ts` — retryWithFailover edge cases
+
+Covers every checklist item: config validation (Zod), registry lookup, alias resolution, circuit transitions, header parsing, quota pre-flight, strategy selection, failover exhaustion.
 
 ---
 
@@ -371,40 +323,22 @@ describe('Gateway', () => {
 
 **Effort:** ~1.5 hours
 
-```typescript
-test('429 rate limit → failover', async () => {
-  // Provider A returns 429
-  // Gateway retries with Provider B
-  // Success
-});
+## Status: ⚠️ PARTIAL
 
-test('all providers exhausted', async () => {
-  // All configured providers fail
-  // AllProvidersExhaustedError thrown
-  // Diagnostic payload includes failures
-});
+There are no `*.spec.ts` E2E files in the gateway package. The `metrics-instrumentation.test.ts` file is the closest substitute: it exercises the full `createLoadBalancedClient` → `retryWithFailover` → `MetricsCollector` chain with stub `UniversalClient`s, covering:
 
-test('circuit breaker after 5 consecutive failures', async () => {
-  // Provider fails 5x
-  // Circuit opens
-  // Status shows OPEN
-  // /lb reset clears state
-});
+- 429-style rate-limit rejection → failover (in `metrics-instrumentation.test.ts:97`)
+- All providers exhausted (`metrics-instrumentation.test.ts:84`)
+- Circuit opens after 5 consecutive failures (`metrics-instrumentation.test.ts:120`)
+- Listener exception containment
 
-test('mid-session strategy change', async () => {
-  // Streaming in progress
-  // /lb strategy adaptive
-  // Next request uses new strategy
-});
+What is **NOT** covered:
 
-test('cost-based selection', async () => {
-  // Three providers: cheap, mid, expensive
-  // Strategy: cost-based
-  // Cheap selected first
-});
-```
+- Real MSW-mocked HTTP round-trips against a profile's `usageProbes` (the probe merge is tested, but not the network call)
+- Mid-session strategy change (no test verifies that switching from `'round-robin'` to `'adaptive'` mid-flight actually changes the next pick)
+- Cost-based selection against three real cost entries (tested in unit, not E2E)
 
-Run with MSW mock server from Phase 1.
+The plan's "Run with MSW mock server from Phase 1" reference — the `msw` infrastructure is present in `packages/testing/src/msw.ts` but is not used for any gateway-level test today. **Estimated remaining effort: ~1.5h** to add a `packages/gateway/src/__tests__/e2e/` directory with MSW-backed round-trip tests for 429 → failover, mid-session strategy change, and cost-based selection.
 
 ---
 
@@ -412,54 +346,11 @@ Run with MSW mock server from Phase 1.
 
 **Effort:** ~1.5 hours
 
-Mid-conversation model switching without restart.
+## Status: ⚠️ PARTIAL
 
-```typescript
-// packages/llm-gateway/src/switcher.ts
-export interface ModelSwitchConfig {
-  model: string;
-  provider?: string;  // Inferred from model if not specified
-  session?: string;   // Switch for specific session
-}
+`packages/gateway/src/switcher.ts` ships the `ModelSwitcher` class with `switch()`, `getCurrentConfig()`, `getSupportedModels()`, and alias resolution via `ModelAliasMap`. The client exposes `createModelSwitcher()`. Shipped in commit `902387f1`. 10 unit tests.
 
-export class ModelSwitcher {
-  private currentModel: string;
-  private currentProvider: string;
-
-  async switch(config: ModelSwitchConfig): Promise<void> {
-    const provider = config.provider ?? this.resolveProvider(config.model);
-    const profile = this.registry.getProfile(provider);
-    const client = this.registry.createClient(profile);
-
-    this.currentModel = config.model;
-    this.currentProvider = provider;
-    this.activeClient = client;
-  }
-
-  getCurrentConfig(): { model: string; provider: string } {
-    return { model: this.currentModel, provider: this.currentProvider };
-  }
-
-  getSupportedModels(): ModelInfo[] {
-    return this.registry.getAllModels();
-  }
-}
-```
-
-**CLI integration:**
-
-```text
-/model gpt-4o                    — Switch model mid-conversation
-/model claude-sonnet-4-5         — Switch with auto-provider detection
-/model list                      — List all available models
-```
-
-**SDK integration:**
-
-```typescript
-await agent.switchLLM({ model: 'gpt-5.2' });
-await agent.switchLLM({ model: 'claude-sonnet-4-5-20250929' }, 'session-123');
-```
+The **CLI slash command** `/model` exists in `packages/cli/src/commands/chat.ts:300` but is a stub: it prints `[model] requested=... (restart required)` instead of calling `client.createModelSwitcher().switch({ model })`. The actual mid-conversation switch wiring is missing. The chat handler needs to call the switcher when the gateway client is in scope, which requires a small refactor to make the gateway client accessible to the chat command (currently the chat command imports its own model from config, not from the gateway). **Estimated remaining effort: ~0.5h** to wire the switcher into the chat handler. Per-session pinning (`session?: string`) is accepted by the switcher but not stored — future work.
 
 ---
 
@@ -467,169 +358,39 @@ await agent.switchLLM({ model: 'claude-sonnet-4-5-20250929' }, 'session-123');
 
 **Effort:** ~0.5 hours
 
-## README.md
+## Status: ✅ DONE
 
-````markdown
-# @agentsy/gateway
-
-Semantic routing layer for multi-provider LLM access.
-
-## Features
-
-- **Circuit breaking** — Automatic failover on provider outages
-- **Rate limit tracking** — Monitor quota across providers
-- **Adaptive routing** — Smart provider selection based on latency/cost/health
-- **Transparent upgrade** — Drop-in replacement for UniversalClient
-
-## Migration Guide
-
-```typescript
-// Before
-const client = new UniversalClient(config.apiKey);
-
-// After
-const client = createGatewayClient(config);
-```
-````
-
-````text
-
-...
-
-```text
-
-**TSDoc**: All public types + functions documented.
-
-**Subpath exports:**
-
-```typescript
-export { createGatewayClient } from './gateway';
-export { CircuitBreaker, HealthTracker } from './health';
-export { ProfileRegistry, ProviderRegistry } from './registry';
-export * from './types';
-````
+`packages/gateway/README.md` was rewritten in commit `85ba1b9e` to match the shipped surface: lists every strategy, every exported type, the migration path from `UniversalClient`, tier-aware + local-provider examples, and a clear subpath-export map. TSDoc on every public type and function. The `packages/gateway/src/index.ts` barrel exports every public surface. `tsup.config.ts` defines subpath entry points (although the gateway currently ships as a single `index` entry; subpath exports are reserved for future use). `package.json` `exports` field is aligned.
 
 ---
 
 ### TASK-LB-OBS (Phase 9 Addition): Metrics
 
-**Scope:** OpenTelemetry integration
+## Status: ✅ DONE
 
-```typescript
-export class MetricsCollector {
-  recordRequest(providerId: string, modelId: string, tokens: TokenCounts) {
-    // Per-provider, per-model breakdowns
-    // Latency percentiles (p50, p95, p99)
-    // Failover counts
-    // Circuit breaker uptime
-  }
+`packages/gateway/src/observability/metrics-collector.ts` ships `MetricsCollector` with `recordRequest`, `recordFailover`, `recordCircuitTrip`, `getUsageSnapshot`, `getProviderAggregate`, `reset`. Per-(provider, model) buckets track request count, success count, failure count, error rate, input/output tokens, USD cost, and latency percentiles (p50 / p95 / p99) via a fixed-capacity `LatencyBuffer` (1000 samples). Auto-instrumentation is wired in `createLoadBalancedClient` (commit `cccd43a0`): one `recordRequest` per caller-visible `complete()` call, one `recordFailover` per cross-provider hop, one `recordCircuitTrip` per closed→open transition. Exposed on the `LoadBalancedClient` surface via `getMetricsSnapshot()` and `getMetricsProviderAggregate(providerId)`. 12 collector tests + 7 instrumentation tests.
 
-  getRoutingState(): RoutingState {
-    return {
-      strategy: this.strategy,
-      providers: this.providers.map(p => ({
-        id: p.id,
-        health: this.health.getStatus(p.id),
-        usage: this.usage.getSnapshot(p.id)
-      }))
-    };
-  }
+**Stream instrumentation gap**: `stream()` calls do not yet contribute to the metrics snapshot (the call returns immediately with a stream object, so end-to-end timing must live in the consumer). The CLI TUI's `streamToStdout` is the right layer to drive this. **Estimated remaining effort: ~0.5h** to wrap the returned `ReadableStream` so it records latency on `cancel`/`close`.
 
-  getUsageSnapshot(): UsageSnapshot {
-    return {
-      requests: this.metrics.request_count,
-      tokens: this.metrics.token_count,
-      cost: this.metrics.cost_usd,
-      failovers: this.metrics.failover_count,
-      circuitTrips: this.metrics.circuit_trips
-    };
-  }
-}
-```
-
-Integrated into runtime turn loop as structured log fields (Phase 9).
+---
 
 ### TASK-LB-022: Tier-Aware Routing Strategy
 
-**Scope:** Add a routing strategy that filters providers by task complexity tier. Integrates with `@agentsy/models` Phase 6 task classification and Phase 17 local provider detection.
+## Status: ✅ DONE
 
-**Key aspects:**
+`packages/gateway/src/strategies/tier-aware.ts` ships `TierAwareStrategy` with options `{ defaultStrategy, tierOf, maxEscalationSteps }`. The strategy reads `taskTier` from the `SelectionContext.request` field, looks up the providers in the matching tier, and runs the base `defaultStrategy` for in-tier selection. If the result is `undefined` (no eligible in-tier provider), it escalates through `ESCALATION_CHAIN` (`micro → small → mid → frontier`) up to `maxEscalationSteps`. `ProviderTier = 'micro' | 'small' | 'mid' | 'frontier'`. `DEFAULT_PROVIDER_TIERS` and `buildTierOf(entries)` are exported for callers. Shipped in commit `6a743c87`. 8 tests.
 
-- Implement `tierAwareStrategy(options: TierAwareOptions)` as a new `RoutingStrategy`
-- Accept `taskTier: 'micro' | 'small' | 'mid' | 'frontier'` as input
-- Filter provider candidates by their assigned tier (from `DEFAULT_PROVIDER_TIERS`)
-- **micro** tier: prefer local-first (apfel → ollama → lm-studio → localai → vllm)
-- **small** tier: prefer low-cost cloud (T4/L4 GPUs, budget providers)
-- **mid** tier: standard cloud (A10G/A100, standard providers)
-- **frontier** tier: best available (H100/B200, premium providers)
-- Fallback chain: micro → small → mid → frontier (escalate on failure/context overrun)
+The plan's `tierPreferredProviders: Record<string, string[]>` is implemented as the in-tier `defaultStrategy` ordering rather than a hard-coded list — this is more flexible because the per-tier ordering is whatever strategy the caller wants (typically `priority-fallback` for the micro tier's local-first ordering, `round-robin` for mid, etc.).
 
-```typescript
-interface TierAwareOptions {
-  defaultStrategy: RoutingStrategy;
-  tierPreferredProviders: Record<string, string[]>;  // tier → ordered provider list
-  escalationRules?: {
-    onOverload?: boolean;     // escalate on rate limits
-    onContextOverrun?: boolean; // escalate when context too large for tier
-    maxEscalationSteps?: number;
-  };
-}
-```
-
-**Cross-reference:** `@agentsy/models` Phase 6 for tier classification, `plan/26-PHASE-17-APFEL-ONDEVICE-OFFLOAD.md` for micro-tier provider registration.
-
-**Testing:**
-
-- Tier-aware selection prefers correct tier's providers
-- Escalation falls through tiers in order
-- No-op when tier is unknown (passes through to default strategy)
-
-**Deliverables:**
-
-- `tierAwareStrategy()` function in `src/strategies/`
-- Configuration types for tier-provider mapping
-- Unit and integration tests
+---
 
 ### TASK-LB-023: Register Local Providers via Phase 17 PlatformProfile
 
-**Scope:** Auto-detect and register local inference backends (apfel, ollama, vllm, lm-studio) using Phase 17's PlatformProfile infrastructure.
+## Status: ✅ DONE (with shape adaptation)
 
-**Key aspects:**
+`packages/gateway/src/registry/local-providers.ts` ships `registerLocalProviders(profile, entries, options)` which mutates `entries` (append-only) by inspecting `profile.accelerators[]` and matching against `LOCAL_BACKEND_PROFILES` (apfel, ollama, vllm, lm-studio, localai). Each registered entry gets `tier: 'micro'`. Returns `{ providers, registered }`. Never throws on detection failures. The shape `LocalPlatformProfile` is a minimal local-version of the future Phase 17 `PlatformProfile` (which is not yet implemented); when Phase 17 lands, the gateway will accept a `PlatformProfile` that is a structural superset.
 
-- Implement `registerLocalProviders(profile: PlatformProfile)` that:
-  - Detects available local backends from `profile.accelerators[].capabilities`
-  - Creates provider configs for each detected backend
-  - Registers them in the Gateway's ProviderRegistry
-  - Sets `tier: 'micro'` on each registered provider
-- Handle graceful degradation: if no local backends detected, continue with cloud-only
-- Integrate with TASK-LB-022 tier-aware routing so micro/small tasks prefer local first
-
-```typescript
-import type { PlatformProfile } from '@agentsy/orchestrator/on-device';
-
-async function registerLocalProviders(
-  profile: PlatformProfile,
-  registry: ProviderRegistry,
-  options?: {
-    preferProvider?: 'apfel' | 'ollama' | 'vllm' | 'lm-studio';
-    defaultContextWindow?: number;
-  }
-): Promise<{ registered: number; providers: string[] }>;
-```
-
-**Dependencies:** Phase 17 adoption 1 (APF-001..006 — platform detection, backend discovery).
-
-**Testing:**
-
-- Registers correct provider for known platform profiles
-- Handles empty/no-accelerator profiles gracefully (0 registered)
-- Provider configs have correct tier annotation
-- Registered providers appear in gateway status commands
-
-**Deliverables:**
-
-- `registerLocalProviders()` function
-- Integration test with PlatformProfile fixtures
+The plan's `await registerLocalProviders(...)` was implemented as synchronous `registerLocalProviders(...)` because profile detection is local and synchronous; no network call is needed. The plan's `registry: ProviderRegistry` parameter is replaced with a `ProviderEntry[]` mutation — the gateway's `ProviderRegistry` does not own provider entries directly, so the caller passes the entries array and the function appends to it. Shipped in commit `6a743c87`. 8 tests.
 
 ---
 
@@ -640,18 +401,41 @@ async function registerLocalProviders(
 - ✅ Rate limit parsing covers OpenAI/Anthropic/Meta
 - ✅ All strategies tested
 - ✅ Failover deterministic
-- ✅ E2E with MSW passes
+- ⚠️ E2E with MSW — partial (no MSW-backed round-trip tests; closest is the stub-`UniversalClient` instrumentation test)
 
 ---
 
 ## Success Criteria
 
-✅ Gateway transparently replaces UniversalClient  
-✅ Automatic failover working  
-✅ Circuit breaker preventing cascading failures  
-✅ Quota tracking accurate  
-✅ CLI commands (status, reset, strategy) functional
+- ✅ Gateway transparently replaces UniversalClient — done (TASK-LB-010)
+- ✅ Automatic failover working — done (TASK-LB-014)
+- ✅ Circuit breaker preventing cascading failures — done (TASK-LB-011)
+- ✅ Quota tracking accurate — done (TASK-LB-012)
+- ⚠️ CLI commands (status, reset, strategy) functional — `status` is done; `reset` and `strategy` are exposed on the client but not wired to slash commands (TASK-LB-017)
 
 ---
+
+## Remaining Work — Summary
+
+| Task | Status | Effort | Notes |
+| --- | --- | --- | --- |
+| TASK-LB-005 Built-in Profiles | ✅ | — | 12 profiles shipped |
+| TASK-LB-010 CLI Integration | ✅ | — | transparent upgrade |
+| TASK-LB-011 Circuit Breaker | ✅ | — | lowercase states, single-success closes |
+| TASK-LB-012 Rate Limit Parsing | ✅ | — | uses `@agentsy/tokenomics` |
+| TASK-LB-013 Routing Strategies | ✅ | — | 7 strategies + factory |
+| TASK-LB-014 Retry & Failover | ✅ | — | `retryStreamWithFailover` not separately implemented |
+| TASK-LB-015 Active Probing | ✅ | — | CodexBar-style `usageProbes[]` |
+| TASK-LB-016 CLI Status Command | ✅ | — | `agentsy lb status` |
+| TASK-LB-017 Slash Commands | ❌ | ~0.5h | `/lb status|providers|strategy|reset` not registered |
+| TASK-LB-018 Unit Tests | ✅ | — | 17 test files, ~150+ cases |
+| TASK-LB-019 E2E Integration Tests | ⚠️ | ~1.5h | unit-level coverage; MSW round-trips missing |
+| TASK-LB-020 Model Switcher | ⚠️ | ~0.5h | switcher class done; `/model` slash command stub |
+| TASK-LB-021 Docs & Exports | ✅ | — | README + barrel aligned |
+| TASK-LB-OBS Metrics | ✅ | — | collector + auto-instrumentation |
+| TASK-LB-022 Tier-Aware Strategy | ✅ | — | `TierAwareStrategy` + escalation |
+| TASK-LB-023 Local Provider Registration | ✅ | — | `registerLocalProviders` + `LOCAL_BACKEND_PROFILES` |
+
+**Total remaining: ~2.5 hours** (TASK-LB-017 + TASK-LB-019 + TASK-LB-020 + the stream-instrumentation gap from TASK-LB-OBS).
 
 **Next phase:** `07-PHASE-4-ORCHESTRATION.md`
