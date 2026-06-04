@@ -140,9 +140,6 @@ importers:
       '@agentsy/core':
         specifier: workspace:*
         version: link:../core
-      '@agentsy/tokenomics':
-        specifier: workspace:*
-        version: link:../tokenomics
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
