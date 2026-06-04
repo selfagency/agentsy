@@ -90,10 +90,16 @@ export interface MetricsSnapshot {
   latency: LatencyPercentiles;
   perProvider: ProviderAggregate[];
   requestCount: number;
+  streamCount: number;
+  streamFailureCount: number;
+  streamSuccessCount: number;
   successCount: number;
   totalCostUsd: number;
   totalInputTokens: number;
   totalOutputTokens: number;
+  totalStreamChunks: number;
+  totalStreamDurationMs: number;
+  totalStreamTtfbMs: number;
   totalTokens: number;
 }
 
@@ -187,6 +193,12 @@ export class MetricsCollector {
   #globalInputTokens = 0;
   #globalOutputTokens = 0;
   #globalCostUsd = 0;
+  #streamCount = 0;
+  #streamSuccessCount = 0;
+  #streamFailureCount = 0;
+  #totalStreamDurationMs = 0;
+  #totalStreamTtfbMs = 0;
+  #totalStreamChunks = 0;
   readonly #sampleCapacity: number;
 
   constructor(options: { sampleCapacity?: number } = {}) {
@@ -287,6 +299,62 @@ export class MetricsCollector {
   }
 
   /**
+   * Record completion of a streaming request. Distinct from
+   * `recordRequest` so the snapshot can expose stream-level
+   * metrics (TTFB, total duration, chunk count) without
+   * overloading the per-call token-and-latency shape.
+   */
+  recordStreamComplete(metric: {
+    /** Number of chunks delivered to the consumer. */
+    chunkCount: number;
+    /** Total wall-clock time from stream construction to close, in ms. */
+    durationMs: number;
+    /** Time from stream construction to first byte, in ms. */
+    modelId: string;
+    providerId: string;
+    /** Whether the stream reached a normal close. */
+    success: boolean;
+    /** Time from stream construction to first byte, in ms. */
+    ttfbMs: number;
+  }): void {
+    const bucket = this.#bucketFor(metric.providerId);
+    // Streams do not contribute to request/success/failure counts
+    // (the per-call `recordRequest` path owns those) but they do
+    // contribute to latency and a stream-specific counter.
+    if (metric.ttfbMs > 0) {
+      bucket.latency.record(metric.ttfbMs);
+    }
+    this.#streamCount += 1;
+    if (metric.success) {
+      this.#streamSuccessCount += 1;
+    } else {
+      this.#streamFailureCount += 1;
+    }
+    this.#totalStreamDurationMs += metric.durationMs;
+    this.#totalStreamTtfbMs += metric.ttfbMs;
+    this.#totalStreamChunks += metric.chunkCount;
+
+    const modelId = metric.modelId.length === 0 ? '__unknown__' : metric.modelId;
+    let modelBucket = bucket.models.get(modelId);
+    if (modelBucket === undefined) {
+      modelBucket = {
+        costUsd: 0,
+        failureCount: 0,
+        inputTokens: 0,
+        latency: new LatencyBuffer(this.#sampleCapacity),
+        modelId,
+        outputTokens: 0,
+        requestCount: 0,
+        successCount: 0
+      };
+      bucket.models.set(modelId, modelBucket);
+    }
+    if (metric.ttfbMs > 0) {
+      modelBucket.latency.record(metric.ttfbMs);
+    }
+  }
+
+  /**
    * Aggregate snapshot across all providers. Computed on demand;
    * safe to call from request paths without measurable overhead
    * for the typical 1-10 provider setup.
@@ -303,10 +371,16 @@ export class MetricsCollector {
       failoverCount: this.#globalFailoverCount,
       latency: this.#percentiles(this.#globalLatency),
       requestCount: this.#globalRequestCount,
+      streamCount: this.#streamCount,
+      streamFailureCount: this.#streamFailureCount,
+      streamSuccessCount: this.#streamSuccessCount,
       successCount: this.#globalSuccessCount,
       totalCostUsd: this.#globalCostUsd,
       totalInputTokens: this.#globalInputTokens,
       totalOutputTokens: this.#globalOutputTokens,
+      totalStreamChunks: this.#totalStreamChunks,
+      totalStreamDurationMs: this.#totalStreamDurationMs,
+      totalStreamTtfbMs: this.#totalStreamTtfbMs,
       totalTokens: this.#globalInputTokens + this.#globalOutputTokens,
       perProvider
     };
@@ -339,6 +413,12 @@ export class MetricsCollector {
     this.#globalInputTokens = 0;
     this.#globalOutputTokens = 0;
     this.#globalCostUsd = 0;
+    this.#streamCount = 0;
+    this.#streamSuccessCount = 0;
+    this.#streamFailureCount = 0;
+    this.#totalStreamDurationMs = 0;
+    this.#totalStreamTtfbMs = 0;
+    this.#totalStreamChunks = 0;
   }
 
   #bucketFor(providerId: string): ProviderBucket {

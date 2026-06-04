@@ -1,6 +1,7 @@
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 import { ProviderHealthRegistry } from './health/provider-health-registry.js';
 import { MetricsCollector } from './observability/metrics-collector.js';
+import { instrumentStream } from './observability/stream-tracker.js';
 import { type QuotaTracker, QuotaTrackerRegistry } from './quota/tracker.js';
 import { createProviderRegistry } from './registry/index.js';
 import { buildStrategy, retryWithFailover } from './retry.js';
@@ -75,10 +76,16 @@ function buildNoopClient(): LoadBalancedClient {
         latency: { p50: undefined, p95: undefined, p99: undefined, samples: 0 },
         perProvider: [],
         requestCount: 0,
+        streamCount: 0,
+        streamFailureCount: 0,
+        streamSuccessCount: 0,
         successCount: 0,
         totalCostUsd: 0,
         totalInputTokens: 0,
         totalOutputTokens: 0,
+        totalStreamChunks: 0,
+        totalStreamDurationMs: 0,
+        totalStreamTtfbMs: 0,
         totalTokens: 0
       };
     },
@@ -210,11 +217,12 @@ export function createLoadBalancedClient(
   }
 
   function stream(request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
-    // Stream instrumentation is a known gap: the call returns
-    // immediately with a stream object, so end-to-end timing has to
-    // live in the consumer. Until that lands, `stream()` requests do
-    // not contribute to the metrics snapshot. The CLI TUI
-    // (`streamToStdout`) is the right layer to drive this.
+    // Stream instrumentation: the gateway records the
+    // time-to-first-byte (TTFB), total stream duration, and
+    // chunk count via a `TransformStream` wrapper. The consumer
+    // reads the wrapped stream exactly as they would the source.
+    const startedAt = Date.now();
+    let lastTried: ProviderEntry | undefined;
     return retryWithFailover(
       {
         health,
@@ -225,6 +233,10 @@ export function createLoadBalancedClient(
         strategy
       },
       entry => {
+        if (lastTried !== undefined && lastTried.id !== entry.id) {
+          metrics.recordFailover(entry.id);
+        }
+        lastTried = entry;
         const client = registry.get(entry.id)?.client;
         if (client === undefined) {
           return Promise.reject(new Error(`No client registered for provider ${entry.id}`));
@@ -232,7 +244,33 @@ export function createLoadBalancedClient(
         return client.stream(request);
       },
       { maxAttemptsPerProvider: maxAttempts }
-    );
+    ).then(source => {
+      const providerId = lastTried?.id ?? '<unconfigured>';
+      const modelId = lastTried?.model ?? currentModel;
+      const { stream: wrapped, closed } = instrumentStream(source);
+      closed
+        .then(summary => {
+          metrics.recordStreamComplete({
+            chunkCount: summary.chunkCount,
+            durationMs: summary.durationMs,
+            modelId,
+            providerId,
+            success: true,
+            ttfbMs: summary.ttfbMs
+          });
+        })
+        .catch(() => {
+          metrics.recordStreamComplete({
+            chunkCount: 0,
+            durationMs: Date.now() - startedAt,
+            modelId,
+            providerId,
+            success: false,
+            ttfbMs: 0
+          });
+        });
+      return wrapped;
+    });
   }
 
   return {

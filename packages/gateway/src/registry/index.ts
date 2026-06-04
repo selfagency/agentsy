@@ -80,10 +80,16 @@ function buildNoopClient(): LoadBalancedClient {
         latency: { p50: undefined, p95: undefined, p99: undefined, samples: 0 },
         perProvider: [],
         requestCount: 0,
+        streamCount: 0,
+        streamFailureCount: 0,
+        streamSuccessCount: 0,
         successCount: 0,
         totalCostUsd: 0,
         totalInputTokens: 0,
         totalOutputTokens: 0,
+        totalStreamChunks: 0,
+        totalStreamDurationMs: 0,
+        totalStreamTtfbMs: 0,
         totalTokens: 0
       };
     },
@@ -165,10 +171,16 @@ export function createLoadBalancedClient(config: LoadBalancerConfig): LoadBalanc
         latency: { p50: undefined, p95: undefined, p99: undefined, samples: 0 },
         perProvider: [],
         requestCount: 0,
+        streamCount: 0,
+        streamFailureCount: 0,
+        streamSuccessCount: 0,
         successCount: 0,
         totalCostUsd: 0,
         totalInputTokens: 0,
         totalOutputTokens: 0,
+        totalStreamChunks: 0,
+        totalStreamDurationMs: 0,
+        totalStreamTtfbMs: 0,
         totalTokens: 0
       };
     },

@@ -13,9 +13,15 @@ import { describe, expect, it } from 'vitest';
 import { createLoadBalancedClient } from '../client.js';
 import type { ProviderEntry } from '../types.js';
 
-function makeClient(
-  responses: Map<string, { response?: CompletionResponse; error?: Error; latencyMs?: number }>
-): UniversalClient {
+interface ClientSlot {
+  chunks?: NormalizedChunk[];
+  error?: Error;
+  latencyMs?: number;
+  response?: CompletionResponse;
+  streamError?: Error;
+}
+
+function makeClient(responses: Map<string, ClientSlot>): UniversalClient {
   return {
     complete(_request: CompletionRequest): Promise<CompletionResponse> {
       const slot = responses.get('__default__');
@@ -42,9 +48,17 @@ function makeClient(
       });
     },
     stream(_request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
+      const slot = responses.get('__default__');
       return Promise.resolve(
         new ReadableStream<NormalizedChunk>({
           start(controller) {
+            if (slot?.streamError !== undefined) {
+              controller.error(slot.streamError);
+              return;
+            }
+            for (const chunk of slot?.chunks ?? []) {
+              controller.enqueue(chunk);
+            }
             controller.close();
           }
         })
@@ -205,5 +219,81 @@ describe('metrics auto-instrumentation', () => {
     );
     // Drive the failure path twice to confirm no unhandled rejection.
     return expect(client.complete({ messages: [] })).rejects.toThrow();
+  });
+});
+
+function chunk(content: string): NormalizedChunk {
+  return { content, type: 'text' as const };
+}
+
+async function drainChunks<T>(stream: ReadableStream<T>): Promise<T[]> {
+  const out: T[] = [];
+  const reader = stream.getReader();
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    if (value !== undefined) {
+      out.push(value);
+    }
+  }
+  return out;
+}
+
+describe('stream auto-instrumentation', () => {
+  it('records streamCount and chunk count for a multi-chunk stream', async () => {
+    const client = createLoadBalancedClient(
+      { providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }] },
+      {
+        clientFactory: () => makeClient(new Map([['__default__', { chunks: [chunk('hi '), chunk('there')] }]]))
+      }
+    );
+    const stream = await client.stream({ messages: [] });
+    const chunks = await drainChunks(stream);
+    expect(chunks.length).toBe(2);
+    // Yield a microtask so the `closed` promise's `flush` callback
+    // can resolve before we read the snapshot.
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const snap = client.getMetricsSnapshot();
+    expect(snap.streamCount).toBe(1);
+    expect(snap.streamSuccessCount).toBe(1);
+    expect(snap.streamFailureCount).toBe(0);
+    expect(snap.totalStreamChunks).toBe(2);
+    expect(snap.totalStreamDurationMs).toBeGreaterThanOrEqual(0);
+    expect(snap.totalStreamTtfbMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it('records a stream failure when the source stream errors', async () => {
+    const client = createLoadBalancedClient(
+      { providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }] },
+      {
+        clientFactory: () => makeClient(new Map([['__default__', { streamError: new Error('stream broken') }]]))
+      }
+    );
+    const stream = await client.stream({ messages: [] });
+    await expect(drainChunks(stream)).rejects.toThrow('stream broken');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const snap = client.getMetricsSnapshot();
+    expect(snap.streamCount).toBe(1);
+    expect(snap.streamSuccessCount).toBe(0);
+    expect(snap.streamFailureCount).toBe(1);
+  });
+
+  it('records an empty stream (zero chunks, zero ttfb)', async () => {
+    const client = createLoadBalancedClient(
+      { providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }] },
+      {
+        clientFactory: () => makeClient(new Map([['__default__', { chunks: [] }]]))
+      }
+    );
+    const stream = await client.stream({ messages: [] });
+    const drained = await drainChunks(stream);
+    expect(drained).toEqual([]);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const snap = client.getMetricsSnapshot();
+    expect(snap.streamCount).toBe(1);
+    expect(snap.totalStreamChunks).toBe(0);
   });
 });

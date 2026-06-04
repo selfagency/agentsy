@@ -24,6 +24,11 @@ export {
   type RequestMetric,
   type TokenCounts
 } from './observability/metrics-collector.js';
+export {
+  type InstrumentedStreamHandle,
+  instrumentStream,
+  type StreamMetricSummary
+} from './observability/stream-tracker.js';
 export { probeProvider, probesAreEmpty } from './probes/probe-provider.js';
 export { defaultApiParse, type ProbeContext, runProbe } from './probes/run-probe.js';
 export { parseRateLimitHeaders, type RateLimitHeaderSnapshot } from './quota/header-parser.js';
