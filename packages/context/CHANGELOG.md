@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-04
+
+## What's Changed
+* feat: migrate TokenManager to new @agentsy/tokenomics package by @selfagency in <https://github>.com/selfagency/agentsy/pull/102
+
+
+**Full Changelog**: <https://github>.com/selfagency/agentsy/compare/@agentsy/context@0.2.0...@agentsy/context@0.2.1
+
+_Source: changes from @agentsy/context@0.2.0 to @agentsy/context@0.2.1._
+
+
 ## [0.2.0] - 2026-06-04
 
 ## What's Changed
