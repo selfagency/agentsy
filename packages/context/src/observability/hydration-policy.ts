@@ -35,7 +35,7 @@ export function createHydrationPolicy(input: HydrationPolicyInput): HydrationPol
   }
 
   const unique = new Map<string, HydrationCandidate>();
-  for (const candidate of candidates.sort((left, right) => right.priority - left.priority)) {
+  for (const candidate of candidates.toSorted((left, right) => right.priority - left.priority)) {
     unique.set(candidate.id, candidate);
   }
 

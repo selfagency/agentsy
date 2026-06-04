@@ -5,6 +5,7 @@
 ## [0.2.0] - 2026-05-28
 
 ## What's Changed
+
 * PR1: Repository Infrastructure Foundation (7/7) by @selfagency in <https://github>.com/selfagency/agentsy/pull/66
 * PR2: Documentation & Planning Foundation (7/7) by @selfagency in <https://github>.com/selfagency/agentsy/pull/67
 * PR3: Core Architecture Foundation with MCP Integration (7/7) by @selfagency in <https://github>.com/selfagency/agentsy/pull/68
@@ -29,6 +30,4 @@
 * feat: Phase 5 memory completion + DOGFOOD-PLAN revision + license migration (MIT → GPL-3.0-or-later) by @selfagency in <https://github>.com/selfagency/agentsy/pull/92
 * feature/dogfood-phase1-2: Phase 1-2 feature work + TS/lint/test fix round by @selfagency in <https://github>.com/selfagency/agentsy/pull/94
 
-
 **Full Changelog**: <https://github>.com/selfagency/agentsy/compare/@agentsy/tool-calls@0.1.2...@agentsy/core@0.2.0
-

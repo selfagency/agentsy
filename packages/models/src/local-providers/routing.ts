@@ -53,13 +53,10 @@ function buildRationale(
   modelCount: number,
   preferLocal: boolean
 ): string {
-  const parts = [preferLocal ? 'local-first' : 'hybrid'];
-
-  if (probe?.latencyMs !== undefined) {
-    parts.push(`latency=${probe.latencyMs}ms`);
-  }
-
-  parts.push(`models=${modelCount}`);
-  parts.push(providerId);
-  return parts.join(', ');
+  return [
+    preferLocal ? 'local-first' : 'hybrid',
+    ...(probe?.latencyMs === undefined ? [] : [`latency=${probe.latencyMs}ms`]),
+    `models=${modelCount}`,
+    providerId
+  ].join(', ');
 }

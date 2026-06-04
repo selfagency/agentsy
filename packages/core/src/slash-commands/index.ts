@@ -95,19 +95,19 @@ function isListItem(indent: number, trimmed: string, currentListKey: 'hooks' | '
 }
 
 function applyCommandField(current: SlashCommandDraft, trimmed: string): boolean {
-  const nameMatch = trimmed.match(/^name:\s*(.+)$/u);
+  const nameMatch = /^name:\s*(.+)$/u.exec(trimmed);
   if (nameMatch !== null) {
     current.name = parseScalar(nameMatch[1] ?? '');
     return true;
   }
 
-  const descriptionMatch = trimmed.match(/^description:\s*(.+)$/u);
+  const descriptionMatch = /^description:\s*(.+)$/u.exec(trimmed);
   if (descriptionMatch !== null) {
     current.description = parseScalar(descriptionMatch[1] ?? '');
     return true;
   }
 
-  const instructionsMatch = trimmed.match(/^instructions:\s*(.+)$/u);
+  const instructionsMatch = /^instructions:\s*(.+)$/u.exec(trimmed);
   if (instructionsMatch !== null) {
     current.instructions = parseScalar(instructionsMatch[1] ?? '');
     return true;

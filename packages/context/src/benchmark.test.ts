@@ -3,19 +3,20 @@ import { describe, expect, it } from 'vitest';
 import { compressConversation, compressOutput } from './index.js';
 
 describe('Performance Tests - Token Compression', () => {
+  function estimateTokens(msg: unknown): number {
+    if (typeof msg === 'object' && msg !== null && 'content' in msg) {
+      return String(msg.content).length;
+    }
+
+    return 0;
+  }
+
   it('TASK-TOKENS-010: compressConversation handles large message lists efficiently', () => {
     // Generate 10_000 messages
     const messages = Array.from({ length: 10_000 }, (_, i) => ({
       role: i % 2 === 0 ? 'user' : 'assistant',
       content: `This is message number ${i} with some content for token estimation.`
     }));
-
-    const estimateTokens = (msg: unknown): number => {
-      if (typeof msg === 'object' && msg !== null && 'content' in msg) {
-        return String(msg.content).length;
-      }
-      return 0;
-    };
 
     // Time the compression operation
     const start = Date.now();
@@ -65,13 +66,6 @@ describe('Performance Tests - Token Compression', () => {
     const sizes = [1000, 2500, 5000, 7500];
     const durations: number[] = [];
 
-    const estimateTokens = (msg: unknown): number => {
-      if (typeof msg === 'object' && msg !== null && 'content' in msg) {
-        return String(msg.content).length;
-      }
-      return 0;
-    };
-
     for (const size of sizes) {
       const messages = Array.from({ length: size }, (_, i) => ({
         role: i % 2 === 0 ? 'user' : 'assistant',
@@ -94,16 +88,6 @@ describe('Performance Tests - Token Compression', () => {
     if (validDurations.length < 2) {
       expect(validDurations.length).toBeGreaterThanOrEqual(0);
       return;
-    }
-
-    // Check that duration scales roughly linearly
-    const ratios: number[] = [];
-    for (let i = 1; i < validDurations.length; i++) {
-      const prev = validDurations[i - 1];
-      const curr = validDurations[i];
-      if (prev && curr && prev > 0 && curr > 0) {
-        ratios.push(curr / prev);
-      }
     }
 
     // Durations should be measurable and non-negative.

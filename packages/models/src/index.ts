@@ -2,15 +2,6 @@ import os from 'node:os';
 import path from 'node:path';
 
 import type {
-  LocalModelInfo,
-  LocalProviderDiscoveryResult,
-  LocalProviderProbeResult,
-  LocalProviderProfile,
-  OllamaProbeOptions,
-  ProviderProtocol,
-  VllmProbeOptions
-} from './local-providers/index.js';
-import type {
   LLMStatsLocalModel,
   LocalModelRecommendation,
   LocalRecommendationCriteria,
@@ -23,6 +14,15 @@ import type {
 } from './types.js';
 
 export { LLMStatsClient } from './llm-stats-client.js';
+export type {
+  LocalModelInfo,
+  LocalProviderDiscoveryResult,
+  LocalProviderProbeResult,
+  LocalProviderProfile,
+  OllamaProbeOptions,
+  ProviderProtocol,
+  VllmProbeOptions
+} from './local-providers/index.js';
 export {
   clearLocalProviderDiscoveryCache,
   discoverLocalProviders,
@@ -42,25 +42,17 @@ export {
   normalizeModelSearchQuery,
   searchModels
 } from './search-contracts.js';
-
 export type {
   LLMStatsLocalModel,
-  LocalModelInfo,
   LocalModelRecommendation,
-  LocalProviderDiscoveryResult,
-  LocalProviderProbeResult,
-  LocalProviderProfile,
   LocalRecommendationCriteria,
   ModelSelectionResult,
   ModelsDevAPI,
   ModelsDevModel,
   ModelsDevProvider,
-  OllamaProbeOptions,
-  ProviderProtocol,
   SystemCapabilities,
-  TaskRequirements,
-  VllmProbeOptions
-};
+  TaskRequirements
+} from './types.js';
 
 // Cache structure
 interface CacheData {

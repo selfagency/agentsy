@@ -13,7 +13,7 @@ export function createThreeLayerOffloading<TInput, TMessage, TResult>(
 ): ThreeLayerOffloadResult {
   return {
     inputLayer: routeCompressionStrategy([{ content: input }]),
-    messageLayer: routeCompressionStrategy(messages as readonly unknown[]),
+    messageLayer: routeCompressionStrategy(messages),
     resultLayer: routeCompressionStrategy([{ content: result }])
   };
 }
