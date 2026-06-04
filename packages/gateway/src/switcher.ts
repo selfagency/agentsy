@@ -121,6 +121,12 @@ export class ModelSwitcher {
   getSupportedModels(): ModelInfo[] {
     const result: ModelInfo[] = [];
     const seen = new Set<string>();
+    this.#addDirectModels(result, seen);
+    this.#addAliasModels(result, seen);
+    return result;
+  }
+
+  #addDirectModels(result: ModelInfo[], seen: Set<string>): void {
     for (const provider of this.#providers) {
       if (provider.model !== undefined && provider.model.length > 0) {
         const key = `${provider.id}::${provider.model}`;
@@ -134,6 +140,9 @@ export class ModelSwitcher {
         }
       }
     }
+  }
+
+  #addAliasModels(result: ModelInfo[], seen: Set<string>): void {
     for (const [alias, byProvider] of ModelAliasMap) {
       for (const [providerId, upstream] of Object.entries(byProvider)) {
         const target = this.#providers.find(p => p.provider === providerId);
@@ -145,14 +154,9 @@ export class ModelSwitcher {
           continue;
         }
         seen.add(key);
-        result.push({
-          alias,
-          provider: target.id,
-          upstreamModel: upstream
-        });
+        result.push({ alias, provider: target.id, upstreamModel: upstream });
       }
     }
-    return result;
   }
 
   #resolve(config: ModelSwitchConfig): { provider: ProviderEntry; upstreamModel: string } {
