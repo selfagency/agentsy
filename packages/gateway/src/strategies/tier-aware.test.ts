@@ -59,7 +59,7 @@ describe('TierAwareStrategy', () => {
       defaultStrategy: fallback,
       tierOf: buildTierOf({ main: 'mid' })
     });
-    expect(strategy.select([entry('main', 'mid')], ctx()).id).toBe('main');
+    expect(strategy.select([entry('main', 'mid')], ctx())?.id).toBe('main');
   });
 
   it('falls back to the default strategy when the chain is exhausted', () => {
@@ -78,7 +78,7 @@ describe('TierAwareStrategy', () => {
       defaultStrategy: fallback,
       tierOf: buildTierOf({ a: 'micro', b: 'micro' })
     });
-    expect(strategy.select([entry('a', 'micro'), entry('b', 'micro')], ctx('micro')).id).toBe('a');
+    expect(strategy.select([entry('a', 'micro'), entry('b', 'micro')], ctx('micro'))?.id).toBe('a');
   });
 
   it('treats providers without a tier as ineligible for tier-aware selection', () => {

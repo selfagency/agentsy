@@ -80,13 +80,15 @@ describe('runProbe (api)', () => {
 
   it('uses the authPrefix header when provided', async () => {
     const seen: Record<string, string> = {};
-    const fetchImpl = vi.fn(async () => new Response('{}', { status: 200 }));
+    const fetchImpl = vi.fn(
+      async (_input: string | URL | Request, _init?: RequestInit) => new Response('{}', { status: 200 })
+    );
     await runProbe(
       { authPrefix: 'x-api-key', kind: 'api', path: '/usage' },
       {
         apiKey: 'sk-test',
         baseUrl: 'https://api.anthropic.com',
-        fetch: ((input, init) => {
+        fetch: ((input: string | URL | Request, init?: RequestInit) => {
           const headers = (init?.headers ?? {}) as Record<string, string>;
           Object.assign(seen, headers);
           return fetchImpl(input, init);
@@ -101,7 +103,7 @@ describe('runProbe (api)', () => {
     await runProbe(apiProbe, {
       apiKey: 'sk-test',
       baseUrl: 'https://api.openai.com',
-      fetch: ((_input, init) => {
+      fetch: ((_input: string | URL | Request, init?: RequestInit) => {
         Object.assign(seen, (init?.headers ?? {}) as Record<string, string>);
         return Promise.resolve(new Response('{}', { status: 200 }));
       }) as unknown as typeof globalThis.fetch

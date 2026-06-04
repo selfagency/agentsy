@@ -23,7 +23,8 @@ describe('load balancer registries', () => {
       headers: { authorization: 'Bearer test' },
       id: 'openai',
       name: 'OpenAI',
-      provider: 'openai'
+      provider: 'openai',
+      usageProbes: []
     });
 
     expect(registry.get('openai')?.name).toBe('OpenAI');
