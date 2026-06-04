@@ -741,5 +741,5 @@ The `@modelcontextprotocol/sdk` depends on Zod v4, which is heavy. The custom JS
 
 - [`docs/examples/memory-rag-local-first.md`](../examples/memory-rag-local-first.md) — RAG + runtime injection example
 - [`docs/developers/`](../developers/) — Developer guides
-- [Monorepo AGENTS.md](../../AGENTS.md) — Monorepo-wide agent instructions
-- [`plan/PHASE-*-COMPLETION.md`](../../plan/) — Phase completion evidence
+- [Monorepo AGENTS.md](https://github.com/selfagency/agentsy/blob/main/AGENTS.md) — Monorepo-wide agent instructions
+- [`plan/INDEX.md`](https://github.com/selfagency/agentsy/blob/main/plan/INDEX.md) — Phase completion evidence
