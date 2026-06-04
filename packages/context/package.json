@@ -1,6 +1,6 @@
 {
   "name": "@agentsy/context",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Compression, drift detection, and reversible output shaping",
   "keywords": [
     "agentsy",
