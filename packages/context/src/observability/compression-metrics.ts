@@ -77,11 +77,24 @@ function createSkeletonByContentKind(): Record<ContentKind, CompressionMetricSum
   };
 }
 
+function getSummaryItem(
+  summary: Record<string, CompressionMetricSummaryItem>,
+  key: string
+): CompressionMetricSummaryItem {
+  for (const [candidateKey, candidateValue] of Object.entries(summary)) {
+    if (candidateKey === key) {
+      return candidateValue;
+    }
+  }
+
+  return createEmptySummaryItem();
+}
+
 export function createCompressionMetrics(): CompressionMetrics {
   const records: CompressionMetricRecord[] = [];
 
   function summarize(): CompressionMetricsSummary {
-    const byStrategy: Record<string, CompressionMetricSummaryItem> = {};
+    const byStrategy = new Map<string, CompressionMetricSummaryItem>();
     const byContentKind = createSkeletonByContentKind();
     let totalInputTokens = 0;
     let totalOutputTokens = 0;
@@ -92,10 +105,10 @@ export function createCompressionMetrics(): CompressionMetrics {
       totalOutputTokens += record.outputTokens;
       totalQualityScore += record.qualityScore;
 
-      let strategyItem = byStrategy[record.strategy];
+      let strategyItem = byStrategy.get(record.strategy);
       if (strategyItem === undefined) {
         strategyItem = createEmptySummaryItem();
-        byStrategy[record.strategy] = strategyItem;
+        byStrategy.set(record.strategy, strategyItem);
       }
       accumulateItem(strategyItem, record);
 
@@ -103,9 +116,9 @@ export function createCompressionMetrics(): CompressionMetrics {
       accumulateItem(contentItem, record);
     }
 
-    for (const key of Object.keys(byStrategy)) {
-      byStrategy[key] = finalizeItem(byStrategy[key] ?? createEmptySummaryItem());
-    }
+    const finalizedByStrategy = Object.fromEntries(
+      [...byStrategy.entries()].map(([key, item]) => [key, finalizeItem(item)])
+    );
 
     return {
       averageCompressionRatio:
@@ -119,7 +132,7 @@ export function createCompressionMetrics(): CompressionMetrics {
         mixed: finalizeItem(byContentKind.mixed),
         prose: finalizeItem(byContentKind.prose)
       },
-      byStrategy,
+      byStrategy: finalizedByStrategy,
       totalInputTokens,
       totalOutputTokens,
       totalRecords: records.length
@@ -131,10 +144,10 @@ export function createCompressionMetrics(): CompressionMetrics {
       const summary = summarize();
       return {
         ...summary,
-        byStrategy: {
-          [left]: summary.byStrategy[left] ?? createEmptySummaryItem(),
-          [right]: summary.byStrategy[right] ?? createEmptySummaryItem()
-        }
+        byStrategy: Object.fromEntries([
+          [left, getSummaryItem(summary.byStrategy, left)],
+          [right, getSummaryItem(summary.byStrategy, right)]
+        ])
       };
     },
 

@@ -12,21 +12,47 @@ export interface ContentRoute {
   strategy: 'anchored-iterative' | 'layered-pruning' | 'naive-dropping';
 }
 
-const CODE_HINTS = [
-  /```/u,
-  /\b(?:function|class|interface|type|const|let|import|export|return)\b/u,
-  /\{[^\n]*:\s*[^\n]*\}/u
-];
+const CODE_KEYWORDS = ['function', 'class', 'interface', 'type', 'const', 'let', 'import', 'export', 'return'] as const;
+const LOG_KEYWORDS = ['error', 'warn', 'info', 'debug', 'trace'] as const;
+const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 
-const DIFF_HINTS = [/^diff --git/mu, /^@@/m, /^\+{3} /mu, /^-{3} /mu, /^[+-]\S/mu];
+function hasCodeHint(text: string): boolean {
+  if (text.includes('```')) {
+    return true;
+  }
 
-const JSON_HINTS = [/^\s*(?:\[|\{)/u, /"[^"]+"\s*:/u, /\btrue\b|\bfalse\b|\bnull\b/u];
+  return CODE_KEYWORDS.some(keyword => text.includes(keyword));
+}
 
-const LOG_HINTS = [
-  /^\s*\d{4}-\d{2}-\d{2}/mu,
-  /\b(?:error|warn|info|debug|trace)\b/u,
-  /\b(?:GET|POST|PUT|PATCH|DELETE)\b/u
-];
+function hasDiffHint(text: string): boolean {
+  return (
+    text.startsWith('diff --git') ||
+    text.startsWith('@@') ||
+    text.startsWith('+++ ') ||
+    text.startsWith('--- ') ||
+    text.startsWith('+') ||
+    text.startsWith('-')
+  );
+}
+
+function hasJsonHint(text: string): boolean {
+  const trimmed = text.trimStart();
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    return true;
+  }
+
+  return trimmed.includes('"') && trimmed.includes(':') && /["}]/u.test(trimmed);
+}
+
+function hasLogHint(text: string): boolean {
+  const trimmed = text.trimStart();
+  if (/^\d{4}-\d{2}-\d{2}/u.test(trimmed)) {
+    return true;
+  }
+
+  const lower = text.toLowerCase();
+  return LOG_KEYWORDS.some(keyword => lower.includes(keyword)) || HTTP_METHODS.some(method => text.includes(method));
+}
 
 function getText(message: unknown): string {
   if (typeof message === 'string') {
@@ -41,23 +67,11 @@ function getText(message: unknown): string {
   return JSON.stringify(message);
 }
 
-function scoreHints(text: string, hints: readonly RegExp[]): number {
-  let score = 0;
-
-  for (const hint of hints) {
-    if (hint.test(text)) {
-      score += 1;
-    }
-  }
-
-  return score;
-}
-
 function classifyText(text: string): { kind: ContentKind; score: number } {
-  const codeScore = scoreHints(text, CODE_HINTS);
-  const diffScore = scoreHints(text, DIFF_HINTS);
-  const jsonScore = scoreHints(text, JSON_HINTS);
-  const logScore = scoreHints(text, LOG_HINTS);
+  const codeScore = hasCodeHint(text) ? 1 : 0;
+  const diffScore = hasDiffHint(text) ? 1 : 0;
+  const jsonScore = hasJsonHint(text) ? 1 : 0;
+  const logScore = hasLogHint(text) ? 1 : 0;
 
   const ranked: [ContentKind, number][] = [
     ['diff', diffScore],
