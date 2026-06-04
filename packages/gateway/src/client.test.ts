@@ -92,4 +92,19 @@ describe('createLoadBalancedClient (client.ts)', () => {
     const snapshot = client.getUsageSnapshot();
     expect(snapshot[0]?.errorRate).toBe(0);
   });
+
+  it('swaps the strategy at runtime via setStrategy', () => {
+    const client = createLoadBalancedClient({
+      providers: [{ id: 'p1', name: 'P1', provider: 'openai' }],
+      strategy: 'round-robin'
+    });
+    expect(client.getRoutingState().strategy).toBe('round-robin');
+    client.setStrategy('cost-based');
+    expect(client.getRoutingState().strategy).toBe('cost-based');
+  });
+
+  it('setStrategy is a noop on the noop client', () => {
+    const client = createLoadBalancedClient({ providers: [] });
+    expect(() => client.setStrategy('adaptive')).not.toThrow();
+  });
 });

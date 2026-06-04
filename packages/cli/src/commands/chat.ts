@@ -18,6 +18,8 @@
 
 import { createInterface, type Interface } from 'node:readline/promises';
 import { loadSlashCommands } from '@agentsy/core';
+import type { LoadBalancedClient, StrategyName } from '@agentsy/gateway';
+import { StrategyNameSchema } from '@agentsy/gateway';
 import { discoverLocalProviders, selectModel } from '@agentsy/models';
 import type { TurnHandler } from '@agentsy/runtime/loop';
 import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
@@ -130,6 +132,13 @@ export interface ChatCommandOptions {
    * Allows tests to provide a mock stream without mocking process.stdin.
    */
   input?: NodeJS.ReadableStream | undefined;
+  /**
+   * Test seam: a pre-built `LoadBalancedClient` to use as the
+   * chat client. When set, the argv/provider config is ignored
+   * and the supplied client is used directly. Used by the
+   * `/lb` and `/model` slash-command tests.
+   */
+  loadBalancedClient?: LoadBalancedClient | undefined;
   /** Delay between mock chunks in ms (for testing). Set to 0 for fastest test. */
   mockChunkDelayMs?: number | undefined;
   /** Custom mock client response text (for testing). */
@@ -142,12 +151,23 @@ const DEFAULT_HEADERS: ChatHeaders = {
   prefix: `${dim('\u2500')} ${green('assistant')} ${dim('\u2500')}`
 };
 
-function createProviderClient(isMock: boolean, argv: readonly string[], options?: ChatCommandOptions) {
+function createProviderClient(
+  isMock: boolean,
+  argv: readonly string[],
+  options?: ChatCommandOptions
+): LoadBalancedClient | ReturnType<typeof createMockClient> {
   if (isMock) {
     return createMockClient({
       responseText: options?.mockResponseText,
       chunkDelayMs: options?.mockChunkDelayMs
     });
+  }
+
+  // Test seam: an explicit pre-built `LoadBalancedClient` overrides
+  // the argv-driven provider config. Used by the slash-command
+  // tests to drive a stub client into the chat REPL.
+  if (options?.loadBalancedClient !== undefined) {
+    return options.loadBalancedClient;
   }
 
   const model = getFlagValue(argv, '--model') ?? 'gpt-4o-mini';
@@ -246,29 +266,173 @@ export async function runChatCommand(
     stderr(`Commands:\n  ${cmdList}\n  ${slashList}\n  /help            Show this help message\n`);
   }
 
+  function handleModelSearch(rest: string[]): void {
+    stderr(dim(`[model] search query=${rest.join(' ')}\n`));
+  }
+
+  function handleModelSelect(rest: string[]): void {
+    const newModel = rest[0];
+    if (newModel === undefined || newModel.length === 0) {
+      stderr(dim('[model] usage: /model select <alias-or-upstream-id>\n'));
+      return;
+    }
+    if (!isGatewayClient(client)) {
+      stderr(dim('[model] cannot switch: client is not a load-balanced gateway client\n'));
+      return;
+    }
+    try {
+      const switcher = client.createModelSwitcher();
+      const result = switcher.switch({ model: newModel });
+      stderr(dim(`[model] switched to ${result.model} on ${result.provider}\n`));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      stderr(dim(`[model] switch failed: ${message}\n`));
+    }
+  }
+
+  function handleModelList(): void {
+    if (!isGatewayClient(client)) {
+      stderr(dim('[model] cannot list: client is not a load-balanced gateway client\n'));
+      return;
+    }
+    const models = client.createModelSwitcher().getSupportedModels();
+    if (models.length === 0) {
+      stderr(dim('[model] no models available\n'));
+      return;
+    }
+    const lines = models.map(m => {
+      const aliasPart = m.alias.length > 0 ? ` (alias: ${m.alias})` : '';
+      return `  ${m.provider}/${m.upstreamModel}${aliasPart}`;
+    });
+    stderr(dim(`[model] available models:\n${lines.join('\n')}\n`));
+  }
+
   function handleModelCommand(args: string[]): void {
     const [action, ...rest] = args;
     if (action === 'search') {
-      stderr(dim(`[model] search query=${rest.join(' ')}\n`));
+      handleModelSearch(rest);
       return;
     }
-
     if (action === 'select') {
-      const newModel = rest[0];
-      stderr(dim(`[model] requested=${newModel ?? '(missing)'} current=${model} (restart required)\n`));
+      handleModelSelect(rest);
       return;
     }
-
     if (action === 'refine') {
       stderr(dim('[model] refine selection criteria\n'));
       return;
     }
-
+    if (action === 'list') {
+      handleModelList();
+      return;
+    }
     if (action) {
       stderr(dim(`[model] unknown action: ${action}\n`));
     } else {
       stderr(dim(`[model] current model: ${model}\n`));
     }
+  }
+
+  function isGatewayClient(c: typeof client): c is LoadBalancedClient {
+    return (
+      typeof (c as LoadBalancedClient).createModelSwitcher === 'function' &&
+      typeof (c as LoadBalancedClient).getRoutingState === 'function' &&
+      typeof (c as LoadBalancedClient).getMetricsSnapshot === 'function'
+    );
+  }
+
+  function handleLbStatusCommand(): void {
+    if (!isGatewayClient(client)) {
+      stderr(dim('[lb] cannot show status: client is not a load-balanced gateway client\n'));
+      return;
+    }
+    const state = client.getRoutingState();
+    const usage = client.getUsageSnapshot();
+    const metrics = client.getMetricsSnapshot();
+    const lines: string[] = [];
+    lines.push(
+      `[lb] strategy=${state.strategy} provider=${state.providerId} status=${state.providerStatus} providers=${state.providerCount}`
+    );
+    for (const u of usage) {
+      const parts: string[] = [`  ${u.providerId}`];
+      if (u.errorRate !== undefined) {
+        parts.push(`err=${(u.errorRate * 100).toFixed(1)}%`);
+      }
+      if (u.averageLatencyMs !== undefined) {
+        parts.push(`lat=${Math.round(u.averageLatencyMs)}ms`);
+      }
+      if (u.rpmRemaining !== undefined) {
+        parts.push(`rpm=${u.rpmRemaining}`);
+      }
+      if (u.tpmRemaining !== undefined) {
+        parts.push(`tpm=${u.tpmRemaining}`);
+      }
+      lines.push(parts.join(' '));
+    }
+    lines.push(
+      `[lb] metrics: requests=${metrics.requestCount} success=${metrics.successCount} failure=${metrics.failureCount} failovers=${metrics.failoverCount} circuitTrips=${metrics.circuitTrips}`
+    );
+    lines.push(
+      `[lb] totals: tokens=${metrics.totalTokens} (in=${metrics.totalInputTokens} out=${metrics.totalOutputTokens}) cost=$${metrics.totalCostUsd.toFixed(4)}`
+    );
+    if (metrics.streamCount > 0) {
+      lines.push(
+        `[lb] streams: count=${metrics.streamCount} success=${metrics.streamSuccessCount} failure=${metrics.streamFailureCount} chunks=${metrics.totalStreamChunks} duration=${metrics.totalStreamDurationMs}ms ttfb=${metrics.totalStreamTtfbMs}ms`
+      );
+    }
+    stderr(dim(`${lines.join('\n')}\n`));
+  }
+
+  function handleLbProvidersCommand(): void {
+    if (!isGatewayClient(client)) {
+      stderr(dim('[lb] cannot list providers: client is not a load-balanced gateway client\n'));
+      return;
+    }
+    const usage = client.getUsageSnapshot();
+    const lines: string[] = ['[lb] providers:'];
+    for (const u of usage) {
+      lines.push(`  ${u.providerId}`);
+    }
+    if (lines.length === 1) {
+      lines.push('  (no providers)');
+    }
+    stderr(dim(`${lines.join('\n')}\n`));
+  }
+
+  function handleLbStrategyCommand(args: string[]): void {
+    if (!isGatewayClient(client)) {
+      stderr(dim('[lb] cannot switch strategy: client is not a load-balanced gateway client\n'));
+      return;
+    }
+    const name = args[0];
+    if (name === undefined || name.length === 0) {
+      const state = client.getRoutingState();
+      stderr(dim(`[lb] current strategy: ${state.strategy}\n`));
+      stderr(dim('[lb] usage: /lb strategy <name>\n'));
+      return;
+    }
+    const parsed = StrategyNameSchema.safeParse(name);
+    if (!parsed.success) {
+      stderr(
+        dim(`[lb] unknown strategy: ${name} (valid: ${StrategyNameSchema.options.map(o => o.toString()).join(', ')})\n`)
+      );
+      return;
+    }
+    client.setStrategy(parsed.data as StrategyName);
+    stderr(dim(`[lb] strategy switched to: ${parsed.data}\n`));
+  }
+
+  function handleLbResetCommand(args: string[]): void {
+    if (!isGatewayClient(client)) {
+      stderr(dim('[lb] cannot reset: client is not a load-balanced gateway client\n'));
+      return;
+    }
+    const providerId = args[0];
+    if (providerId === undefined || providerId.length === 0) {
+      stderr(dim('[lb] usage: /lb reset <providerId>\n'));
+      return;
+    }
+    client.markProviderHealthy(providerId);
+    stderr(dim(`[lb] reset circuit for: ${providerId}\n`));
   }
 
   async function handleProviderCommand(_args: string[]): Promise<void> {
@@ -286,17 +450,34 @@ export async function runChatCommand(
     /* intentional no-op */
   }
 
+  function handleLbDispatch(trimmed: string): void {
+    const args = trimmed.slice(4).trim().split(/\s+/u);
+    const sub = args[0];
+    if (sub === 'status' || sub === undefined) {
+      handleLbStatusCommand();
+    } else if (sub === 'providers') {
+      handleLbProvidersCommand();
+    } else if (sub === 'strategy') {
+      handleLbStrategyCommand(args.slice(1));
+    } else if (sub === 'reset') {
+      handleLbResetCommand(args.slice(1));
+    } else {
+      stderr(dim(`[lb] unknown subcommand: ${sub}\n`));
+      stderr(dim('[lb] usage: /lb status | providers | strategy <name> | reset <providerId>\n'));
+    }
+  }
+
   /**
    * Dispatch a single trimmed input line — returns true when the caller should exit.
    */
   async function dispatchLine(trimmed: string): Promise<boolean> {
-    // Empty input
     if (trimmed === '') {
       safePrompt(rl);
       return false;
     }
 
-    // /model uses startsWith — handle before exact map lookup
+    // Slash commands with arguments (startsWith) are dispatched
+    // before the exact-map lookup so the suffix can be parsed.
     if (trimmed.startsWith('/model ')) {
       handleModelCommand(trimmed.slice(7).trim().split(/\s+/u));
       safePrompt(rl);
@@ -309,7 +490,12 @@ export async function runChatCommand(
       return false;
     }
 
-    // Look up exact command in handler map
+    if (trimmed.startsWith('/lb ')) {
+      handleLbDispatch(trimmed);
+      safePrompt(rl);
+      return false;
+    }
+
     const handler = commandHandlers.get(trimmed);
     if (handler !== undefined) {
       await handler([]);
@@ -320,14 +506,12 @@ export async function runChatCommand(
       return false;
     }
 
-    // Unknown slash command
     if (trimmed.startsWith('/')) {
       handleUnknownCommand(trimmed);
       safePrompt(rl);
       return false;
     }
 
-    // Send to LLM
     await processUserMessage(trimmed);
     safePrompt(rl);
     return false;
@@ -366,7 +550,13 @@ export async function runChatCommand(
     ['/quit', () => handleExitCommand()],
     ['/clear', () => handleClearCommand()],
     ['/provider', args => handleProviderCommand(args)],
-    ['/status', () => handleStatusCommand()]
+    ['/status', () => handleStatusCommand()],
+    ['/model', () => handleModelCommand([])],
+    ['/lb', () => handleLbStatusCommand()],
+    ['/lb status', () => handleLbStatusCommand()],
+    ['/lb providers', () => handleLbProvidersCommand()],
+    ['/lb strategy', () => handleLbStrategyCommand([])],
+    ['/lb reset', () => handleLbResetCommand([])]
   ]);
 
   // Help handler needs the map reference, so set it after creation

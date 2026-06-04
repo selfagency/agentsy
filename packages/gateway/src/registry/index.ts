@@ -72,6 +72,12 @@ function buildNoopClient(): LoadBalancedClient {
     markProviderUnhealthy(_providerId: string): void {
       /* noop */
     },
+    setStrategy(
+      _name: import('../types.js').StrategyName,
+      _options?: import('../strategies/strategies.js').StrategyOptions
+    ): void {
+      /* noop */
+    },
     getMetricsSnapshot() {
       return {
         circuitTrips: 0,
@@ -161,6 +167,12 @@ export function createLoadBalancedClient(config: LoadBalancerConfig): LoadBalanc
       /* noop */
     },
     markProviderUnhealthy(_providerId: string): void {
+      /* noop */
+    },
+    setStrategy(
+      _name: import('../types.js').StrategyName,
+      _options?: import('../strategies/strategies.js').StrategyOptions
+    ): void {
       /* noop */
     },
     getMetricsSnapshot() {

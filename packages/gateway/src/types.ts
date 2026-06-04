@@ -74,6 +74,13 @@ export interface LoadBalancedClient extends UniversalClient {
   getUsageSnapshot(): ProviderUsageSnapshot[];
   markProviderHealthy(providerId: string): void;
   markProviderUnhealthy(providerId: string): void;
+  /**
+   * Swap the active routing strategy at runtime. Subsequent
+   * `complete()` / `stream()` calls use the new strategy; the
+   * in-flight retry/failover loop is unaffected (it has already
+   * picked a provider for the current call).
+   */
+  setStrategy(name: StrategyName, options?: import('./strategies/strategies.js').StrategyOptions): void;
   shutdown(): Promise<void>;
 }
 

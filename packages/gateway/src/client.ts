@@ -9,14 +9,18 @@ import type { StrategyOptions } from './strategies/strategies.js';
 import { ModelSwitcher } from './switcher.js';
 import type { LoadBalancedClient, LoadBalancerConfig, ProviderEntry, RoutingState } from './types.js';
 
-function buildRoutingState(config: LoadBalancerConfig, health: ProviderHealthRegistry): RoutingState {
+function buildRoutingState(
+  config: LoadBalancerConfig,
+  health: ProviderHealthRegistry,
+  activeStrategy: import('./types.js').StrategyName
+): RoutingState {
   const primary = config.providers[0];
   if (primary === undefined) {
     return {
       providerCount: 0,
       providerId: 'unconfigured',
       providerStatus: 'unknown',
-      strategy: config.strategy ?? 'adaptive'
+      strategy: activeStrategy
     };
   }
   const status = health.getStatus(primary.id);
@@ -24,7 +28,7 @@ function buildRoutingState(config: LoadBalancerConfig, health: ProviderHealthReg
     providerCount: config.providers.length,
     providerId: primary.id,
     providerStatus: status.status,
-    strategy: config.strategy ?? 'adaptive'
+    strategy: activeStrategy
   };
 }
 
@@ -66,6 +70,12 @@ function buildNoopClient(): LoadBalancedClient {
       /* noop */
     },
     markProviderUnhealthy(_providerId: string): void {
+      /* noop */
+    },
+    setStrategy(
+      _name: import('./types.js').StrategyName,
+      _options?: import('./strategies/strategies.js').StrategyOptions
+    ): void {
       /* noop */
     },
     getMetricsSnapshot() {
@@ -135,7 +145,12 @@ export function createLoadBalancedClient(
     }
   });
   const quota = new QuotaTrackerRegistry();
-  const strategy = buildStrategy(config.strategy ?? 'adaptive', options.strategyOptions ?? {});
+  // Strategy is a `let` so the `setStrategy()` method on the
+  // returned client can swap it mid-session (e.g. via a CLI slash
+  // command). The default is the configured strategy or
+  // `'adaptive'`.
+  let activeStrategyName: import('./types.js').StrategyName = config.strategy ?? 'adaptive';
+  let strategy = buildStrategy(activeStrategyName, options.strategyOptions ?? {});
   const inFlight = new Map<string, number>();
   const maxAttempts = config.retry?.attempts ?? 2;
   // Mutable model pointer: ModelSwitcher rewrites this without
@@ -285,7 +300,7 @@ export function createLoadBalancedClient(
       });
     },
     getRoutingState(): RoutingState {
-      return buildRoutingState(config, health);
+      return buildRoutingState(config, health, activeStrategyName);
     },
     getUsageSnapshot() {
       return registry.list().map((entry): import('./types.js').ProviderUsageSnapshot => {
@@ -314,6 +329,10 @@ export function createLoadBalancedClient(
       for (let i = 0; i < 5; i++) {
         health.recordFailure(providerId, 'manually marked unhealthy');
       }
+    },
+    setStrategy(name, options) {
+      activeStrategyName = name;
+      strategy = buildStrategy(name, options ?? {});
     },
     getMetricsSnapshot() {
       return metrics.getUsageSnapshot();
