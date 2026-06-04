@@ -61,12 +61,12 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
-    "@types/react": "^19.2.14",
-    "@vitest/coverage-v8": "^4.1.6",
+    "@types/react": "^19.2.16",
+    "@vitest/coverage-v8": "^4.1.8",
     "ink-testing-library": "^4.0.0",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.8"
   },
   "peerDependencies": {
     "cli-highlight": "*",

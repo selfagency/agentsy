@@ -62,11 +62,11 @@
     "@agentsy/session": "workspace:*"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.16",
     "@types/node": "^25.9.0",
-    "@vitest/coverage-v8": "^4.1.6",
-    "@biomejs/biome": "^2.4.15",
+    "@vitest/coverage-v8": "^4.1.8",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.8"
   }
 }

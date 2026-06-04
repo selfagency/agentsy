@@ -54,23 +54,23 @@
     ]
   },
   "dependencies": {
-    "@oclif/core": "^4.11.3",
+    "@oclif/core": "^4.11.4",
     "@opentelemetry/api": "^1.9.1",
     "better-sqlite3": "^12.10.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.15",
+    "@biomejs/biome": "2.4.16",
     "@microsoft/tui-test": "^0.0.4",
     "@types/node": "^25.9.0",
-    "fallow": "^2.75.0",
+    "fallow": "^2.88.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "opencode-ai": "^1.15.11",
-    "tsx": "^4.22.2",
-    "turbo": "^2.9.14",
-    "ultracite": "7.8.0",
+    "opencode-ai": "^1.15.13",
+    "tsx": "^4.22.4",
+    "turbo": "^2.9.16",
+    "ultracite": "7.8.1",
     "vitepress": "^1.6.4",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.8"
   },
   "packageManager": "pnpm@10.33.4+sha512.1c67b3b359b2d408119ba1ed289f34b8fc3c6873412bec6fd264fbdc82489e510fcbecb9ce9d22dae7f3b76269d8441046014bdca53b9979cd7a561ad631b800",
   "pnpm": {
