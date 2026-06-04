@@ -107,87 +107,14 @@ console.log(result.summary.focus); // architecture
 console.log(result.summary.nextSteps); // ['rehydrate:architecture']
 ```
 
-### Token Management
+### Token Management (moved)
+
+Token budget management and rate limiting have moved to [@agentsy/tokenomics](https://www.npmjs.com/package/@agentsy/tokenomics). This package re-exports `createInMemoryTokenManager` and `PacingController` for backward compatibility:
 
 ```typescript
-import { createInMemoryTokenManager } from '@agentsy/context';
-
-const manager = createInMemoryTokenManager();
-
-// Create a budget
-const budget = await manager.createBudget({
-  maxTokens: 100000,
-  maxCost: 5.0,
-  model: 'gpt-4',
-  name: 'default',
-  periodMs: 3600000, // 1 hour
-  priority: 'high',
-  provider: 'openai',
-  resetStrategy: 'rolling'
-});
-
-// Request token allocation
-const allocation = await manager.requestTokens({
-  estimatedTokens: 5000,
-  estimatedCost: 0.25,
-  model: 'gpt-4',
-  provider: 'openai',
-  requestType: 'completion',
-  budgetId: budget.id,
-  priority: 'high'
-});
-
-if (allocation.conditions) {
-  console.log('Allocation conditions:', allocation.conditions);
-} else {
-  console.log(`Allocated ${allocation.allocatedTokens} tokens`);
-}
-
-// Record actual usage after request
-await manager.recordUsage({
-  budgetId: budget.id,
-  tokensUsed: 4800,
-  cost: 0.24,
-  model: 'gpt-4',
-  provider: 'openai',
-  requestType: 'completion'
-});
-
-// Check budget status
-const status = await manager.getBudgetStatus(budget.id);
-console.log(`Remaining tokens: ${status.remainingTokens}`);
-console.log(`Remaining cost: $${status.remainingCost.toFixed(2)}`);
-```
-
-### Rate Limiting with Pacing
-
-```typescript
-import { PacingController } from '@agentsy/context';
-
-const pacing = new PacingController({
-  maxRequestsPerMinute: 60,
-  maxRequestsPerHour: 1000
-});
-
-// Check if request should be throttled
-const waitTime = pacing.getWaitTime();
-if (waitTime > 0) {
-  console.log(`Rate limited, waiting ${waitTime}ms`);
-  await new Promise(resolve => setTimeout(resolve, waitTime));
-}
-
-// Update rate limits after response
-pacing.updateRateLimits({
-  requestsRemaining: 59,
-  requestsReset: new Date(Date.now() + 60000),
-  limit: 60
-});
-
-// Check if request would be rate limited
-const check = pacing.checkRateLimit();
-if (check.limited) {
-  console.log('Request would be rate limited');
-}
+import { createInMemoryTokenManager, PacingController } from '@agentsy/context';
+// Equivalent to:
+import { createInMemoryTokenManager, PacingController } from '@agentsy/tokenomics';
 ```
 
 ## API Reference
@@ -239,36 +166,9 @@ function compressOutput(
 
 Use the detailed helpers when you need content kind, routing, metrics, or reversible markers.
 
-### createInMemoryTokenManager
+### createInMemoryTokenManager / PacingController
 
-Creates an in-memory token budget manager.
-
-```typescript
-function createInMemoryTokenManager(): TokenManager
-```
-
-**Returns:** Token manager instance with methods:
-
-- `createBudget(config)`: Create a new budget
-- `requestTokens(request)`: Request token allocation
-- `recordUsage(usage)`: Record actual token usage
-- `getBudgetStatus(budgetId)`: Get budget status
-- `getUsage(filter)`: Get usage records
-- `resetBudget(budgetId)`: Reset budget usage
-
-### PacingController
-
-Rate limiting controller with adaptive pacing.
-
-```typescript
-class PacingController {
-  constructor(config: PacingConfig)
-  throttleRequest(): Promise<void>
-  getWaitTime(): number
-  updateRateLimits(limits: RateLimitInfo)
-  checkRateLimit(): RateLimitStatus
-}
-```
+> **Migrated:** These are now owned by `@agentsy/tokenomics`. Re-exported from `@agentsy/context` for backward compatibility. See [@agentsy/tokenomics](https://www.npmjs.com/package/@agentsy/tokenomics) for full API reference.
 
 ## Use Cases
 
@@ -299,6 +199,8 @@ function prepareLLMRequest(
 
 ```typescript
 import { createInMemoryTokenManager } from '@agentsy/context';
+// Note: This imports the re-export from @agentsy/tokenomics for backward compat
+// For new code, import directly from @agentsy/tokenomics instead
 
 const manager = createInMemoryTokenManager();
 
@@ -357,6 +259,8 @@ function compressAssistantResponse(response: string): string {
 
 ```typescript
 import { createInMemoryTokenManager } from '@agentsy/context';
+// Note: This imports the re-export from @agentsy/tokenomics for backward compat
+// For new code, import directly from @agentsy/tokenomics instead
 
 const manager = createInMemoryTokenManager();
 

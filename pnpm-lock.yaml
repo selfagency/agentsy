@@ -140,6 +140,9 @@ importers:
       '@agentsy/core':
         specifier: workspace:*
         version: link:../core
+      '@agentsy/tokenomics':
+        specifier: workspace:*
+        version: link:../tokenomics
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -498,7 +501,7 @@ importers:
         version: 3.4.5
       ink:
         specifier: '>=4.0.0'
-        version: 7.0.3(@types/react@19.2.15)(react@19.2.6)
+        version: 7.0.3(@types/react@19.2.16)(react@19.2.6)
       react:
         specifier: '>=18.0.0'
         version: 19.2.6
@@ -690,9 +693,6 @@ importers:
 
   packages/tokenomics:
     dependencies:
-      '@agentsy/context':
-        specifier: workspace:*
-        version: link:../context
       '@agentsy/observability':
         specifier: workspace:*
         version: link:../observability
@@ -2287,9 +2287,6 @@ packages:
 
   '@types/node@25.9.1':
     resolution: {integrity: sha512-xfrlY7UD5rMJk3ZVJP8BNzS28J36YJg+xp+LPXV1TdWxr8uMH5A860QNxYDGQe/ylDSgjxE52Q9VnO7p75tJxg==}
-
-  '@types/react@19.2.15':
-    resolution: {integrity: sha512-eRwcGNHve+E8qtEQSSRl6urh+rFop4v8gm6O8rGv25CodbvFdLjA1vVQ1KkiFE0w0UPOnb8tDiFKL5lp0rtY5Q==}
 
   '@types/react@19.2.16':
     resolution: {integrity: sha512-esJiCAnl0kfpNdE69f3So4WJUXy95dLZydX0KwK46riIHDzHM7O9Vtf9xCHW0PXIqvgqNrswl522kA/5yx+F4w==}
@@ -5933,11 +5930,6 @@ snapshots:
     dependencies:
       undici-types: 7.24.6
 
-  '@types/react@19.2.15':
-    dependencies:
-      csstype: 3.2.3
-    optional: true
-
   '@types/react@19.2.16':
     dependencies:
       csstype: 3.2.3
@@ -7107,7 +7099,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.16
 
-  ink@7.0.3(@types/react@19.2.15)(react@19.2.6):
+  ink@7.0.3(@types/react@19.2.16)(react@19.2.6):
     dependencies:
       '@alcalzone/ansi-tokenize': 0.3.0
       ansi-escapes: 7.3.0
@@ -7136,7 +7128,7 @@ snapshots:
       ws: 8.20.1
       yoga-layout: 3.2.1
     optionalDependencies:
-      '@types/react': 19.2.15
+      '@types/react': 19.2.16
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
