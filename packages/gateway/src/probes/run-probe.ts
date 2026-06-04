@@ -49,7 +49,7 @@ function assertNever(value: never): never {
 }
 
 function buildHeaders(probe: UsageProbe, ctx: ProbeContext): Record<string, string> {
-  const headers: Record<string, string> = { ...(probe.headers ?? {}) };
+  const headers = { ...probe.headers };
   if (ctx.apiKey !== undefined && ctx.apiKey.length > 0) {
     if (probe.authPrefix !== undefined && probe.authPrefix.length > 0) {
       headers[probe.authPrefix] = ctx.apiKey;
@@ -256,7 +256,6 @@ function numberOrUndefined(value: unknown): number | undefined {
       return parsed;
     }
   }
-  return;
 }
 
 function absoluteOrRelative(path: string, baseUrl: string): string {

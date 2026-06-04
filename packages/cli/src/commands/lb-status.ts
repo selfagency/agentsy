@@ -47,7 +47,6 @@ function getFlagValue(argv: readonly string[], flag: string): string | undefined
       return arg.slice(prefix.length);
     }
   }
-  return;
 }
 
 function readOptions(argv: readonly string[]): LbStatusOptions {

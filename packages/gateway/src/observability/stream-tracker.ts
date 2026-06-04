@@ -55,9 +55,7 @@ export function instrumentStream<T>(source: ReadableStream<T>): InstrumentedStre
 
   const transform = new TransformStream<T, T>({
     transform(chunk, controller) {
-      if (firstByteAt === undefined) {
-        firstByteAt = Date.now();
-      }
+      firstByteAt ??= Date.now();
       chunkCount += 1;
       controller.enqueue(chunk);
     },

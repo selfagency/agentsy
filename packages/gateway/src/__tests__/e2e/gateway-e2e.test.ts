@@ -242,7 +242,7 @@ describe('E2E: cost-based selection', () => {
         strategy: 'cost-based'
       },
       {
-        strategyOptions: { costs: { 'provider-a': 0.5, 'provider-b': 5.0 } }
+        strategyOptions: { costs: { 'provider-a': 0.5, 'provider-b': 5 } }
       }
     );
 

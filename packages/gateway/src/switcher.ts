@@ -174,6 +174,10 @@ export class ModelSwitcher {
       }
     }
 
+    return this.#resolveDirectMatch(config);
+  }
+
+  #resolveDirectMatch(config: ModelSwitchConfig): { provider: ProviderEntry; upstreamModel: string } {
     for (const provider of this.#providers) {
       if (provider.model === config.model) {
         return { provider, upstreamModel: config.model };

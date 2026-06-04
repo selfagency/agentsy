@@ -25,8 +25,8 @@ export interface TierAwareOptions {
    */
   defaultStrategy: RoutingStrategy;
   /**
-   * Whether to escalate when the requested tier reports a 429
-   * (rate-limit / quota exhausted). Default: true.
+   * Whether to escalate when the requested tier has no eligible
+   * providers. Default: true.
    */
   escalateOnOverload?: boolean;
   /**
@@ -68,14 +68,12 @@ export class TierAwareStrategy implements RoutingStrategy {
   readonly name = 'tier-aware';
   readonly #defaultStrategy: RoutingStrategy;
   readonly #escalationChain: readonly ProviderTier[];
-  readonly #escalateOnOverload: boolean;
   readonly #maxEscalationSteps: number;
   readonly #tierOf: (entry: ProviderEntry) => ProviderTier | undefined;
 
   constructor(options: TierAwareOptions) {
     this.#defaultStrategy = options.defaultStrategy;
     this.#escalationChain = options.escalationChain ?? DEFAULT_ESCALATION_CHAIN;
-    this.#escalateOnOverload = options.escalateOnOverload ?? true;
     this.#maxEscalationSteps = options.maxEscalationSteps ?? this.#escalationChain.length;
     this.#tierOf = options.tierOf;
   }

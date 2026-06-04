@@ -65,39 +65,29 @@ export function matchesRequest(entry: ProviderEntry, request: SelectionContext['
   if (requires.length === 0) {
     return true;
   }
-  const caps = entry.capabilities;
+  const caps = entry.capabilities as import('@agentsy/types').ProviderCapabilities | undefined;
   if (caps === undefined) {
     return false;
   }
   for (const requirement of requires) {
-    switch (requirement) {
-      case 'tools':
-        if (caps.supportsTools !== true) {
-          return false;
-        }
-        break;
-      case 'vision':
-        if (caps.supportsImages !== true) {
-          return false;
-        }
-        break;
-      case 'streaming':
-        if (caps.supportsStreaming !== true) {
-          return false;
-        }
-        break;
-      case 'json':
-        if (caps.supportsJsonMode !== true) {
-          return false;
-        }
-        break;
-      default:
-        assertNever(requirement);
+    if (!checkCapability(caps, requirement)) {
+      return false;
     }
   }
   return true;
 }
 
-function assertNever(value: never): never {
-  throw new Error(`Unknown requirement: ${String(value)}`);
+function checkCapability(caps: import('@agentsy/types').ProviderCapabilities, requirement: string): boolean {
+  switch (requirement) {
+    case 'tools':
+      return caps.supportsTools === true;
+    case 'vision':
+      return caps.supportsImages === true;
+    case 'streaming':
+      return caps.supportsStreaming === true;
+    case 'json':
+      return caps.supportsJsonMode === true;
+    default:
+      throw new Error(`Unknown requirement: ${requirement}`);
+  }
 }

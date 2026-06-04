@@ -1,5 +1,5 @@
-import { CircuitBreaker, type CircuitBreakerConfig, type CircuitBreakerState } from './circuit-breaker.js';
-import { type HealthSnapshot, HealthTracker } from './health-tracker.js';
+import type { CircuitBreakerConfig, CircuitBreakerState } from './circuit-breaker.js';
+import { HealthTracker } from './health-tracker.js';
 
 export type HealthStatus = 'healthy' | 'degraded' | 'unhealthy';
 
@@ -163,5 +163,5 @@ function deriveStatus(state: CircuitBreakerState, uptimeRatio: number): HealthSt
   return 'healthy';
 }
 
-export type { CircuitBreakerConfig, HealthSnapshot };
-export { CircuitBreaker };
+export { CircuitBreaker, type CircuitBreakerConfig } from './circuit-breaker.js';
+export type { HealthSnapshot } from './health-tracker.js';

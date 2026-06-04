@@ -6,6 +6,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { defaultApiParse, runProbe } from './run-probe.js';
 
+type FetchInput = string | URL | globalThis.Request;
+
 function makeFetch(body: string, headers: Record<string, string> = {}): typeof globalThis.fetch {
   return (async () =>
     new Response(body, {
@@ -80,15 +82,13 @@ describe('runProbe (api)', () => {
 
   it('uses the authPrefix header when provided', async () => {
     const seen: Record<string, string> = {};
-    const fetchImpl = vi.fn(
-      async (_input: string | URL | Request, _init?: RequestInit) => new Response('{}', { status: 200 })
-    );
+    const fetchImpl = vi.fn(async (_input: FetchInput, _init?: RequestInit) => new Response('{}', { status: 200 }));
     await runProbe(
       { authPrefix: 'x-api-key', kind: 'api', path: '/usage' },
       {
         apiKey: 'sk-test',
         baseUrl: 'https://api.anthropic.com',
-        fetch: ((input: string | URL | Request, init?: RequestInit) => {
+        fetch: ((input: FetchInput, init?: RequestInit) => {
           const headers = (init?.headers ?? {}) as Record<string, string>;
           Object.assign(seen, headers);
           return fetchImpl(input, init);
@@ -103,7 +103,7 @@ describe('runProbe (api)', () => {
     await runProbe(apiProbe, {
       apiKey: 'sk-test',
       baseUrl: 'https://api.openai.com',
-      fetch: ((_input: string | URL | Request, init?: RequestInit) => {
+      fetch: ((_input: FetchInput, init?: RequestInit) => {
         Object.assign(seen, (init?.headers ?? {}) as Record<string, string>);
         return Promise.resolve(new Response('{}', { status: 200 }));
       }) as unknown as typeof globalThis.fetch

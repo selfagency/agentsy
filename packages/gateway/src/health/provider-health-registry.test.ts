@@ -77,6 +77,6 @@ describe('ProviderHealthRegistry', () => {
     registry.recordSuccess('openai');
     registry.recordFailure('anthropic');
 
-    expect(registry.listProviderIds().sort()).toEqual(['anthropic', 'openai']);
+    expect(registry.listProviderIds().sort((a, b) => a.localeCompare(b))).toEqual(['anthropic', 'openai']);
   });
 });

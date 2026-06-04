@@ -235,54 +235,8 @@ export class MetricsCollector {
       bucket.latency.record(metric.latencyMs);
     }
 
-    const modelId = metric.modelId.length === 0 ? '__unknown__' : metric.modelId;
-    let modelBucket = bucket.models.get(modelId);
-    if (modelBucket === undefined) {
-      modelBucket = {
-        costUsd: 0,
-        failureCount: 0,
-        inputTokens: 0,
-        latency: new LatencyBuffer(this.#sampleCapacity),
-        modelId,
-        outputTokens: 0,
-        requestCount: 0,
-        successCount: 0
-      };
-      bucket.models.set(modelId, modelBucket);
-    }
-    modelBucket.requestCount += 1;
-    if (metric.success) {
-      modelBucket.successCount += 1;
-    } else {
-      modelBucket.failureCount += 1;
-    }
-    if (metric.tokens !== undefined) {
-      modelBucket.inputTokens += metric.tokens.inputTokens;
-      modelBucket.outputTokens += metric.tokens.outputTokens;
-    }
-    if (metric.costUsd !== undefined) {
-      modelBucket.costUsd += metric.costUsd;
-    }
-    if (metric.latencyMs > 0) {
-      modelBucket.latency.record(metric.latencyMs);
-    }
-
-    this.#globalRequestCount += 1;
-    if (metric.success) {
-      this.#globalSuccessCount += 1;
-    } else {
-      this.#globalFailureCount += 1;
-    }
-    if (metric.tokens !== undefined) {
-      this.#globalInputTokens += metric.tokens.inputTokens;
-      this.#globalOutputTokens += metric.tokens.outputTokens;
-    }
-    if (metric.costUsd !== undefined) {
-      this.#globalCostUsd += metric.costUsd;
-    }
-    if (metric.latencyMs > 0) {
-      this.#globalLatency.record(metric.latencyMs);
-    }
+    this.#applyToModelBucket(metric, bucket);
+    this.#applyToGlobalCounters(metric);
   }
 
   /**
@@ -475,5 +429,63 @@ export class MetricsCollector {
       p99: buffer.percentile(99),
       samples: buffer.sampleCount()
     };
+  }
+
+  #modelBucketFor(bucket: ProviderBucket, modelId: string): ModelBucket {
+    let mb = bucket.models.get(modelId);
+    if (mb === undefined) {
+      mb = {
+        costUsd: 0,
+        failureCount: 0,
+        inputTokens: 0,
+        latency: new LatencyBuffer(this.#sampleCapacity),
+        modelId,
+        outputTokens: 0,
+        requestCount: 0,
+        successCount: 0
+      };
+      bucket.models.set(modelId, mb);
+    }
+    return mb;
+  }
+
+  #applyToModelBucket(metric: RequestMetric, bucket: ProviderBucket): void {
+    const modelId = metric.modelId.length === 0 ? '__unknown__' : metric.modelId;
+    const mb = this.#modelBucketFor(bucket, modelId);
+    mb.requestCount += 1;
+    if (metric.success) {
+      mb.successCount += 1;
+    } else {
+      mb.failureCount += 1;
+    }
+    if (metric.tokens !== undefined) {
+      mb.inputTokens += metric.tokens.inputTokens;
+      mb.outputTokens += metric.tokens.outputTokens;
+    }
+    if (metric.costUsd !== undefined) {
+      mb.costUsd += metric.costUsd;
+    }
+    if (metric.latencyMs > 0) {
+      mb.latency.record(metric.latencyMs);
+    }
+  }
+
+  #applyToGlobalCounters(metric: RequestMetric): void {
+    this.#globalRequestCount += 1;
+    if (metric.success) {
+      this.#globalSuccessCount += 1;
+    } else {
+      this.#globalFailureCount += 1;
+    }
+    if (metric.tokens !== undefined) {
+      this.#globalInputTokens += metric.tokens.inputTokens;
+      this.#globalOutputTokens += metric.tokens.outputTokens;
+    }
+    if (metric.costUsd !== undefined) {
+      this.#globalCostUsd += metric.costUsd;
+    }
+    if (metric.latencyMs > 0) {
+      this.#globalLatency.record(metric.latencyMs);
+    }
   }
 }

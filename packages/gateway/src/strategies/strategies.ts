@@ -190,7 +190,6 @@ export class PriorityFallbackStrategy implements RoutingStrategy {
         return entry;
       }
     }
-    return;
   }
 }
 
@@ -264,7 +263,7 @@ export class AdaptiveStrategy implements RoutingStrategy {
     if (eligible.length === 0) {
       return;
     }
-    const maxCost = Math.max(0, ...[...this.#costs.values()]);
+    const maxCost = Math.max(0, ...this.#costs.values());
     let best: ProviderEntry | undefined;
     let bestScore = Number.NEGATIVE_INFINITY;
     for (const entry of eligible) {

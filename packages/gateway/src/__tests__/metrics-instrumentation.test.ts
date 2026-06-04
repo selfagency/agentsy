@@ -15,10 +15,17 @@ import type { ProviderEntry } from '../types.js';
 
 interface ClientSlot {
   chunks?: NormalizedChunk[];
-  error?: Error;
+  error?: unknown;
   latencyMs?: number;
   response?: CompletionResponse;
   streamError?: Error;
+}
+
+function toError(value: unknown): Error {
+  if (value instanceof Error) {
+    return value;
+  }
+  return new Error(String(value));
 }
 
 function makeClient(responses: Map<string, ClientSlot>): UniversalClient {
@@ -28,10 +35,10 @@ function makeClient(responses: Map<string, ClientSlot>): UniversalClient {
       if (slot?.error !== undefined) {
         if (slot.latencyMs !== undefined && slot.latencyMs > 0) {
           return new Promise((_, reject) => {
-            setTimeout(() => reject(slot.error), slot.latencyMs);
+            setTimeout(() => reject(toError(slot.error)), slot.latencyMs);
           });
         }
-        return Promise.reject(slot.error);
+        return Promise.reject(toError(slot.error));
       }
       if (slot?.response !== undefined) {
         if (slot.latencyMs !== undefined && slot.latencyMs > 0) {

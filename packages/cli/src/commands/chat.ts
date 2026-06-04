@@ -369,9 +369,7 @@ export async function runChatCommand(
       lines.push(parts.join(' '));
     }
     lines.push(
-      `[lb] metrics: requests=${metrics.requestCount} success=${metrics.successCount} failure=${metrics.failureCount} failovers=${metrics.failoverCount} circuitTrips=${metrics.circuitTrips}`
-    );
-    lines.push(
+      `[lb] metrics: requests=${metrics.requestCount} success=${metrics.successCount} failure=${metrics.failureCount} failovers=${metrics.failoverCount} circuitTrips=${metrics.circuitTrips}`,
       `[lb] totals: tokens=${metrics.totalTokens} (in=${metrics.totalInputTokens} out=${metrics.totalOutputTokens}) cost=$${metrics.totalCostUsd.toFixed(4)}`
     );
     if (metrics.streamCount > 0) {
