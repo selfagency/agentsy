@@ -384,6 +384,9 @@ importers:
       '@agentsy/core':
         specifier: workspace:*
         version: link:../core
+      '@agentsy/gateway':
+        specifier: workspace:*
+        version: link:../gateway
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory

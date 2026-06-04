@@ -2,6 +2,7 @@ import { createUniversalClient } from '@agentsy/providers';
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 
 import { buildNoopClient } from '../noop-client.js';
+import { DefaultTierAwareModelSelector } from '../selector.js';
 import { ModelSwitcher } from '../switcher.js';
 import type { LoadBalancedClient, LoadBalancerConfig, RoutingState } from '../types.js';
 
@@ -85,6 +86,9 @@ export function createLoadBalancedClient(config: LoadBalancerConfig): LoadBalanc
     },
     createModelSwitcher(): ModelSwitcher {
       return new ModelSwitcher({ providers: config.providers, setActiveModel: () => undefined });
+    },
+    getModelSelector() {
+      return new DefaultTierAwareModelSelector();
     },
     getRoutingState(): RoutingState {
       return buildRoutingState(config);

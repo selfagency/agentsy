@@ -32,15 +32,7 @@ export const ProviderEntrySchema = z.object({
   baseUrl: z.string().url().optional(),
   model: z.string().min(1).optional(),
   capabilities: ProviderCapabilitiesSchema.optional(),
-  retryPolicy: z.custom<ProviderRetryPolicy>().optional(),
-  /**
-   * Provider tier for tier-aware routing. Local inference backends
-   * (apfel, ollama, vllm, lm-studio) typically set this to `micro`.
-   * Optional — when omitted, the tier-aware strategy falls back to
-   * `DEFAULT_PROVIDER_TIERS` for built-in ids or treats the entry
-   * as `mid` for unknown ids.
-   */
-  tier: z.enum(['micro', 'small', 'mid', 'frontier']).optional()
+  retryPolicy: z.custom<ProviderRetryPolicy>().optional()
 });
 
 export type StrategyName = z.infer<typeof StrategyNameSchema>;
@@ -64,6 +56,87 @@ export interface RoutingState {
   strategy: StrategyName;
 }
 
+// =============================================================================
+// Model-tier types — tiers are defined on MODELS, not providers
+// =============================================================================
+
+/**
+ * Model capability tiers. Each model has exactly one tier.
+ *
+ * - `micro` — <3B params, <$0.50/1M input, <100ms (local/classification)
+ * - `small` — 3-30B params, $0.50-3/1M input, 100-500ms (summarization)
+ * - `mid` — 30-300B params, $3-15/1M input, 500ms-2s (reasoning/coding)
+ * - `frontier` — 300B+ / o1-style extended-thinking, $15+/1M, 2s+ (synthesis)
+ */
+export type ModelTier = 'micro' | 'small' | 'mid' | 'frontier';
+
+/**
+ * Cost structure for a model in USD per 1M tokens.
+ */
+export interface ModelCost {
+  cachedInputPer1MTokens?: number;
+  cacheWritePer1MTokens?: number;
+  inputPer1MTokens: number;
+  outputPer1MTokens: number;
+}
+
+/**
+ * Capabilities supported by a model.
+ */
+export interface ModelCapabilities {
+  audio: boolean;
+  embeddings: boolean;
+  jsonMode: boolean;
+  reasoning: boolean;
+  tools: boolean;
+  vision: boolean;
+}
+
+/**
+ * A concrete model that the gateway can invoke. Tiers are defined
+ * on `ModelEntry`, not `ProviderEntry`. A single provider may host
+ * models across all tiers.
+ */
+export interface ModelEntry {
+  capabilities: ModelCapabilities;
+  contextWindow: number;
+  cost: ModelCost;
+  id: string;
+  isLocal?: boolean;
+  knowledgeCutoff?: string;
+  maxOutputTokens: number;
+  modelName: string;
+  paramCount?: number;
+  providerId: string;
+  releaseDate?: string;
+  tier: ModelTier;
+  useCases: Array<'chat' | 'code' | 'reasoning' | 'search' | 'embed' | 'vision'>;
+}
+
+export interface ModelSelectionConstraints {
+  excludeProviders?: string[];
+  maxUsdPer1KInput?: number;
+  maxUsdPer1KOutput?: number;
+  minContextWindow?: number;
+  preferLocal?: boolean;
+  requireJsonMode?: boolean;
+  requireTools?: boolean;
+}
+
+export interface TierAwareModelSelector {
+  selectModelForTier(input: {
+    constraints?: ModelSelectionConstraints;
+    tier: ModelTier;
+    useCase?: 'chat' | 'code' | 'search' | 'embed' | 'vision';
+  }): Promise<ModelEntry>;
+}
+
+export interface ModelRegistry {
+  getAllModels(): ModelEntry[];
+  getModelById(id: string): ModelEntry | undefined;
+  getModelsByTier(tier: ModelTier): ModelEntry[];
+}
+
 export interface LoadBalancerConfig {
   circuitBreaker?: {
     failureThreshold?: number;
@@ -81,6 +154,7 @@ export interface LoadBalancedClient extends UniversalClient {
     providerId: string
   ): import('./observability/metrics-collector.js').ProviderAggregate | undefined;
   getMetricsSnapshot(): import('./observability/metrics-collector.js').MetricsSnapshot;
+  getModelSelector(): TierAwareModelSelector;
   getRoutingState(): RoutingState;
   getUsageSnapshot(): ProviderUsageSnapshot[];
   markProviderHealthy(providerId: string): void;
@@ -98,4 +172,12 @@ export interface LoadBalancedClient extends UniversalClient {
 export interface LoadBalancedClientFactory {
   complete(request: CompletionRequest): Promise<CompletionResponse>;
   stream(request: CompletionRequest): Promise<Awaited<UniversalClient['stream']>>;
+}
+
+/**
+ * Gateway client interface for orchestrator consumption.
+ * Provides model selection and invocation primitives.
+ */
+export interface GatewayClient {
+  getModelSelector(): TierAwareModelSelector;
 }

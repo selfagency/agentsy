@@ -8,6 +8,7 @@
 
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 
+import { DefaultTierAwareModelSelector } from './selector.js';
 import { ModelSwitcher } from './switcher.js';
 import type { LoadBalancedClient, ProviderUsageSnapshot, RoutingState, StrategyName } from './types.js';
 
@@ -58,6 +59,9 @@ export function buildNoopClient(): LoadBalancedClient {
     },
     createModelSwitcher(): ModelSwitcher {
       return new ModelSwitcher({ providers: [], setActiveModel: () => undefined });
+    },
+    getModelSelector() {
+      return new DefaultTierAwareModelSelector();
     },
     getRoutingState(): RoutingState {
       return ROUTING_STATE;
