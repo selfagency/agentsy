@@ -21,7 +21,15 @@ export const ProviderEntrySchema = z.object({
   baseUrl: z.string().url().optional(),
   model: z.string().min(1).optional(),
   capabilities: z.custom<ProviderCapabilities>().optional(),
-  retryPolicy: z.custom<ProviderRetryPolicy>().optional()
+  retryPolicy: z.custom<ProviderRetryPolicy>().optional(),
+  /**
+   * Provider tier for tier-aware routing. Local inference backends
+   * (apfel, ollama, vllm, lm-studio) typically set this to `micro`.
+   * Optional — when omitted, the tier-aware strategy falls back to
+   * `DEFAULT_PROVIDER_TIERS` for built-in ids or treats the entry
+   * as `mid` for unknown ids.
+   */
+  tier: z.enum(['micro', 'small', 'mid', 'frontier']).optional()
 });
 
 export type StrategyName = z.infer<typeof StrategyNameSchema>;

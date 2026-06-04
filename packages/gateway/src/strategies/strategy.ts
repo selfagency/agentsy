@@ -29,6 +29,13 @@ export interface SelectionContext {
   request: {
     estimatedInputTokens?: number;
     model?: string;
+    /**
+     * Optional task tier. Phase 3.5 tier-aware routing uses this to
+     * prefer providers that match the complexity bucket (micro,
+     * small, mid, frontier). Strategies that don't care about tiers
+     * can ignore this.
+     */
+    taskTier?: 'micro' | 'small' | 'mid' | 'frontier';
     requires?: ReadonlyArray<'tools' | 'vision' | 'streaming' | 'json'>;
   };
 }

@@ -21,6 +21,15 @@ export { defaultApiParse, type ProbeContext, runProbe } from './probes/run-probe
 export { parseRateLimitHeaders, type RateLimitHeaderSnapshot } from './quota/header-parser.js';
 export { QuotaTracker, QuotaTrackerRegistry } from './quota/tracker.js';
 export { createProviderRegistry, ProviderRegistry } from './registry/index.js';
+export {
+  LOCAL_BACKEND_PROFILES,
+  type LocalAccelerator,
+  type LocalBackendProfile,
+  type LocalPlatformProfile,
+  type RegisterLocalProvidersOptions,
+  type RegisterLocalProvidersResult,
+  registerLocalProviders
+} from './registry/local-providers.js';
 export { ModelAliasMap } from './registry/model-alias.js';
 export {
   buildStrategy,
@@ -44,6 +53,14 @@ export {
   type RoutingStrategy,
   type SelectionContext
 } from './strategies/strategy.js';
+export {
+  buildTierOf,
+  DEFAULT_PROVIDER_TIERS,
+  ESCALATION_CHAIN,
+  type ProviderTier,
+  type TierAwareOptions,
+  TierAwareStrategy
+} from './strategies/tier-aware.js';
 export { type ModelInfo, type ModelSwitchConfig, ModelSwitcher, type ModelSwitcherOptions } from './switcher.js';
 export {
   type LoadBalancedClient,
