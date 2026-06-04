@@ -32,7 +32,7 @@ Build semantic routing layer between CLI and providers. Automatic failover, circ
 
 ## Completed Work (TASK-LB-005, TASK-LB-010..023)
 
-All tasks are complete except TASK-LB-019 (E2E Integration Tests with MSW).
+All tasks complete.
 
 ### TASK-LB-005: Built-in Provider Profiles
 
@@ -325,22 +325,18 @@ Covers every checklist item: config validation (Zod), registry lookup, alias res
 
 **Effort:** ~1.5 hours
 
-## Status: ⚠️ PARTIAL
+## Status: ✅ DONE
 
-There are no `*.spec.ts` E2E files in the gateway package. The `metrics-instrumentation.test.ts` file is the closest substitute: it exercises the full `createLoadBalancedClient` → `retryWithFailover` → `MetricsCollector` chain with stub `UniversalClient`s, covering:
+`packages/gateway/src/__tests__/e2e/gateway-e2e.test.ts` ships 6 MSW-backed HTTP round-trip scenarios:
 
-- 429-style rate-limit rejection → failover (in `metrics-instrumentation.test.ts:97`)
-- All providers exhausted (`metrics-instrumentation.test.ts:84`)
-- Circuit opens after 5 consecutive failures (`metrics-instrumentation.test.ts:120`)
-- Listener exception containment
+1. **429 rate-limit → graceful failover** — provider-a returns HTTP 429, provider-b serves the request. Metrics reflect the failover (`failoverCount: 1`).
+2. **All providers exhausted** — both providers return 429. `AllProvidersExhaustedError` is thrown. Metrics record the failure.
+3. **Circuit breaker opens** — 3 consecutive failures open the circuit at threshold 3. Subsequent calls skip HTTP entirely (strategy pre-filter).
+4. **Mid-session strategy change** — `setStrategy('round-robin')` at runtime. Routing state updates. Subsequent calls use the new strategy.
+5. **Cost-based selection** — provider-a costs 0.5, provider-b costs 5.0. Cheapest provider selected; zero failovers.
+6. **Circuit reset restores traffic** — primary fails 3 times, circuit opens, fallback serves. `markProviderHealthy('provider-a')` restores traffic to the primary on the next call.
 
-What is **NOT** covered:
-
-- Real MSW-mocked HTTP round-trips against a profile's `usageProbes` (the probe merge is tested, but not the network call)
-- Mid-session strategy change (no test verifies that switching from `'round-robin'` to `'adaptive'` mid-flight actually changes the next pick)
-- Cost-based selection against three real cost entries (tested in unit, not E2E)
-
-The plan's "Run with MSW mock server from Phase 1" reference — the `msw` infrastructure is present in `packages/testing/src/msw.ts` but is not used for any gateway-level test today. **Estimated remaining effort: ~1.5h** to add a `packages/gateway/src/__tests__/e2e/` directory with MSW-backed round-trip tests for 429 → failover, mid-session strategy change, and cost-based selection.
+All tests use real `UniversalClient` instances that make actual `fetch()` calls intercepted by MSW — not `clientFactory` stubs. `msw` added as `devDependency` in `@agentsy/gateway`.
 
 ---
 
@@ -405,7 +401,7 @@ The plan's `await registerLocalProviders(...)` was implemented as synchronous `r
 - ✅ Failover deterministic
 - ✅ CLI slash commands registered (lb status|providers|strategy|reset, model select|list|search|refine)
 - ✅ Stream instrumentation wired (instrumentStream → MetricsCollector)
-- ⚠️ E2E with MSW — partial (no MSW-backed round-trip tests; closest is the stub-`UniversalClient` instrumentation test)
+- ✅ E2E with MSW — 6 HTTP round-trip scenarios (429 failover, exhaustion, circuit, strategy-change, cost-based, reset)
 
 ---
 
@@ -433,13 +429,13 @@ The plan's `await registerLocalProviders(...)` was implemented as synchronous `r
 | TASK-LB-016 CLI Status Command | ✅ | — | `agentsy lb status` |
 | TASK-LB-017 Slash Commands | ✅ | — | `/lb status|providers|strategy|reset` + `/model select|list|search|refine` in chat.ts |
 | TASK-LB-018 Unit Tests | ✅ | — | 18 test files, ~150+ cases |
-| TASK-LB-019 E2E Integration Tests | ⚠️ | ~1.5h | unit-level coverage; MSW round-trips missing |
+| TASK-LB-019 E2E Integration Tests | ✅ | — | 6 MSW-backed HTTP round-trip scenarios (429→failover, exhaustion, circuit, strategy-change, cost-based, reset) |
 | TASK-LB-020 Model Switcher | ✅ | — | switcher class + `/model select` wired mid-conversation |
 | TASK-LB-021 Docs & Exports | ✅ | — | README + barrel aligned |
 | TASK-LB-OBS Metrics | ✅ | — | collector + auto-instrumentation + stream tracking via `instrumentStream()` |
 | TASK-LB-022 Tier-Aware Strategy | ✅ | — | `TierAwareStrategy` + escalation |
 | TASK-LB-023 Local Provider Registration | ✅ | — | `registerLocalProviders` + `LOCAL_BACKEND_PROFILES` |
 
-**Total remaining: ~1.5 hours** (TASK-LB-019 E2E integration tests). All other tasks complete.
+**Total remaining: 0 hours — Phase 3.5 complete.**
 
 **Next phase:** `07-PHASE-4-ORCHESTRATION.md`
