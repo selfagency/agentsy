@@ -30,7 +30,9 @@ Build semantic routing layer between CLI and providers. Automatic failover, circ
 
 ---
 
-## Remaining Work (TASK-LB-005, TASK-LB-010..020)
+## Completed Work (TASK-LB-005, TASK-LB-010..023)
+
+All tasks are complete except TASK-LB-019 (E2E Integration Tests with MSW).
 
 ### TASK-LB-005: Built-in Provider Profiles
 
@@ -283,9 +285,9 @@ export class RoundRobinStrategy {
 
 Register in `@agentsy/plugins` slash registry.
 
-## Status: ❌ NOT DONE
+## Status: ✅ DONE
 
-The slash commands `/lb status`, `/lb providers`, `/lb strategy`, `/lb reset` are not registered in any TUI slash registry. The CLI shell subcommand `agentsy lb status` exists, but the in-REPL slash-command form used inside the chat TUI is missing. The `LoadBalancedClient.markProviderHealthy(providerId)` and `markProviderUnhealthy(providerId)` methods (which already implement "reset") are exposed but not wired to a slash handler. **Estimated remaining effort: ~0.5h** to add four slash handlers in `packages/cli/src/commands/chat.ts` near the existing `/model` and `/provider` handlers.
+All four slash commands (`/lb status`, `/lb providers`, `/lb strategy <name>`, `/lb reset <providerId>`) are wired in `packages/cli/src/commands/chat.ts` alongside `/model select|list|search|refine`. `/lb bare` (no subcommand) falls back to `/lb status`. Strategy names are validated against `StrategyNameSchema` before swapping. `markProviderHealthy` is called on reset. When the client is mock (non-gateway), a graceful "[lb] not a load-balanced gateway client" message is shown instead of throwing. Committed in `55d77fd9`.
 
 ---
 
@@ -346,11 +348,11 @@ The plan's "Run with MSW mock server from Phase 1" reference — the `msw` infra
 
 **Effort:** ~1.5 hours
 
-## Status: ⚠️ PARTIAL
+## Status: ✅ DONE (with minor stub removal)
 
 `packages/gateway/src/switcher.ts` ships the `ModelSwitcher` class with `switch()`, `getCurrentConfig()`, `getSupportedModels()`, and alias resolution via `ModelAliasMap`. The client exposes `createModelSwitcher()`. Shipped in commit `902387f1`. 10 unit tests.
 
-The **CLI slash command** `/model` exists in `packages/cli/src/commands/chat.ts:300` but is a stub: it prints `[model] requested=... (restart required)` instead of calling `client.createModelSwitcher().switch({ model })`. The actual mid-conversation switch wiring is missing. The chat handler needs to call the switcher when the gateway client is in scope, which requires a small refactor to make the gateway client accessible to the chat command (currently the chat command imports its own model from config, not from the gateway). **Estimated remaining effort: ~0.5h** to wire the switcher into the chat handler. Per-session pinning (`session?: string`) is accepted by the switcher but not stored — future work.
+The **CLI slash command** `/model select <alias-or-upstream-id>` now invokes `client.createModelSwitcher().switch({ model })` instead of printing a "restart required" message. `/model list` prints the alias-resolved model list. `/model` bare prints the current model. Per-session pinning (`session?: string`) is accepted by the switcher but not stored — future work. Committed in `55d77fd9`.
 
 ---
 
@@ -370,7 +372,7 @@ The **CLI slash command** `/model` exists in `packages/cli/src/commands/chat.ts:
 
 `packages/gateway/src/observability/metrics-collector.ts` ships `MetricsCollector` with `recordRequest`, `recordFailover`, `recordCircuitTrip`, `getUsageSnapshot`, `getProviderAggregate`, `reset`. Per-(provider, model) buckets track request count, success count, failure count, error rate, input/output tokens, USD cost, and latency percentiles (p50 / p95 / p99) via a fixed-capacity `LatencyBuffer` (1000 samples). Auto-instrumentation is wired in `createLoadBalancedClient` (commit `cccd43a0`): one `recordRequest` per caller-visible `complete()` call, one `recordFailover` per cross-provider hop, one `recordCircuitTrip` per closed→open transition. Exposed on the `LoadBalancedClient` surface via `getMetricsSnapshot()` and `getMetricsProviderAggregate(providerId)`. 12 collector tests + 7 instrumentation tests.
 
-**Stream instrumentation gap**: `stream()` calls do not yet contribute to the metrics snapshot (the call returns immediately with a stream object, so end-to-end timing must live in the consumer). The CLI TUI's `streamToStdout` is the right layer to drive this. **Estimated remaining effort: ~0.5h** to wrap the returned `ReadableStream` so it records latency on `cancel`/`close`.
+**Stream instrumentation**: `stream()` calls are instrumented via `instrumentStream()` (a `TransformStream` wrapper in `stream-tracker.ts` that records TTFB, total duration, and chunk count). The wrapped stream is transparent to consumers; `MetricsCollector.recordStreamComplete()` is called when the stream fully closes, and the `MetricsSnapshot` includes `streamCount`, `streamSuccessCount`, `streamFailureCount`, `totalStreamChunks`, `totalStreamDurationMs`, and `totalStreamTtfbMs`. 4 stream-tracker tests + 3 instrumentation tests. Committed in the same commit group as the initial auto-instrumentation work.
 
 ---
 
@@ -401,6 +403,8 @@ The plan's `await registerLocalProviders(...)` was implemented as synchronous `r
 - ✅ Rate limit parsing covers OpenAI/Anthropic/Meta
 - ✅ All strategies tested
 - ✅ Failover deterministic
+- ✅ CLI slash commands registered (lb status|providers|strategy|reset, model select|list|search|refine)
+- ✅ Stream instrumentation wired (instrumentStream → MetricsCollector)
 - ⚠️ E2E with MSW — partial (no MSW-backed round-trip tests; closest is the stub-`UniversalClient` instrumentation test)
 
 ---
@@ -411,7 +415,7 @@ The plan's `await registerLocalProviders(...)` was implemented as synchronous `r
 - ✅ Automatic failover working — done (TASK-LB-014)
 - ✅ Circuit breaker preventing cascading failures — done (TASK-LB-011)
 - ✅ Quota tracking accurate — done (TASK-LB-012)
-- ⚠️ CLI commands (status, reset, strategy) functional — `status` is done; `reset` and `strategy` are exposed on the client but not wired to slash commands (TASK-LB-017)
+- ✅ CLI commands (status, reset, strategy) functional — all three wired as slash commands + separate CLI subcommand (TASK-LB-016 + TASK-LB-017)
 
 ---
 
@@ -427,15 +431,15 @@ The plan's `await registerLocalProviders(...)` was implemented as synchronous `r
 | TASK-LB-014 Retry & Failover | ✅ | — | `retryStreamWithFailover` not separately implemented |
 | TASK-LB-015 Active Probing | ✅ | — | CodexBar-style `usageProbes[]` |
 | TASK-LB-016 CLI Status Command | ✅ | — | `agentsy lb status` |
-| TASK-LB-017 Slash Commands | ❌ | ~0.5h | `/lb status|providers|strategy|reset` not registered |
-| TASK-LB-018 Unit Tests | ✅ | — | 17 test files, ~150+ cases |
+| TASK-LB-017 Slash Commands | ✅ | — | `/lb status|providers|strategy|reset` + `/model select|list|search|refine` in chat.ts |
+| TASK-LB-018 Unit Tests | ✅ | — | 18 test files, ~150+ cases |
 | TASK-LB-019 E2E Integration Tests | ⚠️ | ~1.5h | unit-level coverage; MSW round-trips missing |
-| TASK-LB-020 Model Switcher | ⚠️ | ~0.5h | switcher class done; `/model` slash command stub |
+| TASK-LB-020 Model Switcher | ✅ | — | switcher class + `/model select` wired mid-conversation |
 | TASK-LB-021 Docs & Exports | ✅ | — | README + barrel aligned |
-| TASK-LB-OBS Metrics | ✅ | — | collector + auto-instrumentation |
+| TASK-LB-OBS Metrics | ✅ | — | collector + auto-instrumentation + stream tracking via `instrumentStream()` |
 | TASK-LB-022 Tier-Aware Strategy | ✅ | — | `TierAwareStrategy` + escalation |
 | TASK-LB-023 Local Provider Registration | ✅ | — | `registerLocalProviders` + `LOCAL_BACKEND_PROFILES` |
 
-**Total remaining: ~2.5 hours** (TASK-LB-017 + TASK-LB-019 + TASK-LB-020 + the stream-instrumentation gap from TASK-LB-OBS).
+**Total remaining: ~1.5 hours** (TASK-LB-019 E2E integration tests). All other tasks complete.
 
 **Next phase:** `07-PHASE-4-ORCHESTRATION.md`
