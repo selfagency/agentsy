@@ -193,7 +193,7 @@ Package plan tasks not in TODO:
 
 TODO only mentions: "ToolDefinition interface doesn't exist, REPL tool only placeholder, No file operations"
 
-### @agentsy/tokens (12 tasks, partially complete in plan but not reflected in TODO)
+### @agentsy/context (12 tasks, partially complete in plan but not reflected in TODO)
 
 Package plan tasks (TASK-TOKENS-004 to -006 marked ✅ complete 2026-05-17):
 

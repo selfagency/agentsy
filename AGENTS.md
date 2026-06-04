@@ -21,7 +21,7 @@ Runtime and orchestration:
 - `@agentsy/orchestrator` — Agent orchestration and scheduling
 - `@agentsy/memory` — Three-tier memory engine (raw event log, synthesized wiki, vector retrieval)
 - `@agentsy/session` — Session management and caching
-- `@agentsy/tokens` — Token budgeting and output compression
+- `@agentsy/context` — Token budgeting and output compression
 - `@agentsy/guardrails` — Safety and validation boundaries
 - `@agentsy/observability` — Metrics and tracing
 - `@agentsy/retrieval` — Retrieval-Augmented Generation (RAG) retrieval and indexing
@@ -51,7 +51,7 @@ The **only currently published package** is `@agentsy/vscode`. All others are in
 - **Core stream/transformation primitives**: `@agentsy/core`
 - **Provider adaptation + normalization**: `@agentsy/providers`, `@agentsy/mcp`
 - **Orchestration and execution**: `@agentsy/orchestrator`, `@agentsy/runtime`, `@agentsy/guardrails`
-- **Durability and long-horizon state**: `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`, `@agentsy/retrieval`
+- **Durability and long-horizon state**: `@agentsy/session`, `@agentsy/memory`, `@agentsy/context`, `@agentsy/retrieval`
 - **Surface and presentation**: `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`, `@agentsy/connectors`
 - **Extensibility**: `@agentsy/plugins`
 
@@ -218,7 +218,7 @@ Important dependencies intentionally not flagged by Fallow (see .fallowrc.jsonc)
 "ignoreDependencies": [
   "@agentsy/types", "@agentsy/core", "@agentsy/renderers",
   "@agentsy/runtime", "@agentsy/memory", "@agentsy/providers",
-  "@agentsy/session", "@agentsy/tokens"
+  "@agentsy/session", "@agentsy/context"
 ]
 ```
 
@@ -228,7 +228,7 @@ These are safe to ignore in unused-dependencies checks — they are workspace pa
 
 - VS Code extension behavior → `@agentsy/vscode`
 - Durable memory/retrieval/persistence → `@agentsy/memory` or memory-adjacent
-- Transient token budgets/prompt reduction → `@agentsy/tokens`
+- Transient token budgets/prompt reduction → `@agentsy/context`
 - Everything else → appropriate focused package
 
 ## Architecture and Code Patterns

@@ -108,7 +108,7 @@ This plan defines exhaustive implementation work for Phase 1 in `plan/IMPLEMENTA
 - **DEP-001**: `@agentsy/memory` core modules (`coordination`, `wiki`, `retrieval`, `scope`, `synthesis`, `tools`).
 - **DEP-002**: `@agentsy/runtime` context assembly interfaces for deterministic injection points.
 - **DEP-003**: `@agentsy/session` persistence/resume semantics for episodic continuity.
-- **DEP-004**: `@agentsy/tokens` budget interfaces for context sizing and injection budgets.
+- **DEP-004**: `@agentsy/context` budget interfaces for context sizing and injection budgets.
 - **DEP-005**: `@agentsy/observability` metric/event conventions for instrumentation alignment.
 
 ## 5. Files
@@ -171,5 +171,5 @@ This plan defines exhaustive implementation work for Phase 1 in `plan/IMPLEMENTA
 - `packages/memory/UPDATED-IMPLEMENTATION-PLAN.md`
 - `packages/session/IMPLEMENTATION-PLAN.md`
 - `packages/runtime/IMPLEMENTATION-PLAN.md`
-- `packages/tokens/IMPLEMENTATION-PLAN.md`
+- `packages/context/IMPLEMENTATION-PLAN.md`
 - `packages/observability/IMPLEMENTATION-PLAN.md`

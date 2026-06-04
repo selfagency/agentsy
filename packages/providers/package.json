@@ -26,6 +26,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./caching": {
+      "types": "./dist/caching.d.ts",
+      "import": "./dist/caching.js",
+      "require": "./dist/caching.cjs"
+    },
     "./adapters": {
       "types": "./dist/adapters.d.ts",
       "import": "./dist/adapters.js",
@@ -66,10 +71,10 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
-    "@vitest/coverage-v8": "^4.1.6",
+    "@vitest/coverage-v8": "^4.1.8",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.8"
   },
   "engines": {
     "node": ">=18"

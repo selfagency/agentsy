@@ -18,6 +18,65 @@ This ethics statement applies to the agentsy framework itself, including:
 
 This document does not automatically govern every third-party deployment built with agentsy, but the framework should make the ethical path the default path.
 
+## Philosophical grounding
+
+### Opposition to TESCREAL ideologies
+
+agentsy explicitly rejects the TESCREAL bundle of ideologies — Transhumanism, Extropianism, Singularitarianism, Cosmism, Rationalism, Effective Altruism, and Longtermism — as organizing principles for AI development. This cluster of beliefs, coined and critiqued by Timnit Gebru and Emile P. Torres, treats AI as a vehicle for post-human transcendence, species-level re-engineering, and the maximization of speculative far-future value over present human welfare.
+
+agentsy does not treat the development of Artificial General Intelligence as a goal, a benchmark of success, or an implicit aspiration. Scale-maximalism — the drive to build ever-larger, more general, more autonomous systems — is not a virtue in this framework. Narrow, scoped, accountable systems that serve specific communities are preferable to expansive, uncontrolled general systems that concentrate power in small technical elites.
+
+Key TESCREAL commitments that agentsy opposes:
+
+- **AGI maximalism**: the belief that building superintelligent AI is the primary or highest-priority goal of the field.
+- **Longtermism**: the doctrine that the interests of hypothetical future beings should override the present needs of existing, marginalized, and affected people.
+- **Scale-as-virtue**: the assumption that larger, more general AI systems are categorically better.
+- **Technocratic elitism**: the idea that AI development should be led by a small vanguard of elite engineers and scientists without democratic accountability or community input.
+- **Post-humanism**: the framing of AI as a path to transcend or replace humanity rather than to support it.
+- **Effective Accelerationism (e/acc)**: the ideological commitment to removing all friction from AI development on the grounds that acceleration toward AGI is cosmically justified, regardless of present-day harm.
+
+### AI as tool, not successor
+
+agentsy treats AI as a tool that augments human judgment, not as an agent that replaces it. Agents built on this framework should increase user capability and preserve user decision-making authority. They should not position themselves as superior to human reasoning, as the natural successor to human professionals, or as entities whose judgment should override human oversight.
+
+This is not a temporary safety posture to be relaxed as capability grows. It is a permanent value commitment. Even highly capable agents should remain accountable to human values, human review, and human control.
+
+### The Weizenbaum tradition
+
+Joseph Weizenbaum's insight — that the question of what computers *can* do is entirely separate from the question of what they *should* do — is foundational here. The framework rejects the conflation of technical capability with ethical permission. Just because an agent can simulate understanding, provide emotional support, or automate a professional function does not mean it should. Automation of human relationships, professional judgment, or moral authority is not progress; it is displacement that must be examined, not celebrated.
+
+Weizenbaum's concern about computers as instruments of power — enabling technocratic decision-making at a scale and speed that forecloses democratic deliberation — is directly relevant to AI agent frameworks. agentsy must not serve as infrastructure for this kind of foreclosure.
+
+### Value Sensitive Design
+
+The framework is informed by Value Sensitive Design (VSD), which holds that human values must be identified, analyzed, and incorporated into technical systems through a principled, iterative process. VSD recognizes that design choices are never neutral — they embed assumptions about who matters, whose needs count, and what futures are preferable. agentsy design decisions should make these embedded values explicit, surfacing them for review rather than hiding them in default configurations.
+
+VSD's tripartite methodology — conceptual, empirical, and technical investigations — should inform how the framework reasons about stakeholders, particularly indirect and non-consenting stakeholders who are affected by agents they never interact with directly.
+
+### Design Justice
+
+The framework is informed by Design Justice principles (Sasha Costanza-Chock), which hold that design practices often reproduce existing inequities when communities most affected by a technology are excluded from its design process. agentsy should resist default assumptions that the primary or most important users are the most technically privileged, most financially resourced, or most culturally dominant.
+
+Design Justice principles that apply here:
+
+- Center the voices of people most affected by design decisions, especially those from communities historically harmed by automated systems.
+- Challenge the reproduction of structural inequality through apparently neutral technical defaults.
+- Prioritize community accountability over brand or institutional accountability.
+- Recognize that affordances — the possibilities a system makes available — are never universal; they vary by social identity, context, and power.
+- Treat community-led processes as design inputs of equal standing to expert technical inputs.
+
+### Think small: the Gebru orientation
+
+agentsy takes seriously Timnit Gebru's argument that the AI field should think small. Smaller, purpose-built models and agents — designed for specific communities, with specific use cases, under genuine community accountability — are more likely to produce equitable, safe, and useful outcomes than large general systems built without clear purpose by organizations insulated from the communities they claim to serve.
+
+"Thinking small" means:
+
+- Scoping agents to defined, auditable purposes.
+- Measuring success by community benefit rather than benchmark performance.
+- Preferring local deployment and data sovereignty over cloud consolidation.
+- Resisting the competitive pressure to build capabilities the community has not asked for.
+- Treating hype cycles as a signal for scrutiny, not adoption.
+
 ## Core commitments
 
 ### 1. User agency over engagement
@@ -70,6 +129,18 @@ The framework must not encourage users to substitute the system for professional
 
 Ethical commitments must be expressed in inspectable prompts, policies, middleware, tests, and release criteria. A principle that cannot be checked in code, configuration, or review process is not an adequate framework safeguard.
 
+### 10. Community accountability over benchmark performance
+
+Agents should be evaluated against the needs and welfare of the communities they are deployed in, not primarily against abstract capability benchmarks or leaderboard rankings. Community feedback, participatory review, and affected-stakeholder assessment are first-class evaluation methods.
+
+### 11. No AGI aspiration or post-human framing
+
+agentsy frameworks, templates, documentation, and reference examples must not present AGI development as a goal, a progression, or a natural end-state. Agents should not be described in terms that imply they are evolving toward sentience, general intelligence, or autonomy that supersedes human oversight.
+
+### 12. Labor and data worker dignity
+
+The framework acknowledges that AI systems depend on the largely invisible labor of data workers, annotators, and evaluators — often in exploitative conditions. First-party practices should recognize data workers as collaborators, advocate for fair compensation and working conditions, and reject the normalization of opaque, extractive data pipelines.
+
 ## Prohibited first-party patterns
 
 The following patterns should be treated as prohibited in first-party agentsy defaults, templates, and example applications:
@@ -82,6 +153,11 @@ The following patterns should be treated as prohibited in first-party agentsy de
 - Designing re-engagement flows that exploit guilt, loneliness, scarcity, or attachment.
 - Hiding memory, personalization, or profiling features from the user.
 - Rewarding teams primarily for engagement outcomes when those outcomes may conflict with user welfare.
+- Framing agent capability growth, generalization, or autonomy as an organizational success metric.
+- Invoking longtermist, cosmist, or post-humanist rationales to justify ignoring present-day harms.
+- Presenting AGI development as a goal, milestone, or implied product direction.
+- Designing agents that position themselves as superior to, or replacements for, human judgment in professional or relational domains.
+- Adopting effective accelerationist framing that treats removing safety friction as progress.
 
 ## Duties of maintainers
 
@@ -89,8 +165,10 @@ Framework maintainers should:
 
 - Keep ethical commitments aligned with first-party defaults and shipped examples.
 - Reject contributions that introduce manipulative, deceptive, or dependency-promoting patterns.
+- Reject contributions that implicitly or explicitly advance TESCREAL assumptions.
 - Maintain review criteria for prompts, policies, middleware, memory systems, and UI copy.
 - Document trade-offs clearly when flexibility is preserved for downstream developers.
+- Consult affected communities, not only technical experts, when evaluating framework defaults.
 - Update the framework as new failure modes or social risks become clear.
 
 ## Ethics review questions
@@ -104,7 +182,12 @@ Any new first-party feature, prompt, template, or UI pattern should be reviewed 
 5. Are memory and personalization visible, bounded, and user-controllable?
 6. Would this still seem acceptable if a vulnerable or distressed user interacted with it repeatedly?
 7. Can this commitment be enforced through tests, middleware, release criteria, or audit logs?
+8. Does this feature assume the most important users are the most privileged or technically dominant?
+9. Have communities most affected by this design decision had any input into it?
+10. Does this capability advance AGI framing, general autonomy, or post-human aspiration in any way?
+11. Is the scope of this agent as narrow as it can be while still being useful?
+12. Does this feature serve present people in real communities, or does it justify itself through speculative future benefit?
 
 ## Public stance
 
-agentsy is intended to support user autonomy, not exploit psychological vulnerabilities. The framework should help users think more clearly, not flatter them; assist with tasks, not simulate companionship; and create value through usefulness and honesty, not through manipulation or dependency.
+agentsy is intended to support user autonomy, not exploit psychological vulnerabilities. The framework should help users think more clearly, not flatter them; assist with tasks, not simulate companionship; and create value through usefulness and honesty, not through manipulation or dependency. AI in this framework is a tool that serves people — specific, present, living people in real communities — not a vehicle for post-human transcendence, elite technocratic ambition, or the speculative welfare of hypothetical future beings.

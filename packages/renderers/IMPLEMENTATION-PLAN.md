@@ -17,7 +17,7 @@ This plan defines the production implementation order for `@agentsy/renderers` a
 ## 1. Requirements & Constraints
 
 - **REQ-RENDERERS-001**: Renderer API remains unified across CLI, Ink, plain text, browser, and VS Code bridge targets.
-- **REQ-RENDERERS-002**: Ink primitives remain renderer-owned and are composed by host surfaces.
+- **REQ-RENDERERS-002**: Ink primitives remain renderer-owned and are composed by host surfaces; shared interactive widgets should prefer `@inkjs/ui` as the base component library wherever a matching primitive exists.
 - **REQ-RENDERERS-003**: Visual language supports acid ANSI BBS chrome with semantic palette roles and fallbacks.
 - **REQ-RENDERERS-004**: Non-interactive/plain output preserves readable structure.
 - **REQ-RENDERERS-005**: Focus and keyboard behavior in interactive components remains deterministic.
@@ -151,6 +151,7 @@ The package fulfills its role by providing:
 
 ### 2. Component Rendering (`src/components/`)
 
+- **Ink UI Base**: Build input, select, spinner, badge, alert, list, progress, and status widgets from `@inkjs/ui` first; extend with Agentsy wrappers only when a project-specific composition is needed.
 - **Thinking Blocks**: Render `<think>` tags as framed, optionally collapsible BBS-style panels with explicit labels, subdued gutters, and a plain-text fallback that remains readable without color.
 - **Tool Calls**: Visualize active tool execution as chromed ANSI status cards that show arguments, results, approvals, and errors in a structured format.
 - **Streaming Logic**: Implement smooth "typing" and scanline-friendly motion effects for LLM output, preventing jerky UI updates while honoring reduced-motion and non-interactive fallbacks.
@@ -246,6 +247,7 @@ Rendering must meet SLOs: first-chunk-to-screen < 100ms for TUI/Ink renderers, <
 - Keep `vscode` renderer duck-typed (no direct `import 'vscode'` in renderers package).
 - Expose shared renderer types and `DisplayPort` from top-level package.
 - Treat renderer API surface (`RendererHandle`, `BaseRendererOptions`, `ThinkingStyle`, `DisplayPort`) as semver-major on breaking changes.
+- Treat `@inkjs/ui` as the canonical base component library for Ink surfaces; custom components should wrap or compose Ink UI primitives instead of reimplementing equivalent controls.
 - Treat Ink panes and chooser widgets as renderer-owned primitives; CLI may not duplicate them as ad-hoc local components.
 - Treat the Ink visual language as a first-class contract: BBS-style framing, semantic ANSI palettes, and motion-safe banner/bannerless fallbacks must remain composable across CLI, VS Code, browser, and future desktop surfaces.
 

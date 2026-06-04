@@ -174,11 +174,11 @@ packages/prompts/
 
 ## Integration Points
 
-### With @agentsy/tokens
+### With @agentsy/context
 
 ```typescript
 // Token budget aware optimization
-import { TokenBudget, TokenCounter } from "@agentsy/tokens";
+import { TokenBudget, TokenCounter } from "@agentsy/context";
 
 interface OptimizedPrompt {
   chunks: PromptChunk[];
@@ -293,7 +293,7 @@ The package should expose a merged prompt artifact plus provenance metadata so t
 
 ## Dependencies
 
-- `@agentsy/tokens` - Token counting and budget management
+- `@agentsy/context` - Token counting and budget management
 - `@agentsy/memory` - Prompt storage and persistence
 - `@agentsy/core` - Stream processing and structured outputs
 

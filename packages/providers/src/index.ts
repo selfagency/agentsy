@@ -30,5 +30,13 @@ export interface ProviderDefinition {
   name: string;
 }
 
+export type { CachePromptInput, CachePromptPlan } from './cache-prompt.js';
+export { createCachePromptPlan } from './cache-prompt.js';
+export type { AnthropicCacheConfig, AnthropicCachePrompt } from './caching/anthropic.js';
+export { applyAnthropicPromptCaching } from './caching/anthropic.js';
+export type { OpenAIPromptCaching } from './caching/openai.js';
+export { applyOpenAIPromptCaching } from './caching/openai.js';
+export type { ZaiPromptCaching } from './caching/zai.js';
+export { applyZaiPromptCaching } from './caching/zai.js';
 // Capability bridge exports
 export * from './capability-bridge.js';

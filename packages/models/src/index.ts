@@ -13,6 +13,35 @@ import type {
   TaskRequirements
 } from './types.js';
 
+export { LLMStatsClient } from './llm-stats-client.js';
+export type {
+  LocalModelInfo,
+  LocalProviderDiscoveryResult,
+  LocalProviderProbeResult,
+  LocalProviderProfile,
+  OllamaProbeOptions,
+  ProviderProtocol,
+  VllmProbeOptions
+} from './local-providers/index.js';
+export {
+  clearLocalProviderDiscoveryCache,
+  discoverLocalProviders,
+  probeOllama,
+  probeVllm
+} from './local-providers/index.js';
+
+export type {
+  ModelRefinementRequest,
+  ModelSearchQuery,
+  ModelSearchResult,
+  RecommendationCriteria
+} from './search-contracts.js';
+
+export {
+  mergeModelRefinementRequest,
+  normalizeModelSearchQuery,
+  searchModels
+} from './search-contracts.js';
 export type {
   LLMStatsLocalModel,
   LocalModelRecommendation,
@@ -23,7 +52,7 @@ export type {
   ModelsDevProvider,
   SystemCapabilities,
   TaskRequirements
-};
+} from './types.js';
 
 // Cache structure
 interface CacheData {
@@ -780,3 +809,4 @@ export class ModelSelector {
 }
 
 export * from './local-providers/index.js';
+export { selectModel, selectModelForProvider } from './search-contracts.js';

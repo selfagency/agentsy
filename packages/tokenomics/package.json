@@ -1,0 +1,61 @@
+{
+  "name": "@agentsy/tokenomics",
+  "version": "0.1.0-alpha.0",
+  "description": "Spend accountability, frustration signal detection, ROI measurement, analytics adapters, prompt cache efficiency, and agent learning loop",
+  "keywords": [
+    "agentsy",
+    "typescript",
+    "tokenomics",
+    "roi",
+    "frustration",
+    "analytics",
+    "learning"
+  ],
+  "homepage": "https://github.com/selfagency/agentsy#readme",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfagency/agentsy.git",
+    "directory": "packages/tokenomics"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "biome lint",
+    "format": "biome format",
+    "test": "vitest --run --passWithNoTests",
+    "coverage": "vitest --run --coverage --passWithNoTests"
+  },
+  "dependencies": {
+    "@agentsy/context": "workspace:*",
+    "@agentsy/observability": "workspace:*",
+    "@agentsy/types": "workspace:*",
+    "better-sqlite3": "^12.10.0"
+  },
+  "optionalDependencies": {
+    "@libsql/client": "^0.14.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.9.0",
+    "@vitest/coverage-v8": "^4.1.8",
+    "tsup": "^8.5.1",
+    "typescript": "6.0.3",
+    "vitest": "^4.1.8"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@10.33.2"
+}

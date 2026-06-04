@@ -1,5 +1,4 @@
 import type { FinishReason, UsageInfo } from '@agentsy/types';
-// biome-ignore lint: xss/no-mixed-html -- Test inputs intentionally include mixed HTML/XML
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
 import type { XmlToolCall } from '../../tool-calls/index.js';
@@ -573,7 +572,7 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     const result = processor.process({
       content: 'hi',
       done: true,
-      finishReason: 'stop' as FinishReason
+      finishReason: 'stop'
     });
     expect(result.finishReason).toBe('stop');
   });
@@ -585,7 +584,7 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     const result = processor.process({
       content: '',
       done: true,
-      finishReason: 'tool-calls' as FinishReason
+      finishReason: 'tool-calls'
     });
     expect(result.finishReason).toBe('tool-calls');
   });
@@ -595,7 +594,7 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     const result = processor.process({
       content: 'truncated',
       done: true,
-      finishReason: 'length' as FinishReason
+      finishReason: 'length'
     });
     expect(result.finishReason).toBe('length');
   });
@@ -613,7 +612,7 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     const result = processor.process({
       content: '!',
       done: true,
-      finishReason: 'stop' as FinishReason
+      finishReason: 'stop'
     });
     expect(result.finishReason).toBe('stop');
   });
@@ -624,7 +623,7 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     processor.process({
       content: ' world',
       done: true,
-      finishReason: 'length' as FinishReason
+      finishReason: 'length'
     });
     const result = processor.flush();
     expect(result.finishReason).toBe('length');
@@ -635,7 +634,7 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     processor.process({
       content: 'hi',
       done: true,
-      finishReason: 'stop' as FinishReason
+      finishReason: 'stop'
     });
     processor.reset();
     const result = processor.flush();
@@ -652,7 +651,7 @@ describe('LLMStreamProcessor — finishReason propagation', () => {
     });
     const result = processor.process({
       done: true,
-      finishReason: 'tool-calls' as FinishReason,
+      finishReason: 'tool-calls',
       nativeToolCallDeltas: [{ argumentsDelta: '{"city":"NYC"}', index: 0 }]
     });
     const toolCallPart = result.parts.find(p => p.type === 'tool_call');

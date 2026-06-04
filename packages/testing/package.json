@@ -24,12 +24,12 @@
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@copilotkit/aimock": "^1.27.3",
+    "@copilotkit/aimock": "^1.28.0",
     "@types/node": "^25.9.0",
-    "@vitest/coverage-v8": "^4.1.6",
+    "@vitest/coverage-v8": "^4.1.8",
     "msw": "^2.14.6",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.8"
   },
   "engines": {
     "node": ">=20.19.6"

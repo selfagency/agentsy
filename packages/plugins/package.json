@@ -35,6 +35,11 @@
       "types": "./dist/manifest.d.ts",
       "import": "./dist/manifest.js",
       "require": "./dist/manifest.cjs"
+    },
+    "./slash": {
+      "types": "./dist/slash.d.ts",
+      "import": "./dist/slash.js",
+      "require": "./dist/slash.cjs"
     }
   },
   "scripts": {
@@ -50,10 +55,10 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
-    "@vitest/coverage-v8": "^4.1.6",
+    "@vitest/coverage-v8": "^4.1.8",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.8"
   },
   "engines": {
     "node": ">=18"

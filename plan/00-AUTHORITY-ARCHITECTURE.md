@@ -38,7 +38,7 @@
 | **Core stream & transform**   | `@agentsy/core`                                                                                                                                                  | 🟡 85%        | Normalize provider output to typed events                  |
 | **Provider integration**      | `@agentsy/providers`, `@agentsy/gateway`                                                                                                                     | 🟡 70%        | Adapt protocol differences, request/response normalization |
 | **Execution & orchestration** | `@agentsy/runtime`, `@agentsy/orchestrator`                                                                                                                      | 🟢 P0-2 ✅    | Loop, hooks, scheduling, mode policy                       |
-| **Session, memory & tokens**  | `@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`                                                                                                         | 🟢 Ready      | State durability, cognitive layers, budget                 |
+| **Session, memory & tokens**  | `@agentsy/session`, `@agentsy/memory`, `@agentsy/context`, `@agentsy/tokenomics`                                                                                                         | 🟢 Ready      | State durability, cognitive layers, context compression, spend accountability                 |
 | **Surfaces & rendering**      | `@agentsy/renderers`, `@agentsy/ui`, `@agentsy/vscode`, `@agentsy/cli`                                                                                           | 🟠 Phase 2+   | CLI, UI, editor integration                                |
 | **Extensibility & policy**    | `@agentsy/plugins`, `@agentsy/prompts`, `@agentsy/secrets`, `@agentsy/tools`, `@agentsy/guardrails`, `@agentsy/mcp`, `@agentsy/connectors`, `@agentsy/retrieval` | 🔴 Phase 4-11 | Skills, instructions, agents, policy, integrations         |
 | **Model catalog & selection** | `@agentsy/models`                                                                                                                                                | 🟢 Stable     | Provider/model ranking, capability probing                 |
@@ -201,7 +201,7 @@ Provider raw output (OpenAI/Anthropic/Ollama/etc)
 
 | Pattern                                      | Source                       | Implementation                             |
 | -------------------------------------------- | ---------------------------- | ------------------------------------------ |
-| Token compression (75% output / 46% memory)  | Caveman                      | `@agentsy/tokens`, `@agentsy/core/context` |
+| Token compression (75% output / 46% memory)  | Caveman                      | `@agentsy/context`, `@agentsy/core/context` |
 | Virtual sandbox (90% infra savings)          | Flue                         | `@agentsy/runtime` (Phase 4 complete)      |
 | Content addressing + dedup                   | re_gent                      | `@agentsy/memory/content-addressing`       |
 | Structural sandboxing                        | SpiceAI                      | `@agentsy/runtime/sandbox`                 |
@@ -308,7 +308,8 @@ Five first-class `AgentDefinition` in `@agentsy/plugins/src/agents/builtins/`:
 | `@agentsy/memory`                     | 0-1, 7-8    | 🟢 98% 🟡        | Production-ready; AgentFS migration pending Phase 8                  |
 | `@agentsy/types`                      | 0, 1        | 🟢 ✅            | TASK-067 complete 2026-05-25                                         |
 | `@agentsy/session`                    | 1, 6-7      | 🟡 75%           | Typed state scaffold done; snapshot/resume pending                   |
-| `@agentsy/tokens`                     | 0, 4, 9     | 🟢 Phase 0 ✅    | Compression done; cost tracking Phase 9                              |
+| `@agentsy/context`                    | 0, 4, 9, 19 | 🟢 Phase 0 ✅    | Compression done; renamed from tokens (Phase 19)                     |
+| `@agentsy/tokenomics`                 | 20          | 📋 Planned       | Spend ledger, frustration signals, ROI MCP, learning loop            |
 | `@agentsy/core`                       | 0-2, 7      | 🟡 85%           | TASK-009 ✅; stream-to-events done                                   |
 | `@agentsy/providers`                  | 0-3         | 🟡 70%           | TASK-008 ✅; request path exists                                     |
 | `@agentsy/gateway`                | 3.5, 9      | 🟡 Foundation ✅ | TASK-LB-001..009 done; TASK-LB-010..020 Phase 3.5                    |

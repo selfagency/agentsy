@@ -1,42 +1,44 @@
 # @agentsy Unified Implementation Plan — Master Index
 
-**Last Updated:** 2026-05-28  
-**Status:** Complete split into 25 phase documents  
+**Last Updated:** 2026-06-02  
+**Status:** Complete split into 27 phase documents  
 **Authority:** Master plan consolidating 25+ planning artifacts
 
 ---
 
 ## Document Index
 
-| Document                                 | Purpose                                | Read Time |
-| ---------------------------------------- | -------------------------------------- | --------- |
-| **00-EXECUTIVE-SUMMARY.md**              | Digest, quick navigation, status       | 5 min     |
-| **00-AUTHORITY-ARCHITECTURE.md**         | Canonical layer model, ecosystem       | 15 min    |
-| **01-PHASE-0-FOUNDATION.md**             | ✅ Complete baseline                   | 10 min    |
-| **02-PHASE-R1-PLAN-SYNC.md**             | Plan file updates (1 hr work)          | 5 min     |
-| **03-PHASE-1-CONTRACT-STABILIZATION.md** | Cross-package APIs, MSW bootstrap      | 5 min     |
-| **04-PHASE-2-TUI-VERTICAL-SLICE.md**     | FIRST DOGFOODABLE (streaming chat)     | 20 min    |
-| **05-PHASE-3-MODEL-SELECTION.md**        | Provider routing, local discovery      | 8 min     |
-| **06-PHASE-3.5-LLM-GATEWAY.md**          | Semantic gateway, failover, quota      | 15 min    |
-| **07-PHASE-4-ORCHESTRATION.md**          | Hooks, skills, agents, secrets, budget | 30 min    |
-| **08-PHASE-5-TOOLS-APPROVALS.md**        | Tool execution, deny-by-default        | 20 min    |
-| **09-PHASE-6-SESSION-DURABILITY.md**     | Resume, branching, snapshots           | 8 min     |
-| **10-PHASE-7-MEMORY-INTEGRATION.md**     | Memory capture/retrieval, AgentFS      | 8 min     |
-| **11-PHASE-8-RAG-AUGMENTATION.md**       | 4-stage retrieval, hybrid ranking      | 12 min    |
-| **12-PHASE-9-OBSERVABILITY.md**          | Cost tracking, structured logging      | 10 min    |
-| **13-PHASE-10-CONFIGURATION.md**         | XDG config, interactive editor         | 5 min     |
-| **14-PHASE-11-INTEGRATION.md**           | Standards compliance, manifests        | 5 min     |
-| **15-PHASE-12-HARDENING-RELEASE.md**     | Smoke tests, CI gates, closure         | 15 min    |
-| **16-CLI-SURFACE-CMUX.md**               | Optional: terminal multiplexing        | 3 min     |
-| **17-GOVERNANCE-QUALITY-GATES.md**       | Build rules, security, completion      | 15 min    |
-| **18-PHASE-AIMOCK-INTEGRATION.md**       | aImock for LLM provider mocking        | 10 min    |
-| **19-AIMOCK-MIGRATION-PLAN.md**          | MSW → aImock migration steps           | 5 min     |
-| **20-PHASE-13-WORKFLOWS-IMPLEMENTATION.md** | Declarative YAML workflow layer    | 20 min    |
-| **21-DCP-PATTERNS-TOKENS.md**            | DCP context pruning patterns in tokens | 11 hours  |
-| **22-ECC-INTEGRATION.md**                | Optional ECC patterns adoption       | 25 hours  |
-| **23-PHASE-14-EXTERNAL-ADOPTIONS.md**    | Patterns from 8 external repos (incl. context-mode session continuity) | 33.5 hours  |
-| **24-PHASE-15-COUNCIL-MODE.md**          | Multi-model council collaboration    | 15 hours  |
-| **25-PHASE-16-SMALL-MODEL-PARITY.md**    | Make 7B-14B models rival cloud models | 40 hours  |
+| Document                                    | Purpose                                                                | Read Time  |
+| ------------------------------------------- | ---------------------------------------------------------------------- | ---------- |
+| **00-EXECUTIVE-SUMMARY.md**                 | Digest, quick navigation, status                                       | 5 min      |
+| **00-AUTHORITY-ARCHITECTURE.md**            | Canonical layer model, ecosystem                                       | 15 min     |
+| **01-PHASE-0-FOUNDATION.md**                | ✅ Complete baseline                                                   | 10 min     |
+| **02-PHASE-R1-PLAN-SYNC.md**                | Plan file updates (1 hr work)                                          | 5 min      |
+| **03-PHASE-1-CONTRACT-STABILIZATION.md**    | Cross-package APIs, MSW bootstrap                                      | 5 min      |
+| **04-PHASE-2-TUI-VERTICAL-SLICE.md**        | FIRST DOGFOODABLE (streaming chat)                                     | 20 min     |
+| **05-PHASE-3-MODEL-SELECTION.md**           | Provider routing, local discovery                                      | 8 min      |
+| **06-PHASE-3.5-LLM-GATEWAY.md**             | Semantic gateway, failover, quota                                      | 15 min     |
+| **07-PHASE-4-ORCHESTRATION.md**             | Hooks, skills, agents, secrets, budget                                 | 30 min     |
+| **08-PHASE-5-TOOLS-APPROVALS.md**           | Tool execution, deny-by-default                                        | 20 min     |
+| **09-PHASE-6-SESSION-DURABILITY.md**        | Resume, branching, snapshots                                           | 8 min      |
+| **10-PHASE-7-MEMORY-INTEGRATION.md**        | Memory capture/retrieval, AgentFS                                      | 8 min      |
+| **11-PHASE-8-RAG-AUGMENTATION.md**          | 4-stage retrieval, hybrid ranking                                      | 12 min     |
+| **12-PHASE-9-OBSERVABILITY.md**             | Cost tracking, structured logging                                      | 10 min     |
+| **13-PHASE-10-CONFIGURATION.md**            | XDG config, interactive editor                                         | 5 min      |
+| **14-PHASE-11-INTEGRATION.md**              | Standards compliance, manifests                                        | 5 min      |
+| **15-PHASE-12-HARDENING-RELEASE.md**        | Smoke tests, CI gates, closure                                         | 15 min     |
+| **16-CLI-SURFACE-CMUX.md**                  | Optional: terminal multiplexing                                        | 3 min      |
+| **17-GOVERNANCE-QUALITY-GATES.md**          | Build rules, security, completion                                      | 15 min     |
+| **18-PHASE-AIMOCK-INTEGRATION.md**          | aImock for LLM provider mocking                                        | 10 min     |
+| **19-AIMOCK-MIGRATION-PLAN.md**             | MSW → aImock migration steps                                           | 5 min      |
+| **20-PHASE-13-WORKFLOWS-IMPLEMENTATION.md** | Declarative YAML workflow layer                                        | 20 min     |
+| **21-DCP-PATTERNS-TOKENS.md**               | DCP context pruning patterns in tokens                                 | 11 hours   |
+| **22-ECC-INTEGRATION.md**                   | Optional ECC patterns adoption                                         | 25 hours   |
+| **23-PHASE-14-EXTERNAL-ADOPTIONS.md**       | Patterns from 8 external repos (incl. context-mode session continuity) | 33.5 hours |
+| **24-PHASE-15-COUNCIL-MODE.md**             | Multi-model council collaboration                                      | 15 hours   |
+| **25-PHASE-16-SMALL-MODEL-PARITY.md**       | Make 7B-14B models rival cloud models                                  | 40 hours   |
+| **28-PHASE-19-CONTEXT-RENAME.md**           | Rename @agentsy/context → @agentsy/context                             | 1 hour     |
+| **29-PHASE-20-TOKENOMICS.md**               | Spend ledger, frustration, ROI, learning loop                          | 46 hours   |
 
 ---
 
@@ -65,10 +67,10 @@
 
 ## Quick Facts
 
-- **Total phases:** 0, R1, 1-12 (14 phases total)
+- **Total phases:** 0, R1, 1-12, 13-20 (22 phases total)
 - **Unblocked ready:** Phase 2 (TUI vertical slice)
 - **Critical path:** Phases 0 → R1 → 1 → 2 → 3 → 4 → 5
-- **Estimated total effort:** ~150 hours forward work
+- **Estimated total effort:** ~197 hours forward work
 - **Verified complete:** Phase 0 (foundation baseline)
 - **Key gates:** Phase 2 (dogfood), Phase 4 (before tools), Phase 9 (before GA)
 
@@ -118,7 +120,7 @@ Each phase: Review → Plan → Execute → Test → Verify → Merge
 
 1. **\"Where do I start?\"** → 00-EXECUTIVE-SUMMARY.md
 2. **\"What's the architecture?\"** → 00-AUTHORITY-ARCHITECTURE.md
-3. **\"What can I do right now?\"** → 04-PHASE-2-TUI-VERTICAL-SLICE.md
+3. **\"What can I do right now?\"** → 05-PHASE-3-MODEL-SELECTION.md
 4. **\"What are the rules?\"** → 17-GOVERNANCE-QUALITY-GATES.md
 5. **\"Which phase is blocking my work?\"** → Your phase document → \"Next phase:\" link
 

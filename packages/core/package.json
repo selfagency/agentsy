@@ -53,6 +53,11 @@
       "import": "./dist/retry.js",
       "require": "./dist/retry.cjs"
     },
+    "./slash-commands": {
+      "types": "./dist/slash-commands.d.ts",
+      "import": "./dist/slash-commands.js",
+      "require": "./dist/slash-commands.cjs"
+    },
     "./sse": {
       "types": "./dist/sse.d.ts",
       "import": "./dist/sse.js",
@@ -94,10 +99,10 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
-    "@vitest/coverage-v8": "^4.1.6",
+    "@vitest/coverage-v8": "^4.1.8",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.8"
   },
   "engines": {
     "node": ">=18"

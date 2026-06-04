@@ -87,7 +87,7 @@
 6. **@agentsy/cli** 37% - 3 basic commands exist, but NO oclif integration, NO interactive shell
 7. **@agentsy/runtime** 200%+ - Plan tasks 1-6 complete, PLUS bonus features beyond scope (memory injection, cache-aware context)
 8. **@agentsy/session** 60% - Plan tasks 1-6 complete, PLUS entity detection beyond plan scope
-9. **@agentsy/tokens** 10% - Compression complete, but NO cost calculation or real token counting
+9. **@agentsy/context** 10% - Compression complete, but NO cost calculation or real token counting
 
 **ECOSYSTEM ANALYSIS FINDINGS (2026-05-14):**
 
@@ -148,7 +148,7 @@
 ## E) Implementation Phases:
 
 ### Phase 0 (Weeks 1-16): Token Optimization Foundation
-- Output compression (75% savings) in @agentsy/tokens
+- Output compression (75% savings) in @agentsy/context
 - Memory compression (46% savings) in @agentsy/core/context
 - Virtual sandbox (90% savings) in @agentsy/runtime
 - BLAKE3 content addressing in @agentsy/memory
@@ -713,7 +713,7 @@ Integration Pattern:
 - Add Caveman and Superpowers integration
 **Estimated Effort**: 3-4 days
 
-### PRIORITY 18: @agentsy/tokens - Add Cost & Quota Features ⚠
+### PRIORITY 18: @agentsy/context - Add Cost & Quota Features ⚠
 **Status**: 10% complete (compliance matrix: compression only, no cost calculation or token counting)
 **Critical Gaps from Package Plan**:
 - ❌ TASK-TOKENS-001: Stabilize accounting/budget contract schema and error taxonomy
@@ -899,7 +899,7 @@ Integration Pattern:
 **Estimated Total**: 15-20 days
 - Priority 16: @agentsy/prompts
 - Priority 17: @agentsy/plugins
-- Priority 18: @agentsy/tokens
+- Priority 18: @agentsy/context
 - Priority 19: @agentsy/ui (export fix only)
 - Priority 20: @agentsy/types (remaining files after foundation)
 - Priority 21: @agentsy/renderers (VSCode/browser)

@@ -1,0 +1,22 @@
+commands:
+  - name: /provider search
+    description: Discover available providers
+    instructions: packages/providers/README.md
+    hooks:
+      - discoverLocalProviders
+    triggers:
+      - search
+  - name: /provider inspect
+    description: Inspect provider capabilities
+    instructions: packages/providers/capability-bridge.ts
+    hooks:
+      - buildProviderCapabilityProfile
+    triggers:
+      - inspect
+  - name: /provider refresh
+    description: Refresh provider discovery
+    instructions: packages/providers/README.md
+    hooks:
+      - discoverLocalProviders
+    triggers:
+      - refresh

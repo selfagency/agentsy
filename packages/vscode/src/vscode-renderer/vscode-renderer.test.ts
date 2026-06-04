@@ -100,7 +100,7 @@ describe('VS Code Chat Renderer', () => {
         showThinking: true,
         stream: mockStream,
         thinkingStyle: 'blockquote'
-      });
+      } as unknown as Parameters<typeof createVSCodeChatRenderer>[0]);
 
       await renderer.write('Content');
       await renderer.end();
@@ -116,7 +116,7 @@ describe('VS Code Chat Renderer', () => {
           thinkingProgress: undefined // Test fallback to progress()
         } as unknown as ChatResponseStream,
         thinkingStyle: 'progress'
-      });
+      } as unknown as Parameters<typeof createVSCodeChatRenderer>[0]);
 
       await renderer.writeChunk({
         content: 'Content',
@@ -132,7 +132,7 @@ describe('VS Code Chat Renderer', () => {
         showThinking: true,
         stream: mockStream,
         thinkingStyle: 'blockquote'
-      });
+      } as unknown as Parameters<typeof createVSCodeChatRenderer>[0]);
 
       await renderer.writeChunk({
         content: 'Visible content',
@@ -152,7 +152,7 @@ describe('VS Code Chat Renderer', () => {
         showThinking: true,
         stream: mockStream,
         thinkingStyle: 'suppress'
-      });
+      } as unknown as Parameters<typeof createVSCodeChatRenderer>[0]);
 
       await renderer.write('Content');
       await renderer.end();
@@ -161,10 +161,7 @@ describe('VS Code Chat Renderer', () => {
     });
 
     it('suppresses thinking when showThinking is false', async () => {
-      const renderer = createVSCodeChatRenderer({
-        showThinking: false,
-        stream: mockStream
-      });
+      const renderer = createVSCodeChatRenderer({ stream: mockStream });
 
       await renderer.write('Content');
       await renderer.end();
@@ -201,7 +198,6 @@ describe('VS Code Chat Renderer', () => {
       expect(onToolCall).toHaveBeenCalledOnce();
       expect(onToolCall).toHaveBeenCalledWith(
         expect.objectContaining({
-          // biome-ignore lint: typescript/no-unsafe-assignment -- vitest matcher returns any
           call: expect.objectContaining({ id: 'tc_callback', name: 'search' }),
           state: 'pending',
           type: 'tool_call'

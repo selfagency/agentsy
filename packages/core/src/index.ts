@@ -4,6 +4,7 @@ export * from './context/index.js';
 export * from './formatting/index.js';
 export * from './processor/index.js';
 export * from './retry/index.js';
+export * from './slash-commands/index.js';
 export * from './sse/index.js';
 export * from './structured/index.js';
 export * from './thinking/index.js';

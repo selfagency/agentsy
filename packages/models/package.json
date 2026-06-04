@@ -10,6 +10,16 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
+    },
+    "./llm-stats-client": {
+      "import": "./dist/llm-stats-client.js",
+      "require": "./dist/llm-stats-client.cjs",
+      "types": "./dist/llm-stats-client.d.ts"
+    },
+    "./search-contracts": {
+      "import": "./dist/search-contracts.js",
+      "require": "./dist/search-contracts.cjs",
+      "types": "./dist/search-contracts.d.ts"
     }
   },
   "scripts": {
@@ -28,6 +38,6 @@
     "@types/node": "^25.9.0",
     "tsup": "^8.3.0",
     "typescript": "6.0.3",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.8"
   }
 }

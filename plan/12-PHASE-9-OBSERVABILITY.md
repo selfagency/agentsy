@@ -2,7 +2,7 @@
 
 **Effort:** ~12 hours  
 **Milestone:** Production-debuggable; cost-governed before GA  
-**Packages:** `@agentsy/observability`, `@agentsy/tokens`, `@agentsy/providers`, `@agentsy/gateway`  
+**Packages:** `@agentsy/observability`, `@agentsy/context`, `@agentsy/providers`, `@agentsy/gateway`  
 **Gate:** Structured logging complete; cost telemetry functional  
 **Next:** Phase 10
 
@@ -21,66 +21,66 @@ Extend Phase 0 observability foundation with structured logging, cost tracking, 
 ```typescript
 export const SpanNames = {
   // Agent loop
-  AGENT_RUN: 'agent.run',
-  AGENT_STEP: 'agent.step',
+  AGENT_RUN: "agent.run",
+  AGENT_STEP: "agent.step",
 
   // LLM
-  LLM_CALL: 'llm.call',
-  LLM_STREAMING: 'llm.streaming',
+  LLM_CALL: "llm.call",
+  LLM_STREAMING: "llm.streaming",
 
   // Tools
-  TOOL_CALL: 'tool.call',
-  TOOL_EXECUTION: 'tool.execution',
+  TOOL_CALL: "tool.call",
+  TOOL_EXECUTION: "tool.execution",
 
   // Retrieval
-  RETRIEVAL_QUERY: 'retrieval.query',
-  RETRIEVAL_RERANK: 'retrieval.rerank',
+  RETRIEVAL_QUERY: "retrieval.query",
+  RETRIEVAL_RERANK: "retrieval.rerank",
 
   // Memory
-  MEMORY_COMPACT: 'memory.compact',
-  MEMORY_RETRIEVE: 'memory.retrieve',
+  MEMORY_COMPACT: "memory.compact",
+  MEMORY_RETRIEVE: "memory.retrieve",
 
   // Runtime
-  HOOK_FIRE: 'hook.fire',
-  PLUGIN_LOAD: 'plugin.load',
-  CONTEXT_INJECT: 'context.inject'
+  HOOK_FIRE: "hook.fire",
+  PLUGIN_LOAD: "plugin.load",
+  CONTEXT_INJECT: "context.inject",
 };
 
 export const SemanticAttributes = {
   llm: {
-    model: 'llm.model',
-    provider: 'llm.provider',
-    input_tokens: 'llm.input_tokens',
-    output_tokens: 'llm.output_tokens',
-    latency_ms: 'llm.latency_ms',
-    cost_usd: 'llm.cost_usd',
-    finish_reason: 'llm.finish_reason',
-    request_id: 'llm.request_id'
+    model: "llm.model",
+    provider: "llm.provider",
+    input_tokens: "llm.input_tokens",
+    output_tokens: "llm.output_tokens",
+    latency_ms: "llm.latency_ms",
+    cost_usd: "llm.cost_usd",
+    finish_reason: "llm.finish_reason",
+    request_id: "llm.request_id",
   },
 
   tool: {
-    name: 'tool.name',
-    args_hash: 'tool.args_hash', // Never raw args
-    result_content_hash: 'tool.result_content_hash',
-    latency_ms: 'tool.latency_ms',
-    is_cached: 'tool.is_cached'
+    name: "tool.name",
+    args_hash: "tool.args_hash", // Never raw args
+    result_content_hash: "tool.result_content_hash",
+    latency_ms: "tool.latency_ms",
+    is_cached: "tool.is_cached",
   },
 
   retrieval: {
-    query_class: 'retrieval.query_class',
-    sparse_hits: 'retrieval.sparse_hits',
-    dense_hits: 'retrieval.dense_hits',
-    rerank_score: 'retrieval.rerank_score',
-    citation_count: 'retrieval.citation_count'
+    query_class: "retrieval.query_class",
+    sparse_hits: "retrieval.sparse_hits",
+    dense_hits: "retrieval.dense_hits",
+    rerank_score: "retrieval.rerank_score",
+    citation_count: "retrieval.citation_count",
   },
 
   memory: {
-    tier: 'memory.tier',
-    operation: 'memory.operation',
-    duration_ms: 'memory.duration_ms',
-    bytes_read: 'memory.bytes_read',
-    bytes_written: 'memory.bytes_written'
-  }
+    tier: "memory.tier",
+    operation: "memory.operation",
+    duration_ms: "memory.duration_ms",
+    bytes_read: "memory.bytes_read",
+    bytes_written: "memory.bytes_written",
+  },
 };
 ```
 
@@ -88,7 +88,7 @@ export const SemanticAttributes = {
 
 ## TASK-044: Token & Cost Telemetry
 
-**Location:** `packages/tokens/src/`
+**Location:** `packages/context/src/`
 
 ```typescript
 export class CostTracker {
@@ -96,18 +96,18 @@ export class CostTracker {
     const cost = this.computeCost(provider, model, tokens);
 
     this.span.setAttributes({
-      'llm.cost_usd': cost,
-      'llm.input_tokens': tokens.input,
-      'llm.output_tokens': tokens.output
+      "llm.cost_usd": cost,
+      "llm.input_tokens": tokens.input,
+      "llm.output_tokens": tokens.output,
     });
 
     this.totalCost += cost;
-    this.tracer.info('llm_call_cost', {
+    this.tracer.info("llm_call_cost", {
       provider,
       model,
       tokens,
       cost,
-      totalSessionCost: this.totalCost
+      totalSessionCost: this.totalCost,
     });
   }
 
@@ -158,7 +158,7 @@ export class RedactionProcessor {
 
     // Process all string attributes
     for (const [key, value] of Object.entries(redacted.attributes)) {
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         const { redacted: text } = redactSecrets(value);
         redacted.attributes[key] = text;
       }
@@ -173,7 +173,7 @@ export const SECRET_PATTERNS = {
   awsKey: /AKIA[0-9A-Z]{16}/g,
   githubToken: /ghp_[a-zA-Z0-9]{36}/g,
   email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
-  ssn: /\b\d{3}-\d{2}-\d{4}\b/g
+  ssn: /\b\d{3}-\d{2}-\d{4}\b/g,
 };
 ```
 
@@ -188,7 +188,7 @@ export const SECRET_PATTERNS = {
 ## TASK-047: Regression Tests
 
 ```typescript
-test('trace completeness', async () => {
+test("trace completeness", async () => {
   // Run agent
   // Verify spans contain:
   // - model selected
@@ -199,7 +199,7 @@ test('trace completeness', async () => {
   // - retrieval source counts
 });
 
-test('cost accuracy', async () => {
+test("cost accuracy", async () => {
   // LLM response: 50 input, 100 output
   // Model: gpt-4o (input $0.005/K, output $0.015/K)
   // Expected cost: 0.05*0.005 + 0.1*0.015 = $0.0005 + $0.0015 = $0.002
@@ -282,33 +282,33 @@ export class MetricsCollector {
       modelId,
       tokens,
       latencyMs,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
   getRoutingState(): RoutingState {
     return {
       strategy: this.strategy,
-      providers: this.providers.map(p => ({
+      providers: this.providers.map((p) => ({
         id: p.id,
         health: this.health.getStatus(p.id),
         usage: this.usage.getSnapshot(p.id),
-        latencyPercentiles: this.latencies.percentiles(p.id)
-      }))
+        latencyPercentiles: this.latencies.percentiles(p.id),
+      })),
     };
   }
 
   getUsageSnapshot(): UsageSnapshot {
     return {
-      requests: this.count('requests'),
+      requests: this.count("requests"),
       tokens: {
-        input: this.sum('input_tokens'),
-        output: this.sum('output_tokens')
+        input: this.sum("input_tokens"),
+        output: this.sum("output_tokens"),
       },
-      cost: this.sum('cost_usd'),
-      failovers: this.count('failovers'),
-      circuitTrips: this.count('circuit_trips'),
-      byProvider: this.groupBy('provider')
+      cost: this.sum("cost_usd"),
+      failovers: this.count("failovers"),
+      circuitTrips: this.count("circuit_trips"),
+      byProvider: this.groupBy("provider"),
     };
   }
 }

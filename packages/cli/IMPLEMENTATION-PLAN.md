@@ -34,7 +34,7 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 - **SEC-CLI-002**: Destructive operations remain approval-gated via runtime policy.
 - **SEC-CLI-003**: cmux connectivity must default to least privilege (`cmux processes only`/`off` as configured) and must never silently force `allowAll`.
 - **CON-CLI-001**: Provider protocol handling stays in `@agentsy/providers`/`@agentsy/core`, not CLI.
-- **CON-CLI-002**: Budget enforcement stays in `@agentsy/tokens`, not duplicated in CLI.
+- **CON-CLI-002**: Budget enforcement stays in `@agentsy/context`, not duplicated in CLI.
 - **CON-CLI-003**: CLI command lifecycle, plugin discovery, autocomplete, and update flows follow `@oclif/core` plus supported oclif plugins rather than custom one-off plumbing.
 - **CON-CLI-004**: Rune-style animations and banners remain presentation concerns layered on top of `@agentsy/renderers`, not embedded in command logic.
 - **CON-CLI-005**: cmux integration transport should support both Unix socket JSON-RPC and `cmux` CLI invocation, with deterministic preference order and graceful fallback when unavailable.
@@ -66,7 +66,7 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 | TASK-CLI-004 | Complete interactive shell flows (chat, chooser, panes, approvals, config edit, slash command UX) as oclif commands and command groups. Readline-based chat command built (packages/cli/src/commands/chat.ts) with mock provider support — covers ~10% of full TUI. Need Inked TUI components from @agentsy/renderers for complete. | ⚠️ partial        | 2026-05-25 |
 | TASK-012     | DOGFOOD Phase 2: Add E2E streaming test (packages/cli/src/e2e/chat-streaming.e2e.test.ts) validating streamed output from mock provider through full stack.                                                                                                                                                                         |                   |            |
 | TASK-095     | DOGFOOD Phase 2: Add shared MSW bootstrap and reusable HTTP handlers for provider-facing CLI/runtime integration tests in @agentsy/testing/src/msw/.                                                                                                                                                                                |                   |            |
-| TASK-SIA-014 | SKILLS Phase 7: Add agentsy agents list/show and agentsy skills list/show commands. Add `--agent <id>` flag and `/agent <id>` command.                                                                                                                                                                                       | ?> slash command. |            |
+| TASK-SIA-014 | SKILLS Phase 7: Add agentsy agents list/show and agentsy skills list/show commands. Add `--agent <id>` flag and `/agent <id>` command.                                                                                                                                                                                              | ?> slash command. |            |
 | TASK-CLI-005 | Implement deterministic headless and JSON operation modes.                                                                                                                                                                                                                                                                          |                   |            |
 | TASK-CLI-006 | Finalize project-aware context insertion (`@`) with budget-aware previews.                                                                                                                                                                                                                                                          |                   |            |
 | TASK-CLI-014 | Add rune-style banner, splash, and motion-safe status components hosted by CLI composition but rendered through `@agentsy/renderers`.                                                                                                                                                                                               |                   |            |
@@ -112,13 +112,13 @@ This plan defines the canonical implementation order for `@agentsy/cli`, aligned
 
 - GOAL-CLI-004.5: Add agent mode selection and skills/agents CLI commands.
 
-| Task         | Description                                                                                                                                                          | Completed                                                                                                                                                                   | Date |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| TASK-CLI-034 | Add `--agent <id>` startup flag and `/agent <id>` slash command to select agent mode at launch or mid-session. Integrate with `AgentPickerComponent` from `@agentsy/renderers` for interactive selection when no ID is given. |      |            |
-| TASK-CLI-035 | Add `agentsy agents list` and `agentsy agents show <id>` commands — lists discovered agents with provenance, model preferences, tool access summary.                 |                                                                                                                                                                             |      |
-| TASK-CLI-036 | Add `agentsy skills list` and `agentsy skills show <id>` commands — lists discovered skills with names, descriptions, triggers, activation status.                   |                                                                                                                                                                             |      |
-| TASK-CLI-037 | Wire agent selection into orchestrator's `createAgentSession` — pass selected agent definition at session construction; store user preference in config.             |                                                                                                                                                                             |      |
-| TASK-CLI-038 | Add integration tests: `--agent` flag parsing, `/agent` slash command routing, agent list/show output, skills list/show output, interactive picker flow in TTY mode. |                                                                                                                                                                             |      |
+| Task         | Description                                                                                                                                                                                                                   | Completed | Date |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-CLI-034 | Add `--agent <id>` startup flag and `/agent <id>` slash command to select agent mode at launch or mid-session. Integrate with `AgentPickerComponent` from `@agentsy/renderers` for interactive selection when no ID is given. |           |      |
+| TASK-CLI-035 | Add `agentsy agents list` and `agentsy agents show <id>` commands — lists discovered agents with provenance, model preferences, tool access summary.                                                                          |           |      |
+| TASK-CLI-036 | Add `agentsy skills list` and `agentsy skills show <id>` commands — lists discovered skills with names, descriptions, triggers, activation status.                                                                            |           |      |
+| TASK-CLI-037 | Wire agent selection into orchestrator's `createAgentSession` — pass selected agent definition at session construction; store user preference in config.                                                                      |           |      |
+| TASK-CLI-038 | Add integration tests: `--agent` flag parsing, `/agent` slash command routing, agent list/show output, skills list/show output, interactive picker flow in TTY mode.                                                          |           |      |
 
 ## 3. Acceptance Criteria
 
@@ -184,9 +184,10 @@ The package fulfills its role by providing:
 2. **Indexing Pipelines**: Multi-modal indexing for files (TS/JS/PY), web content, and conversation history.
 3. **Hybrid Search**: A user interface for combining SQL precision with vector similarity.
 4. **Rich Rendering**: Support for spinners, progress bars, and streaming markdown via `@agentsy/renderers`.
-5. **Workspace UX composition**: Composes renderer-owned Ink components for dialog, stream events, document/diff viewing, git worktree status, and terminal panes.
-6. **Command routing**: Presents plugin-owned slash commands plus `@`-based file/folder insertion from the active project.
-7. **Configuration Authority**: Durable user config at `~/.agentsy/agentsy.yml` and workspace/project overrides with interactive editing.
+  1. **Workspace UX composition**: Composes renderer-owned Ink components for dialog, stream events, document/diff viewing, git worktree status, and terminal panes.
+  2. **Ink UI base components**: Prefer `@inkjs/ui` primitives for reusable interactive controls (input, select, badge, spinner, progress, alert, lists) and wrap them only when a project-specific composition is required.
+5. **Command routing**: Presents plugin-owned slash commands plus `@`-based file/folder insertion from the active project.
+6. **Configuration Authority**: Durable user config at `~/.agentsy/agentsy.yml` and workspace/project overrides with interactive editing.
 
 ## Detailed Functionality
 
@@ -194,6 +195,7 @@ The package fulfills its role by providing:
 
 - **Interactive Mode**: A TUI-focused interactive shell (OpenCode pattern) supporting:
   - **Agent Mode Selection**: Using a picker/search flow to switch between bundled and discovered agent modes (including `research`, `plan`, `agent`, and user/project-installed modes).
+  - **Shared widget stack**: Reuse `@inkjs/ui` primitives for searchable selects, inputs, badges, lists, alerts, spinners, and progress controls in command UX.
   - **Natural Language Interaction**: Streaming chat interface.
   - **Permission Prompts**: Explicit user approval for file edits or shell commands.
 - **Headless Mode**: Support for single-command execution (e.g., `agentsy -p "your question"`).

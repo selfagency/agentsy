@@ -60,24 +60,24 @@
     "coverage": "vitest --run --coverage --passWithNoTests"
   },
   "dependencies": {
-    "@agentsy/tokens": "workspace:*",
+    "@agentsy/context": "workspace:*",
     "@agentsy/types": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@oclif/core": "^4.11.3",
-    "@tursodatabase/sync": "^0.6.0",
+    "@oclif/core": "^4.11.4",
+    "@tursodatabase/sync": "^0.6.1",
     "better-sqlite3": "^12.1.0",
     "blake3-jit": "^1.1.0",
-    "drizzle-orm": "^0.43.1",
+    "drizzle-orm": "^0.45.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.9.0",
-    "@vitest/coverage-v8": "^4.1.6",
+    "@vitest/coverage-v8": "^4.1.8",
     "msw": "^2.14.6",
     "tsup": "^8.5.1",
     "typescript": "6.0.3",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.8"
   },
   "oclif": {
     "bin": "agentsy-memory",

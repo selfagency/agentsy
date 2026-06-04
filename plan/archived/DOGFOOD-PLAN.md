@@ -85,7 +85,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 - **CON-003**: Keep memory long-horizon concerns in `@agentsy/memory`; session continuity in `@agentsy/session`.
 - **CON-004**: Keep TUI rendering concerns in `@agentsy/renderers` and command routing in `@agentsy/cli`.
 - **CON-005**: Keep orchestration planning/mode-selection in `@agentsy/orchestrator`; runtime remains execution-only.
-- **CON-006**: Keep token accounting and enforcement policies in `@agentsy/tokens`; avoid duplicate budget logic in CLI/runtime.
+- **CON-006**: Keep token accounting and enforcement policies in `@agentsy/context`; avoid duplicate budget logic in CLI/runtime.
 - **CON-007**: Keep durable user configuration ownership in `@agentsy/cli` with typed contracts via `@agentsy/types`; secrets remain in `@agentsy/secrets`, not plaintext config.
 - **CON-008**: Orchestrator owns task-board semantics; when available, honker-backed local SQLite is the preferred queue/scheduling substrate; session snapshots active task/todo state; memory stores only promoted durable task knowledge.
 - **CON-009**: Consumers must be able to choose orchestration persistence/scheduling backends: honker-backed SQLite by default, PostgreSQL and plaintext/file as supported persistence alternatives, and cron-compatible scheduling as an alternative driver.
@@ -98,7 +98,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 - **CON-016**: The agent-mode picker UI belongs in `@agentsy/renderers`; `@agentsy/cli` owns workflow composition, mode persistence, and command routing only.
 - **CON-017**: Package code should emit structured logs through the shared observability logger interface (tslog-backed) instead of ad hoc `console.*` usage in production paths.
 - **QOS-001**: Interactive TUI first-token latency and streaming continuity must remain stable through each phase.
-- **QOS-002**: Context assembly must remain bounded by token budget policies from `@agentsy/tokens`.
+- **QOS-002**: Context assembly must remain bounded by token budget policies from `@agentsy/context`.
 - **GUD-001**: Vertical slices must be independently demoable from CLI at end of each phase.
 - **PAT-001**: Dogfood progression pattern: build CLI capability -> use CLI capability to build next capability.
 - **PAT-002**: Orchestrator-before-autonomy pattern: single-turn chat -> orchestrated multi-step plan/act loops -> constrained autonomous execution.
@@ -131,7 +131,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 | `packages/secrets`       | 🔴 CRITICAL BLOCKER (8% - no persistence/encryption) - Phase 4 |
 | `packages/session`       | Phases 6, 7                                                    |
 | `packages/testing`       | Phases 8, 11                                                   |
-| `packages/tokens`        | Phases 1, 4, 9                                                 |
+| `packages/context`       | Phases 1, 4, 9                                                 |
 | `packages/tools`         | 🔴 CRITICAL BLOCKER (15% - only stubs) - Phases 5, 9           |
 | `packages/types`         | Phase 1 (cross-package contract stabilization)                 |
 | `packages/ui`            | Phases 5, 9                                                    |
@@ -144,7 +144,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 | Task     | Description                                                                                                                                                                                                                  | Completed | Date       |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
 | TASK-001 | Confirm canonical package boundaries and execution authority across `plan/MASTER-IMPLEMENTATION-PLAN.md`, `plan/IMPLEMENTATION-PRIORITY.md`, and package plan files.                                                         | ✅        | 2026-05-15 |
-| TASK-002 | Confirm Phase 0 token compression APIs and CLI flows are validated in `packages/tokens`, `packages/core/context`, and `packages/cli`.                                                                                        | ✅        | 2026-05-15 |
+| TASK-002 | Confirm Phase 0 token compression APIs and CLI flows are validated in `packages/context`, `packages/core/context`, and `packages/cli`.                                                                                       | ✅        | 2026-05-15 |
 | TASK-003 | Confirm Phase 1 memory foundation modules and tests in `packages/memory/src/{coordination,wiki,retrieval,scope,tools,observability}` are in place. ✅ **COMPLETE** - Memory package archived to plan/archived/memory/        | ✅        | 2026-05-15 |
 | TASK-097 | **CRITICAL BLOCKER ASSESSMENT**: Per compliance audit (2026-05-22), identify foundational gaps: tools (0% functional), secrets (8% - no persistence), guardrails (12% - no policy engine), observability (30% - only stubs). | ✅        | 2026-05-22 |
 | TASK-018 | Normalize the CLI implementation plan around `@oclif/core` command/plugin lifecycle and Rune-style presentation layers.                                                                                                      | ✅        | 2026-05-15 |
@@ -222,7 +222,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ---- |
 | TASK-061        | Integrate orchestrator entrypoints in CLI/runtime path (`packages/orchestrator/src/*`, `packages/cli/src/commands/chat.ts`, `packages/runtime/src/loop/*`) for multi-step plan->act execution.                               |                                                                                       |      |
 | TASK-062        | Add explicit execution modes in CLI (`/mode single`, `/mode orchestrated`, `/mode autonomous`) backed by orchestrator policy profiles.                                                                                       |                                                                                       |      |
-| TASK-063        | Implement hard token restriction middleware using `@agentsy/tokens` in runtime request path (input/output/context caps + per-turn and per-session spend ceilings with fail-closed behavior).                                 |                                                                                       |      |
+| TASK-063        | Implement hard token restriction middleware using `@agentsy/context` in runtime request path (input/output/context caps + per-turn and per-session spend ceilings with fail-closed behavior).                                |                                                                                       |      |
 | TASK-064        | Integrate prompt policy stack (`packages/prompts/src/*`) for deterministic prompt assembly and token-aware truncation/compression before provider calls.                                                                     |                                                                                       |      |
 | TASK-065        | Integrate plugin capability filtering (`packages/plugins/src/*`) and secrets bootstrap (`packages/secrets/src/*`) into CLI doctor/setup + runtime capability negotiation.                                                    |                                                                                       |      |
 | TASK-074        | Add plugin-registered slash commands for orchestration and budget control (`/mode`, `/budget`, `/prompt`, `/plugins`, `/doctor`) with explainable rejection messages, interactive help, and orchestrator-aware interception. |                                                                                       |      |
@@ -326,7 +326,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
 | TASK-043    | Standardize runtime/event tracing instrumentation across `packages/runtime`, `packages/orchestrator`, `packages/tools`, `packages/memory`, and `packages/providers`.                                                                                                                                                                                                                                                          |           |      |
 | TASK-094    | Standardize structured logging across CLI/runtime/orchestrator/tools/memory/providers/ui adapters using `@agentsy/observability` logger factories backed by `tslog` sub-loggers and shared correlation fields.                                                                                                                                                                                                                |           |      |
-| TASK-044    | Add token/cost telemetry integration from `packages/tokens` into CLI status bar and post-turn summaries (input/output/cost/latency).                                                                                                                                                                                                                                                                                          |           |      |
+| TASK-044    | Add token/cost telemetry integration from `packages/context` into CLI status bar and post-turn summaries (input/output/cost/latency).                                                                                                                                                                                                                                                                                         |           |      |
 | TASK-045    | Add `agentsy status --json`, `agentsy trace`, and UI-focused slash commands (`/trace`, `/events`, `/terminal`, `/worktrees`) for machine-readable operations and debugging.                                                                                                                                                                                                                                                   |           |      |
 | TASK-046    | Add redaction processor defaults in `packages/observability/src/` ensuring traces are safe to export.                                                                                                                                                                                                                                                                                                                         |           |      |
 | TASK-047    | Add regression tests for trace completeness (model selected, provider used, tools called, approvals requested, memory injected, retrieval source counts).                                                                                                                                                                                                                                                                     |           |      |
@@ -399,7 +399,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 - **DEP-009**: `packages/retrieval` indexing/search package promotion and integration.
 - **DEP-010**: `packages/observability` telemetry and redaction processors.
 - **DEP-026**: `tslog` as the universal structured logger implementation used by `@agentsy/observability`.
-- **DEP-011**: `packages/tokens` token/cost accounting and compression utilities.
+- **DEP-011**: `packages/context` token/cost accounting and compression utilities.
 - **DEP-012**: `packages/tools` tool definition implementations and registry contracts.
 - **DEP-013**: `packages/types` cross-package contract stability and discriminated union consistency.
 - **DEP-014**: `packages/ui` store/event bridge parity with CLI/runtime/renderers.
@@ -437,7 +437,7 @@ This plan defines the canonical production order for building `@agentsy` by dogf
 - **FILE-017**: `docs/packages.md`, `docs/developer-guide.md`, `docs/developers/releasing.md`, `README.md` — docs alignment.
 - **FILE-018**: `plan/PHASE-CLI-PRODUCTION-COMPLETION.md` — final closure evidence.
 - **FILE-019**: `packages/orchestrator/src/*` — orchestration policies, mode routing, and workflow planner.
-- **FILE-020**: `packages/tokens/src/*` + runtime budget middleware integration files — hard restriction enforcement.
+- **FILE-020**: `packages/context/src/*` + runtime budget middleware integration files — hard restriction enforcement.
 - **FILE-021**: `packages/prompts/src/*` — prompt policy and token-aware composition modules.
 - **FILE-022**: `packages/plugins/src/*` — plugin policy filtering and activation controls.
 - **FILE-023**: `packages/secrets/src/*` — credential lifecycle and CLI setup integration.

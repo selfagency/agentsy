@@ -20,7 +20,7 @@ The monorepo has active manifest-backed packages for:
 - core processing (`@agentsy/core`)
 - providers (`@agentsy/providers`)
 - orchestration/runtime (`@agentsy/orchestrator`, `@agentsy/runtime`)
-- session/memory/tokens (`@agentsy/session`, `@agentsy/memory`, `@agentsy/tokens`)
+- session/memory/tokens (`@agentsy/session`, `@agentsy/memory`, `@agentsy/context`)
 - integrations/surfaces (`@agentsy/vscode`, `@agentsy/cli`, `@agentsy/ui`, `@agentsy/renderers`)
 - platform support packages (`@agentsy/types`, `@agentsy/tools`, `@agentsy/plugins`, `@agentsy/observability`, `@agentsy/prompts`, `@agentsy/secrets`)
 

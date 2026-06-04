@@ -18,7 +18,7 @@ This plan defines exhaustive implementation work for Phase 0 in `plan/IMPLEMENTA
 
 ## 1. Requirements & Constraints
 
-- **REQ-001**: Implement output compression APIs in `@agentsy/tokens` with deterministic behavior and intensity levels `lite|full|ultra`.
+- **REQ-001**: Implement output compression APIs in `@agentsy/context` with deterministic behavior and intensity levels `lite|full|ultra`.
 - **REQ-002**: Implement memory-file compression APIs in `@agentsy/core/context` with backup-safe write workflows.
 - **REQ-003**: Provide CLI commands in `@agentsy/cli`: `compress` and `compress-memory`.
 - **REQ-004**: Implement preservation rules for code blocks, URLs, file paths, Markdown structure, and warnings/errors.
@@ -43,16 +43,16 @@ This plan defines exhaustive implementation work for Phase 0 in `plan/IMPLEMENTA
 
 ### Implementation Phase 1
 
-- GOAL-001: Complete output compression module hardening in `@agentsy/tokens`.
+- GOAL-001: Complete output compression module hardening in `@agentsy/context`.
 
-| Task     | Description                                                                                                                                           | Completed | Date       |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
-| TASK-001 | Create/verify `packages/tokens/src/compression/compressor.ts` implementing `compressOutput(response, options)` with deterministic transforms.         | ✅        | 2026-05-15 |
-| TASK-002 | Create/verify `packages/tokens/src/compression/levels.ts` defining compression strategy tables and fallback defaults for `lite`, `full`, and `ultra`. |           |            |
-| TASK-003 | Create/verify `packages/tokens/src/compression/config.ts` exposing typed defaults and preservation toggles.                                           |           |            |
-| TASK-004 | Implement preservation guards for fenced code blocks, inline code, URLs, file paths, and markdown headings/lists.                                     | ✅        | 2026-05-15 |
-| TASK-005 | Add tests in `packages/tokens/src/compression/compressor.test.ts` for each level and preservation class.                                              | ✅        | 2026-05-15 |
-| TASK-006 | Add benchmark tests in `packages/tokens/src/compression/compressor.benchmark.test.ts` asserting ratio and latency thresholds.                         | ✅        | 2026-05-15 |
+| Task     | Description                                                                                                                                            | Completed | Date       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ---------- |
+| TASK-001 | Create/verify `packages/context/src/compression/compressor.ts` implementing `compressOutput(response, options)` with deterministic transforms.         | ✅        | 2026-05-15 |
+| TASK-002 | Create/verify `packages/context/src/compression/levels.ts` defining compression strategy tables and fallback defaults for `lite`, `full`, and `ultra`. |           |            |
+| TASK-003 | Create/verify `packages/context/src/compression/config.ts` exposing typed defaults and preservation toggles.                                           |           |            |
+| TASK-004 | Implement preservation guards for fenced code blocks, inline code, URLs, file paths, and markdown headings/lists.                                      | ✅        | 2026-05-15 |
+| TASK-005 | Add tests in `packages/context/src/compression/compressor.test.ts` for each level and preservation class.                                              | ✅        | 2026-05-15 |
+| TASK-006 | Add benchmark tests in `packages/context/src/compression/compressor.benchmark.test.ts` asserting ratio and latency thresholds.                         | ✅        | 2026-05-15 |
 
 ### Implementation Phase 2
 
@@ -88,8 +88,8 @@ This plan defines exhaustive implementation work for Phase 0 in `plan/IMPLEMENTA
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
 | TASK-019 | Add fixture dataset under `packages/testing/fixtures/compression/` for technical-accuracy validation.                                                                           |           |            |
 | TASK-020 | Add shared benchmark helper `packages/testing/src/benchmarks/compression-metrics.ts` for repeatable measurement.                                                                |           |            |
-| TASK-021 | Update docs in `docs/packages/tokens.md`, `docs/packages/context.md`, and `docs/examples/` compression examples.                                                                |           |            |
-| TASK-022 | Run `pnpm --filter @agentsy/tokens check-types && pnpm --filter @agentsy/tokens test`.                                                                                          | ✅        | 2026-05-15 |
+| TASK-021 | Update docs in `docs/packages/context.md`, `docs/packages/context.md`, and `docs/examples/` compression examples.                                                               |           |            |
+| TASK-022 | Run `pnpm --filter @agentsy/context check-types && pnpm --filter @agentsy/context test`.                                                                                        | ✅        | 2026-05-15 |
 | TASK-023 | Run `pnpm --filter @agentsy/core check-types && pnpm --filter @agentsy/core test`.                                                                                              | ✅        | 2026-05-15 |
 | TASK-024 | Run `pnpm --filter @agentsy/cli check-types && pnpm --filter @agentsy/cli test`, then monorepo `pnpm check-types && pnpm test`; store evidence in `plan/PHASE-0-COMPLETION.md`. | ✅        | 2026-05-15 |
 
@@ -102,7 +102,7 @@ This plan defines exhaustive implementation work for Phase 0 in `plan/IMPLEMENTA
 
 ## 4. Dependencies
 
-- **DEP-001**: `@agentsy/tokens` compression modules and tests.
+- **DEP-001**: `@agentsy/context` compression modules and tests.
 - **DEP-002**: `@agentsy/core` context compression and backup manager modules.
 - **DEP-003**: `@agentsy/cli` command framework and option parser.
 - **DEP-004**: Shared testing fixtures and benchmark helpers in `@agentsy/testing`.
@@ -110,10 +110,10 @@ This plan defines exhaustive implementation work for Phase 0 in `plan/IMPLEMENTA
 
 ## 5. Files
 
-- **FILE-001**: `packages/tokens/src/compression/compressor.ts`.
-- **FILE-002**: `packages/tokens/src/compression/levels.ts`.
-- **FILE-003**: `packages/tokens/src/compression/config.ts`.
-- **FILE-004**: `packages/tokens/src/compression/compressor.test.ts`.
+- **FILE-001**: `packages/context/src/compression/compressor.ts`.
+- **FILE-002**: `packages/context/src/compression/levels.ts`.
+- **FILE-003**: `packages/context/src/compression/config.ts`.
+- **FILE-004**: `packages/context/src/compression/compressor.test.ts`.
 - **FILE-005**: `packages/core/src/context/compression/memory/compressor.ts`.
 - **FILE-006**: `packages/core/src/context/compression/preservation/rules.ts`.
 - **FILE-007**: `packages/core/src/context/compression/backup/manager.ts`.
@@ -149,6 +149,6 @@ This plan defines exhaustive implementation work for Phase 0 in `plan/IMPLEMENTA
 
 - `plan/IMPLEMENTATION-PRIORITY.md`
 - `plan/PHASE-0-COMPLETION.md`
-- `docs/packages/tokens.md`
+- `docs/packages/context.md`
 - `docs/packages/cli.md`
 - `docs/packages/context.md`

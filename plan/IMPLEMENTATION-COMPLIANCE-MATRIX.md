@@ -2,13 +2,13 @@
 goal: IMPLEMENTATION PLAN COMPLIANCE MATRIX
 created: 2026-05-17
 last_updated: 2026-05-28
-status: PHASE 0-2 VERIFIED COMPLETE | PHASE R1 PLAN SYNC COMPLETE | PHASE 1 COMPLETE | PHASE 13 WORKFLOWS PLANNED | DCP PATTERNS PLANNED | ECC INTEGRATION PLANNED | EXTERNAL ADOPTIONS PLANNED (incl. context-mode session continuity) | COUNCIL MODE PLANNED | SMALL MODEL PARITY PLANNED
+status: PHASE 0-2 VERIFIED COMPLETE | PHASE R1 PLAN SYNC COMPLETE | PHASE 1 COMPLETE | PHASE 2 COMPLETE | PHASE 3 READY TO START | PHASE 13 WORKFLOWS PLANNED | DCP PATTERNS PLANNED | ECC INTEGRATION PLANNED | EXTERNAL ADOPTIONS PLANNED | COUNCIL MODE PLANNED | SMALL MODEL PARITY PLANNED | CONTEXT RENAME PLANNED (Phase 19) | TOKENOMICS PLANNED (Phase 20)
 
 # Implementation Plan Compliance Matrix
 
 ## Executive Summary
 
-**PHASE 0-1 VERIFICATION COMPLETE** — Major underreporting corrected for 6 packages
+**PHASE 0-2 VERIFICATION COMPLETE** — Major underreporting corrected for 6 packages
 
 ### Overall Compliance Rates (VERIFIED 2026-05-26)
 
@@ -32,8 +32,10 @@ status: PHASE 0-2 VERIFIED COMPLETE | PHASE R1 PLAN SYNC COMPLETE | PHASE 1 COMP
 | external-adoptions | 18 tasks | Plan defined (TASK-EXT-001 through EXT-018, incl. context-mode session continuity) | 0% | 📋 PLANNED |
 | council-mode | 9 tasks | Plan defined (TASK-COUNCIL-001 through COUNCIL-009) | 0% | 📋 PLANNED |
 | small-model-parity | 12 tasks | Plan defined (TASK-SM-001 through SM-012) | 0% | 📋 PLANNED |
+| context (renamed from tokens) | 9 tasks | Rename from @agentsy/context (Phase 19) | 100% rename pending | 📋 PLANNED |
+| tokenomics | 27 tasks | Plan defined (TASK-TKNM-001 through TKNM-027) | 0% | 📋 PLANNED |
 
-## Phase 0-1 Corrections (VERIFIED 2026-05-26)
+## Phase 0-2 Corrections (VERIFIED 2026-06-02)
 
 ### Major Underreporting Corrections (6 Packages)
 
@@ -85,27 +87,27 @@ import { RetrievalBlockedError } from './index.ts';
 
 ## Phase 0-2 COMPLETE (P0-2 Hook Registry & Compilation) — VERIFIED 2026-05-26
 
-| Phase 0-2 Task | Description | Status | Evidence |
-| -------------- | ----------- | ------ | -------- |
-| TASK-HOOK-001 | Define HookDefinition type and implement HookRegistry class | ✅ | `src/hooks/types.ts` |
-| TASK-HOOK-002 | Implement compileHooks(registry, baseOptions) with priority merging | ✅ | `src/hooks/compile.ts` |
-| TASK-HOOK-003 | Register first-party builtin hooks (memory, skills, budget, observability) | ✅ | Builtins directory |
-| TASK-HOOK-004 | Implement createAgentSession(agentDef, config) factory | ✅ | `src/session.ts` |
+| Phase 0-2 Task | Description                                                                | Status | Evidence               |
+| -------------- | -------------------------------------------------------------------------- | ------ | ---------------------- |
+| TASK-HOOK-001  | Define HookDefinition type and implement HookRegistry class                | ✅     | `src/hooks/types.ts`   |
+| TASK-HOOK-002  | Implement compileHooks(registry, baseOptions) with priority merging        | ✅     | `src/hooks/compile.ts` |
+| TASK-HOOK-003  | Register first-party builtin hooks (memory, skills, budget, observability) | ✅     | Builtins directory     |
+| TASK-HOOK-004  | Implement createAgentSession(agentDef, config) factory                     | ✅     | `src/session.ts`       |
 
 **Remaining Plan Requirements (Phases 1-4):**
 
-| Phase   | Requirement             | Plan Task                                                        | Status | Assessment              |
-| ------- | ----------------------- | ---------------------------------------------------------------- | ------ | ----------------------- |
-| Phase 1 | Contract stabilization  | TASK-ORCH-001: Planner/strategy interfaces                       | ❌ 0%  | No planner interfaces   |
-| Phase 1 | Task-board              | TASK-ORCH-002: Task-board abstraction boundaries                            | ❌ 0%  | No task-board exists    |
-| Phase 2 | Core orchestration      | TASK-ORCH-004: Plan/act loops with guardrail/budget checkpoints  | ❌ 0%  | No plan/act logic       |
-| Phase 2 | Mode handling           | TASK-ORCH-005: Mode profiles/fallback behavior                   | ❌ 0%  | No mode profiles        |
-| Phase 2 | Persistence             | TASK-ORCH-006: Task persistence and scheduling/backoff           | ❌ 0%  | No persistence system   |
-| Phase 2 | Supermodes              | TASK-ORCH-013: Mode contracts for research/plan/agent supermodes | ❌ 0%  | No supermode contracts  |
-| Phase 3 | CLI/Runtime integration | TASK-ORCH-007: CLI/runtime slash controls                        | ❌ 0%  | No slash command system |
-| Phase 3 | Testing                 | TASK-ORCH-008: Budget rejection & downscoping tests              | ❌ 0%  | No integration tests    |
-| Phase 3 | Observability           | TASK-ORCH-009: Session interaction coverage                     | ❌ 0%  | No observability integration |
-| Phase 4 | Release gates           | TASK-ORCH-010: Compliance and release gates                      | ❌ 0%  | No release checks       |
+| Phase   | Requirement             | Plan Task                                                        | Status | Assessment                   |
+| ------- | ----------------------- | ---------------------------------------------------------------- | ------ | ---------------------------- |
+| Phase 1 | Contract stabilization  | TASK-ORCH-001: Planner/strategy interfaces                       | ❌ 0%  | No planner interfaces        |
+| Phase 1 | Task-board              | TASK-ORCH-002: Task-board abstraction boundaries                 | ❌ 0%  | No task-board exists         |
+| Phase 2 | Core orchestration      | TASK-ORCH-004: Plan/act loops with guardrail/budget checkpoints  | ❌ 0%  | No plan/act logic            |
+| Phase 2 | Mode handling           | TASK-ORCH-005: Mode profiles/fallback behavior                   | ❌ 0%  | No mode profiles             |
+| Phase 2 | Persistence             | TASK-ORCH-006: Task persistence and scheduling/backoff           | ❌ 0%  | No persistence system        |
+| Phase 2 | Supermodes              | TASK-ORCH-013: Mode contracts for research/plan/agent supermodes | ❌ 0%  | No supermode contracts       |
+| Phase 3 | CLI/Runtime integration | TASK-ORCH-007: CLI/runtime slash controls                        | ❌ 0%  | No slash command system      |
+| Phase 3 | Testing                 | TASK-ORCH-008: Budget rejection & downscoping tests              | ❌ 0%  | No integration tests         |
+| Phase 3 | Observability           | TASK-ORCH-009: Session interaction coverage                      | ❌ 0%  | No observability integration |
+| Phase 4 | Release gates           | TASK-ORCH-010: Compliance and release gates                      | ❌ 0%  | No release checks            |
 
 **Actual Implementation:** 8+ files including orchestratorLoop, scheduler, hooks
 
@@ -175,13 +177,13 @@ package/cli/src/index.ts exports:
 
 ## Phase 1 Foundation — VERIFIED COMPLETE (2026-05-26)
 
-| Phase 1 Task | Description | Status | Evidence |
-| ------------- | ----------- | ------ | -------- |
-| TASK-OBS-001 | Stabilize trace/span/event contracts and semantic field taxonomy | ✅ | `core/tracer.ts`, `core/types.ts` |
-| TASK-OBS-002 | Add redaction contract tests and schema validation snapshots | ✅ | `exporters/{console,otlp,langfuse}.ts` |
-| TASK-OBS-003 | Document ownership boundaries and package integration points | ✅ | `index.ts`, module structure |
-| TASK-OBS-013 | Define semantic conventions for AgentSpan, model calls, tool calls | ✅ | `core/types.ts` + instrumentation modules |
-| TASK-OBS-019 | Define universal logger contracts (tslog-backed with sub-loggers) | ✅ | `core/logger.ts` |
+| Phase 1 Task | Description                                                        | Status | Evidence                                  |
+| ------------ | ------------------------------------------------------------------ | ------ | ----------------------------------------- |
+| TASK-OBS-001 | Stabilize trace/span/event contracts and semantic field taxonomy   | ✅     | `core/tracer.ts`, `core/types.ts`         |
+| TASK-OBS-002 | Add redaction contract tests and schema validation snapshots       | ✅     | `exporters/{console,otlp,langfuse}.ts`    |
+| TASK-OBS-003 | Document ownership boundaries and package integration points       | ✅     | `index.ts`, module structure              |
+| TASK-OBS-013 | Define semantic conventions for AgentSpan, model calls, tool calls | ✅     | `core/types.ts` + instrumentation modules |
+| TASK-OBS-019 | Define universal logger contracts (tslog-backed with sub-loggers)  | ✅     | `core/logger.ts`                          |
 
 **Phase 1 Implementation Details:**
 
@@ -217,8 +219,8 @@ package/cli/src/index.ts exports:
 
 ```typescript
 // packages/tools/src/index.ts exports:
-export * from './tools/repl/index.js';
-export * from './filesystem/agentfs-adapter.js';
+export * from "./tools/repl/index.js";
+export * from "./filesystem/agentfs-adapter.js";
 ```
 
 **What's Implemented:**
@@ -365,13 +367,13 @@ export const createSecretStore = (): SecretStore => {
 
 ## Phase Completion Status Summary
 
-| Phase | Status | Date |
-| ----- | ------ | ---- |
-| Phase 0 | ✅ VERIFIED COMPLETE | 2026-05-26 |
-| Phase R1 | ✅ PLAN SYNC COMPLETE | 2026-05-26 |
-| Phase 1 | ✅ COMPLETE (TASK-090 + TASK-095) | 2026-05-26 |
-| Phase 2 | ✅ COMPLETE (9 tasks all verified) | 2026-05-26 |
-| Phase 3-12 | 📋 Planned | Per sequencing |
+| Phase      | Status                             | Date           |
+| ---------- | ---------------------------------- | -------------- |
+| Phase 0    | ✅ VERIFIED COMPLETE               | 2026-05-26     |
+| Phase R1   | ✅ PLAN SYNC COMPLETE              | 2026-05-26     |
+| Phase 1    | ✅ COMPLETE (TASK-090 + TASK-095)  | 2026-05-26     |
+| Phase 2    | ✅ COMPLETE (9 tasks all verified) | 2026-05-26     |
+| Phase 3-12 | 📋 Planned                         | Per sequencing |
 
 ---
 
@@ -400,37 +402,37 @@ export const createSecretStore = (): SecretStore => {
 
 ### Verification Gates
 
-| Gate | Result |
-|---|---|
-| `pnpm check-types` (session) | ✅ Clean |
-| `pnpm check-types` (testing) | ✅ Clean (pre-existing renderer async errors) |
+| Gate                              | Result                                             |
+| --------------------------------- | -------------------------------------------------- |
+| `pnpm check-types` (session)      | ✅ Clean                                           |
+| `pnpm check-types` (testing)      | ✅ Clean (pre-existing renderer async errors)      |
 | `pnpm check-types` (orchestrator) | ✅ Clean (pre-existing agent.test.ts parse errors) |
-| `pnpm test` (session) | ✅ 2 files passed |
-| `pnpm test` (testing) | ✅ 8 files / 44 tests passed |
-| `docs/API-POSTURE-MATRIX.md` | ✅ Created |
-| `docs/testing-msw-patterns.md` | ✅ Created |
+| `pnpm test` (session)             | ✅ 2 files passed                                  |
+| `pnpm test` (testing)             | ✅ 8 files / 44 tests passed                       |
+| `docs/API-POSTURE-MATRIX.md`      | ✅ Created                                         |
+| `docs/testing-msw-patterns.md`    | ✅ Created                                         |
 
 ## Phase 2 Completed Work (2026-05-26)
 
 ### All 9 Tasks Verified Complete
 
-| Task | Package | Deliverables | Status |
-|------|---------|-------------|--------|
-| TASK-089 | renderers | Acid palette, frames/motion system, ASCII banner, theme bundles | ✅ Complete |
+| Task     | Package   | Deliverables                                                         | Status      |
+| -------- | --------- | -------------------------------------------------------------------- | ----------- |
+| TASK-089 | renderers | Acid palette, frames/motion system, ASCII banner, theme bundles      | ✅ Complete |
 | TASK-072 | renderers | Transcript, MessageBubble, StreamingCursor, TokenMeter, StatusFooter | ✅ Complete |
-| TASK-073 | renderers | ModelDelta, ThinkingBlock, ToolLifecycle, ApprovalState | ✅ Complete |
-| TASK-085 | renderers | SearchInput, ProviderList, ModelSelect, **ScopeToggle** | ✅ Complete |
-| TASK-008 | providers | RequestHandler (complete + stream), ProviderRegistry | ✅ Complete |
-| TASK-009 | core | StreamEvent types, createStreamEventAdapter | ✅ Complete |
-| TASK-010 | runtime | SimpleTurnLoop, AgentLoopHandle | ✅ Complete |
-| TASK-011 | renderers | CliStreamBridge (createCliStreamBridge), **InkSessionRenderer** | ✅ Complete |
-| TASK-012 | renderers | **chat-streaming.e2e.test.tsx** (6 lifecycle tests) | ✅ Complete |
+| TASK-073 | renderers | ModelDelta, ThinkingBlock, ToolLifecycle, ApprovalState              | ✅ Complete |
+| TASK-085 | renderers | SearchInput, ProviderList, ModelSelect, **ScopeToggle**              | ✅ Complete |
+| TASK-008 | providers | RequestHandler (complete + stream), ProviderRegistry                 | ✅ Complete |
+| TASK-009 | core      | StreamEvent types, createStreamEventAdapter                          | ✅ Complete |
+| TASK-010 | runtime   | SimpleTurnLoop, AgentLoopHandle                                      | ✅ Complete |
+| TASK-011 | renderers | CliStreamBridge (createCliStreamBridge), **InkSessionRenderer**      | ✅ Complete |
+| TASK-012 | renderers | **chat-streaming.e2e.test.tsx** (6 lifecycle tests)                  | ✅ Complete |
 
 ### Verification Gates
 
-| Gate | Result |
-|---|---|
-| `pnpm check-types` (renderers) | ✅ Clean (pre-existing errors only) |
-| `pnpm test` (renderers) | ✅ All 17 test files pass |
-| MSW mock server from Phase 1 | ✅ Integrated |
-| Component test coverage | ✅ ScopeToggle (7 tests), E2E (6 lifecycle tests) |
+| Gate                           | Result                                            |
+| ------------------------------ | ------------------------------------------------- |
+| `pnpm check-types` (renderers) | ✅ Clean (pre-existing errors only)               |
+| `pnpm test` (renderers)        | ✅ All 17 test files pass                         |
+| MSW mock server from Phase 1   | ✅ Integrated                                     |
+| Component test coverage        | ✅ ScopeToggle (7 tests), E2E (6 lifecycle tests) |
