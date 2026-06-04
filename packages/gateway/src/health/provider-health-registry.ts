@@ -43,6 +43,14 @@ export class ProviderHealthRegistry {
     this.#config = config;
   }
 
+  /**
+   * Record a successful request for a provider. Updates the circuit
+   * breaker (resets failure count) and the health tracker (records
+   * latency sample).
+   *
+   * @param providerId - Provider entry id.
+   * @param latencyMs - Optional request latency in milliseconds.
+   */
   recordSuccess(providerId: string, latencyMs?: number): void {
     const entry = this.#entryFor(providerId);
     entry.tracker.recordSuccess(latencyMs);
@@ -50,6 +58,14 @@ export class ProviderHealthRegistry {
     this.#startedAt.set(providerId, Date.now());
   }
 
+  /**
+   * Record a failure for a provider. Increments the failure counter
+   * and may open the circuit breaker if the threshold is reached.
+   * Fires the `onCircuitTripped` callback on closed→open transition.
+   *
+   * @param providerId - Provider entry id.
+   * @param error - Optional error description for diagnostics.
+   */
   recordFailure(providerId: string, error?: string): void {
     const entry = this.#entryFor(providerId);
     const wasClosed = entry.tracker.snapshot().circuitState === 'closed';
@@ -67,10 +83,25 @@ export class ProviderHealthRegistry {
     }
   }
 
+  /**
+   * Check whether a request can be sent to the given provider.
+   * Returns `false` when the circuit is open and the reset window
+   * has not elapsed.
+   *
+   * @param providerId - Provider entry id.
+   * @param now - Optional timestamp override (defaults to Date.now()).
+   */
   canRequest(providerId: string, now = Date.now()): boolean {
     return this.#entryFor(providerId).tracker.canRequest(now);
   }
 
+  /**
+   * Reset the circuit breaker for a provider. Clears the failure
+   * count and transitions the circuit back to closed. No-op when
+   * the provider has no tracked state.
+   *
+   * @param providerId - Provider entry id.
+   */
   resetCircuit(providerId: string): void {
     const entry = this.#entries.get(providerId);
     if (entry === undefined) {

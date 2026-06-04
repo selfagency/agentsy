@@ -42,8 +42,13 @@ export class QuotaTracker {
   }
 
   /**
-   * Ingest rate-limit headers from a response. Resets the tracked limits
-   * for this provider so subsequent pre-flight checks see fresh numbers.
+   * Ingest rate-limit headers from a provider response. Updates the
+   * tracked RPM/TPM limits and remaining counts for this provider
+   * so subsequent pre-flight checks see fresh numbers. Also updates
+   * the `PacingController` for client-side request pacing.
+   *
+   * @param headers - Response headers (either a `Headers` object or
+   *   a plain `Record<string, string>`). Parsed via `parseRateLimitHeaders`.
    */
   parseFromResponse(headers: Headers | Record<string, string>): void {
     const snapshot = parseRateLimitHeaders(headers);

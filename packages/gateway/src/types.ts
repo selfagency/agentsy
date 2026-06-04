@@ -1,5 +1,5 @@
 import type { NormalizerProvider, UniversalClient } from '@agentsy/providers';
-import type { CompletionRequest, CompletionResponse, ProviderCapabilities, ProviderRetryPolicy } from '@agentsy/types';
+import type { CompletionRequest, CompletionResponse, ProviderRetryPolicy } from '@agentsy/types';
 import { z } from 'zod';
 
 export const StrategyNameSchema = z.enum([
@@ -13,6 +13,17 @@ export const StrategyNameSchema = z.enum([
 ]);
 export const ProviderStatusSchema = z.enum(['healthy', 'degraded', 'unhealthy', 'unknown']);
 
+const ProviderCapabilitiesSchema = z.object({
+  maxCompletionTokens: z.number().int().positive().optional(),
+  maxPromptTokens: z.number().int().positive().optional(),
+  supportsCodeExecution: z.boolean().optional(),
+  supportsImages: z.boolean().optional(),
+  supportsJsonMode: z.boolean().optional(),
+  supportsStreaming: z.boolean().optional(),
+  supportsTools: z.boolean().optional(),
+  timeoutMs: z.number().int().positive().optional()
+});
+
 export const ProviderEntrySchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -20,7 +31,7 @@ export const ProviderEntrySchema = z.object({
   apiKey: z.string().optional(),
   baseUrl: z.string().url().optional(),
   model: z.string().min(1).optional(),
-  capabilities: z.custom<ProviderCapabilities>().optional(),
+  capabilities: ProviderCapabilitiesSchema.optional(),
   retryPolicy: z.custom<ProviderRetryPolicy>().optional(),
   /**
    * Provider tier for tier-aware routing. Local inference backends

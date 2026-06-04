@@ -206,8 +206,15 @@ export class MetricsCollector {
   }
 
   /**
-   * Record a single request. Idempotent on `providerId`: the
-   * same provider can have many model buckets.
+   * Record a single request outcome. Idempotent on `providerId`: the
+   * same provider can have many model buckets. Updates both the
+   * per-(provider, model) bucket and the global counters.
+   *
+   * @param metric - The request metric to record. `providerId` and
+   *   `modelId` identify the bucket; `success` determines whether
+   *   the success or failure counter is incremented; `tokens` and
+   *   `costUsd` are summed when present; `latencyMs` is recorded
+   *   into the latency percentile buffer when > 0.
    */
   recordRequest(metric: RequestMetric): void {
     const bucket = this.#bucketFor(metric.providerId);
@@ -303,18 +310,20 @@ export class MetricsCollector {
    * `recordRequest` so the snapshot can expose stream-level
    * metrics (TTFB, total duration, chunk count) without
    * overloading the per-call token-and-latency shape.
+   *
+   * @param metric.chunkCount - Number of chunks delivered to the consumer.
+   * @param metric.durationMs - Total wall-clock time from stream construction to close, in ms.
+   * @param metric.modelId - Resolved upstream model id, when known.
+   * @param metric.providerId - Provider entry id that served the stream.
+   * @param metric.success - Whether the stream reached a normal close.
+   * @param metric.ttfbMs - Time from stream construction to first byte, in ms.
    */
   recordStreamComplete(metric: {
-    /** Number of chunks delivered to the consumer. */
     chunkCount: number;
-    /** Total wall-clock time from stream construction to close, in ms. */
     durationMs: number;
-    /** Time from stream construction to first byte, in ms. */
     modelId: string;
     providerId: string;
-    /** Whether the stream reached a normal close. */
     success: boolean;
-    /** Time from stream construction to first byte, in ms. */
     ttfbMs: number;
   }): void {
     const bucket = this.#bucketFor(metric.providerId);

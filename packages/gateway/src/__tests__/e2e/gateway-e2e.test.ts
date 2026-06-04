@@ -11,6 +11,7 @@
  * for a stub), these tests run the real code path end-to-end.
  */
 
+import type { NormalizedChunk } from '@agentsy/types';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -302,9 +303,66 @@ describe('E2E: circuit reset restores traffic', () => {
     // Reset the circuit on provider-a — it should now serve again
     client.markProviderHealthy('provider-a');
 
-    // provider-a should now succeed (call 6 is the 7th; the handler returns
-    // success after 6 failures)
+    // provider-a should now succeed
     const respA = await client.complete({ messages: [] });
     expect(respA.content).toBe('restored');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Scenario 7: Stream E2E with real SSE response
+// ---------------------------------------------------------------------------
+
+describe('E2E: stream with real SSE transport', () => {
+  beforeAll(() => {
+    server.use(
+      http.post(A_ENDPOINT, () => {
+        // OpenAI SSE streaming response — matches the format used by
+        // the existing pipeline test (mockOpenAIStream).
+        const sseLines = [
+          'data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n',
+          'data: {"choices":[{"delta":{"content":" "}}]}\n\n',
+          'data: {"choices":[{"delta":{"content":"world"}}]}\n\n',
+          'data: [DONE]\n\n'
+        ];
+        return new HttpResponse(sseLines.join(''), {
+          headers: { 'Content-Type': 'text/event-stream' },
+          status: 200
+        });
+      })
+    );
+  });
+
+  it('returns chunked content from a real SSE response', async () => {
+    const client = createLoadBalancedClient({
+      providers: [{ id: 'provider-a', name: 'Provider A', provider: 'openai', baseUrl: A_ENDPOINT }],
+      retry: { attempts: 1 },
+      strategy: 'priority-fallback'
+    });
+
+    const stream = await client.stream({ messages: [{ role: 'user', content: 'hi' }] });
+    const chunks: NormalizedChunk[] = [];
+    const reader = stream.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      if (value !== undefined) {
+        chunks.push(value);
+      }
+    }
+
+    expect(chunks.length).toBe(3);
+    expect(chunks[0]?.content).toBe('Hello');
+    expect(chunks[1]?.content).toBe(' ');
+    expect(chunks[2]?.content).toBe('world');
+
+    // Metrics reflect the stream
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const snap = client.getMetricsSnapshot();
+    expect(snap.streamCount).toBe(1);
+    expect(snap.streamSuccessCount).toBe(1);
+    expect(snap.totalStreamChunks).toBe(3);
   });
 });

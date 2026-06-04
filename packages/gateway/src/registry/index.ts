@@ -1,6 +1,7 @@
 import { createUniversalClient } from '@agentsy/providers';
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 
+import { buildNoopClient } from '../noop-client.js';
 import { ModelSwitcher } from '../switcher.js';
 import type { LoadBalancedClient, LoadBalancerConfig, RoutingState } from '../types.js';
 
@@ -33,78 +34,6 @@ function buildRoutingState(config: LoadBalancerConfig): RoutingState {
     providerId: provider?.id ?? 'unconfigured',
     providerStatus: provider ? 'healthy' : 'unknown',
     strategy: config.strategy ?? 'adaptive'
-  };
-}
-
-function buildNoopClient(): LoadBalancedClient {
-  const routingState: RoutingState = {
-    providerCount: 0,
-    providerId: 'unconfigured',
-    providerStatus: 'unknown',
-    strategy: 'adaptive'
-  };
-
-  return {
-    complete(_request: CompletionRequest): Promise<CompletionResponse> {
-      return Promise.resolve({ content: '', model: '', usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 } });
-    },
-    stream(_request: CompletionRequest): Promise<ReadableStream<NormalizedChunk>> {
-      return Promise.resolve(
-        new ReadableStream<NormalizedChunk>({
-          start(controller) {
-            controller.close();
-          }
-        })
-      );
-    },
-    createModelSwitcher(): ModelSwitcher {
-      return new ModelSwitcher({ providers: [], setActiveModel: () => undefined });
-    },
-    getRoutingState(): RoutingState {
-      return routingState;
-    },
-    getUsageSnapshot() {
-      return [];
-    },
-    markProviderHealthy(_providerId: string): void {
-      /* noop */
-    },
-    markProviderUnhealthy(_providerId: string): void {
-      /* noop */
-    },
-    setStrategy(
-      _name: import('../types.js').StrategyName,
-      _options?: import('../strategies/strategies.js').StrategyOptions
-    ): void {
-      /* noop */
-    },
-    getMetricsSnapshot() {
-      return {
-        circuitTrips: 0,
-        failureCount: 0,
-        failoverCount: 0,
-        latency: { p50: undefined, p95: undefined, p99: undefined, samples: 0 },
-        perProvider: [],
-        requestCount: 0,
-        streamCount: 0,
-        streamFailureCount: 0,
-        streamSuccessCount: 0,
-        successCount: 0,
-        totalCostUsd: 0,
-        totalInputTokens: 0,
-        totalOutputTokens: 0,
-        totalStreamChunks: 0,
-        totalStreamDurationMs: 0,
-        totalStreamTtfbMs: 0,
-        totalTokens: 0
-      };
-    },
-    getMetricsProviderAggregate(_providerId: string) {
-      return;
-    },
-    shutdown(): Promise<void> {
-      return Promise.resolve();
-    }
   };
 }
 

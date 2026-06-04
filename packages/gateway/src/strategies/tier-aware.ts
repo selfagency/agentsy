@@ -80,6 +80,17 @@ export class TierAwareStrategy implements RoutingStrategy {
     this.#tierOf = options.tierOf;
   }
 
+  /**
+   * Select a provider from the given list, preferring providers in the
+   * requested tier (from `context.request.taskTier`). If no eligible
+   * provider exists at that tier, escalates through the configured
+   * escalation chain. Falls back to `defaultStrategy` when the tier
+   * is unknown or the chain is exhausted.
+   *
+   * @param providers - Full list of configured providers.
+   * @param context - Selection context including the requested task tier.
+   * @returns The selected provider, or `undefined` if none are eligible.
+   */
   select(providers: readonly ProviderEntry[], context: SelectionContext): ProviderEntry | undefined {
     const requestedTier = context.request.taskTier;
     if (requestedTier === undefined) {
