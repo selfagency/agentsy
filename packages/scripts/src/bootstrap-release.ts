@@ -125,7 +125,7 @@ async function main() {
   if (otp) {
     publishArgs.push(`--otp=${otp}`);
   }
-  await $`npm ${publishArgs}`;
+  await $({ stdio: 'inherit' })`npm ${publishArgs}`;
 
   releaseState.packages[fullPackageName] = 'oidc-ready';
   writeReleaseState(RELEASE_STATE_PATH, releaseState);
