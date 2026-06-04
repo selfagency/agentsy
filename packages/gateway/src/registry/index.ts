@@ -96,9 +96,16 @@ function buildNoopClient(): LoadBalancedClient {
   };
 }
 
-export function createProviderRegistry(config: LoadBalancerConfig): ProviderRegistry {
+export function createProviderRegistry(
+  config: LoadBalancerConfig,
+  clientFactory?: (entry: import('../types.js').ProviderEntry) => import('@agentsy/providers').UniversalClient
+): ProviderRegistry {
   const registry = new ProviderRegistry();
   for (const provider of config.providers) {
+    if (clientFactory !== undefined) {
+      registry.register(provider.id, clientFactory(provider));
+      continue;
+    }
     const clientConfig =
       provider.baseUrl === undefined
         ? { provider: provider.provider }

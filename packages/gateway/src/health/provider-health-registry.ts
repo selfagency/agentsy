@@ -17,6 +17,16 @@ export interface ProviderHealthEntry {
 
 export interface ProviderHealthRegistryConfig {
   breaker?: CircuitBreakerConfig;
+  /**
+   * Optional callback fired the first time a provider's circuit
+   * transitions from closed to open during this session. Useful for
+   * surfacing circuit-trip events to `MetricsCollector` or to
+   * external alerting. Not called on subsequent state changes
+   * (half-open, closed-via-success) since the circuit must be
+   * re-armed via `resetCircuit()` or a successful call to fire it
+   * again.
+   */
+  onCircuitTripped?: (providerId: string) => void;
 }
 
 /**
@@ -42,10 +52,18 @@ export class ProviderHealthRegistry {
 
   recordFailure(providerId: string, error?: string): void {
     const entry = this.#entryFor(providerId);
+    const wasClosed = entry.tracker.snapshot().circuitState === 'closed';
     entry.tracker.recordFailure();
     entry.failures += 1;
     if (error !== undefined) {
       this.#lastError.set(providerId, error);
+    }
+    if (wasClosed && entry.tracker.snapshot().circuitState === 'open' && this.#config.onCircuitTripped) {
+      try {
+        this.#config.onCircuitTripped(providerId);
+      } catch {
+        /* listener errors must not break the failure-recording path */
+      }
     }
   }
 
