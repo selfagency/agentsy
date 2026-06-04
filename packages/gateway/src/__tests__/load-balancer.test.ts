@@ -23,7 +23,7 @@ describe('load balancer foundation', () => {
 
     expect(client.getRoutingState().providerId).toBe('openai-1');
     expect(client.getRoutingState().strategy).toBe('adaptive');
-    expect(client.getUsageSnapshot()).toStrictEqual([{ providerId: 'openai-1' }]);
+    expect(client.getUsageSnapshot()).toStrictEqual([{ errorRate: 0, providerId: 'openai-1' }]);
   });
 
   it('creates a noop client for missing providers', () => {
@@ -49,7 +49,10 @@ describe('load balancer foundation', () => {
     expect(client.getRoutingState().providerId).toBe('openai-1');
     expect(client.getRoutingState().providerCount).toBe(2);
     expect(client.getRoutingState().strategy).toBe('round-robin');
-    expect(client.getUsageSnapshot()).toStrictEqual([{ providerId: 'openai-1' }, { providerId: 'anthropic-1' }]);
+    expect(client.getUsageSnapshot()).toStrictEqual([
+      { errorRate: 0, providerId: 'openai-1' },
+      { errorRate: 0, providerId: 'anthropic-1' }
+    ]);
   });
 
   it('rejects invalid strategy names', () => {

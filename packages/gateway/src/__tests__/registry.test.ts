@@ -68,7 +68,10 @@ describe('load balancer registries', () => {
       ]
     });
 
-    expect(client.getUsageSnapshot()).toStrictEqual([{ providerId: 'openai-1' }, { providerId: 'anthropic-1' }]);
+    expect(client.getUsageSnapshot()).toStrictEqual([
+      { errorRate: 0, providerId: 'openai-1' },
+      { errorRate: 0, providerId: 'anthropic-1' }
+    ]);
   });
 
   it('returns noop client when no providers configured', () => {

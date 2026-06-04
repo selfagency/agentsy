@@ -21,6 +21,12 @@ export { QuotaTracker, QuotaTrackerRegistry } from './quota/tracker.js';
 export { createProviderRegistry, ProviderRegistry } from './registry/index.js';
 export { ModelAliasMap } from './registry/model-alias.js';
 export {
+  buildStrategy,
+  type RetryWithFailoverContext,
+  type RetryWithFailoverOptions,
+  retryWithFailover
+} from './retry.js';
+export {
   AdaptiveStrategy,
   CostBasedStrategy,
   createStrategy,
