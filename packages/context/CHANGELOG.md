@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-06-04
+
+**Full Changelog**: <https://github>.com/selfagency/agentsy/compare/@agentsy/context@0.2.1...@agentsy/context@0.2.2
+
+_Source: changes from @agentsy/context@0.2.1 to @agentsy/context@0.2.2._
+
+
 ## [0.2.1] - 2026-06-04
 
 ## What's Changed
