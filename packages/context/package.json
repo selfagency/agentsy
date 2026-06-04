@@ -34,14 +34,10 @@
   },
   "peerDependencies": {
     "@agentsy/core": "^0.2.0",
-    "@agentsy/tokenomics": "workspace:*",
     "@agentsy/types": "^0.1.1"
   },
   "peerDependenciesMeta": {
     "@agentsy/core": {
-      "optional": false
-    },
-    "@agentsy/tokenomics": {
       "optional": false
     },
     "@agentsy/types": {
@@ -50,7 +46,6 @@
   },
   "devDependencies": {
     "@agentsy/core": "workspace:*",
-    "@agentsy/tokenomics": "workspace:*",
     "@agentsy/types": "workspace:*",
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.8",

@@ -1,6 +1,5 @@
 // @agentsy/context — Compression, drift detection, and reversible output shaping.
 
-import type { TokenLedger, TokenLedgerBudget } from '@agentsy/tokenomics';
 import { createOutputCompressionMetadata } from './compression/output-compressor.js';
 import stopwords from './stopwords.json' with { type: 'json' };
 import { createAnchoredIterativeStrategy } from './strategies/anchored-iterative.js';
@@ -8,25 +7,15 @@ import { routeCompressionStrategy } from './strategies/content-router.js';
 import { createLayeredPruningStrategy } from './strategies/layered-pruning.js';
 import { createNaiveDroppingStrategy } from './strategies/naive-dropping.js';
 
-export type {
-  AllocationCondition,
-  BudgetFilter,
-  BudgetPriority,
-  CostAnalysis,
-  CostAnalysisBudgetSummary,
-  OptimizationSuggestion,
-  RequestType,
-  TokenAllocation,
-  TokenBudget,
-  TokenBudgetConfig,
-  TokenLedger,
-  TokenLedgerBudget,
-  TokenManager,
-  TokenRequest,
-  TokenUsage,
-  UsageFilter
-} from '@agentsy/tokenomics';
-export { createInMemoryTokenManager, PacingController } from '@agentsy/tokenomics';
+export interface TokenLedgerBudget {
+  limit: number;
+}
+
+export interface TokenLedger {
+  consume(tokens: number): boolean;
+  remaining(): number;
+}
+
 export type { OutputCompressionV2Result } from './compression/output-compressor-v2.js';
 export { compressOutputV2 } from './compression/output-compressor-v2.js';
 

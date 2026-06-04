@@ -107,15 +107,7 @@ console.log(result.summary.focus); // architecture
 console.log(result.summary.nextSteps); // ['rehydrate:architecture']
 ```
 
-### Token Management (moved)
-
-Token budget management and rate limiting have moved to [@agentsy/tokenomics](https://www.npmjs.com/package/@agentsy/tokenomics). This package re-exports `createInMemoryTokenManager` and `PacingController` for backward compatibility:
-
-```typescript
-import { createInMemoryTokenManager, PacingController } from '@agentsy/context';
-// Equivalent to:
-import { createInMemoryTokenManager, PacingController } from '@agentsy/tokenomics';
-```
+> **Token Management:** See [@agentsy/tokenomics](https://www.npmjs.com/package/@agentsy/tokenomics) for `createInMemoryTokenManager`, `PacingController`, and budget management.
 
 ## API Reference
 
@@ -166,10 +158,6 @@ function compressOutput(
 
 Use the detailed helpers when you need content kind, routing, metrics, or reversible markers.
 
-### createInMemoryTokenManager / PacingController
-
-> **Migrated:** These are now owned by `@agentsy/tokenomics`. Re-exported from `@agentsy/context` for backward compatibility. See [@agentsy/tokenomics](https://www.npmjs.com/package/@agentsy/tokenomics) for full API reference.
-
 ## Use Cases
 
 ### 1. Context Window Management
@@ -198,9 +186,7 @@ function prepareLLMRequest(
 ### 2. Cost-Aware Request Routing
 
 ```typescript
-import { createInMemoryTokenManager } from '@agentsy/context';
-// Note: This imports the re-export from @agentsy/tokenomics for backward compat
-// For new code, import directly from @agentsy/tokenomics instead
+import { createInMemoryTokenManager } from '@agentsy/tokenomics';
 
 const manager = createInMemoryTokenManager();
 
@@ -258,9 +244,7 @@ function compressAssistantResponse(response: string): string {
 ### 4. Multi-Budget Management
 
 ```typescript
-import { createInMemoryTokenManager } from '@agentsy/context';
-// Note: This imports the re-export from @agentsy/tokenomics for backward compat
-// For new code, import directly from @agentsy/tokenomics instead
+import { createInMemoryTokenManager } from '@agentsy/tokenomics';
 
 const manager = createInMemoryTokenManager();
 
@@ -313,51 +297,11 @@ async function requestTokens(
 - **Conversation compression**: <50ms for 100-message histories
 - **Token estimation**: <1ms per message
 
-### Memory Usage
-
-- **In-memory token manager**: ~1MB for 100 budgets with 1000 usage records each
-- **Compression**: No significant memory overhead
-- **Pacing controller**: Negligible memory footprint
-
 ### Accuracy
 
 - **Token estimation**: Conservative (never underestimates)
 - **Compression preservation**: 100% accuracy for code blocks, URLs, paths
 - **Budget enforcement**: Deterministic, no race conditions
-
-## Error Handling
-
-### Budget Errors
-
-```typescript
-import { BudgetExceededError, BudgetNotFoundError } from '@agentsy/context';
-
-try {
-  const allocation = await manager.requestTokens(request);
-} catch (error) {
-  if (error instanceof BudgetExceededError) {
-    console.error('Budget exceeded:', error.message);
-  } else if (error instanceof BudgetNotFoundError) {
-    console.error('Budget not found:', error.message);
-  }
-}
-```
-
-### Compression Errors
-
-```typescript
-import { CompressionError, TokenEstimationError } from '@agentsy/context';
-
-try {
-  const compressed = compressOutput(text, { level: 'full' });
-} catch (error) {
-  if (error instanceof CompressionError) {
-    console.error('Compression failed:', error.message);
-  } else if (error instanceof TokenEstimationError) {
-    console.error('Token estimation failed:', error.message);
-  }
-}
-```
 
 ## Best Practices
 
