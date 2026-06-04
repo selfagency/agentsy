@@ -2,15 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import { compressConversation, compressOutput } from './index.js';
 
-describe('Performance Tests - Token Compression', () => {
-  function estimateTokens(msg: unknown): number {
-    if (typeof msg === 'object' && msg !== null && 'content' in msg) {
-      return String(msg.content).length;
-    }
-
-    return 0;
+function estimateTokens(msg: unknown): number {
+  if (typeof msg === 'object' && msg !== null && 'content' in msg) {
+    return String(msg.content).length;
   }
 
+  return 0;
+}
+
+describe('Performance Tests - Token Compression', () => {
   it('TASK-TOKENS-010: compressConversation handles large message lists efficiently', () => {
     // Generate 10_000 messages
     const messages = Array.from({ length: 10_000 }, (_, i) => ({
