@@ -72,6 +72,24 @@ function buildNoopClient(): LoadBalancedClient {
     markProviderUnhealthy(_providerId: string): void {
       /* noop */
     },
+    getMetricsSnapshot() {
+      return {
+        circuitTrips: 0,
+        failureCount: 0,
+        failoverCount: 0,
+        latency: { p50: undefined, p95: undefined, p99: undefined, samples: 0 },
+        perProvider: [],
+        requestCount: 0,
+        successCount: 0,
+        totalCostUsd: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalTokens: 0
+      };
+    },
+    getMetricsProviderAggregate(_providerId: string) {
+      return;
+    },
     shutdown(): Promise<void> {
       return Promise.resolve();
     }
@@ -131,6 +149,24 @@ export function createLoadBalancedClient(config: LoadBalancerConfig): LoadBalanc
     },
     markProviderUnhealthy(_providerId: string): void {
       /* noop */
+    },
+    getMetricsSnapshot() {
+      return {
+        circuitTrips: 0,
+        failureCount: 0,
+        failoverCount: 0,
+        latency: { p50: undefined, p95: undefined, p99: undefined, samples: 0 },
+        perProvider: [],
+        requestCount: 0,
+        successCount: 0,
+        totalCostUsd: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalTokens: 0
+      };
+    },
+    getMetricsProviderAggregate(_providerId: string) {
+      return;
     },
     shutdown(): Promise<void> {
       return Promise.resolve();

@@ -1,5 +1,6 @@
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 import { ProviderHealthRegistry } from './health/provider-health-registry.js';
+import { MetricsCollector } from './observability/metrics-collector.js';
 import { type QuotaTracker, QuotaTrackerRegistry } from './quota/tracker.js';
 import { createProviderRegistry } from './registry/index.js';
 import { buildStrategy, retryWithFailover } from './retry.js';
@@ -66,6 +67,24 @@ function buildNoopClient(): LoadBalancedClient {
     markProviderUnhealthy(_providerId: string): void {
       /* noop */
     },
+    getMetricsSnapshot() {
+      return {
+        circuitTrips: 0,
+        failureCount: 0,
+        failoverCount: 0,
+        latency: { p50: undefined, p95: undefined, p99: undefined, samples: 0 },
+        perProvider: [],
+        requestCount: 0,
+        successCount: 0,
+        totalCostUsd: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalTokens: 0
+      };
+    },
+    getMetricsProviderAggregate(_providerId: string) {
+      return;
+    },
     shutdown(): Promise<void> {
       return Promise.resolve();
     }
@@ -98,6 +117,12 @@ export function createLoadBalancedClient(
   const strategy = buildStrategy(config.strategy ?? 'adaptive', options.strategyOptions ?? {});
   const inFlight = new Map<string, number>();
   const maxAttempts = config.retry?.attempts ?? 2;
+  // Metrics collector is a passive sink: callers (CLI TUI, OpenTelemetry
+  // adapter) construct their own and feed it via `recordRequest()`. The
+  // gateway exposes a shared instance so `getMetricsSnapshot()` and
+  // `getMetricsProviderAggregate()` can be called without a separate
+  // wiring step.
+  const metrics = new MetricsCollector();
   // Mutable model pointer: ModelSwitcher rewrites this without
   // rebuilding the provider tree, so `config.model` (frozen) is
   // not the source of truth. Defaults to the config value.
@@ -195,6 +220,12 @@ export function createLoadBalancedClient(
       for (let i = 0; i < 5; i++) {
         health.recordFailure(providerId, 'manually marked unhealthy');
       }
+    },
+    getMetricsSnapshot() {
+      return metrics.getUsageSnapshot();
+    },
+    getMetricsProviderAggregate(providerId: string) {
+      return metrics.getProviderAggregate(providerId);
     },
     shutdown(): Promise<void> {
       return Promise.resolve();

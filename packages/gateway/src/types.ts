@@ -66,6 +66,10 @@ export interface LoadBalancerConfig {
 
 export interface LoadBalancedClient extends UniversalClient {
   createModelSwitcher(): import('./switcher.js').ModelSwitcher;
+  getMetricsProviderAggregate(
+    providerId: string
+  ): import('./observability/metrics-collector.js').ProviderAggregate | undefined;
+  getMetricsSnapshot(): import('./observability/metrics-collector.js').MetricsSnapshot;
   getRoutingState(): RoutingState;
   getUsageSnapshot(): ProviderUsageSnapshot[];
   markProviderHealthy(providerId: string): void;
