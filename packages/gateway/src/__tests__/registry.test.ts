@@ -1,6 +1,7 @@
+import { fromConfig, ProfileRegistry } from '@agentsy/providers/profiles';
 import { describe, expect, it } from 'vitest';
 
-import { createLoadBalancedClient, createProviderRegistry, fromConfig, ProfileRegistry } from '../index.js';
+import { createLoadBalancedClient, createProviderRegistry } from '../index.js';
 
 describe('load balancer registries', () => {
   it('builds provider profiles from config', () => {
@@ -22,7 +23,8 @@ describe('load balancer registries', () => {
       headers: { authorization: 'Bearer test' },
       id: 'openai',
       name: 'OpenAI',
-      provider: 'openai'
+      provider: 'openai',
+      usageProbes: []
     });
 
     expect(registry.get('openai')?.name).toBe('OpenAI');
@@ -67,7 +69,10 @@ describe('load balancer registries', () => {
       ]
     });
 
-    expect(client.getUsageSnapshot()).toStrictEqual([{ providerId: 'openai-1' }, { providerId: 'anthropic-1' }]);
+    expect(client.getUsageSnapshot()).toStrictEqual([
+      { errorRate: 0, providerId: 'openai-1' },
+      { errorRate: 0, providerId: 'anthropic-1' }
+    ]);
   });
 
   it('returns noop client when no providers configured', () => {

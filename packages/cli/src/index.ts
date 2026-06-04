@@ -226,10 +226,15 @@ async function handleContentAddressStatsCommand(rest: readonly string[], io: Cli
   return runContentAddressStatsCommand(rest, io);
 }
 
+async function handleLbStatusCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runLbStatusCommand } = await import('./commands/lb-status.js');
+  return runLbStatusCommand(rest, io);
+}
+
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
-    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, sandbox-diagnostics, content-address-stats'
+    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, sandbox-diagnostics, content-address-stats, lb'
   );
   return 1;
 }
@@ -268,6 +273,15 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
 
   if (command === 'content-address-stats') {
     return await handleContentAddressStatsCommand(rest, io);
+  }
+
+  if (command === 'lb') {
+    if (rest[0] === 'status') {
+      return await handleLbStatusCommand(rest.slice(1), io);
+    }
+    (io.stderr ?? DEFAULT_IO.stderr)(`Unknown lb subcommand: ${rest[0] ?? '(none)'}`);
+    (io.stderr ?? DEFAULT_IO.stderr)('Supported: lb status');
+    return 1;
   }
 
   return handleUnknownCommand(command, io);

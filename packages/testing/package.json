@@ -24,7 +24,7 @@
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
-    "@copilotkit/aimock": "^1.28.0",
+    "@copilotkit/aimock": "^1.29.0",
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.8",
     "msw": "^2.14.6",

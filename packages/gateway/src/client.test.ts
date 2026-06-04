@@ -34,7 +34,10 @@ describe('createLoadBalancedClient (client.ts)', () => {
       ]
     });
 
-    expect(client.getUsageSnapshot()).toStrictEqual([{ providerId: 'a' }, { providerId: 'b' }]);
+    expect(client.getUsageSnapshot()).toStrictEqual([
+      { errorRate: 0, providerId: 'a' },
+      { errorRate: 0, providerId: 'b' }
+    ]);
   });
 
   it('handles markProviderHealthy without throwing', () => {
@@ -64,5 +67,44 @@ describe('createLoadBalancedClient (client.ts)', () => {
   it('returns 0 provider count from noop client', () => {
     const client = createLoadBalancedClient({ providers: [] });
     expect(client.getRoutingState().providerCount).toBe(0);
+  });
+
+  it('records an error rate when a provider is marked unhealthy', () => {
+    const client = createLoadBalancedClient({
+      providers: [
+        { id: 'a', name: 'A', provider: 'openai' },
+        { id: 'b', name: 'B', provider: 'anthropic' }
+      ]
+    });
+
+    client.markProviderUnhealthy('a');
+    const snapshot = client.getUsageSnapshot();
+    expect(snapshot[0]?.errorRate).toBeGreaterThan(0);
+  });
+
+  it('resets the error rate when a provider is marked healthy', () => {
+    const client = createLoadBalancedClient({
+      providers: [{ id: 'a', name: 'A', provider: 'openai' }]
+    });
+
+    client.markProviderUnhealthy('a');
+    client.markProviderHealthy('a');
+    const snapshot = client.getUsageSnapshot();
+    expect(snapshot[0]?.errorRate).toBe(0);
+  });
+
+  it('swaps the strategy at runtime via setStrategy', () => {
+    const client = createLoadBalancedClient({
+      providers: [{ id: 'p1', name: 'P1', provider: 'openai' }],
+      strategy: 'round-robin'
+    });
+    expect(client.getRoutingState().strategy).toBe('round-robin');
+    client.setStrategy('cost-based');
+    expect(client.getRoutingState().strategy).toBe('cost-based');
+  });
+
+  it('setStrategy is a noop on the noop client', () => {
+    const client = createLoadBalancedClient({ providers: [] });
+    expect(() => client.setStrategy('adaptive')).not.toThrow();
   });
 });

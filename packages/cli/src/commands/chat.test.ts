@@ -296,4 +296,98 @@ describe('chat command', () => {
       });
     }
   });
+
+  it('prints a graceful message for /lb status when running with --mock', async () => {
+    // The mock client is not a LoadBalancedClient, so /lb
+    // commands should print a friendly "not a gateway client"
+    // message instead of throwing.
+    const mockStdin = makeMockStdin(['/lb status', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock'],
+      { stderr: msg => stderrChunks.push(msg) },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    const joined = stderrChunks.join('');
+    expect(joined).toContain('[lb]');
+    expect(joined).toContain('not a load-balanced gateway client');
+  });
+
+  it('rejects /lb strategy with an unknown name', async () => {
+    const mockStdin = makeMockStdin(['/lb strategy bogus-strategy', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock'],
+      { stderr: msg => stderrChunks.push(msg) },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderrChunks.join('')).toContain('[lb]');
+  });
+
+  it('prints the /model current state on bare /model', async () => {
+    const mockStdin = makeMockStdin(['/model', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock', '--model', 'gpt-4o'],
+      { stderr: msg => stderrChunks.push(msg) },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderrChunks.join('')).toContain('current model: gpt-4o');
+  });
+
+  it('rejects /model select on a non-gateway client', async () => {
+    const mockStdin = makeMockStdin(['/model select gpt-4o', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock'],
+      { stderr: msg => stderrChunks.push(msg) },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderrChunks.join('')).toContain('not a load-balanced gateway client');
+  });
+
+  it('runs /model select and /lb status against a real LoadBalancedClient', async () => {
+    const { createLoadBalancedClient } = await import('@agentsy/gateway');
+    const client = createLoadBalancedClient({
+      providers: [{ id: 'openai-1', model: 'gpt-4o', name: 'OpenAI', provider: 'openai' }]
+    });
+    const mockStdin = makeMockStdin([
+      '/model select gpt-4o-mini',
+      '/lb status',
+      '/lb strategy cost-based',
+      '/lb reset openai-1',
+      '/exit'
+    ]);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      [],
+      { stderr: msg => stderrChunks.push(msg) },
+      { input: mockStdin, loadBalancedClient: client, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    const joined = stderrChunks.join('');
+    expect(joined).toContain('[model] switched to');
+    expect(joined).toContain('[lb] strategy=');
+    expect(joined).toContain('[lb] strategy switched to: cost-based');
+    expect(joined).toContain('[lb] reset circuit for: openai-1');
+  });
 });

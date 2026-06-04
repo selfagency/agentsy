@@ -354,7 +354,7 @@ export function createUniversalClient(config: UniversalClientConfig): UniversalC
         throw new Error('Provider stream response did not include a body');
       }
 
-      const pipeline = createPipeline(response.body, {
+      const pipeline = createPipeline(response.body.pipeThrough(new TextDecoderStream()), {
         maxJsonDepth: 64,
         maxJsonKeys: 10_000,
         provider
