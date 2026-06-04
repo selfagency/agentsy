@@ -1,7 +1,7 @@
 import type { CompletionRequest, CompletionResponse, NormalizedChunk } from '@agentsy/types';
 import { ProviderHealthRegistry } from './health/provider-health-registry.js';
 import { type QuotaTracker, QuotaTrackerRegistry } from './quota/tracker.js';
-import { createProviderRegistry } from './registry/index.js';
+import { createProviderRegistry, type ProviderRegistry } from './registry/index.js';
 import { buildStrategy, retryWithFailover } from './retry.js';
 import type { StrategyOptions } from './strategies/strategies.js';
 import type { LoadBalancedClient, LoadBalancerConfig, ProviderEntry, RoutingState } from './types.js';

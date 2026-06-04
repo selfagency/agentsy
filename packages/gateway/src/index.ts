@@ -16,6 +16,8 @@ export { CircuitBreaker } from './health/circuit-breaker.js';
 export { HealthTracker } from './health/health-tracker.js';
 export { LatencyTracker } from './health/latency-tracker.js';
 export { type ProviderHealthEntry, ProviderHealthRegistry } from './health/provider-health-registry.js';
+export { probeProvider, probesAreEmpty } from './probes/probe-provider.js';
+export { defaultApiParse, type ProbeContext, runProbe } from './probes/run-probe.js';
 export { parseRateLimitHeaders, type RateLimitHeaderSnapshot } from './quota/header-parser.js';
 export { QuotaTracker, QuotaTrackerRegistry } from './quota/tracker.js';
 export { createProviderRegistry, ProviderRegistry } from './registry/index.js';

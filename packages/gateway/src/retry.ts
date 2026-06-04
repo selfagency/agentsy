@@ -60,7 +60,7 @@ export async function retryWithFailover<T>(
       return result.value;
     }
     lastError = result.error;
-    if (result.failure !== undefined) {
+    if (result.failure !== null) {
       failures.push(result.failure);
     }
   }
@@ -83,7 +83,7 @@ export async function retryWithFailover<T>(
 
 type AttemptResult<T> =
   | { outcome: 'success'; value: T }
-  | { outcome: 'failure'; error: unknown; failure?: ProviderFailureDetail };
+  | { outcome: 'failure'; error: unknown; failure: ProviderFailureDetail | null };
 
 async function attemptAgainstProvider<T>(
   entry: ProviderEntry,
@@ -94,7 +94,7 @@ async function attemptAgainstProvider<T>(
 ): Promise<AttemptResult<T>> {
   context.inFlight.set(entry.id, (context.inFlight.get(entry.id) ?? 0) + 1);
   try {
-    let lastFailure: ProviderFailureDetail | undefined;
+    let lastFailure: ProviderFailureDetail | null = null;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const outcome = await tryOnce(entry, context, operation, options);
       if (outcome.kind === 'success') {
@@ -103,7 +103,7 @@ async function attemptAgainstProvider<T>(
       lastFailure = { ...outcome.failure, attempts: attempt };
     }
     return {
-      error: lastFailure === undefined ? new Error('error') : new Error(lastFailure.lastError ?? 'error'),
+      error: lastFailure === null ? new Error('error') : new Error(lastFailure.lastError ?? 'error'),
       failure: lastFailure,
       outcome: 'failure'
     };
