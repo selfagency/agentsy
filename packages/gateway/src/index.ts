@@ -21,6 +21,22 @@ export { QuotaTracker, QuotaTrackerRegistry } from './quota/tracker.js';
 export { createProviderRegistry, ProviderRegistry } from './registry/index.js';
 export { ModelAliasMap } from './registry/model-alias.js';
 export {
+  AdaptiveStrategy,
+  CostBasedStrategy,
+  createStrategy,
+  LatencyBasedStrategy,
+  LeastConnectionsStrategy,
+  PriorityFallbackStrategy,
+  RoundRobinStrategy,
+  type StrategyOptions,
+  WeightedStrategy
+} from './strategies/strategies.js';
+export {
+  matchesRequest,
+  type RoutingStrategy,
+  type SelectionContext
+} from './strategies/strategy.js';
+export {
   type LoadBalancedClient,
   type LoadBalancerConfig,
   type ProviderEntry,
