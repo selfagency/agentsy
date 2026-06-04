@@ -1,4 +1,4 @@
-import { genericErrorClassifier } from './generic-error-classifier.js';
+import { genericErrorClassifier } from './error-classifier.js';
 import type { ProviderProfile, UsageProbe } from './types.js';
 
 /**

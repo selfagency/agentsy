@@ -1,5 +1,5 @@
-import { genericErrorClassifier } from './generic-error-classifier.js';
-import { genericHeaderParser } from './generic-header-parser.js';
+import { genericErrorClassifier } from './error-classifier.js';
+import { genericHeaderParser } from './header-parser.js';
 import type { ProviderProfile, ProviderProfileConfig, UsageProbe } from './types.js';
 
 export function fromConfig(config: ProviderProfileConfig): ProviderProfile {

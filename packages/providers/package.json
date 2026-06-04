@@ -46,6 +46,11 @@
       "import": "./dist/pipeline.js",
       "require": "./dist/pipeline.cjs"
     },
+    "./profiles": {
+      "types": "./dist/profiles.d.ts",
+      "import": "./dist/profiles.js",
+      "require": "./dist/profiles.cjs"
+    },
     "./request-path": {
       "types": "./dist/request-path.d.ts",
       "import": "./dist/request-path.js",
@@ -67,7 +72,9 @@
   },
   "dependencies": {
     "@agentsy/core": "workspace:*",
-    "@agentsy/types": "workspace:*"
+    "@agentsy/tokenomics": "workspace:*",
+    "@agentsy/types": "workspace:*",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@types/node": "^25.9.0",

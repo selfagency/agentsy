@@ -9,6 +9,7 @@ export default defineConfig({
     index: 'src/index.ts',
     normalizers: 'src/normalizers/index.ts',
     pipeline: 'src/pipeline/index.ts',
+    profiles: 'src/profiles/index.ts',
     'request-path': 'src/request-path.ts',
     'universal-client': 'src/universal-client/index.ts'
   },

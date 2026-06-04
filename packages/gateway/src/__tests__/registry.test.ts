@@ -1,6 +1,7 @@
+import { fromConfig, ProfileRegistry } from '@agentsy/providers/profiles';
 import { describe, expect, it } from 'vitest';
 
-import { createLoadBalancedClient, createProviderRegistry, fromConfig, ProfileRegistry } from '../index.js';
+import { createLoadBalancedClient, createProviderRegistry } from '../index.js';
 
 describe('load balancer registries', () => {
   it('builds provider profiles from config', () => {

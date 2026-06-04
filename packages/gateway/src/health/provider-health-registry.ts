@@ -36,6 +36,7 @@ export class ProviderHealthRegistry {
   recordSuccess(providerId: string, latencyMs?: number): void {
     const entry = this.#entryFor(providerId);
     entry.tracker.recordSuccess(latencyMs);
+    entry.successes += 1;
     this.#startedAt.set(providerId, Date.now());
   }
 

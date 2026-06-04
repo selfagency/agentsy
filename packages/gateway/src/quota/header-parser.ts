@@ -1,6 +1,11 @@
-import { genericHeaderParser } from '../profiles/generic-header-parser.js';
+import { genericHeaderParser } from '@agentsy/providers/profiles';
 
-export interface RateLimitInfo {
+/**
+ * Parses rate-limit headers from major LLM providers into a flat record.
+ * Supports OpenAI (`x-ratelimit-limit-requests` / `-tokens`), Anthropic
+ * (uses the same prefix), and a generic `-rpm` / `-tpm` fallback.
+ */
+export interface RateLimitHeaderSnapshot {
   rpmLimit: number;
   rpmRemaining: number;
   rpmResetSeconds: number;
@@ -9,7 +14,7 @@ export interface RateLimitInfo {
   tpmResetSeconds: number;
 }
 
-const ZERO: RateLimitInfo = {
+const EMPTY: RateLimitHeaderSnapshot = {
   rpmLimit: 0,
   rpmRemaining: 0,
   rpmResetSeconds: 0,
@@ -19,10 +24,10 @@ const ZERO: RateLimitInfo = {
 };
 
 /**
- * Parses rate-limit headers from major LLM providers. Supports OpenAI,
- * Anthropic, and generic patterns.
+ * Parse rate-limit headers from a fetch Response or plain record.
+ * Returns the EMPTY snapshot if no relevant headers are present.
  */
-export function parseRateLimitHeaders(headers: Headers | Record<string, string>): RateLimitInfo {
+export function parseRateLimitHeaders(headers: Headers | Record<string, string>): RateLimitHeaderSnapshot {
   const normalized = genericHeaderParser(headers);
 
   const intOrZero = (value: string | undefined): number => {
@@ -33,9 +38,7 @@ export function parseRateLimitHeaders(headers: Headers | Record<string, string>)
     return Number.isFinite(parsed) ? parsed : 0;
   };
 
-  // OpenAI: x-ratelimit-limit-requests, x-ratelimit-remaining-requests, x-ratelimit-reset-requests
-  // Anthropic / Meta: similar prefix, sometimes includes -tokens
-  const result: RateLimitInfo = {
+  const result: RateLimitHeaderSnapshot = {
     rpmLimit: intOrZero(normalized['x-ratelimit-limit-requests'] ?? normalized['x-ratelimit-limit-rpm']),
     rpmRemaining: intOrZero(normalized['x-ratelimit-remaining-requests'] ?? normalized['x-ratelimit-remaining-rpm']),
     rpmResetSeconds: intOrZero(normalized['x-ratelimit-reset-requests'] ?? normalized['x-ratelimit-reset-rpm']),
@@ -45,7 +48,7 @@ export function parseRateLimitHeaders(headers: Headers | Record<string, string>)
   };
 
   if (result.rpmLimit === 0 && result.rpmRemaining === 0 && result.tpmLimit === 0 && result.tpmRemaining === 0) {
-    return ZERO;
+    return EMPTY;
   }
   return result;
 }
