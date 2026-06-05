@@ -124,6 +124,10 @@ export class LocalModelDetector {
       if (current === undefined || current === null || typeof current !== 'object') {
         return [];
       }
+      // hasOwnProperty guard prevents prototype pollution
+      if (!Object.hasOwn(current, part)) {
+        return [];
+      }
       current = (current as Record<string, unknown>)[part];
     }
 

@@ -4,7 +4,7 @@
  * `ModelReplica` entries may serve the same logical model.
  */
 
-import type { LogicalModel } from './types.js';
+import type { LogicalModel, ModelTier } from './types.js';
 
 const LOGICAL_MODELS: LogicalModel[] = [
   // Local / micro
@@ -101,8 +101,6 @@ const BY_TIER: ReadonlyMap<ModelTier, readonly LogicalModel[]> = (() => {
   }
   return map;
 })();
-
-import type { ModelTier } from './types.js';
 
 export function getLogicalModel(id: string): LogicalModel | undefined {
   return BY_ID.get(id);

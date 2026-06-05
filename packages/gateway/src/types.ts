@@ -70,6 +70,8 @@ export interface RoutingState {
  */
 export type ModelTier = 'micro' | 'small' | 'mid' | 'frontier';
 
+export type UseCase = 'chat' | 'code' | 'reasoning' | 'search' | 'embed' | 'vision';
+
 /**
  * Cost structure for a model in USD per 1M tokens.
  */
@@ -103,7 +105,7 @@ export interface LogicalModel {
   maxOutputTokens: number;
   paramCount?: number;
   tier: ModelTier;
-  useCases: Array<'chat' | 'code' | 'reasoning' | 'search' | 'embed' | 'vision'>;
+  useCases: UseCase[];
 }
 
 /**
@@ -136,7 +138,7 @@ export interface ModelEntry {
   providerId: string;
   releaseDate?: string;
   tier: ModelTier;
-  useCases: Array<'chat' | 'code' | 'reasoning' | 'search' | 'embed' | 'vision'>;
+  useCases: UseCase[];
 }
 
 export interface ModelSelectionConstraints {

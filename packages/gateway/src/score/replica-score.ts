@@ -21,10 +21,10 @@ export interface ReplicaScoreWeights {
 }
 
 const DEFAULT_WEIGHTS: Required<ReplicaScoreWeights> = {
-  costWeight: 1.0,
-  errorWeight: 5.0,
+  costWeight: 1,
+  errorWeight: 5,
   latencyWeight: 0.01,
-  localWeight: 1.0
+  localWeight: 1
 };
 
 /**
@@ -58,7 +58,7 @@ export function computeReplicaScore(input: ReplicaScoreInput, weights?: ReplicaS
   const w = { ...DEFAULT_WEIGHTS, ...weights };
   let score = 0;
 
-  // Local bonus
+  // Local bonus — tier is a typed enum parameter, not user input
   if (input.applyLocalBonus !== false && input.isLocal) {
     score += DEFAULT_LOCAL_BONUS[input.tier] * w.localWeight;
   }
