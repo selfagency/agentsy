@@ -6,6 +6,7 @@ import { instrumentStream } from './observability/stream-tracker.js';
 import { type QuotaTracker, QuotaTrackerRegistry } from './quota/tracker.js';
 import { createProviderRegistry } from './registry/index.js';
 import { buildStrategy, retryWithFailover } from './retry.js';
+import { DefaultTierAwareModelSelector } from './selector.js';
 import type { StrategyOptions } from './strategies/strategies.js';
 import { ModelSwitcher } from './switcher.js';
 import type { LoadBalancedClient, LoadBalancerConfig, ProviderEntry, RoutingState } from './types.js';
@@ -227,6 +228,9 @@ export function createLoadBalancedClient(
     },
     getRoutingState(): RoutingState {
       return buildRoutingState(config, health, activeStrategyName);
+    },
+    getModelSelector() {
+      return new DefaultTierAwareModelSelector();
     },
     getUsageSnapshot() {
       return registry.list().map((entry): import('./types.js').ProviderUsageSnapshot => {

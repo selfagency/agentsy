@@ -70,6 +70,50 @@ export interface PostResponseEvent {
   type: 'PostResponse';
 }
 
+// =============================================================================
+// Model-call lifecycle events (Phase 3.7 replica routing)
+// =============================================================================
+
+/** Fired before a model call is dispatched, with the selected replica. */
+export interface PreModelCallEvent {
+  estimatedTokens: number;
+  logicalModelId: string;
+  providerId: string;
+  replicaId: string;
+  sessionId: string;
+  type: 'PreModelCall';
+}
+
+/** Fired after a model call completes successfully. */
+export interface PostModelCallEvent {
+  actualTokens: number;
+  logicalModelId: string;
+  providerId: string;
+  replicaId: string;
+  sessionId: string;
+  type: 'PostModelCall';
+}
+
+/** Fired when a model call fails. */
+export interface ModelCallFailedEvent {
+  error: string;
+  logicalModelId: string;
+  providerId: string;
+  replicaId: string;
+  sessionId: string;
+  type: 'ModelCallFailed';
+}
+
+/** Fired when the gateway switches to a different replica mid-session. */
+export interface ModelReplicaSwitchedEvent {
+  fromReplicaId: string;
+  logicalModelId: string;
+  sessionId: string;
+  toProviderId: string;
+  toReplicaId: string;
+  type: 'ModelReplicaSwitched';
+}
+
 /** Union of all runtime hook events. */
 export type RuntimeHookEvent =
   | UserPromptSubmitEvent
@@ -79,4 +123,8 @@ export type RuntimeHookEvent =
   | SubagentStopEvent
   | StopEvent
   | PreResponseEvent
-  | PostResponseEvent;
+  | PostResponseEvent
+  | PreModelCallEvent
+  | PostModelCallEvent
+  | ModelCallFailedEvent
+  | ModelReplicaSwitchedEvent;

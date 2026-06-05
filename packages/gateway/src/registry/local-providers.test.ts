@@ -3,7 +3,7 @@ import type { ProviderEntry } from '../types.js';
 import { LOCAL_BACKEND_PROFILES, type LocalPlatformProfile, registerLocalProviders } from './local-providers.js';
 
 describe('registerLocalProviders', () => {
-  it('registers every available local backend with tier=micro', () => {
+  it('registers every available local backend', () => {
     const profile: LocalPlatformProfile = {
       accelerators: [
         { id: 'ollama', available: true },
@@ -14,9 +14,6 @@ describe('registerLocalProviders', () => {
     const result = registerLocalProviders(profile, entries);
     expect(result.registered).toBe(2);
     expect(result.providers).toHaveLength(2);
-    for (const entry of result.providers) {
-      expect(entry.tier).toBe('micro');
-    }
     expect(entries).toEqual(result.providers);
   });
 

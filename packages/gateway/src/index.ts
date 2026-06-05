@@ -17,6 +17,31 @@ export { HealthTracker } from './health/health-tracker.js';
 export { LatencyTracker } from './health/latency-tracker.js';
 export { type ProviderHealthEntry, ProviderHealthRegistry } from './health/provider-health-registry.js';
 export {
+  computeReplicaScore,
+  DefaultReplicaSelector,
+  DefaultTierAwareModelSelector,
+  getAllLogicalModels,
+  getLogicalModel,
+  getLogicalModelsByTier,
+  type LogicalModel,
+  type ModelCapabilities,
+  type ModelCost,
+  type ModelEntry,
+  ModelRegistry,
+  type ModelReplica,
+  type ModelSelectionConstraints,
+  type ModelTier,
+  modelRegistry,
+  ReplicaRegistry,
+  type ReplicaScoreInput,
+  type ReplicaScoreWeights,
+  type ReplicaSelectionContext,
+  type ReplicaSelector,
+  type SpilloverResult,
+  spillover,
+  type TierAwareModelSelector
+} from './model-tier.js';
+export {
   type LatencyPercentiles,
   MetricsCollector,
   type MetricsSnapshot,
@@ -70,12 +95,12 @@ export {
   buildTierOf,
   DEFAULT_PROVIDER_TIERS,
   ESCALATION_CHAIN,
-  type ProviderTier,
   type TierAwareOptions,
   TierAwareStrategy
 } from './strategies/tier-aware.js';
 export { type ModelInfo, type ModelSwitchConfig, ModelSwitcher, type ModelSwitcherOptions } from './switcher.js';
 export {
+  type GatewayClient,
   type LoadBalancedClient,
   type LoadBalancerConfig,
   type ProviderEntry,

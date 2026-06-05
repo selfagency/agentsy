@@ -1,17 +1,70 @@
 # @agentsy/gateway
 
-Semantic routing layer for multi-provider LLM access. Drop-in replacement for `UniversalClient` that adds circuit breaking, rate-limit tracking, strategy-based selection, and active usage probing.
+Semantic routing layer for multi-provider LLM access. Drop-in replacement for `UniversalClient` that adds circuit breaking, rate-limit tracking, strategy-based model selection, local-first routing, and observability.
 
 ## Features
 
+- **Model-tier routing** — Tiers are defined on **models** (`ModelEntry.tier`), not providers. A single provider hosts models across all tiers. Supports `micro`, `small`, `mid`, `frontier`.
+- **Local-first by default** — `LocalModelDetector` auto-discovers local backends (Ollama, Apfel, Jan AI). `ModelAvailabilityTracker` health-checks models with 30s TTL. Scoring gives local models a large bonus for micro/small tasks, declining to zero for frontier.
 - **Circuit breaking** — Automatic failover on provider outages via `ProviderHealthRegistry` (per-provider circuit breaker).
 - **Rate limit tracking** — `QuotaTracker` wraps `@agentsy/tokenomics` and tracks per-provider RPM/TPM budgets from server response headers.
 - **Routing strategies** — `round-robin`, `weighted`, `least-connections`, `latency`, `priority-fallback`, `cost-based`, `adaptive`, and `tier-aware`.
-- **Active usage probing** — `ProviderProfile.usageProbes[]` (CodexBar-style) describes how to query the provider's quota endpoint and parse the response into the `QuotaTracker`.
-- **Tier-aware routing** — `tierAwareStrategy` filters providers by complexity bucket (micro / small / mid / frontier) and escalates on quota / overload.
-- **Local provider registration** — `registerLocalProviders(PlatformProfile)` auto-discovers on-device backends (apfel, ollama, vllm, lm-studio, local-ai) and registers them with `tier: 'micro'`.
-- **Mid-conversation model switching** — `ModelSwitcher` resolves aliases (e.g. `gpt-4o`, `claude-opus-4`) to provider-specific upstream ids and updates the gateway's active model in place.
+- **Active usage probing** — `ProviderProfile.usageProbes[]` (CodexBar-style) describes how to query the provider's quota endpoint.
+- **Mid-conversation model switching** — `ModelSwitcher` resolves aliases (e.g. `gpt-4o`, `claude-opus-4`) to provider-specific upstream ids and updates the active model in place. CLI `/model select` wired.
 - **Metrics** — `MetricsCollector` records per-(provider, model) request counts, error rates, token usage, USD cost, and latency percentiles (p50 / p95 / p99).
+
+## Architecture: Model-Tier Routing
+
+Tiers are defined on **models**, not providers. A single provider (e.g. OpenAI) hosts models across all tiers (`gpt-4o-mini` = small, `gpt-4o` = mid, `o1` = frontier).
+
+```typescript
+// Core types (from @agentsy/gateway)
+type ModelTier = 'micro' | 'small' | 'mid' | 'frontier';
+
+interface ModelEntry {
+  id: string;                          // 'openai/gpt-4o-mini'
+  providerId: string;                  // FK -> ProviderEntry.id
+  modelName: string;                   // upstream API name
+  tier: ModelTier;                     // THE tier — on model, not provider
+  cost: ModelCost;                     // inputPer1MTokens, outputPer1MTokens
+  capabilities: ModelCapabilities;     // tools, jsonMode, vision, etc.
+  contextWindow: number;
+  isLocal?: boolean;                   // true for ollama/apfel/jan
+}
+```
+
+### Local-First Scoring
+
+The `DefaultTierAwareModelSelector` scores candidates with a tier-aware local bonus:
+
+| Task Tier | Local Bonus | Behavior |
+|-----------|-------------|----------|
+| `micro` | +100 | Always prefer local (classifications, lookups) |
+| `small` | +80 | Strongly prefer local (summarization) |
+| `mid` | +20 | Slight local preference if capable (coding) |
+| `frontier` | +0 | No preference — use best model (synthesis) |
+
+Override via `ModelSelectionConstraints.localPreference`:
+
+- `'preferred'` — default scoring-based
+- `'required'` — throws if no local model available
+- `'disabled'` — cloud only
+
+### Availability Tracking
+
+`ModelAvailabilityTracker` health-checks all models every 30 seconds. Local models are probed via their provider endpoint; cloud models are assumed available unless a stale failure exists.
+
+### Local Model Detection
+
+`LocalModelDetector` probes well-known localhost endpoints at startup:
+
+| Backend | Default URL | Endpoint |
+|---------|-------------|----------|
+| Ollama | `localhost:11434` | `/api/tags` |
+| Apfel | `localhost:8080` | `/health` |
+| Jan AI | `localhost:1337` | `/v1/models` |
+
+Model tier is inferred from model name size heuristics (`1b` → micro, `7b` → small, `70b` → mid).
 
 ## Public surface
 
@@ -19,12 +72,20 @@ Semantic routing layer for multi-provider LLM access. Drop-in replacement for `U
 // Client
 createLoadBalancedClient(config, options?): LoadBalancedClient;
 
+// Model-tier routing (new)
+ModelTier, ModelEntry, ModelCost, ModelCapabilities,
+ModelSelectionConstraints, TierAwareModelSelector,
+DefaultTierAwareModelSelector,
+ModelRegistry, modelRegistry,
+ModelAvailabilityTracker, ModelAvailability,
+LocalModelDetector,
+GatewayClient;
+
 // Strategies
-createStrategy(name, options?): RoutingStrategy;  // 'adaptive' | 'round-robin' | ...
+createStrategy(name, options?): RoutingStrategy;
 RoundRobinStrategy, WeightedStrategy, LeastConnectionsStrategy,
 LatencyBasedStrategy, PriorityFallbackStrategy, CostBasedStrategy,
-AdaptiveStrategy, TierAwareStrategy, buildTierOf,
-DEFAULT_PROVIDER_TIERS, ESCALATION_CHAIN, ProviderTier;
+AdaptiveStrategy, TierAwareStrategy, buildTierOf;
 
 // Health + circuit breaking
 ProviderHealthRegistry, CircuitBreaker, HealthTracker, LatencyTracker;
@@ -78,6 +139,7 @@ The returned `LoadBalancedClient` extends `UniversalClient`, so existing call si
 - `getUsageSnapshot()` — per-provider RPM/TPM/latency/error rate
 - `getMetricsSnapshot()` — aggregated metrics across all providers
 - `getMetricsProviderAggregate(providerId)` — single-provider metrics
+- `getModelSelector()` — `TierAwareModelSelector` for orchestrator integration
 - `createModelSwitcher()` — alias-based model switching
 - `markProviderHealthy(id)` / `markProviderUnhealthy(id)` — manual control
 - `shutdown()` — release resources
@@ -93,21 +155,26 @@ The returned `LoadBalancedClient` extends `UniversalClient`, so existing call si
 | `latency` | Pick the provider with the lowest recorded latency. |
 | `priority-fallback` | Try providers in declared order; first eligible wins. |
 | `cost-based` | Pick the lowest cost per 1K input tokens. |
-| `tier-aware` | Filter by complexity bucket (micro / small / mid / frontier), escalate on overload. |
+| `tier-aware` | Filter by provider-level complexity bucket (legacy — prefer `DefaultTierAwareModelSelector`). |
 
-## Tier-aware example
+## Tier-aware model selection (orchestrator integration)
 
 ```typescript
-import { createLoadBalancedClient, TierAwareStrategy, buildTierOf } from '@agentsy/gateway';
+import { DefaultTierAwareModelSelector } from '@agentsy/gateway';
 
-const client = createLoadBalancedClient({
-  providers: [
-    { id: 'local-ollama', name: 'Ollama', provider: 'openai', baseUrl: 'http://127.0.0.1:11434/v1', tier: 'micro' },
-    { id: 'openai', name: 'OpenAI', provider: 'openai', tier: 'mid' },
-    { id: 'anthropic', name: 'Anthropic', provider: 'anthropic', tier: 'frontier' }
-  ]
-  // Pass a custom strategy via createLoadBalancedClient's second arg
+const selector = new DefaultTierAwareModelSelector();
+
+// Select a model for a code task at the 'mid' tier
+const model = await selector.selectModelForTier({
+  tier: 'mid',
+  useCase: 'code',
+  constraints: {
+    requireTools: true,
+    localPreference: 'preferred'  // try local first, fall back to cloud
+  }
 });
+// model.id = 'ollama/llama3.3:70b' (local, free, tools-capable)
+// or fallback: 'openai/gpt-4o'
 ```
 
 ## Local provider registration
@@ -138,3 +205,10 @@ The gateway re-exports from `@agentsy/providers` and `@agentsy/tokenomics` for t
 - `registerLocalProviders` (local provider registration)
 - `ModelSwitcher` (mid-conversation switching)
 - `MetricsCollector` (observability)
+- `DefaultTierAwareModelSelector` (model-tier routing)
+- `ModelAvailabilityTracker` (health checking)
+- `LocalModelDetector` (backend discovery)
+- `ReplicaRegistry` (index replicas by logical model and provider)
+- `DefaultReplicaSelector` (filter + score + rank replicas)
+- `computeReplicaScore` (tunable scoring formula)
+- `spillover` (failover chain: same replica → same tier → escalate)

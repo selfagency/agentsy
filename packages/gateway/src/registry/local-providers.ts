@@ -185,8 +185,7 @@ export function registerLocalProviders(
       name: `${backendProfile.displayName} (local)`,
       provider: backendProfile.provider,
       baseUrl,
-      model: backendProfile.defaultModel,
-      tier: 'micro'
+      model: backendProfile.defaultModel
     };
     if (contextWindow > 0) {
       entry.capabilities = {

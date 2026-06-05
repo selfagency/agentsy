@@ -1,8 +1,12 @@
-import type { ProviderEntry } from '../types.js';
+import type { ModelTier, ProviderEntry } from '../types.js';
 import type { RoutingStrategy, SelectionContext } from './strategy.js';
 
 /**
  * Provider capability tier. Drives tier-aware routing.
+ *
+ * Updated 2026-06-04: `ModelTier` is the canonical type; this alias
+ * exists so `TierAwareStrategy` (which operates on providers) reads
+ * from the same vocabulary as the model-tier registry.
  *
  * - `micro` — local / on-device inference (apfel, ollama, lm-studio,
  *   localai, vllm). Prefer for trivial lookups, classification,
@@ -11,7 +15,7 @@ import type { RoutingStrategy, SelectionContext } from './strategy.js';
  * - `mid` — standard cloud (A10G / A100, mainstream providers).
  * - `frontier` — best available (H100 / B200, premium providers).
  */
-export type ProviderTier = 'micro' | 'small' | 'mid' | 'frontier';
+export type ProviderTier = ModelTier;
 
 /**
  * Per-tier preferred provider ordering. The gateway uses this as
