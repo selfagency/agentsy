@@ -127,7 +127,7 @@ export interface TierAwareModelSelector {
   selectModelForTier(input: {
     constraints?: ModelSelectionConstraints;
     tier: ModelTier;
-    useCase?: 'chat' | 'code' | 'search' | 'embed' | 'vision';
+    useCase?: 'chat' | 'code' | 'reasoning' | 'search' | 'embed' | 'vision';
   }): Promise<ModelEntry>;
 }
 

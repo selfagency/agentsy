@@ -47,29 +47,22 @@ export class ModelAvailabilityTracker {
    * @param providerUrls - Map of providerId → base URL for health checks.
    */
   async checkAvailability(models: ModelEntry[], providerUrls: ReadonlyMap<string, string>): Promise<void> {
-    const now = Date.now();
     const checks: Promise<void>[] = [];
 
     for (const model of models) {
       const cached = this.#cache.get(model.id);
-      if (cached !== undefined && now - cached.lastChecked.getTime() < this.#ttlMs) {
-        continue; // Fresh enough
+      const age = cached === undefined ? Number.POSITIVE_INFINITY : Date.now() - cached.lastChecked.getTime();
+
+      if (age < this.#ttlMs && cached !== undefined) {
+        // Fresh cache — only re-probe if currently marked unavailable
+        if (!cached.isAvailable) {
+          checks.push(this.#probe(model, providerUrls));
+        }
+        continue;
       }
 
-      if (model.isLocal) {
-        checks.push(this.#probeLocal(model, providerUrls));
-      } else if (cached?.isAvailable === false && now - cached.lastChecked.getTime() < this.#ttlMs) {
-        // Cloud model with a stale failure — re-probe
-        checks.push(this.#probeLocal(model, providerUrls));
-      } else {
-        // Cloud model: assume available
-        this.#cache.set(model.id, {
-          isAvailable: true,
-          lastChecked: new Date(),
-          modelId: model.id,
-          providerId: model.providerId
-        });
-      }
+      // Stale cache or no cache — always re-probe
+      checks.push(this.#probe(model, providerUrls));
     }
 
     await Promise.allSettled(checks);
@@ -99,7 +92,7 @@ export class ModelAvailabilityTracker {
     return [...this.#cache.values()];
   }
 
-  async #probeLocal(model: ModelEntry, providerUrls: ReadonlyMap<string, string>): Promise<void> {
+  async #probe(model: ModelEntry, providerUrls: ReadonlyMap<string, string>): Promise<void> {
     const baseUrl = providerUrls.get(model.providerId);
     if (baseUrl === undefined) {
       this.#cache.set(model.id, {
