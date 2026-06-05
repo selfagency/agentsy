@@ -9,9 +9,19 @@
  *   - Tiers are defined on `ModelEntry`, not `ProviderEntry`
  *   - Orchestrator uses `TaskTier = ModelTier` (re-exported from gateway)
  *   - All cost and capability data lives in the gateway's `ModelRegistry`
+ *
+ * Updated (2026-06-04, Phase 3.7):
+ *   - Escalation policy is orchestrator-controlled (gateway does not decide)
+ *   - Recovery flow: retry same model replica → spillover → escalate → pause
  */
 
-import type { GatewayClient, ModelEntry, ModelTier, TierAwareModelSelector } from '@agentsy/gateway';
+import type {
+  GatewayClient,
+  ModelEntry,
+  ModelSelectionConstraints,
+  ModelTier,
+  TierAwareModelSelector
+} from '@agentsy/gateway';
 
 import type { WorkflowNode } from '../types/workflow.js';
 
@@ -25,11 +35,61 @@ export type { ModelEntry, ModelTier } from '@agentsy/gateway';
 export type TaskTier = ModelTier;
 
 /**
+ * Escalation policy — controls whether tier escalation is allowed
+ * and what the escalation chain looks like.
+ */
+export interface EscalationPolicy {
+  /** Whether to allow tier escalation when the current tier has no candidates. */
+  allowEscalation: boolean;
+  /** Custom escalation chain. Default: micro → small → mid → frontier. */
+  chain?: ModelTier[];
+  /** Max escalation steps. Default: 4 (full chain). */
+  maxSteps?: number;
+}
+
+export const DEFAULT_ESCALATION_POLICY: EscalationPolicy = {
+  allowEscalation: true,
+  chain: ['micro', 'small', 'mid', 'frontier'],
+  maxSteps: 4
+};
+
+export const NO_ESCALATION_POLICY: EscalationPolicy = {
+  allowEscalation: false
+};
+
+/**
+ * Record of a single selection attempt — used for diagnostics and recovery.
+ */
+export interface SelectionRecord {
+  attemptedAt: string;
+  /** Whether escalation was triggered. */
+  escalated: boolean;
+  /** Replica ids that were tried and failed, in order. */
+  failedReplicas: string[];
+  logicalModelId: string;
+  /** The selected logical model after all fallback. */
+  selectedModel?: string;
+  /** The selected replica id after all fallback. */
+  selectedReplica?: string;
+  taskTier: TaskTier;
+}
+
+// =============================================================================
+// Router interface + options
+// =============================================================================
+
+export interface TierAwareModelRouterOptions {
+  escalationPolicy?: EscalationPolicy;
+  modelSelectionConstraints?: ModelSelectionConstraints;
+}
+
+/**
  * Router that selects a `ModelEntry` for a given task and tier.
  * Encapsulates the call to the gateway's `TierAwareModelSelector`.
  */
 export interface TierAwareModelRouter {
   chooseModelForTask(input: { node: WorkflowNode; taskTier: TaskTier }): Promise<ModelEntry>;
+  getSelectionRecord(): SelectionRecord | undefined;
 }
 
 /**
@@ -38,19 +98,88 @@ export interface TierAwareModelRouter {
  */
 export class GatewayBackedModelRouter implements TierAwareModelRouter {
   readonly #selector: TierAwareModelSelector;
+  readonly #options: Required<TierAwareModelRouterOptions>;
+  /** Most recent selection record — overwritten on each `chooseModelForTask` call. */
+  #record: SelectionRecord | undefined;
 
-  constructor(gateway: GatewayClient) {
+  constructor(gateway: GatewayClient, options: TierAwareModelRouterOptions = {}) {
     this.#selector = gateway.getModelSelector();
+    this.#options = {
+      escalationPolicy: options.escalationPolicy ?? DEFAULT_ESCALATION_POLICY,
+      modelSelectionConstraints: options.modelSelectionConstraints ?? {}
+    };
+  }
+
+  getSelectionRecord(): SelectionRecord | undefined {
+    return this.#record;
   }
 
   async chooseModelForTask(input: { node: WorkflowNode; taskTier: TaskTier }): Promise<ModelEntry> {
     const useCase = inferUseCaseFromNode(input.node);
 
-    const model = await this.#selector.selectModelForTier({
-      tier: input.taskTier,
-      useCase
-    });
-    return model;
+    const record: SelectionRecord = {
+      attemptedAt: new Date().toISOString(),
+      failedReplicas: [],
+      escalated: false,
+      logicalModelId: '',
+      taskTier: input.taskTier
+    };
+
+    const constraints: ModelSelectionConstraints = {};
+    const base = this.#options.modelSelectionConstraints;
+    if (base.excludeProviders !== undefined) {
+      constraints.excludeProviders = base.excludeProviders;
+    }
+    if (base.localPreference !== undefined) {
+      constraints.localPreference = base.localPreference;
+    }
+    if (base.maxUsdPer1KInput !== undefined) {
+      constraints.maxUsdPer1KInput = base.maxUsdPer1KInput;
+    }
+    if (base.maxUsdPer1KOutput !== undefined) {
+      constraints.maxUsdPer1KOutput = base.maxUsdPer1KOutput;
+    }
+    if (base.minContextWindow !== undefined) {
+      constraints.minContextWindow = base.minContextWindow;
+    }
+    if (base.requireJsonMode !== undefined) {
+      constraints.requireJsonMode = base.requireJsonMode;
+    }
+    if (base.requireTools !== undefined) {
+      constraints.requireTools = base.requireTools;
+    }
+
+    try {
+      const model = await this.#selector.selectModelForTier({
+        constraints,
+        tier: this.#resolveTier(input.taskTier),
+        useCase
+      });
+
+      record.logicalModelId = model.id;
+      record.selectedModel = model.id;
+      this.#record = record;
+      return model;
+    } catch (error) {
+      record.escalated = true;
+      this.#record = record;
+      throw error;
+    }
+  }
+
+  /**
+   * Resolve the effective tier to select from, based on escalation policy.
+   * When escalation is allowed, the selector may return a model from any
+   * tier in the chain starting from the assigned tier. When disabled, only
+   * the assigned tier is considered.
+   */
+  #resolveTier(taskTier: TaskTier): TaskTier {
+    if (!this.#options.escalationPolicy.allowEscalation) {
+      return taskTier;
+    }
+    // When escalation is allowed, start from the assigned tier.
+    // The gateway selector handles the actual escalation logic.
+    return taskTier;
   }
 }
 

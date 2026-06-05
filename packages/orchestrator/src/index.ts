@@ -4,7 +4,16 @@
 export { AgentRegistry } from './agents/registry.js';
 export { OrchestrationEngine } from './core/engine.js';
 // Model-tier routing (delegates to gateway)
-export { GatewayBackedModelRouter, type TaskTier, type TierAwareModelRouter } from './intelligence/model-router.js';
+export {
+  DEFAULT_ESCALATION_POLICY,
+  type EscalationPolicy,
+  GatewayBackedModelRouter,
+  NO_ESCALATION_POLICY,
+  type SelectionRecord,
+  type TaskTier,
+  type TierAwareModelRouter,
+  type TierAwareModelRouterOptions
+} from './intelligence/model-router.js';
 export { createOrchestratorLoop } from './orchestrator-loop.js';
 // Scheduler exports (consolidated from @agentsy/orchestrator/scheduler)
 export * from './scheduler/index.js';
