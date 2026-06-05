@@ -147,6 +147,12 @@ export interface ModelSelectionConstraints {
   minContextWindow?: number;
   requireJsonMode?: boolean;
   requireTools?: boolean;
+  /**
+   * Note: `@agentsy/guardrails` defines `RoutingConstraint` with
+   * additional fields (requireReasoning, requireVision, localOnly).
+   * When both systems are used together, capability requirements
+   * should be kept in sync between the two interfaces.
+   */
 }
 
 export interface TierAwareModelSelector {

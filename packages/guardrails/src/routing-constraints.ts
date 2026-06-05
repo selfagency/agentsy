@@ -19,6 +19,11 @@
 /**
  * A constraint that must be satisfied before a model call is routed.
  * Multiple constraints can be combined — they are ANDed together.
+ *
+ * Note: `@agentsy/gateway` defines `ModelSelectionConstraints` with
+ * overlapping capability fields (requireTools, requireJsonMode).
+ * When both systems are used together, capability requirements
+ * should be kept in sync between the two interfaces.
  */
 export interface RoutingConstraint {
   /** Exclude specific providers by id. */

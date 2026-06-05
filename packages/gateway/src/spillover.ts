@@ -105,10 +105,10 @@ export function spillover(
   selector: ReplicaSelector,
   context: ReplicaSelectionContext,
   options?: {
+    allowTierEscalation?: boolean;
     escalationChain?: readonly ModelTier[];
-    excludeReplicas?: Set<string>;
     excludeModels?: Set<string>;
-    allowEscalation?: boolean;
+    excludeReplicas?: Set<string>;
   }
 ): SpilloverResult | undefined {
   const excludeReplicas = options?.excludeReplicas ?? new Set<string>();
@@ -120,16 +120,14 @@ export function spillover(
     return result;
   }
 
-  // 2. Same tier, different logical model
-  if (options?.allowEscalation !== false) {
-    const tierResult = spilloverSameTier(tier, registry, selector, context, excludeModels);
-    if (tierResult !== undefined) {
-      return tierResult;
-    }
+  // 2. Same tier, different logical model (always runs)
+  const tierResult = spilloverSameTier(tier, registry, selector, context, excludeModels);
+  if (tierResult !== undefined) {
+    return tierResult;
   }
 
-  // 3. Escalate tier
-  if (options?.allowEscalation !== false) {
+  // 3. Escalate tier (only when allowTierEscalation is true)
+  if (options?.allowTierEscalation !== false) {
     const chain = options?.escalationChain;
     const escalateResult = spilloverEscalate(
       tier,

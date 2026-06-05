@@ -208,3 +208,7 @@ The gateway re-exports from `@agentsy/providers` and `@agentsy/tokenomics` for t
 - `DefaultTierAwareModelSelector` (model-tier routing)
 - `ModelAvailabilityTracker` (health checking)
 - `LocalModelDetector` (backend discovery)
+- `ReplicaRegistry` (index replicas by logical model and provider)
+- `DefaultReplicaSelector` (filter + score + rank replicas)
+- `computeReplicaScore` (tunable scoring formula)
+- `spillover` (failover chain: same replica → same tier → escalate)
