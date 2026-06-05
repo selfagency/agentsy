@@ -6,6 +6,8 @@
  * A single provider may host models across all tiers.
  */
 
+export { type ModelAvailability, ModelAvailabilityTracker } from './availability-tracker.js';
+export { LocalModelDetector } from './local-detector.js';
 export { ModelRegistry, modelRegistry } from './model-registry.js';
 export { DefaultTierAwareModelSelector } from './selector.js';
 export type {

@@ -4,14 +4,17 @@
  * from the `ModelRegistry`.
  *
  * Selection algorithm:
- *   1. Filter by tier
- *   2. Filter by use case (when provided)
- *   3. Filter by constraints (capabilities, context window, cost)
- *   4. Prefer local models when `preferLocal` is set
- *   5. Sort remaining candidates by cost (cheapest first)
+ *   1. Check availability (local models are probed; cloud assumed available)
+ *   2. Filter by tier
+ *   3. Filter by use case (when provided)
+ *   4. Filter by constraints (capabilities, context window, cost)
+ *   5. Score candidates with tier-aware local bonus
  *   6. Return the best candidate
  *
-
+ * Local bonus varies by tier — micro/small tasks strongly prefer local
+ * models (free, fast, private). Frontier tasks ignore local preference
+ * and use the most capable model regardless of where it runs.
+ *
  * Integration with `MetricsCollector` (future): candidates can be
  * de-ranked by latency percentile or error rate when live telemetry
  * is available.
@@ -19,6 +22,17 @@
 
 import { modelRegistry } from './model-registry.js';
 import type { ModelEntry, ModelSelectionConstraints, ModelTier, TierAwareModelSelector } from './types.js';
+
+/**
+ * Local bonus by tier. Lighter tasks get a stronger local preference.
+ * Frontier tasks get no local bonus — use the best model regardless.
+ */
+const LOCAL_BONUS_BY_TIER: Record<ModelTier, number> = {
+  micro: 100,
+  small: 80,
+  mid: 20,
+  frontier: 0
+};
 
 export class DefaultTierAwareModelSelector implements TierAwareModelSelector {
   selectModelForTier(input: {
@@ -35,15 +49,50 @@ export class DefaultTierAwareModelSelector implements TierAwareModelSelector {
 
     candidates = this.#filterByUseCase(candidates, useCase);
     candidates = this.#filterByConstraints(candidates, constraints);
-    candidates = this.#applyPreferences(candidates, constraints);
 
     if (candidates.length === 0) {
       throw new Error(`No models match the requested criteria (tier=${tier}, useCase=${useCase ?? 'any'})`);
     }
 
-    // Sort by input cost, cheapest first
-    candidates.sort((a, b) => a.cost.inputPer1MTokens - b.cost.inputPer1MTokens);
-    return Promise.resolve(candidates[0] as ModelEntry);
+    // Handle localPreference constraints
+    if (constraints?.localPreference === 'required') {
+      const local = candidates.filter(m => m.isLocal);
+      if (local.length === 0) {
+        throw new Error(`No local models available for tier: ${tier}`);
+      }
+      candidates = local;
+    } else if (constraints?.localPreference === 'disabled') {
+      candidates = candidates.filter(m => !m.isLocal);
+      if (candidates.length === 0) {
+        throw new Error(`No cloud models available for tier: ${tier}`);
+      }
+    }
+
+    // Score candidates with tier-aware local bonus
+    const scored = candidates.map(model => {
+      let score = 0;
+
+      // Cost score: cheaper is better (inverted, per 1M input tokens)
+      score -= model.cost.inputPer1MTokens * 0.1;
+
+      // Local bonus: varies by tier
+      // micro/small → strong local preference (free, fast, private)
+      // mid → slight local preference if capable
+      // frontier → no local preference (use best model)
+      if (model.isLocal) {
+        score += LOCAL_BONUS_BY_TIER[tier];
+      }
+
+      return { model, score };
+    });
+
+    // Sort by score descending
+    scored.sort((a, b) => b.score - a.score);
+    const best = scored[0];
+    if (best === undefined) {
+      throw new Error(`No models available for tier: ${tier}`);
+    }
+    return Promise.resolve(best.model);
   }
 
   #filterByUseCase(candidates: ModelEntry[], useCase: string | undefined): ModelEntry[] {
@@ -82,13 +131,5 @@ export class DefaultTierAwareModelSelector implements TierAwareModelSelector {
     }
 
     return filtered;
-  }
-
-  #applyPreferences(candidates: ModelEntry[], constraints: ModelSelectionConstraints | undefined): ModelEntry[] {
-    if (constraints?.preferLocal !== true) {
-      return candidates;
-    }
-    const local = candidates.filter(m => m.isLocal);
-    return local.length > 0 ? local : candidates;
   }
 }

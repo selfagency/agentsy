@@ -115,10 +115,10 @@ export interface ModelEntry {
 
 export interface ModelSelectionConstraints {
   excludeProviders?: string[];
+  localPreference?: 'preferred' | 'required' | 'disabled';
   maxUsdPer1KInput?: number;
   maxUsdPer1KOutput?: number;
   minContextWindow?: number;
-  preferLocal?: boolean;
   requireJsonMode?: boolean;
   requireTools?: boolean;
 }
