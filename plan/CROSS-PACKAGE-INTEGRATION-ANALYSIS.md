@@ -100,23 +100,24 @@ The revised Phase 4 orchestration plan identifies **8 critical gaps**. Cross-pac
 
 **Current State:**
 
-- `@agentsy/gateway` implements `TierAwareStrategy` (exactly this!)
-  - `ProviderTier` enum (micro/small/mid/frontier)
-  - `TierAwareStrategy.select()` routes by tier + escalates on overload
-  - `ProviderEntry.tier` field already set by `registerLocalProviders()`
+- `@agentsy/gateway` was rearchitected to **model-tier routing** (2026-06-04):
+  - `ModelTier` enum (`'micro' | 'small' | 'mid' | 'frontier'`)
+  - `ModelRegistry` with static entries for OpenAI, Anthropic, Ollama
+  - `DefaultTierAwareModelSelector` — cost-based scoring + tier-aware local bonus
+  - `ModelAvailabilityTracker` — health checks with 30s TTL
+  - `LocalModelDetector` — probes Ollama, Apfel, Jan AI at startup
+  - `ProviderTier` **deleted**; `ProviderEntrySchema.tier` removed
 - `@agentsy/gateway` implements `MetricsCollector` (per-provider cost tracking)
 
 **Integration Strategy:**
 
-- **Reuse gateway tier system for task decomposition**
-- Add `DecomposedTask.assignedTier` (already matches gateway tiers)
-- Gateway `TierAwareStrategy` works at **provider** level; need orchestrator-level at **task** level
-- Create `TaskDecomposer` in `@agentsy/orchestrator` (simple keyword heuristics → tier assignment)
-- Create `CostEstimator` using gateway's `ProviderTier` cost models
-- Wire `TierRouter` escalation into recovery hook
+- **Task tier = Model tier** (1:1). Orchestrator re-exports `TaskTier = ModelTier` from gateway.
+- `GatewayBackedModelRouter` in orchestrator delegates model selection to `DefaultTierAwareModelSelector`.
+- No cost tables in orchestrator — all cost/capability data lives in gateway's `ModelRegistry`.
+- Local preference built into selector scoring (micro=+100, small=+80, mid=+20, frontier=0).
 
 **Owner:** Orchestrator team  
-**Effort:** 2.5h (decomposer + estimator + routing); gateway already 90% there
+**Effort:** 1.5h (router adapter + wiring); gateway already complete
 
 **Note:** Gateway already has 4-tier model, metrics, and escalation logic. Orchestrator adapts it to **task** level (not provider level).
 

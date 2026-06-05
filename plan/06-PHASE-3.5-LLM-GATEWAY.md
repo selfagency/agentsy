@@ -10,7 +10,22 @@
 
 ## Overview
 
-Build semantic routing layer between CLI and providers. Automatic failover, circuit-breaking, quota tracking, strategy-based selection.
+Build semantic routing layer between CLI and providers. Automatic failover, circuit-breaking, quota tracking, strategy-based selection, and **model-tier routing**.
+
+### Post-Phase-3.5 Addendum: Model-Tier Architecture (2026-06-04)
+
+After shipping Phase 3.5, the tier architecture was re-centered from providers to models:
+
+- `ProviderTier` **deleted**. `ProviderEntrySchema.tier` removed.
+- `ModelTier` (`'micro' | 'small' | 'mid' | 'frontier'`) added to types.ts.
+- `ModelRegistry` — 10 static entries (OpenAI 3, Anthropic 3, Ollama 3 local models).
+- `DefaultTierAwareModelSelector` — cost-based scoring with tier-aware local bonus (micro=+100, small=+80, mid=+20, frontier=0).
+- `ModelAvailabilityTracker` — health-checks all models every 30s.
+- `LocalModelDetector` — probes Ollama (`:11434`), Apfel (`:8080`), Jan AI (`:1337`); infers tier from model name size.
+- `GatewayClient` / `getModelSelector()` on `LoadBalancedClient`.
+- Orchestrator `GatewayBackedModelRouter` bridges `TaskTier = ModelTier`.
+
+See `packages/gateway/README.md` for the current API surface.
 
 **Foundation work completed in Phase 0** (TASK-LB-001..009). This phase completes remaining tasks.
 
@@ -376,7 +391,9 @@ The **CLI slash command** `/model select <alias-or-upstream-id>` now invokes `cl
 
 ## Status: ✅ DONE
 
-`packages/gateway/src/strategies/tier-aware.ts` ships `TierAwareStrategy` with options `{ defaultStrategy, tierOf, maxEscalationSteps }`. The strategy reads `taskTier` from the `SelectionContext.request` field, looks up the providers in the matching tier, and runs the base `defaultStrategy` for in-tier selection. If the result is `undefined` (no eligible in-tier provider), it escalates through `ESCALATION_CHAIN` (`micro → small → mid → frontier`) up to `maxEscalationSteps`. `ProviderTier = 'micro' | 'small' | 'mid' | 'frontier'`. `DEFAULT_PROVIDER_TIERS` and `buildTierOf(entries)` are exported for callers. Shipped in commit `6a743c87`. 8 tests.
+`packages/gateway/src/strategies/tier-aware.ts` ships `TierAwareStrategy` with options `{ defaultStrategy, tierOf, maxEscalationSteps }`. The strategy reads `taskTier` from the `SelectionContext.request` field, looks up the providers in the matching tier, and runs the base `defaultStrategy` for in-tier selection. If the result is `undefined` (no eligible in-tier provider), it escalates through `ESCALATION_CHAIN` (`micro → small → mid → frontier`) up to `maxEscalationSteps`. `DEFAULT_PROVIDER_TIERS` and `buildTierOf(entries)` are exported for callers. Shipped in commit `6a743c87`. 8 tests.
+
+> **2026-06-04 update:** `ProviderTier` replaced with `ModelTier` alias from `packages/gateway/src/types.ts`. The canonical tier type is now `ModelTier`. Provider-level tier is deprecated in favor of model-level tier via `ModelRegistry` and `DefaultTierAwareModelSelector`.
 
 The plan's `tierPreferredProviders: Record<string, string[]>` is implemented as the in-tier `defaultStrategy` ordering rather than a hard-coded list — this is more flexible because the per-tier ordering is whatever strategy the caller wants (typically `priority-fallback` for the micro tier's local-first ordering, `round-robin` for mid, etc.).
 
