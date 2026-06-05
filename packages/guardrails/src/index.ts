@@ -14,3 +14,13 @@ export class RetrievalBlockedError extends Error {
     this.name = 'RetrievalBlockedError';
   }
 }
+
+export type {
+  ConstraintEvalResult,
+  ConstraintViolation,
+  ConstraintViolationCode,
+  GatewayModelInfo,
+  RoutingConstraint
+} from './routing-constraints.js';
+// Routing constraints (Phase 3.7)
+export { evaluateConstraints } from './routing-constraints.js';
