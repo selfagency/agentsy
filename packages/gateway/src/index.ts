@@ -18,13 +18,19 @@ export { LatencyTracker } from './health/latency-tracker.js';
 export { type ProviderHealthEntry, ProviderHealthRegistry } from './health/provider-health-registry.js';
 export {
   DefaultTierAwareModelSelector,
+  getAllLogicalModels,
+  getLogicalModel,
+  getLogicalModelsByTier,
+  type LogicalModel,
   type ModelCapabilities,
   type ModelCost,
   type ModelEntry,
   ModelRegistry,
+  type ModelReplica,
   type ModelSelectionConstraints,
   type ModelTier,
   modelRegistry,
+  ReplicaRegistry,
   type TierAwareModelSelector
 } from './model-tier.js';
 export {

@@ -47,25 +47,104 @@ export class ModelAvailabilityTracker {
    * @param providerUrls - Map of providerId → base URL for health checks.
    */
   async checkAvailability(models: ModelEntry[], providerUrls: ReadonlyMap<string, string>): Promise<void> {
-    const checks: Promise<void>[] = [];
+    const toProbe = this.#collectProbes(models, providerUrls);
+    if (toProbe.size === 0) {
+      return;
+    }
+    const outcomes = await this.#fireProbes(toProbe);
+    this.#applyProbeResults(models, outcomes);
+  }
+
+  #collectProbes(models: ModelEntry[], providerUrls: ReadonlyMap<string, string>): Set<string> {
+    const now = Date.now();
+    const toProbe = new Set<string>();
 
     for (const model of models) {
       const cached = this.#cache.get(model.id);
-      const age = cached === undefined ? Number.POSITIVE_INFINITY : Date.now() - cached.lastChecked.getTime();
+      const age = cached === undefined ? Number.POSITIVE_INFINITY : now - cached.lastChecked.getTime();
 
       if (age < this.#ttlMs && cached !== undefined) {
-        // Fresh cache — only re-probe if currently marked unavailable
         if (!cached.isAvailable) {
-          checks.push(this.#probe(model, providerUrls));
+          const url = providerUrls.get(model.providerId);
+          if (url !== undefined) {
+            toProbe.add(`${model.providerId}::${url}`);
+          }
         }
         continue;
       }
 
-      // Stale cache or no cache — always re-probe
-      checks.push(this.#probe(model, providerUrls));
+      const url = providerUrls.get(model.providerId);
+      if (url !== undefined) {
+        toProbe.add(`${model.providerId}::${url}`);
+      }
     }
 
-    await Promise.allSettled(checks);
+    return toProbe;
+  }
+
+  #fireProbes(toProbe: Set<string>): Promise<
+    PromiseSettledResult<{
+      available: boolean;
+      providerId: string;
+      error?: string;
+      latencyMs?: number;
+    }>[]
+  > {
+    const now = Date.now();
+    return Promise.allSettled(
+      [...toProbe].map(async key => {
+        const [providerId, baseUrl] = key.split('::', 2) as [string, string];
+        const startedAt = now;
+        try {
+          const response = await fetch(baseUrl, {
+            method: 'GET',
+            signal: AbortSignal.timeout(this.#timeoutMs)
+          });
+          return { available: response.ok, latencyMs: Date.now() - startedAt, providerId };
+        } catch (error) {
+          return {
+            available: false,
+            error: error instanceof Error ? error.message : String(error),
+            providerId
+          };
+        }
+      })
+    );
+  }
+
+  #applyProbeResults(
+    models: ModelEntry[],
+    outcomes: PromiseSettledResult<{
+      available: boolean;
+      providerId: string;
+      error?: string;
+      latencyMs?: number;
+    }>[]
+  ): void {
+    for (const outcome of outcomes) {
+      if (outcome.status !== 'fulfilled') {
+        continue;
+      }
+      const result = outcome.value;
+      for (const model of models) {
+        if (model.providerId !== result.providerId) {
+          continue;
+        }
+        const entry: ModelAvailability = {
+          isAvailable: result.available,
+          lastChecked: new Date(),
+          modelId: model.id,
+          providerId: model.providerId
+        };
+        if (result.error !== undefined) {
+          entry.error = result.error;
+        }
+        if (result.latencyMs !== undefined) {
+          entry.latencyMs = result.latencyMs;
+        }
+        this.#cache.set(model.id, entry);
+      }
+    }
   }
 
   /**
@@ -90,43 +169,5 @@ export class ModelAvailabilityTracker {
    */
   getSnapshot(): ModelAvailability[] {
     return [...this.#cache.values()];
-  }
-
-  async #probe(model: ModelEntry, providerUrls: ReadonlyMap<string, string>): Promise<void> {
-    const baseUrl = providerUrls.get(model.providerId);
-    if (baseUrl === undefined) {
-      this.#cache.set(model.id, {
-        isAvailable: false,
-        lastChecked: new Date(),
-        modelId: model.id,
-        providerId: model.providerId,
-        error: `No base URL for provider: ${model.providerId}`
-      });
-      return;
-    }
-
-    const startedAt = Date.now();
-    try {
-      const response = await fetch(baseUrl, {
-        method: 'GET',
-        signal: AbortSignal.timeout(this.#timeoutMs)
-      });
-      const latencyMs = Date.now() - startedAt;
-      this.#cache.set(model.id, {
-        isAvailable: response.ok,
-        lastChecked: new Date(),
-        latencyMs,
-        modelId: model.id,
-        providerId: model.providerId
-      });
-    } catch (error) {
-      this.#cache.set(model.id, {
-        error: error instanceof Error ? error.message : String(error),
-        isAvailable: false,
-        lastChecked: new Date(),
-        modelId: model.id,
-        providerId: model.providerId
-      });
-    }
   }
 }

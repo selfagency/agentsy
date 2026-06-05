@@ -12,7 +12,7 @@
  * skipped — the system degrades gracefully to cloud-only routing.
  */
 
-import type { ModelEntry, ModelTier } from './types.js';
+import type { ModelEntry, ModelReplica, ModelTier } from './types.js';
 
 export interface LocalBackendProfile {
   baseUrl: string;
@@ -63,14 +63,34 @@ export class LocalModelDetector {
 
     for (const outcome of outcomes) {
       if (outcome.status === 'fulfilled' && outcome.value !== undefined) {
-        results.push(...outcome.value);
+        results.push(...outcome.value.entries);
       }
     }
 
     return results;
   }
 
-  async #probeBackend(backend: LocalBackendProfile): Promise<ModelEntry[] | undefined> {
+  /**
+   * Probe all known local backends and return ModelReplica records.
+   * Each detected model becomes a local replica with zero cost.
+   */
+  async detectLocalReplicas(): Promise<ModelReplica[]> {
+    const results: ModelReplica[] = [];
+    const probes = LOCAL_BACKENDS.map(backend => this.#probeBackend(backend));
+    const outcomes = await Promise.allSettled(probes);
+
+    for (const outcome of outcomes) {
+      if (outcome.status === 'fulfilled' && outcome.value !== undefined) {
+        results.push(...outcome.value.replicas);
+      }
+    }
+
+    return results;
+  }
+
+  async #probeBackend(
+    backend: LocalBackendProfile
+  ): Promise<{ entries: ModelEntry[]; replicas: ModelReplica[] } | undefined> {
     try {
       const response = await fetch(`${backend.baseUrl}${backend.healthEndpoint}`, {
         method: 'GET',
@@ -87,7 +107,10 @@ export class LocalModelDetector {
         return;
       }
 
-      return modelNames.map(name => this.#buildModelEntry(backend, name));
+      return {
+        entries: modelNames.map(name => this.#buildModelEntry(backend, name)),
+        replicas: modelNames.map(name => this.#buildModelReplica(backend, name))
+      };
     } catch {
       // Backend not reachable — skip silently
     }
@@ -134,6 +157,17 @@ export class LocalModelDetector {
       capabilities: { tools: false, jsonMode: false, vision: false, audio: false, reasoning: false, embeddings: false },
       contextWindow: 128_000,
       maxOutputTokens: 4096,
+      isLocal: true
+    };
+  }
+
+  #buildModelReplica(backend: LocalBackendProfile, modelName: string): ModelReplica {
+    return {
+      id: `${backend.id}/${modelName}`,
+      logicalModelId: modelName,
+      providerId: backend.providerId,
+      upstreamModelName: modelName,
+      cost: { inputPer1MTokens: 0, outputPer1MTokens: 0 },
       isLocal: true
     };
   }

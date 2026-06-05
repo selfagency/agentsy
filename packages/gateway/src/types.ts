@@ -93,6 +93,32 @@ export interface ModelCapabilities {
 }
 
 /**
+ * Canonical logical model identity. Independent of any provider or account.
+ * A single LogicalModel may be served by multiple ModelReplicas.
+ */
+export interface LogicalModel {
+  capabilities: ModelCapabilities;
+  contextWindow: number;
+  id: string;
+  maxOutputTokens: number;
+  paramCount?: number;
+  tier: ModelTier;
+  useCases: Array<'chat' | 'code' | 'reasoning' | 'search' | 'embed' | 'vision'>;
+}
+
+/**
+ * One way to reach a logical model — through a specific provider/account.
+ */
+export interface ModelReplica {
+  cost: ModelCost;
+  id: string;
+  isLocal: boolean;
+  logicalModelId: string;
+  providerId: string;
+  upstreamModelName: string;
+}
+
+/**
  * A concrete model that the gateway can invoke. Tiers are defined
  * on `ModelEntry`, not `ProviderEntry`. A single provider may host
  * models across all tiers.
