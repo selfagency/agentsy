@@ -12,7 +12,10 @@ export { LocalModelDetector } from './local-detector.js';
 export { getAllLogicalModels, getLogicalModel, getLogicalModelsByTier } from './logical-models.js';
 export { ModelRegistry, modelRegistry } from './model-registry.js';
 export { ReplicaRegistry } from './replica-registry.js';
+export { DefaultReplicaSelector, type ReplicaSelectionContext, type ReplicaSelector } from './replica-selector.js';
+export { computeReplicaScore, type ReplicaScoreInput, type ReplicaScoreWeights } from './score/replica-score.js';
 export { DefaultTierAwareModelSelector } from './selector.js';
+export { type SpilloverResult, spillover } from './spillover.js';
 export type {
   LogicalModel,
   ModelCapabilities,
