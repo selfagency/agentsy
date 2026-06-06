@@ -11,6 +11,7 @@ import { createGitHelpers } from './release-git.js';
 import type { ReleaseNotesOptions } from './release-shared.js';
 import {
   checkNpmCredentials,
+  createRollbackManager,
   ensureCleanMainBranch,
   ensureLocalTagDoesNotExist,
   ensureRemoteTagDoesNotExist,
@@ -30,69 +31,9 @@ const version = parseVersionArg(typeof argv._[0] === 'string' ? argv._[0] : unde
 
 const tag = `v${version}`;
 
-// ---------------------------------------------------------------------------
-// Rollback state
-//   commitLocal  — release commit exists locally but has not been pushed
-//   commitPushed — release commit has been pushed to origin/main
-//   tagPushed    — tag has been pushed but release workflow has not yet succeeded
-//   releaseDone  — release workflow succeeded; nothing to undo
-// ---------------------------------------------------------------------------
-
-let commitLocal = false;
-let commitPushed = false;
-let tagPushed = false;
-let releaseDone = false;
 const { resolveGitExecutable, runGit, setGitCommand } = createGitHelpers(ROOT);
-
-function rollback() {
-  if (releaseDone) {
-    return;
-  }
-  $.verbose = false;
-  try {
-    if (tagPushed) {
-      console.log(`\n⚠️  Release workflow failed or was interrupted. Deleting remote tag ${tag}...`);
-      try {
-        runGit(['push', 'origin', '--delete', tag]);
-        runGit(['tag', '-d', tag]);
-        console.log(`↩️  Tag ${tag} deleted from remote and local.`);
-      } catch {
-        console.error('❌ Could not delete tag. Manually run:');
-        console.error(`   git push origin --delete ${tag} && git tag -d ${tag}`);
-      }
-    }
-    if (commitPushed) {
-      console.log('\n⚠️  Reverting release commit on origin/main...');
-      try {
-        runGit(['revert', '--no-edit', 'HEAD']);
-        runGit(['push', 'origin', 'main']);
-        console.log('↩️  Release commit reverted and pushed. Working tree is clean.');
-      } catch {
-        console.error('❌ Automatic revert failed. Manually run:');
-        console.error('   git revert HEAD && git push origin main');
-      }
-    } else if (commitLocal) {
-      console.log('\n⚠️  Release aborted before push. Resetting local release commit...');
-      try {
-        runGit(['reset', '--hard', 'HEAD~1']);
-        console.log('↩️  Local release commit removed. Working tree restored.');
-      } catch {
-        console.error('❌ Reset failed. Manually run: git reset --hard HEAD~1');
-      }
-    }
-  } catch {
-    /* best effort */
-  }
-}
-
-process.on('SIGINT', () => {
-  rollback();
-  process.exit(130);
-});
-process.on('SIGTERM', () => {
-  rollback();
-  process.exit(143);
-});
+const { state: rollbackState, rollback, setupSignalHandlers } = createRollbackManager(tag);
+setupSignalHandlers();
 
 // ---------------------------------------------------------------------------
 // Main — wrapped so any unhandled error triggers rollback
@@ -202,15 +143,15 @@ async function main() {
     console.log('📦 Committing release metadata changes...');
     runGit(['add', 'package.json', 'CHANGELOG.md']);
     runGit(['commit', '-m', `chore(release): update version and changelog for ${tag}`]);
-    commitLocal = true;
+    rollbackState.commitLocal = true;
   } else {
     console.log('ℹ️  No version/changelog changes detected; nothing to commit.');
   }
 
   console.log('🚀 Pushing main...');
   runGit(['push', 'origin', 'main']);
-  commitPushed = true;
-  commitLocal = false;
+  rollbackState.commitPushed = true;
+  rollbackState.commitLocal = false;
 
   const headSha = runGit(['rev-parse', 'HEAD']).stdout.trim();
 
@@ -245,7 +186,7 @@ async function main() {
 
   console.log(`🚀 Pushing tag ${tag}...`);
   runGit(['push', 'origin', tag]);
-  tagPushed = true;
+  rollbackState.tagPushed = true;
 
   // --- Watch the release workflow ------------------------------------------
 
@@ -290,11 +231,11 @@ async function main() {
   } catch (error) {
     console.error('❌ npm publish failed.');
     // Ensure rollback is not marked as done so that tag/commit cleanup happens.
-    releaseDone = false;
+    rollbackState.releaseDone = false;
     throw error;
   }
   console.log(`✅ Published ${tag} to npm.`);
-  releaseDone = true;
+  rollbackState.releaseDone = true;
 }
 
 // ---------------------------------------------------------------------------

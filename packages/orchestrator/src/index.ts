@@ -15,6 +15,22 @@ export {
   type TierAwareModelRouterOptions
 } from './intelligence/model-router.js';
 export { createOrchestratorLoop } from './orchestrator-loop.js';
+// Recovery / multi-replica failover chain
+export {
+  createFailoverChain,
+  type FailoverChain,
+  ExhaustedError,
+  type FailoverStep,
+  type FailoverStepType,
+  getNextStep
+} from './recovery/model-failover.js';
+// Replica health probing
+export {
+  createReplicaHealthProbe,
+  type HealthProbeResult,
+  type ReplicaHealthProbeConfig,
+  ReplicaHealthProbe
+} from './recovery/health-probe.js';
 // Scheduler exports (consolidated from @agentsy/orchestrator/scheduler)
 export * from './scheduler/index.js';
 // Type definitions

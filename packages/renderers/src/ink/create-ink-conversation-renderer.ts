@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
-import type { XmlToolCall } from '@agentsy/core/tool-calls';
 import type { JsonObject } from '@agentsy/types';
 import type * as inkNS from 'ink';
 import type * as reactNS from 'react';
 
+import { createInkRuntimeController, type InkRuntimeControllerOptions } from './ink-runtime-state.js';
 import type { InkRendererHandle, InkRendererOptions } from './create-ink-renderer.js';
 import { resolveTheme } from './themes/index.js';
 
@@ -50,58 +50,19 @@ export async function createInkConversationRenderer(
 
   const resolvedTheme = resolveTheme(options.theme);
 
-  const stateRef = {
-    isStreaming: true,
-    text: '',
-    thinking: '',
-    toolCalls: [] as {
-      id: string;
-      name: string;
-      arguments: JsonObject;
-      done: boolean;
-    }[]
+  const controllerOptions: InkRuntimeControllerOptions = {
+    onWarning: options.onWarning
   };
+  if (options.onFinish !== undefined) {
+    controllerOptions.onFinish = options.onFinish;
+  }
+  const { stateRef, forceUpdateRef, listeners } = createInkRuntimeController(controllerOptions);
 
   const historyRef: { current: ConversationTurn[] } = {
     current: options.initialHistory ? [...options.initialHistory] : []
   };
 
-  const forceUpdateRef = {
-    current: () => {
-      /* noop */
-    }
-  };
-
   const { processor } = options;
-
-  // Store listener functions for cleanup on unmount
-  const listeners = {
-    done: () => {
-      stateRef.isStreaming = false;
-      forceUpdateRef.current();
-      options.onFinish?.();
-    },
-    text: (delta: string) => {
-      stateRef.text += delta;
-      forceUpdateRef.current();
-    },
-    thinking: (delta: string) => {
-      stateRef.thinking += delta;
-      forceUpdateRef.current();
-    },
-    tool_call: (part: XmlToolCall) => {
-      stateRef.toolCalls.push({
-        arguments: part.parameters,
-        done: true,
-        id: part.id ?? randomUUID(),
-        name: part.name
-      });
-      forceUpdateRef.current();
-    },
-    warning: (error: string) => {
-      options.onWarning?.(error);
-    }
-  };
 
   processor.on('text', listeners.text);
   processor.on('thinking', listeners.thinking);

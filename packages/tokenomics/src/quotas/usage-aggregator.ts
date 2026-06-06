@@ -8,7 +8,7 @@
  */
 
 import type { ReplicaAwareUsage, ReplicaBudget, ReplicaHeadroomSnapshot } from './headroom.js';
-import { HOUR_MS, MONTH_MS, WEEK_MS } from './headroom.js';
+import { HOUR_MS, MINUTE_MS, MONTH_MS, WEEK_MS } from './headroom.js';
 
 export class UsageAggregator {
   readonly #usages: ReplicaAwareUsage[] = [];
@@ -20,6 +20,10 @@ export class UsageAggregator {
 
   recordUsage(usage: ReplicaAwareUsage): void {
     this.#usages.push(usage);
+  }
+
+  getBudget(replicaId: string): ReplicaBudget | undefined {
+    return this.#budgets.get(replicaId);
   }
 
   getHeadroomSnapshot(replicaId: string): ReplicaHeadroomSnapshot | undefined {
@@ -39,6 +43,18 @@ export class UsageAggregator {
       confidence: 'tokenomics-derived'
     };
 
+    if (budget.maxTokensMinute !== undefined) {
+      const used = this.#sumTokens(recent, now - MINUTE_MS);
+      snapshot.remainingTokensMinute = Math.max(0, budget.maxTokensMinute - used);
+    }
+    if (budget.maxRequestsMinute !== undefined) {
+      const used = this.#sumRequests(recent, now - MINUTE_MS);
+      snapshot.remainingRequestsMinute = Math.max(0, budget.maxRequestsMinute - used);
+    }
+    if (budget.maxCostMinute !== undefined) {
+      const used = this.#sumCost(recent, now - MINUTE_MS);
+      snapshot.remainingCostMinute = Math.max(0, budget.maxCostMinute - used);
+    }
     if (budget.maxTokensHour !== undefined) {
       const used = this.#sumTokens(recent, now - HOUR_MS);
       snapshot.remainingTokensHour = Math.max(0, budget.maxTokensHour - used);
@@ -73,5 +89,9 @@ export class UsageAggregator {
 
   #sumCost(records: ReplicaAwareUsage[], since: number): number {
     return records.filter(u => u.timestamp.getTime() >= since).reduce((total, u) => total + u.cost, 0);
+  }
+
+  #sumRequests(records: ReplicaAwareUsage[], since: number): number {
+    return records.filter(u => u.timestamp.getTime() >= since).length;
   }
 }

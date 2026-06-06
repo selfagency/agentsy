@@ -1,14 +1,14 @@
 # @agentsy/gateway
 
-Semantic routing layer for multi-provider LLM access. Drop-in replacement for `UniversalClient` that adds circuit breaking, rate-limit tracking, strategy-based model selection, local-first routing, and observability.
+Canonical model-routing layer for multi-provider LLM access. The gateway selects a logical model and a concrete replica, then executes through the provider transport. It adds circuit breaking, rate-limit tracking, strategy-based model selection, local-first routing, replica-aware spillover, and observability.
 
 ## Features
 
 - **Model-tier routing** — Tiers are defined on **models** (`ModelEntry.tier`), not providers. A single provider hosts models across all tiers. Supports `micro`, `small`, `mid`, `frontier`.
-- **Local-first by default** — `LocalModelDetector` auto-discovers local backends (Ollama, Apfel, Jan AI). `ModelAvailabilityTracker` health-checks models with 30s TTL. Scoring gives local models a large bonus for micro/small tasks, declining to zero for frontier.
+- **Local-first for lightweight tasks** — `LocalModelDetector` auto-discovers local backends (Ollama, Apfel, Jan AI). `ModelAvailabilityTracker` health-checks models with 30s TTL. Scoring gives local models a large bonus for micro/small tasks, slight preference for mid, and none for frontier.
 - **Circuit breaking** — Automatic failover on provider outages via `ProviderHealthRegistry` (per-provider circuit breaker).
 - **Rate limit tracking** — `QuotaTracker` wraps `@agentsy/tokenomics` and tracks per-provider RPM/TPM budgets from server response headers.
-- **Routing strategies** — `round-robin`, `weighted`, `least-connections`, `latency`, `priority-fallback`, `cost-based`, `adaptive`, and `tier-aware`.
+- **Routing strategies** — `round-robin`, `weighted`, `least-connections`, `latency`, `priority-fallback`, `cost-based`, `adaptive`, and `tier-aware` (legacy provider-facing path; prefer model-tier selector).
 - **Active usage probing** — `ProviderProfile.usageProbes[]` (CodexBar-style) describes how to query the provider's quota endpoint.
 - **Mid-conversation model switching** — `ModelSwitcher` resolves aliases (e.g. `gpt-4o`, `claude-opus-4`) to provider-specific upstream ids and updates the active model in place. CLI `/model select` wired.
 - **Metrics** — `MetricsCollector` records per-(provider, model) request counts, error rates, token usage, USD cost, and latency percentiles (p50 / p95 / p99).
@@ -35,7 +35,7 @@ interface ModelEntry {
 
 ### Local-First Scoring
 
-The `DefaultTierAwareModelSelector` scores candidates with a tier-aware local bonus:
+The `DefaultTierAwareModelSelector` scores candidates with a tier-aware local bonus and quota-aware replica ranking:
 
 | Task Tier | Local Bonus | Behavior |
 |-----------|-------------|----------|
@@ -52,7 +52,7 @@ Override via `ModelSelectionConstraints.localPreference`:
 
 ### Availability Tracking
 
-`ModelAvailabilityTracker` health-checks all models every 30 seconds. Local models are probed via their provider endpoint; cloud models are assumed available unless a stale failure exists.
+`ModelAvailabilityTracker` health-checks all models every 30 seconds. Local models are probed via their provider endpoint; cloud models are assumed available unless a stale failure exists. Replica cooldown and stale failure state are considered during scoring.
 
 ### Local Model Detection
 
@@ -157,7 +157,7 @@ The returned `LoadBalancedClient` extends `UniversalClient`, so existing call si
 | `cost-based` | Pick the lowest cost per 1K input tokens. |
 | `tier-aware` | Filter by provider-level complexity bucket (legacy — prefer `DefaultTierAwareModelSelector`). |
 
-## Tier-aware model selection (orchestrator integration)
+## Replica-aware model selection (orchestrator integration)
 
 ```typescript
 import { DefaultTierAwareModelSelector } from '@agentsy/gateway';
@@ -170,11 +170,10 @@ const model = await selector.selectModelForTier({
   useCase: 'code',
   constraints: {
     requireTools: true,
-    localPreference: 'preferred'  // try local first, fall back to cloud
+    localPreference: 'preferred'  // local preferred only for lightweight tasks
   }
 });
-// model.id = 'ollama/llama3.3:70b' (local, free, tools-capable)
-// or fallback: 'openai/gpt-4o'
+// model.id may be a local or cloud replica depending on quota/health
 ```
 
 ## Local provider registration
@@ -208,6 +207,8 @@ The gateway re-exports from `@agentsy/providers` and `@agentsy/tokenomics` for t
 - `DefaultTierAwareModelSelector` (model-tier routing)
 - `ModelAvailabilityTracker` (health checking)
 - `LocalModelDetector` (backend discovery)
+- `ReplicaRegistry` (same-model, multi-provider routing)
+- `ReplicaQuotaSnapshot` / headroom signals (tokenomics-driven selection)
 - `ReplicaRegistry` (index replicas by logical model and provider)
 - `DefaultReplicaSelector` (filter + score + rank replicas)
 - `computeReplicaScore` (tunable scoring formula)

@@ -47,6 +47,30 @@ const LOCAL_BACKENDS: LocalBackendProfile[] = [
     baseUrl: 'http://localhost:1337',
     healthEndpoint: '/v1/models',
     modelListPath: 'data'
+  },
+  {
+    id: 'lm-studio',
+    name: 'LM Studio',
+    providerId: 'lm-studio',
+    baseUrl: 'http://localhost:1234',
+    healthEndpoint: '/v1/models',
+    modelListPath: 'data'
+  },
+  {
+    id: 'local-ai',
+    name: 'LocalAI',
+    providerId: 'local-ai',
+    baseUrl: 'http://localhost:8080',
+    healthEndpoint: '/v1/models',
+    modelListPath: 'data'
+  },
+  {
+    id: 'vllm',
+    name: 'vLLM',
+    providerId: 'vllm',
+    baseUrl: 'http://localhost:8000',
+    healthEndpoint: '/v1/models',
+    modelListPath: 'data'
   }
 ];
 

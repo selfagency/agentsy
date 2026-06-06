@@ -29,19 +29,7 @@ import { createMockClient } from '../providers/mock.js';
 import type { CliProviderConfig } from '../providers/resolve-provider.js';
 import { resolveProviderClient } from '../providers/resolve-provider.js';
 
-// ── Helpers (mirrored from chat.ts until a shared utils module is added) ────────
-
-function hasFlag(args: readonly string[], flag: string): boolean {
-  return args.includes(flag);
-}
-
-function getFlagValue(args: readonly string[], flag: string): string | null {
-  const index = args.indexOf(flag);
-  if (index === -1) {
-    return null;
-  }
-  return args.at(index + 1) ?? null;
-}
+import { getFlagValue, hasFlag } from '../cli-args.js';
 
 function createProviderClient(isMock: boolean, argv: readonly string[]) {
   if (isMock) {

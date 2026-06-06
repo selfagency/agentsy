@@ -106,12 +106,18 @@ export function spillover(
   context: ReplicaSelectionContext,
   options?: {
     allowTierEscalation?: boolean;
+    /** Set of replica IDs with open circuits — skip these. */
+    circuitOpenReplicaIds?: Set<string>;
     escalationChain?: readonly ModelTier[];
     excludeModels?: Set<string>;
     excludeReplicas?: Set<string>;
   }
 ): SpilloverResult | undefined {
-  const excludeReplicas = options?.excludeReplicas ?? new Set<string>();
+  const excludeReplicas = new Set(options?.excludeReplicas);
+  // Also exclude open-circuit replicas from spillover
+  for (const openId of options?.circuitOpenReplicaIds ?? []) {
+    excludeReplicas.add(openId);
+  }
   const excludeModels = new Set(options?.excludeModels ?? [logicalModelId]);
 
   // 1. Same logical model, different replica

@@ -45,7 +45,14 @@ export type { HookHandler, HookRegistry, HookResult, RuntimeHookEvent } from './
 export { createRuntimeHookRegistry } from './hooks/index.js';
 export type { InterruptionCheckpoint } from './interruption.js';
 // Interruption and checkpoint
-export { createInterruption, resumeFromCheckpoint } from './interruption.js';
+export {
+  createInterruption,
+  getEscalationState,
+  getFailedReplicas,
+  markReplicaAttempted,
+  resumeFromCheckpoint,
+  setEscalationState
+} from './interruption.js';
 export {
   buildRuntimeMemoryContextXml,
   injectRuntimeMemoryContext,

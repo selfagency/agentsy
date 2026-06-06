@@ -15,15 +15,23 @@
  *   - Recovery flow: retry same model replica → spillover → escalate → pause
  */
 
+import { getLogicalModel, spillover } from '@agentsy/gateway';
 import type {
   GatewayClient,
   ModelEntry,
+  ModelReplica,
   ModelSelectionConstraints,
   ModelTier,
+  ReplicaRegistry,
+  ReplicaSelectionContext,
+  ReplicaSelector,
   TierAwareModelSelector
 } from '@agentsy/gateway';
 
 import type { WorkflowNode } from '../types/workflow.js';
+
+import type { FailoverChain } from '../recovery/model-failover.js';
+import { createFailoverChain as buildFailoverChain, ExhaustedError, getNextStep } from '../recovery/model-failover.js';
 
 export type { ModelEntry, ModelTier } from '@agentsy/gateway';
 
@@ -81,6 +89,10 @@ export interface SelectionRecord {
 export interface TierAwareModelRouterOptions {
   escalationPolicy?: EscalationPolicy;
   modelSelectionConstraints?: ModelSelectionConstraints;
+  /** Optional replica registry for failover chain resolution. */
+  replicaRegistry?: ReplicaRegistry;
+  /** Optional replica selector for failover chain resolution. */
+  replicaSelector?: ReplicaSelector;
 }
 
 /**
@@ -90,6 +102,24 @@ export interface TierAwareModelRouterOptions {
 export interface TierAwareModelRouter {
   chooseModelForTask(input: { node: WorkflowNode; taskTier: TaskTier }): Promise<ModelEntry>;
   getSelectionRecord(): SelectionRecord | undefined;
+
+  /**
+   * Build a failover chain from the selected model and available replicas.
+   * Returns a chain with steps ordered: same-replica-retry → next-replica
+   * (same model) → next-model (same tier) → tier-escalation (if allowed).
+   */
+  createFailoverChain(selectedModel: ModelEntry): FailoverChain;
+
+  /**
+   * Advance the failover chain and resolve the next step to a `ModelEntry`.
+   * Uses the gateway's spillover logic to pick the best replica for the step.
+   * Throws `ExhaustedError` when no steps remain.
+   *
+   * @param chain - The failover chain (mutated in place).
+   * @param error - The error from the last failed attempt.
+   * @param context - Replica selection context for the spillover logic.
+   */
+  nextFailoverModel(chain: FailoverChain, error: Error, context: ReplicaSelectionContext): Promise<ModelEntry>;
 }
 
 /**
@@ -98,7 +128,12 @@ export interface TierAwareModelRouter {
  */
 export class GatewayBackedModelRouter implements TierAwareModelRouter {
   readonly #selector: TierAwareModelSelector;
-  readonly #options: Required<TierAwareModelRouterOptions>;
+  readonly #options: {
+    escalationPolicy: EscalationPolicy;
+    modelSelectionConstraints: ModelSelectionConstraints;
+  };
+  readonly #replicaRegistry: ReplicaRegistry | undefined;
+  readonly #replicaSelector: ReplicaSelector | undefined;
   /** Most recent selection record — overwritten on each `chooseModelForTask` call. */
   #record: SelectionRecord | undefined;
 
@@ -108,6 +143,8 @@ export class GatewayBackedModelRouter implements TierAwareModelRouter {
       escalationPolicy: options.escalationPolicy ?? DEFAULT_ESCALATION_POLICY,
       modelSelectionConstraints: options.modelSelectionConstraints ?? {}
     };
+    this.#replicaRegistry = options.replicaRegistry;
+    this.#replicaSelector = options.replicaSelector;
   }
 
   getSelectionRecord(): SelectionRecord | undefined {
@@ -165,6 +202,115 @@ export class GatewayBackedModelRouter implements TierAwareModelRouter {
       this.#record = record;
       throw error;
     }
+  }
+
+  // ===========================================================================
+  // Failover chain
+  // ===========================================================================
+
+  /**
+   * Build a failover chain from the selected model and all replicas
+   * available in the optional `ReplicaRegistry`. If no registry is
+   * configured, returns an empty chain (no failover possible).
+   */
+  createFailoverChain(selectedModel: ModelEntry): FailoverChain {
+    const replicas = this.#replicaRegistry?.getByLogicalModel(selectedModel.id) ?? [];
+
+    // Also include replicas from other logical models in the same tier
+    const allTierReplicas =
+      this.#replicaRegistry?.getAll().filter(r => getLogicalModel(r.logicalModelId)?.tier === selectedModel.tier) ?? [];
+
+    const allReplicas = [
+      ...new Map<string, ModelReplica>([...replicas, ...allTierReplicas].map(r => [r.id, r] as const)).values()
+    ];
+
+    return buildFailoverChain(selectedModel, allReplicas, this.#options.escalationPolicy);
+  }
+
+  /**
+   * Advance the failover chain and resolve the next step to a `ModelEntry`.
+   * Uses the gateway's `spillover` function to find the best replica for the
+   * step. Throws `ExhaustedError` when no steps remain.
+   *
+   * Recording: each failed attempt is appended to `SelectionRecord.failedReplicas`.
+   */
+  async nextFailoverModel(chain: FailoverChain, error: Error, context: ReplicaSelectionContext): Promise<ModelEntry> {
+    const step = getNextStep(chain, error);
+    if (step === undefined) {
+      throw new ExhaustedError([...chain.steps], chain.currentStep);
+    }
+
+    // Validate we have the required gateway components
+    if (this.#replicaRegistry === undefined || this.#replicaSelector === undefined) {
+      throw new ExhaustedError([...chain.steps], chain.currentStep);
+    }
+
+    // Record the failed replica before trying the next step
+    if (this.#record) {
+      if (step.replicaId) {
+        this.#record.failedReplicas.push(step.replicaId);
+      }
+    }
+
+    // Use the gateway's spillover to resolve the step to a replica
+    const logicalModelId = step.logicalModelId;
+    const tier = step.tier ?? 'micro';
+
+    const escalationTierChain = this.#options.escalationPolicy.chain;
+    const spilloverResult = spillover(
+      logicalModelId ?? '',
+      tier,
+      this.#replicaRegistry,
+      this.#replicaSelector,
+      context,
+      {
+        allowTierEscalation: this.#options.escalationPolicy.allowEscalation,
+        ...(escalationTierChain !== undefined ? { escalationChain: escalationTierChain } : {}),
+        excludeReplicas: new Set(this.#record?.failedReplicas)
+      }
+    );
+
+    if (spilloverResult === undefined) {
+      throw new ExhaustedError([...chain.steps], chain.currentStep);
+    }
+
+    // Convert the spillover result (ModelReplica) to a ModelEntry
+    const modelEntry = this.#replicaToEntry(spilloverResult.replica);
+    if (modelEntry === undefined) {
+      throw new ExhaustedError([...chain.steps], chain.currentStep);
+    }
+
+    // Update selection record
+    if (this.#record) {
+      this.#record.selectedModel = modelEntry.id;
+      this.#record.selectedReplica = spilloverResult.replica.id;
+    }
+
+    return modelEntry;
+  }
+
+  /**
+   * Convert a `ModelReplica` to a `ModelEntry` by merging replica-specific
+   * data with the canonical logical model definition from the gateway.
+   */
+  #replicaToEntry(replica: ModelReplica): ModelEntry | undefined {
+    const logical = getLogicalModel(replica.logicalModelId);
+    if (logical === undefined) {
+      return;
+    }
+
+    return {
+      id: replica.logicalModelId,
+      modelName: replica.upstreamModelName,
+      providerId: replica.providerId,
+      tier: logical.tier,
+      useCases: logical.useCases,
+      capabilities: logical.capabilities,
+      contextWindow: logical.contextWindow,
+      maxOutputTokens: logical.maxOutputTokens,
+      cost: replica.cost,
+      isLocal: replica.isLocal
+    };
   }
 
   /**

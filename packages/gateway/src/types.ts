@@ -118,6 +118,56 @@ export interface ModelReplica {
   logicalModelId: string;
   providerId: string;
   upstreamModelName: string;
+  /** Runtime health snapshot (optional — populated by availability tracker). */
+  health?: ReplicaHealthSnapshot;
+  /** Runtime quota snapshot (optional — populated by tokenomics headroom provider). */
+  quota?: ReplicaQuotaSnapshot;
+}
+
+/**
+ * Health state of a replica at a point in time.
+ * Populated by ModelAvailabilityTracker for every replica.
+ */
+export interface ReplicaHealthSnapshot {
+  available: boolean;
+  latencyMs?: number;
+  errorRate?: number;
+  circuitState?: 'closed' | 'open' | 'half-open';
+  lastCheckedAt: string;
+}
+
+/**
+ * Remaining quota headroom for a replica.
+ * Populated by @agentsy/tokenomics or derived from provider response headers.
+ */
+export interface ReplicaQuotaSnapshot {
+  remainingTokensHour?: number;
+  remainingTokensWeek?: number;
+  remainingTokensMonth?: number;
+  remainingRequestsMinute?: number;
+  remainingTokensMinute?: number;
+  remainingCostHour?: number;
+  remainingCostWeek?: number;
+  remainingCostMonth?: number;
+  lastUpdatedAt: string;
+  confidence: 'header-derived' | 'tokenomics-derived' | 'estimated';
+}
+
+/**
+ * Result of a model selection decision. Captures which model and
+ * replica were chosen, why, and which candidates were rejected.
+ */
+export interface ModelSelectionResult {
+  logicalModelId: string;
+  replicaId: string;
+  providerId: string;
+  selectedBecause: string[];
+  rejectedCandidates: Array<{
+    id: string;
+    reasons: string[];
+  }>;
+  /** Guardrails constraint denials recorded during selection, if any. */
+  routingConstraintDenials?: Array<{ code: string; details: string }>;
 }
 
 /**
@@ -149,6 +199,13 @@ export interface ModelSelectionConstraints {
   minContextWindow?: number;
   requireJsonMode?: boolean;
   requireTools?: boolean;
+  /**
+   * Guardrails routing constraint to enforce before model selection.
+   * When set, the constraint engine evaluates each candidate against
+   * these rules (local-only, provider exclusion, capability requirements).
+   * Violations are recorded in `ModelSelectionResult.routingConstraintDenials`.
+   */
+  routingConstraints?: import('@agentsy/guardrails').RoutingConstraint;
   /**
    * Note: `@agentsy/guardrails` defines `RoutingConstraint` with
    * additional fields (requireReasoning, requireVision, localOnly).

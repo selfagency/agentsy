@@ -9,7 +9,7 @@
  * a configuration file.
  */
 
-import type { ModelCost, ModelEntry, ModelTier } from './types.js';
+import type { ModelCost, ModelEntry, ModelTier, UseCase } from './types.js';
 
 const COSTS = {
   openaiMini: { inputPer1MTokens: 0.15, outputPer1MTokens: 0.6 },
@@ -134,15 +134,37 @@ const MODELS: ModelEntry[] = [
 export class ModelRegistry {
   readonly #models: Map<string, ModelEntry> = new Map();
   readonly #byTier: Map<ModelTier, ModelEntry[]> = new Map();
+  readonly #byUseCase: Map<UseCase, ModelEntry[]> = new Map();
+  readonly #byTierAndUseCase: Map<string, ModelEntry[]> = new Map();
 
   constructor(entries: ModelEntry[] = MODELS) {
     for (const model of entries) {
       this.#models.set(model.id, model);
-      const list = this.#byTier.get(model.tier);
-      if (list === undefined) {
+
+      // Index by tier
+      const tierList = this.#byTier.get(model.tier);
+      if (tierList === undefined) {
         this.#byTier.set(model.tier, [model]);
       } else {
-        list.push(model);
+        tierList.push(model);
+      }
+
+      // Index by use case and composite tier:useCase
+      for (const useCase of model.useCases) {
+        const ucList = this.#byUseCase.get(useCase);
+        if (ucList === undefined) {
+          this.#byUseCase.set(useCase, [model]);
+        } else {
+          ucList.push(model);
+        }
+
+        const compositeKey = `${model.tier}:${useCase}`;
+        const tcList = this.#byTierAndUseCase.get(compositeKey);
+        if (tcList === undefined) {
+          this.#byTierAndUseCase.set(compositeKey, [model]);
+        } else {
+          tcList.push(model);
+        }
       }
     }
   }
@@ -157,6 +179,16 @@ export class ModelRegistry {
 
   getModelsByTier(tier: ModelTier): ModelEntry[] {
     return this.#byTier.get(tier) ?? [];
+  }
+
+  /** Get all models that support a given use case. */
+  getModelsByUseCase(useCase: UseCase): ModelEntry[] {
+    return this.#byUseCase.get(useCase) ?? [];
+  }
+
+  /** Get all models matching both a tier and a use case. */
+  getModelsByTierAndUseCase(tier: ModelTier, useCase: UseCase): ModelEntry[] {
+    return this.#byTierAndUseCase.get(`${tier}:${useCase}`) ?? [];
   }
 }
 

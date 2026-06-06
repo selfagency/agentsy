@@ -42,6 +42,7 @@ import { createGitHelpers } from './release-git.js';
 import type { ReleaseNotesOptions } from './release-shared.js';
 import {
   checkNpmCredentials,
+  createRollbackManager,
   ensureCleanMainBranch,
   ensureLocalTagAvailability,
   ensureRemoteTagAvailability,
@@ -117,68 +118,9 @@ if (packageReleaseState !== 'oidc-ready') {
 
 const tag = `${fullPackageName}@${version}`;
 
-// ---------------------------------------------------------------------------
-// Rollback state
-// ---------------------------------------------------------------------------
-
-let commitLocal = false;
-let commitPushed = false;
-let tagPushed = false;
-let releaseDone = false;
 const { resolveGitExecutable, runGit, setGitCommand } = createGitHelpers(ROOT);
-
-function rollback() {
-  if (releaseDone) {
-    return;
-  }
-
-  $.verbose = false;
-  try {
-    if (tagPushed) {
-      console.log(`\n⚠️  Release interrupted. Deleting remote tag ${tag}...`);
-      try {
-        runGit(['push', 'origin', '--delete', tag]);
-        runGit(['tag', '-d', tag]);
-        console.log(`↩️  Tag ${tag} deleted.`);
-      } catch {
-        console.error(`⚠️  Could not delete tag ${tag}. Manually run:`);
-        console.error(`   git push origin --delete '${tag}' && git tag -d '${tag}'`);
-      }
-    }
-
-    if (commitPushed) {
-      console.log('\n⚠️  Reverting release commit on origin/main...');
-      try {
-        runGit(['revert', '--no-edit', 'HEAD']);
-        runGit(['push', 'origin', 'main']);
-        console.log('↩️  Commit reverted and pushed.');
-      } catch {
-        console.error('❌ Auto-revert failed. Manually run:');
-        console.error('   git revert HEAD && git push origin main');
-      }
-    } else if (commitLocal) {
-      console.log('\n⚠️  Resetting local release commit...');
-      try {
-        runGit(['reset', '--hard', 'HEAD~1']);
-        console.log('↩️  Commit removed.');
-      } catch {
-        console.error('❌ Reset failed. Manually run: git reset --hard HEAD~1');
-      }
-    }
-  } catch {
-    /* best effort */
-  }
-}
-
-process.on('SIGINT', () => {
-  rollback();
-  process.exit(130);
-});
-
-process.on('SIGTERM', () => {
-  rollback();
-  process.exit(143);
-});
+const { state: rollbackState, rollback, setupSignalHandlers } = createRollbackManager(tag);
+setupSignalHandlers();
 
 // ---------------------------------------------------------------------------
 // Main release orchestration
@@ -322,7 +264,7 @@ async function main() {
     console.log('📦 Committing release metadata...');
     runGit(['add', resolve(pkgDir, 'package.json'), resolve(pkgDir, 'CHANGELOG.md')]);
     runGit(['commit', '-m', `chore(release): ${tag}`]);
-    commitLocal = true;
+    rollbackState.commitLocal = true;
   } else {
     console.log('ℹ️  No version/changelog changes; nothing to commit.');
   }
@@ -345,8 +287,8 @@ async function main() {
 
   console.log('🚀 Pushing main...');
   runGit(['push', 'origin', 'main']);
-  commitPushed = true;
-  commitLocal = false;
+  rollbackState.commitPushed = true;
+  rollbackState.commitLocal = false;
 
   // Capture pushed commit SHA
   const headSha = runGit(['rev-parse', 'HEAD']).stdout.trim();
@@ -396,7 +338,7 @@ async function main() {
 
   console.log(`🚀 Pushing tag '${tag}'...`);
   runGit(['push', 'origin', tag]);
-  tagPushed = true;
+  rollbackState.tagPushed = true;
 
   // --- Monitor Release workflow --------------------------------------------
 
@@ -404,7 +346,7 @@ async function main() {
   await waitForWorkflow(octokit, 'Release', owner, repo, headSha, releaseSpinner, { inputs: { tag } });
 
   console.log(`✅ Release workflow complete: ${tag}`);
-  releaseDone = true;
+  rollbackState.releaseDone = true;
 }
 
 // ---------------------------------------------------------------------------

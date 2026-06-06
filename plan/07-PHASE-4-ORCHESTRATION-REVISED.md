@@ -10,14 +10,15 @@
 
 ## Overview
 
-Wire full orchestration control plane with explicit plan-execute boundary, task durability, governance enforcement, and intelligent tier routing. This revision incorporates findings from 24+ industry sources (Conductor, Sisyphus, CrewAI, Composio, Kestra, OpenAI SDK, etc.) addressing 8 critical gaps in the original plan.
+Wire full orchestration control plane with explicit plan-execute boundary, task durability, governance enforcement, model-tier routing, and replica-aware load balancing. This revision incorporates findings from 24+ industry sources (Conductor, Sisyphus, CrewAI, Composio, Kestra, OpenAI SDK, etc.) addressing 8 critical gaps in the original plan.
 
 **Key Additions (Revised):**
 
 - ✅ Formal plan-execute boundary with typed contracts
 - ✅ Task board abstraction with idempotency
 - ✅ Governance policy model (RBAC, approvals, escalation, audit)
-- ✅ Cost-aware tier decomposition + routing
+- ✅ Model-tier and replica-aware routing
+- ✅ Local-first routing for micro/small tasks
 - ✅ Context isolation & resource locking protocol
 - ✅ Structured error recovery framework
 - ✅ Hook conflict resolution with DAG validation
@@ -115,9 +116,15 @@ Agent picker, /agent command, /skills command. See original plan section 10.
 
 ## PART B: CRITICAL GAPS (REVISED ADDITIONS)
 
-### Key Architectural Decision: Model-Tier Routing
+### Key Architectural Decision: Model-Tier and Replica-Aware Routing
 
 **Tiers are defined on MODELS, not providers.** A provider may host models across all tiers. The gateway's `ModelEntry.tier` is the single source of truth. The orchestrator delegates ALL model selection to the gateway's `TierAwareModelSelector` and never encodes its own cost tables or tier assignments.
+
+The gateway also owns replica-aware balancing:
+- one logical model may have multiple replicas across providers/accounts
+- tokenomics supplies hour/week/month headroom per replica
+- gateway scores replicas using health, latency, cost, and quota headroom
+- local replicas are preferred only for micro/small tasks
 
 - `ModelTier = 'micro' | 'small' | 'mid' | 'frontier'` is defined in `@agentsy/gateway`
 - `TaskTier = ModelTier` — the orchestrator re-exports this type
@@ -729,7 +736,7 @@ Both produce audit events → `@agentsy/tokenomics` ledger for unified audit tra
 
 ---
 
-### 11. Cost-Aware Tier Decomposition (NEW)
+### 11. Model-Tier and Replica-Aware Routing (NEW)
 
 ## TASK-ORCH-027..029: Implement Decomposer + Cost Estimator + Tier Escalation
 

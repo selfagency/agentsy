@@ -89,7 +89,7 @@ This plan defines the production implementation order for `@agentsy/guardrails` 
 
 ## Purpose
 
-`@agentsy/guardrails` is the policy enforcement layer for Agentsy. It should protect inputs, outputs, retrieval, memory, tools, network egress, and high-impact actions with a layered, local-first, human-accountable design.
+`@agentsy/guardrails` is the policy enforcement layer for Agentsy. It should protect inputs, outputs, retrieval, memory, tools, network egress, and high-impact actions with a layered, local-first, human-accountable design. Guardrails may constrain routing, but it does not perform routing. Gateway remains the routing authority.
 
 It must also explicitly enforce the project’s ethical policy documents at runtime:
 
@@ -141,6 +141,7 @@ The package should cover:
 ## Constraints
 
 - Standalone package — not bundled into `@agentsy/orchestrator`
+- May emit routing constraints such as local-only, provider exclusion, or reasoning-required, which gateway consumes as selection constraints
 - Provider integrations remain optional
 - Local validators must work without network access
 - External providers must never receive raw secrets by default

@@ -20,6 +20,7 @@
  * is available.
  */
 
+import { evaluateConstraints } from '@agentsy/guardrails';
 import { modelRegistry } from './model-registry.js';
 import type { ModelEntry, ModelSelectionConstraints, ModelTier, TierAwareModelSelector } from './types.js';
 
@@ -128,6 +129,23 @@ export class DefaultTierAwareModelSelector implements TierAwareModelSelector {
     if (constraints.maxUsdPer1KOutput !== undefined) {
       const max = constraints.maxUsdPer1KOutput;
       filtered = filtered.filter(m => m.cost.outputPer1MTokens <= max);
+    }
+
+    const routingConstraint = constraints.routingConstraints;
+    if (routingConstraint !== undefined) {
+      filtered = filtered.filter(m => {
+        const info: import('@agentsy/guardrails').GatewayModelInfo = {
+          capabilities: {
+            jsonMode: m.capabilities.jsonMode,
+            reasoning: m.capabilities.reasoning,
+            tools: m.capabilities.tools,
+            vision: m.capabilities.vision
+          },
+          isLocal: m.isLocal ?? false,
+          providerId: m.providerId
+        };
+        return evaluateConstraints(routingConstraint, info).pass;
+      });
     }
 
     return filtered;

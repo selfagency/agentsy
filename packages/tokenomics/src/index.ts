@@ -7,10 +7,24 @@ export type {
 } from './quotas/headroom.js';
 
 // Replica-level routing types
-export { alignToHour, alignToMonth, alignToWeek, HOUR_MS, MONTH_MS, WEEK_MS } from './quotas/headroom.js';
+export {
+  alignToHour,
+  alignToMonth,
+  alignToWeek,
+  computeHeadroomPercentage,
+  HOUR_MS,
+  MONTH_MS,
+  WEEK_MS
+} from './quotas/headroom.js';
 export { UsageAggregator } from './quotas/usage-aggregator.js';
 export type { ReplicaHeadroomProvider } from './routing/headroom-provider.js';
 export { createReplicaHeadroomProvider } from './routing/headroom-provider.js';
+// Quota reconciliation
+export type { HeaderSnapshotInput, ReconciledQuotaSnapshot } from './routing/quota-reconciliation.js';
+export { reconcileQuotaConfidence } from './routing/quota-reconciliation.js';
+// Replica skew signals
+export type { ReplicaSkewSignal } from './routing/replica-skew.js';
+export { computeReplicaSkew } from './routing/replica-skew.js';
 export type {
   AllocationCondition,
   BudgetFilter,

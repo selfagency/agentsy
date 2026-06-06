@@ -30,6 +30,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  fallow:
+    name: Fallow - Codebase Intelligence
+    
+    steps:
+       - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild native modules
+        run: pnpm rebuild
+               
+      - name: Fallow
+        uses: fallow-rs/fallow@v2.89.0
+        with:
+          command: audit
+          annotations: true
+          comment: true
+          review-comments: true
+          review-guidance: false
+          diff-filter: added
+          max-comments: 50
+        
   unit-test-coverage:
     name: Run unit tests with coverage
     if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore(release):') }}

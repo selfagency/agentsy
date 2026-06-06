@@ -9,6 +9,15 @@
 
 import type { ModelEntry } from './types.js';
 
+export type CircuitState = 'closed' | 'open' | 'half-open';
+
+export interface CircuitBreakerEntry {
+  consecutiveFailures: number;
+  state: CircuitState;
+  openedAt?: number;
+  halfOpenStartedAt?: number;
+}
+
 export interface ModelAvailability {
   error?: string;
   isAvailable: boolean;
@@ -23,19 +32,89 @@ export interface AvailabilityTrackerOptions {
   timeoutMs?: number;
   /** TTL for cached availability results in ms (default: 30_000). */
   ttlMs?: number;
+  /** Consecutive failures before circuit opens (default: 5). */
+  circuitFailureThreshold?: number;
+  /** Duration in ms for circuit to stay open before half-open probe (default: 30_000). */
+  circuitResetAfterMs?: number;
 }
 
 const DEFAULT_TTL_MS = 30_000;
 const DEFAULT_TIMEOUT_MS = 2000;
+const DEFAULT_CIRCUIT_FAILURE_THRESHOLD = 5;
+const DEFAULT_CIRCUIT_RESET_MS = 30_000;
 
 export class ModelAvailabilityTracker {
   readonly #cache = new Map<string, ModelAvailability>();
+  readonly #circuitBreakers = new Map<string, CircuitBreakerEntry>();
   readonly #ttlMs: number;
   readonly #timeoutMs: number;
+  readonly #circuitFailureThreshold: number;
+  readonly #circuitResetAfterMs: number;
 
   constructor(options: AvailabilityTrackerOptions = {}) {
     this.#ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
     this.#timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    this.#circuitFailureThreshold = options.circuitFailureThreshold ?? DEFAULT_CIRCUIT_FAILURE_THRESHOLD;
+    this.#circuitResetAfterMs = options.circuitResetAfterMs ?? DEFAULT_CIRCUIT_RESET_MS;
+  }
+
+  /** Record a successful call — resets circuit breaker for this replica. */
+  recordSuccess(replicaId: string): void {
+    this.#circuitBreakers.set(replicaId, {
+      consecutiveFailures: 0,
+      state: 'closed'
+    });
+  }
+
+  /** Record a failed call — increments failure counter and may open the circuit. */
+  recordFailure(replicaId: string): void {
+    const entry = this.#circuitBreakers.get(replicaId) ?? {
+      consecutiveFailures: 0,
+      state: 'closed' as CircuitState
+    };
+
+    entry.consecutiveFailures++;
+
+    if (entry.state === 'half-open') {
+      // Half-open + failure → reopen
+      entry.state = 'open';
+      entry.openedAt = Date.now();
+      delete entry.halfOpenStartedAt;
+    } else if (entry.consecutiveFailures >= this.#circuitFailureThreshold && entry.state !== 'open') {
+      entry.state = 'open';
+      entry.openedAt = Date.now();
+    }
+
+    this.#circuitBreakers.set(replicaId, entry);
+  }
+
+  /** Get the current circuit state for a replica. Performs half-open transitions. */
+  getCircuitState(replicaId: string): CircuitState {
+    const entry = this.#circuitBreakers.get(replicaId);
+    if (entry === undefined) {
+      return 'closed';
+    }
+
+    if (entry.state === 'open' && entry.openedAt !== undefined) {
+      const elapsed = Date.now() - entry.openedAt;
+      if (elapsed >= this.#circuitResetAfterMs) {
+        // Transition to half-open
+        entry.state = 'half-open';
+        entry.halfOpenStartedAt = Date.now();
+        this.#circuitBreakers.set(replicaId, entry);
+        return 'half-open';
+      }
+    }
+
+    return entry.state;
+  }
+
+  /** Get all circuit breaker states for diagnostics. */
+  getCircuitBreakerSnapshot(): Array<{ replicaId: string } & CircuitBreakerEntry> {
+    return [...this.#circuitBreakers.entries()].map(([replicaId, entry]) => ({
+      replicaId,
+      ...entry
+    }));
   }
 
   /**
@@ -149,9 +228,16 @@ export class ModelAvailabilityTracker {
 
   /**
    * Return all models currently marked as available.
+   * Excludes models whose replica has an open circuit breaker.
    */
   getAvailableModels(models: ModelEntry[]): ModelEntry[] {
     return models.filter(m => {
+      // Skip models with open circuit breakers
+      const circuitState = this.getCircuitState(m.id);
+      if (circuitState === 'open') {
+        return false;
+      }
+
       const entry = this.#cache.get(m.id);
       return entry === undefined || entry.isAvailable;
     });

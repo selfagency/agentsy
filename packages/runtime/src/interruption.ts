@@ -2,7 +2,21 @@ import type { SessionStore } from '@agentsy/session';
 import type { RuntimeSnapshot } from '@agentsy/types';
 
 /**
+ * Keys used within {@link InterruptionCheckpoint.metadata}
+ * for routing/failover state.
+ */
+export const METADATA_ATTEMPTED_REPLICAS = 'attemptedReplicas' as const;
+export const METADATA_ESCALATION_STATE = 'escalationState' as const;
+
+/**
  * A serializable interruption checkpoint stored in the session.
+ *
+ * The `metadata` bag carries routing state for failover:
+ * - `attemptedReplicas` — replica IDs that have been tried
+ * - `escalationState` — optional escalation context
+ *
+ * Use {@link getFailedReplicas} and {@link markReplicaAttempted}
+ * for type-safe access.
  */
 export interface InterruptionCheckpoint {
   id: string;
@@ -64,7 +78,11 @@ export function createInterruption(
  * Resume execution from a stored interruption checkpoint.
  *
  * Loads the checkpoint from the session store and returns it so the
- * runtime loop can restore state and continue.
+ * runtime loop can restore state and continue. The returned checkpoint
+ * includes the full metadata bag, which carries routing / failover state
+ * (`attemptedReplicas`, `escalationState`) that was recorded before the
+ * interruption. Use {@link getFailedReplicas} and
+ * {@link getEscalationState} to extract routing information.
  *
  * @param checkpointId - The checkpoint id (returned by `createInterruption`).
  * @param sessionStore - The session store to read from.
@@ -92,4 +110,70 @@ export function resumeFromCheckpoint(
   }
 
   return checkpoint;
+}
+
+/**
+ * Extract the list of replica IDs that have been attempted for this
+ * checkpoint during failover. Returns an empty array when no replicas
+ * have been recorded.
+ *
+ * @param checkpoint - The interruption checkpoint to inspect.
+ * @returns A list of replica identifiers.
+ */
+export function getFailedReplicas(checkpoint: InterruptionCheckpoint): string[] {
+  const raw = checkpoint.metadata?.[METADATA_ATTEMPTED_REPLICAS];
+  if (Array.isArray(raw)) {
+    return raw.filter((item): item is string => typeof item === 'string');
+  }
+  return [];
+}
+
+/**
+ * Record that a specific replica was attempted for this checkpoint.
+ * Mutates `checkpoint.metadata` in-place, creating the metadata bag if
+ * it does not yet exist. Duplicate replica IDs are silently ignored.
+ *
+ * @param checkpoint - The checkpoint to update.
+ * @param replicaId - The replica identifier to mark as attempted.
+ */
+export function markReplicaAttempted(checkpoint: InterruptionCheckpoint, replicaId: string): void {
+  if (!checkpoint.metadata) {
+    checkpoint.metadata = {};
+  }
+
+  const replicas = checkpoint.metadata[METADATA_ATTEMPTED_REPLICAS] as unknown;
+  if (!Array.isArray(replicas)) {
+    checkpoint.metadata[METADATA_ATTEMPTED_REPLICAS] = [replicaId];
+  } else if (!replicas.includes(replicaId)) {
+    replicas.push(replicaId);
+  }
+}
+
+/**
+ * Extract the escalation state stored in the checkpoint metadata, or
+ * `null` when none is present.
+ *
+ * @param checkpoint - The checkpoint to inspect.
+ * @returns The escalation state object, or `null`.
+ */
+export function getEscalationState(checkpoint: InterruptionCheckpoint): Record<string, unknown> | null {
+  const raw = checkpoint.metadata?.[METADATA_ESCALATION_STATE];
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    return raw as Record<string, unknown>;
+  }
+  return null;
+}
+
+/**
+ * Set the escalation state on a checkpoint's metadata. Creates the
+ * metadata bag if it does not yet exist.
+ *
+ * @param checkpoint - The checkpoint to update.
+ * @param state - Escalation context to store.
+ */
+export function setEscalationState(checkpoint: InterruptionCheckpoint, state: Record<string, unknown>): void {
+  if (!checkpoint.metadata) {
+    checkpoint.metadata = {};
+  }
+  checkpoint.metadata[METADATA_ESCALATION_STATE] = state;
 }

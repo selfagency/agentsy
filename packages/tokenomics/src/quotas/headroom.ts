@@ -29,13 +29,19 @@ export type ReplicaAwareUsage = TokenUsage & ReplicaUsageFields;
 // Replica budget
 // =============================================================================
 
+/** Minute in milliseconds. */
+export const MINUTE_MS = 60_000;
+
 export interface ReplicaBudget {
   accountId?: string;
   logicalModelId: string;
   maxCostHour?: number;
+  maxCostMinute?: number;
   maxCostMonth?: number;
   maxCostWeek?: number;
+  maxRequestsMinute?: number;
   maxTokensHour?: number;
+  maxTokensMinute?: number;
   maxTokensMonth?: number;
   maxTokensWeek?: number;
   providerId: string;
@@ -54,9 +60,12 @@ export interface ReplicaHeadroomSnapshot {
   logicalModelId: string;
   providerId: string;
   remainingCostHour?: number;
+  remainingCostMinute?: number;
   remainingCostMonth?: number;
   remainingCostWeek?: number;
+  remainingRequestsMinute?: number;
   remainingTokensHour?: number;
+  remainingTokensMinute?: number;
   remainingTokensMonth?: number;
   remainingTokensWeek?: number;
   replicaId: string;
@@ -89,3 +98,18 @@ export function alignToMonth(date: Date): Date {
 export const HOUR_MS = 3_600_000;
 export const WEEK_MS = 7 * 24 * HOUR_MS;
 export const MONTH_MS = 30 * 24 * HOUR_MS;
+
+// =============================================================================
+// Headroom percentage helper — 0-100 score for routing
+// =============================================================================
+
+/**
+ * Compute a 0-100 headroom percentage from remaining vs max.
+ * Returns 0 when max is zero or negative; clamps result to [0, 100].
+ */
+export function computeHeadroomPercentage(remaining: number, max: number): number {
+  if (max <= 0) {
+    return 0;
+  }
+  return Math.max(0, Math.min(100, Math.round((remaining / max) * 100)));
+}
