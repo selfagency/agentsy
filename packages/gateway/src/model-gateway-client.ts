@@ -220,7 +220,7 @@ export function createModelGatewayClient(options: ModelGatewayClientOptions): Mo
     callLogicalModel(logicalModelId: string, request: CompletionRequest): Promise<CallByTierResult> {
       const logicalModel = getLogicalModel(logicalModelId);
       if (logicalModel === undefined) {
-        throw new Error(`Unknown logical model: ${logicalModelId}`);
+        return Promise.reject(new Error(`Unknown logical model: ${logicalModelId}`));
       }
       return resolveAndExecute(
         logicalModelId,

@@ -1,25 +1,27 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ModelReplica } from '../types.js';
 import { ReplicaRegistry } from '../replica-registry.js';
 
-function makeReplica(
-  overrides: Partial<{
-    id: string;
-    logicalModelId: string;
-    providerId: string;
-    upstreamModelName: string;
-    isLocal: boolean;
-    cost: { inputPer1MTokens: number; outputPer1MTokens: number };
-  }> = {}
-) {
-  return {
-    id: overrides.id ?? 'r1',
-    logicalModelId: overrides.logicalModelId ?? 'lm-1',
-    providerId: overrides.providerId ?? 'p-1',
-    upstreamModelName: overrides.upstreamModelName ?? 'model-v1',
-    isLocal: overrides.isLocal ?? false,
-    cost: overrides.cost ?? { inputPer1MTokens: 1, outputPer1MTokens: 2 }
+interface MakeReplicaOverrides {
+  id?: string;
+  logicalModelId?: string;
+  providerId?: string;
+  upstreamModelName?: string;
+  isLocal?: boolean;
+  cost?: { inputPer1MTokens: number; outputPer1MTokens: number };
+}
+
+function makeReplica(overrides: MakeReplicaOverrides = {}): ModelReplica {
+  const defaults: ModelReplica = {
+    id: 'r1',
+    logicalModelId: 'lm-1',
+    providerId: 'p-1',
+    upstreamModelName: 'model-v1',
+    isLocal: false,
+    cost: { inputPer1MTokens: 1, outputPer1MTokens: 2 }
   };
+  return { ...defaults, ...overrides };
 }
 
 describe('ReplicaRegistry', () => {

@@ -50,31 +50,18 @@ function computeHeadroomFromAggregator(aggregator: UsageAggregator, replicaId: s
  * threshold (≤5) instead of inlining 9 `??` fallback operators.
  */
 export function firstMatchingHeadroom(snapshot: ReplicaHeadroomSnapshot, budget: ReplicaBudget): number | undefined {
-  const remaining: (number | undefined)[] = [
-    snapshot.remainingTokensMinute,
-    snapshot.remainingRequestsMinute,
-    snapshot.remainingCostMinute,
-    snapshot.remainingTokensHour,
-    snapshot.remainingTokensWeek,
-    snapshot.remainingTokensMonth,
-    snapshot.remainingCostHour,
-    snapshot.remainingCostWeek,
-    snapshot.remainingCostMonth
+  const pairs: Array<[number | undefined, number | undefined]> = [
+    [snapshot.remainingTokensMinute, budget.maxTokensMinute],
+    [snapshot.remainingRequestsMinute, budget.maxRequestsMinute],
+    [snapshot.remainingCostMinute, budget.maxCostMinute],
+    [snapshot.remainingTokensHour, budget.maxTokensHour],
+    [snapshot.remainingTokensWeek, budget.maxTokensWeek],
+    [snapshot.remainingTokensMonth, budget.maxTokensMonth],
+    [snapshot.remainingCostHour, budget.maxCostHour],
+    [snapshot.remainingCostWeek, budget.maxCostWeek],
+    [snapshot.remainingCostMonth, budget.maxCostMonth]
   ];
-  const max: (number | undefined)[] = [
-    budget.maxTokensMinute,
-    budget.maxRequestsMinute,
-    budget.maxCostMinute,
-    budget.maxTokensHour,
-    budget.maxTokensWeek,
-    budget.maxTokensMonth,
-    budget.maxCostHour,
-    budget.maxCostWeek,
-    budget.maxCostMonth
-  ];
-  for (let i = 0; i < remaining.length; i++) {
-    const r = remaining[i];
-    const m = max[i];
+  for (const [r, m] of pairs) {
     if (r !== undefined && m !== undefined) {
       return computeHeadroomPercentage(r, m);
     }
