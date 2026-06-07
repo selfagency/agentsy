@@ -13,7 +13,7 @@ describe('createRetryContext', () => {
   });
 
   it('returns default values when called with undefined', () => {
-    const ctx = createRetryContext(undefined);
+    const ctx = createRetryContext();
 
     expect(ctx.maxRetries).toBe(3);
     expect(ctx.retryDelayMs).toBe(1000);

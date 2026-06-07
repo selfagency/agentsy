@@ -122,7 +122,7 @@ describe('edge cases and fallback behavior', () => {
       replicaId: 'r1',
       logicalModelId: 'm',
       providerId: 'p',
-      maxCostMinute: 1.0
+      maxCostMinute: 1
     });
     agg.recordUsage(testUsage({ replicaId: 'r1', cost: 0.25, logicalModelId: 'm' }));
     const report = buildRoutingReport(agg);

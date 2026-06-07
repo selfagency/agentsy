@@ -70,6 +70,16 @@ const mockReplicaRegistry = {
 const mockModelRegistry = { getModelsByTier: vi.fn() };
 const executeProviderCall = vi.fn() as ReturnType<typeof vi.fn>;
 
+function createClient() {
+  return createModelGatewayClient({
+    modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
+    replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
+    replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
+    modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
+    executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
+  });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -84,13 +94,7 @@ describe('callByTier', () => {
     mockModelRegistry.getModelsByTier.mockReturnValue([makeModelEntry({ id: 'p/gpt-4o-mini' })]);
     mockReplicaRegistry.getByLogicalModel.mockReturnValue([]);
 
-    const client = createModelGatewayClient({
-      modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
-      replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
-      replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
-      modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
-      executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
-    });
+    const client = createClient();
 
     await expect(client.callByTier('small', 'chat', stubRequest())).rejects.toThrow(
       'No replicas available for logical model: gpt-4o-mini'
@@ -103,13 +107,7 @@ describe('callByTier', () => {
     mockReplicaRegistry.getByLogicalModel.mockReturnValue([makeReplica()]);
     mockReplicaSelector.selectReplica.mockReturnValue(undefined);
 
-    const client = createModelGatewayClient({
-      modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
-      replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
-      replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
-      modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
-      executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
-    });
+    const client = createClient();
 
     await expect(client.callByTier('small', 'chat', stubRequest())).rejects.toThrow(
       'No suitable replica for logical model: gpt-4o-mini'
@@ -124,13 +122,7 @@ describe('callByTier', () => {
     mockReplicaSelector.selectReplica.mockReturnValue(replica);
     executeProviderCall.mockResolvedValue(stubResponse({ content: 'from-selected' }));
 
-    const client = createModelGatewayClient({
-      modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
-      replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
-      replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
-      modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
-      executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
-    });
+    const client = createClient();
 
     const result = await client.callByTier('small', 'chat', stubRequest());
 
@@ -155,13 +147,7 @@ describe('callLogicalModel', () => {
   it('throws when the logical model is unknown', async () => {
     vi.mocked(getLogicalModel).mockReturnValue(undefined);
 
-    const client = createModelGatewayClient({
-      modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
-      replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
-      replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
-      modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
-      executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
-    });
+    const client = createClient();
 
     await expect(client.callLogicalModel('nonexistent-model', stubRequest())).rejects.toThrow(
       'Unknown logical model: nonexistent-model'
@@ -179,13 +165,7 @@ describe('callLogicalModel', () => {
     });
     mockReplicaRegistry.getByLogicalModel.mockReturnValue([]);
 
-    const client = createModelGatewayClient({
-      modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
-      replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
-      replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
-      modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
-      executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
-    });
+    const client = createClient();
 
     await expect(client.callLogicalModel('gpt-4o-mini', stubRequest())).rejects.toThrow(
       'No replicas available for logical model: gpt-4o-mini'
@@ -204,13 +184,7 @@ describe('callLogicalModel', () => {
     mockReplicaRegistry.getByLogicalModel.mockReturnValue([makeReplica()]);
     mockReplicaSelector.selectReplica.mockReturnValue(undefined);
 
-    const client = createModelGatewayClient({
-      modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
-      replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
-      replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
-      modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
-      executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
-    });
+    const client = createClient();
 
     await expect(client.callLogicalModel('gpt-4o-mini', stubRequest())).rejects.toThrow(
       'No suitable replica for logical model: gpt-4o-mini'
@@ -231,13 +205,7 @@ describe('callLogicalModel', () => {
     mockReplicaSelector.selectReplica.mockReturnValue(replica);
     executeProviderCall.mockResolvedValue(stubResponse({ content: 'from-selected' }));
 
-    const client = createModelGatewayClient({
-      modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
-      replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
-      replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
-      modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
-      executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
-    });
+    const client = createClient();
 
     const result = await client.callLogicalModel('gpt-4o-mini', stubRequest());
 
@@ -256,13 +224,7 @@ describe('callReplica', () => {
   it('throws when the replica is unknown', async () => {
     mockReplicaRegistry.getById.mockReturnValue(undefined);
 
-    const client = createModelGatewayClient({
-      modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
-      replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
-      replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
-      modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
-      executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
-    });
+    const client = createClient();
 
     await expect(client.callReplica('nonexistent-replica', stubRequest())).rejects.toThrow(
       'Unknown replica: nonexistent-replica'
@@ -274,13 +236,7 @@ describe('callReplica', () => {
     mockReplicaRegistry.getById.mockReturnValue(replica);
     executeProviderCall.mockResolvedValue(stubResponse({ content: 'from-direct' }));
 
-    const client = createModelGatewayClient({
-      modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
-      replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
-      replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
-      modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
-      executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
-    });
+    const client = createClient();
 
     const result = await client.callReplica('direct-replica', stubRequest());
 

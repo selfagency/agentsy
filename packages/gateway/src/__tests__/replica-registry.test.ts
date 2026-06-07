@@ -158,7 +158,7 @@ describe('ReplicaRegistry', () => {
 
     const healthy = registry.getHealthyReplicasForModel('lm-1');
     expect(healthy).toHaveLength(2);
-    expect(healthy.map(r => r.id).sort()).toStrictEqual(['a', 'c']);
+    expect(healthy.map(r => r.id).sort((a, b) => a.localeCompare(b))).toStrictEqual(['a', 'c']);
   });
 
   it('remove deletes from all indexes', () => {
