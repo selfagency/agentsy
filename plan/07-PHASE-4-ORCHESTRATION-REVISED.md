@@ -121,11 +121,11 @@ Agent picker, /agent command, /skills command. See original plan section 10.
 **Tiers are defined on MODELS, not providers.** A provider may host models across all tiers. The gateway's `ModelEntry.tier` is the single source of truth. The orchestrator delegates ALL model selection to the gateway's `TierAwareModelSelector` and never encodes its own cost tables or tier assignments.
 
 The gateway also owns replica-aware balancing:
+
 - one logical model may have multiple replicas across providers/accounts
 - tokenomics supplies hour/week/month headroom per replica
 - gateway scores replicas using health, latency, cost, and quota headroom
 - local replicas are preferred only for micro/small tasks
-
 - `ModelTier = 'micro' | 'small' | 'mid' | 'frontier'` is defined in `@agentsy/gateway`
 - `TaskTier = ModelTier` — the orchestrator re-exports this type
 - `ProviderTier` no longer exists; provider-tier logic removed from `ProviderEntrySchema`

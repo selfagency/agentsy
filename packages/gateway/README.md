@@ -2,7 +2,11 @@
 
 Canonical model-routing layer for multi-provider LLM access. The gateway selects a logical model and a concrete replica, then executes through the provider transport. It adds circuit breaking, rate-limit tracking, strategy-based model selection, local-first routing, replica-aware spillover, and observability.
 
+This is now the canonical routing spine for the repo: task tier → logical model → replica → provider transport.
+
 ## Features
+
+> The gateway is the canonical routing spine for the repo: task tier → logical model → replica → provider transport.
 
 - **Model-tier routing** — Tiers are defined on **models** (`ModelEntry.tier`), not providers. A single provider hosts models across all tiers. Supports `micro`, `small`, `mid`, `frontier`.
 - **Local-first for lightweight tasks** — `LocalModelDetector` auto-discovers local backends (Ollama, Apfel, Jan AI). `ModelAvailabilityTracker` health-checks models with 30s TTL. Scoring gives local models a large bonus for micro/small tasks, slight preference for mid, and none for frontier.
@@ -194,6 +198,87 @@ const { registered, providers } = registerLocalProviders(profile, entries, {
 });
 // entries is now: [openai, local-apfel, local-ollama]
 ```
+
+## Model-Centric Client API
+
+The gateway is the **single routing authority** — it owns all model-selection and replica-selection logic. The orchestrator requests by tier and use case only; the gateway resolves the best model and replica.
+
+Three invocation methods provide increasing levels of control:
+
+### `callByTier(tier, useCase, request)`
+
+Let the gateway select the best logical model and replica for a given capability tier and use case. Ideal for normal task execution.
+
+```typescript
+import { createModelGatewayClient } from '@agentsy/gateway';
+
+const client = createModelGatewayClient({ /* registries, selectors, transport */ });
+
+const { response, selection } = await client.callByTier('mid', 'code', {
+  messages: [{ role: 'user', content: 'Refactor this function' }]
+});
+
+console.log(selection.selectedBecause);
+// ["Model selected by tier-aware selector for tier=mid, useCase=code",
+//  "Replica selected by replica scorer"]
+```
+
+### `callLogicalModel(logicalModelId, request)`
+
+Pin a specific logical model (e.g. `claude-sonnet-4`, `gpt-4o-mini`) but let the gateway select the best available replica. Use when you know which model you need.
+
+```typescript
+const { response, selection } = await client.callLogicalModel('claude-sonnet-4', {
+  messages: [{ role: 'user', content: 'Explain quantum computing' }]
+});
+// Gateway picks the best replica for claude-sonnet-4
+```
+
+### `callReplica(replicaId, request)`
+
+Pin a specific replica — a particular provider account or local backend. No model or replica selection occurs. Use for debugging, testing, or explicit routing.
+
+```typescript
+const { response, selection } = await client.callReplica(
+  'anthropic-main/claude-sonnet-4',
+  { messages: [{ role: 'user', content: 'Hello' }] }
+);
+// Direct invocation — no selection overhead
+```
+
+### Selection result
+
+All three methods return a `ModelSelectionResult` alongside the completion response:
+
+```typescript
+interface ModelSelectionResult {
+  logicalModelId: string;      // "claude-sonnet-4"
+  replicaId: string;           // "anthropic-main/claude-sonnet-4"
+  providerId: string;          // "anthropic-main"
+  selectedBecause: string[];   // Human-readable reasons
+  rejectedCandidates: Array<{  // Other candidates and why they lost
+    id: string;
+    reasons: string[];
+  }>;
+}
+```
+
+This makes every routing decision **explainable** — the consumer can see which model was chosen, which replica, and why all other candidates were rejected.
+
+### How the client interacts with the routing stack
+
+| Method | Model Selection | Replica Selection | Use Case |
+|---|---|---|---|
+| `callByTier` | Tier-aware selector picks model | Replica scorer picks best replica | Normal execution |
+| `callLogicalModel` | Skips (model specified) | Replica scorer picks best replica | Known model, best replica |
+| `callReplica` | Skips (replica specified) | Skips — direct pin | Debug/testing/explicit |
+
+For `callByTier`, the flow is:
+1. Tier-aware selector resolves `(tier, useCase)` → candidate models
+2. Replica registry resolves logical model → candidate replicas
+3. Replica selector scores replicas (health, quota, latency, cost, local bonus)
+4. Provider transport executes against the winning replica
+5. Failover chain: next replica → next same-tier model → tier escalation (if policy allows)
 
 ## Subpath exports
 

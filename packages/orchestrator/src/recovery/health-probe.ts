@@ -25,8 +25,8 @@
  */
 export interface HealthProbeResult {
   available: boolean;
-  latencyMs?: number;
   lastChecked: string;
+  latencyMs?: number;
 }
 
 /**
@@ -39,9 +39,9 @@ export interface HealthProbeResult {
  * @property probeIntervalMs - Interval between periodic probe rounds (default 60s).
  */
 export interface ReplicaHealthProbeConfig {
-  ttlMs: number;
-  timeoutMs: number;
   probeIntervalMs: number;
+  timeoutMs: number;
+  ttlMs: number;
 }
 
 // =============================================================================
@@ -50,7 +50,7 @@ export interface ReplicaHealthProbeConfig {
 
 const DEFAULT_CONFIG: ReplicaHealthProbeConfig = {
   ttlMs: 30_000,
-  timeoutMs: 5_000,
+  timeoutMs: 5000,
   probeIntervalMs: 60_000
 };
 

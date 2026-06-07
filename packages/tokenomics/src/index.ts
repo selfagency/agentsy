@@ -25,6 +25,19 @@ export { reconcileQuotaConfidence } from './routing/quota-reconciliation.js';
 // Replica skew signals
 export type { ReplicaSkewSignal } from './routing/replica-skew.js';
 export { computeReplicaSkew } from './routing/replica-skew.js';
+// Routing diagnostics report
+export type { ReplicaDiagnosticEntry, RoutingDiagnosticsReport } from './routing/routing-report.js';
+export { buildRoutingReport } from './routing/routing-report.js';
+// Session ledger types & writer
+export type {
+  ArtifactRecord,
+  CreateSessionLedgerEntryOptions,
+  FrustrationRecord,
+  QualityRecord,
+  SessionLedgerEntry,
+  SpendRecord
+} from './ledger/index.js';
+export { createSessionLedgerEntry } from './ledger/index.js';
 export type {
   AllocationCondition,
   BudgetFilter,

@@ -13,9 +13,9 @@ export type CircuitState = 'closed' | 'open' | 'half-open';
 
 export interface CircuitBreakerEntry {
   consecutiveFailures: number;
-  state: CircuitState;
-  openedAt?: number;
   halfOpenStartedAt?: number;
+  openedAt?: number;
+  state: CircuitState;
 }
 
 export interface ModelAvailability {
@@ -28,14 +28,14 @@ export interface ModelAvailability {
 }
 
 export interface AvailabilityTrackerOptions {
-  /** Timeout per health-check request in ms (default: 2_000). */
-  timeoutMs?: number;
-  /** TTL for cached availability results in ms (default: 30_000). */
-  ttlMs?: number;
   /** Consecutive failures before circuit opens (default: 5). */
   circuitFailureThreshold?: number;
   /** Duration in ms for circuit to stay open before half-open probe (default: 30_000). */
   circuitResetAfterMs?: number;
+  /** Timeout per health-check request in ms (default: 2_000). */
+  timeoutMs?: number;
+  /** TTL for cached availability results in ms (default: 30_000). */
+  ttlMs?: number;
 }
 
 const DEFAULT_TTL_MS = 30_000;

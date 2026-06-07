@@ -1,10 +1,8 @@
 import type { LLMStreamProcessor } from '@agentsy/core/processor';
-import type { JsonObject } from '@agentsy/types';
 import type { Instance, RenderOptions } from 'ink';
 import type * as reactNS from 'react';
-
-import { createInkRuntimeController, type InkRuntimeControllerOptions } from './ink-runtime-state.js';
 import type { KeyboardOptions } from './components/keyboard-handler.js';
+import { createInkRuntimeController, type InkRuntimeControllerOptions } from './ink-runtime-state.js';
 import { default as InkStreamRenderer } from './ink-stream-renderer.tsx';
 import { resolveTheme } from './themes/index.js';
 import type { Theme, ThemeName } from './themes/types.js';

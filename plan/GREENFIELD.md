@@ -1,6 +1,7 @@
 ## Greenfield Cross-Package Implementation Plan — Model-Replica Load Balancing
 
 **Feature:** model-tier routing + replica-aware load balancing across providers/accounts + local-first lightweight tasks  
+**Status:** Superseded by `plan/34-CROSS-PACKAGE-MODEL-REPLICA-ROUTING-PLAN.md`
 **Compatibility stance:** no backwards compatibility obligations; delete incorrect abstractions instead of preserving them  
 **Primary packages:** `@agentsy/gateway`, `@agentsy/tokenomics`, `@agentsy/runtime`, `@agentsy/orchestrator`  
 **Secondary packages:** `@agentsy/guardrails`, `@agentsy/types`, docs/tests
@@ -16,11 +17,11 @@ Implement a new routing architecture where:
 * a **replica** is one provider/account/backend serving a logical model
 * **tokenomics** computes hourly/weekly/monthly headroom per replica
 * **gateway** selects the best replica using:
-    * local-first policy for micro/small
-    * quota headroom
-    * health
-    * latency
-    * cost
+  * local-first policy for micro/small
+  * quota headroom
+  * health
+  * latency
+  * cost
 * **orchestrator** only requests a model by task tier and use case
 * **runtime** emits the lifecycle and checkpoint data needed for retries/failover
 
@@ -264,6 +265,7 @@ Replace provider-centric routing with **model-tier + replica-aware routing**.
 ### Delete/replace tasks
 
 #### TASK-GW-000 — Remove provider-tier from gateway
+
 **Effort:** ~1h
 
 * delete `ProviderTier`
@@ -272,16 +274,19 @@ Replace provider-centric routing with **model-tier + replica-aware routing**.
 * fail build if provider-tier still referenced
 
 #### TASK-GW-001 — Introduce `LogicalModel`
+
 **Effort:** ~1h
 
 Create canonical logical model definitions for all supported core models.
 
 #### TASK-GW-002 — Introduce `ModelReplica`
+
 **Effort:** ~1h
 
 Create replica type for provider/account/backend bindings.
 
 #### TASK-GW-003 — Build `LogicalModelRegistry`
+
 **Effort:** ~1.5h
 
 Responsibilities:
@@ -298,6 +303,7 @@ packages/gateway/src/model-registry.ts
 ```
 
 #### TASK-GW-004 — Build `ReplicaRegistry`
+
 **Effort:** ~1.5h
 
 Responsibilities:
@@ -314,6 +320,7 @@ packages/gateway/src/replica-registry.ts
 ```
 
 #### TASK-GW-005 — Implement local backend detection
+
 **Effort:** ~2h
 
 Detect and register replicas from:
@@ -343,6 +350,7 @@ Detector behavior:
 * register replicas as `isLocal: true`
 
 #### TASK-GW-006 — Implement availability tracker
+
 **Effort:** ~1.5h
 
 Suggested file:
@@ -359,6 +367,7 @@ Behavior:
 * expose current health snapshot per replica
 
 #### TASK-GW-007 — Implement local preference policy
+
 **Effort:** ~1h
 
 Suggested file:
@@ -377,6 +386,7 @@ Policy:
 | frontier | none |
 
 #### TASK-GW-008 — Implement quota-aware scoring
+
 **Effort:** ~2h
 
 Suggested file:
@@ -395,6 +405,7 @@ Score components:
 * circuit state
 
 #### TASK-GW-009 — Implement replica selection
+
 **Effort:** ~1.5h
 
 Suggested file:
@@ -417,6 +428,7 @@ Behavior:
 * reject exhausted/hot replicas
 
 #### TASK-GW-010 — Implement spillover chain
+
 **Effort:** ~1.5h
 
 Routing fallback order:
@@ -426,6 +438,7 @@ Routing fallback order:
 3. next tier only if caller allows
 
 #### TASK-GW-011 — Make client model-centric
+
 **Effort:** ~1.5h
 
 Gateway client should expose:
@@ -438,6 +451,7 @@ getModelSelector()
 ```
 
 #### TASK-GW-012 — Add routing diagnostics
+
 **Effort:** ~1h
 
 Emit:
@@ -450,6 +464,7 @@ Emit:
 * whether local preference influenced routing
 
 #### TASK-GW-013 — Rewrite gateway docs
+
 **Effort:** ~1h
 
 README and package docs must describe model-tier + replica routing only.
@@ -465,6 +480,7 @@ Provide gateway with **replica-specific headroom** and track usage at the correc
 ### Delete/replace tasks
 
 #### TASK-TKN-000 — Normalize identity model
+
 **Effort:** ~1h
 
 Every usage record must support:
@@ -475,6 +491,7 @@ Every usage record must support:
 * `accountId`
 
 #### TASK-TKN-001 — Define replica budgets
+
 **Effort:** ~1h
 
 Suggested file:
@@ -499,6 +516,7 @@ export interface ReplicaBudget {
 ```
 
 #### TASK-TKN-002 — Aggregate usage by replica
+
 **Effort:** ~1.5h
 
 Suggested file:
@@ -514,6 +532,7 @@ Compute rolling windows by:
 * month
 
 #### TASK-TKN-003 — Compute headroom snapshots
+
 **Effort:** ~1.5h
 
 Suggested file:
@@ -530,6 +549,7 @@ getLogicalModelHeadroom(logicalModelId)
 ```
 
 #### TASK-TKN-004 — Merge header truth + accounting truth
+
 **Effort:** ~1.5h
 
 If provider exposes rate headers:
@@ -539,6 +559,7 @@ If provider exposes rate headers:
 * assign confidence level
 
 #### TASK-TKN-005 — Add routing signals API
+
 **Effort:** ~1h
 
 Suggested file:
@@ -550,6 +571,7 @@ packages/tokenomics/src/routing/headroom-provider.ts
 This is what gateway consumes.
 
 #### TASK-TKN-006 — Add saturation analytics
+
 **Effort:** ~1h
 
 Track:
@@ -560,6 +582,7 @@ Track:
 * monthly burn-down per account
 
 #### TASK-TKN-007 — Update ledger types
+
 **Effort:** ~1h
 
 Ledger/session records must include:
@@ -577,6 +600,7 @@ Ledger/session records must include:
 Emit enough lifecycle to support replica-aware routing and deterministic retries.
 
 #### TASK-RT-000 — Add model call lifecycle events
+
 **Effort:** ~1.5h
 
 Add events:
@@ -595,6 +619,7 @@ These events should include:
 * actual usage if available
 
 #### TASK-RT-001 — Extend checkpoint metadata
+
 **Effort:** ~1h
 
 Checkpoint metadata must store:
@@ -606,11 +631,13 @@ Checkpoint metadata must store:
 * allowed escalation state
 
 #### TASK-RT-002 — Extend interruption metadata
+
 **Effort:** ~1h
 
 Same as above for interruption/resume.
 
 #### TASK-RT-003 — Add retry-aware execution context
+
 **Effort:** ~1h
 
 Runtime needs a small state object tracking:
@@ -621,6 +648,7 @@ Runtime needs a small state object tracking:
 * whether escalation already happened
 
 #### TASK-RT-004 — Emit tokenomics-friendly post-call data
+
 **Effort:** ~1h
 
 After a model call completes, runtime should emit enough for tokenomics to record usage with replica granularity.
@@ -634,11 +662,13 @@ After a model call completes, runtime should emit enough for tokenomics to recor
 Task tiering + gateway delegation only. No provider knowledge.
 
 #### TASK-ORCH-000 — Define `TaskTier = ModelTier`
+
 **Effort:** ~0.5h
 
 Import from gateway; do not redefine locally.
 
 #### TASK-ORCH-001 — Add `GatewayBackedModelRouter`
+
 **Effort:** ~1h
 
 Suggested file:
@@ -654,6 +684,7 @@ Responsibilities:
 * return `ModelSelectionResult`
 
 #### TASK-ORCH-002 — Add failover policy
+
 **Effort:** ~1.5h
 
 Ordered behavior:
@@ -664,6 +695,7 @@ Ordered behavior:
 4. abort / ask human
 
 #### TASK-ORCH-003 — Record routing intent in execution state
+
 **Effort:** ~1h
 
 Execution state needs:
@@ -674,11 +706,13 @@ Execution state needs:
 * fallback attempts
 
 #### TASK-ORCH-004 — Integrate with recovery
+
 **Effort:** ~1h
 
 Recovery must call back into gateway with prior attempts excluded.
 
 #### TASK-ORCH-005 — Keep orchestrator free of routing facts
+
 **Effort:** ~0.5h
 
 Enforce rule:
@@ -696,6 +730,7 @@ Enforce rule:
 Provide constraints, not routing behavior.
 
 #### TASK-GR-000 — Add routing-relevant policy constraints
+
 **Effort:** ~1h
 
 Support constraints such as:
@@ -707,6 +742,7 @@ Support constraints such as:
 * forbid cloud for sensitive tasks
 
 #### TASK-GR-001 — Surface denial reasons
+
 **Effort:** ~0.5h
 
 If no candidate satisfies policy, return explicit reason.
@@ -717,7 +753,8 @@ If no candidate satisfies policy, return explicit reason.
 
 Optional but recommended if cross-package typing gets noisy.
 
-#### TASK-TYPES-000 — Promote shared routing types
+### TASK-TYPES-000 — Promote shared routing types
+
 **Effort:** ~1h
 
 Candidate shared types:
@@ -752,10 +789,11 @@ Suggested structure:
 \[
 score =
 w_{local} \cdot localBonus
-+ w_{quota} \cdot quotaHeadroom
-- w_{latency} \cdot latencyPenalty
-- w_{error} \cdot errorPenalty
-- w_{cost} \cdot costPenalty
+
+* w_{quota} \cdot quotaHeadroom
+* w_{latency} \cdot latencyPenalty
+* w_{error} \cdot errorPenalty
+* w_{cost} \cdot costPenalty
 \]
 
 Where:

@@ -4,7 +4,7 @@ version: 1.0
 date_created: 2026-06-06
 last_updated: 2026-06-06
 owner: architecture-maintainers
-status: Planned
+status: Canonical active plan
 tags: [architecture, gateway, tokenomics, runtime, orchestrator, routing, local-first, replica-balancing]
 supersedes:
   - plan/GREENFIELD.md
@@ -492,7 +492,8 @@ For replicas serving the same logical model, rank by:
 
 ### 9.1 Unit tests
 
-**Gateway**
+## Gateway
+
 - logical model registry indexes correctly
 - replica registry indexes correctly
 - local detector discovers Apfel/Ollama/Jan
@@ -501,17 +502,20 @@ For replicas serving the same logical model, rank by:
 - quota-aware scoring prefers higher-headroom replica
 - selector chooses another replica for same logical model when one is near exhaustion
 
-**Tokenomics**
+## Tokenomics
+
 - usage aggregates by hour/week/month
 - replica headroom computed correctly
 - confidence labels correct after header reconciliation
 
-**Runtime**
+## Runtime
+
 - model call lifecycle events emitted
 - checkpoint stores attempted replicas
 - interruption/resume preserves failover chain
 
-**Orchestrator**
+## Orchestrator
+
 - task tier delegated to gateway
 - failover order correct
 - no direct provider logic
@@ -527,6 +531,7 @@ For replicas serving the same logical model, rank by:
 ### 9.3 End-to-end tests
 
 Full session with:
+
 - task decomposition
 - gateway selection
 - runtime events

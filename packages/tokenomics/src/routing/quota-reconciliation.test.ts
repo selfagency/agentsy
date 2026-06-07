@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { HeaderSnapshotInput, ReconciledQuotaSnapshot } from './quota-reconciliation.js';
+import type { HeaderSnapshotInput } from './quota-reconciliation.js';
 import { reconcileQuotaConfidence } from './quota-reconciliation.js';
 
 const testHeader: HeaderSnapshotInput = {

@@ -1,5 +1,5 @@
-import type { MemoryScope } from '../scope/scope-manager.js';
 import { cosineSimilarity } from '../math-utils.js';
+import type { MemoryScope } from '../scope/scope-manager.js';
 import type { LocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
 import { createLocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
 

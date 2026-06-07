@@ -170,7 +170,6 @@ Replica-aware identity fields used throughout tokenomics:
 - `replicaId`
 - `providerId`
 - `accountId`
-
 - `post-session` — writes ledger entry
 - `post-turn` — feeds retry/rewrite detectors
 - `post-tool-call(write_file)` — triggers rewrite window

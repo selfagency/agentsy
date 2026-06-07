@@ -1,8 +1,7 @@
 import { eq, like } from 'drizzle-orm';
-
-import { cosineSimilarity } from '../math-utils.js';
 import type { MemoryDatabase } from '../database/connection.js';
 import { kvStore } from '../database/schema.js';
+import { cosineSimilarity } from '../math-utils.js';
 import type {
   ConceptRelation,
   PageDiff,

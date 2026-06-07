@@ -26,6 +26,11 @@ export class UsageAggregator {
     return this.#budgets.get(replicaId);
   }
 
+  /** Return all registered budgets, ordered by replicaId. */
+  getAllBudgets(): ReplicaBudget[] {
+    return [...this.#budgets.values()].sort((a, b) => a.replicaId.localeCompare(b.replicaId));
+  }
+
   getHeadroomSnapshot(replicaId: string): ReplicaHeadroomSnapshot | undefined {
     const budget = this.#budgets.get(replicaId);
     if (budget === undefined) {

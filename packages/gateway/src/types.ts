@@ -113,15 +113,15 @@ export interface LogicalModel {
  */
 export interface ModelReplica {
   cost: ModelCost;
+  /** Runtime health snapshot (optional — populated by availability tracker). */
+  health?: ReplicaHealthSnapshot;
   id: string;
   isLocal: boolean;
   logicalModelId: string;
   providerId: string;
-  upstreamModelName: string;
-  /** Runtime health snapshot (optional — populated by availability tracker). */
-  health?: ReplicaHealthSnapshot;
   /** Runtime quota snapshot (optional — populated by tokenomics headroom provider). */
   quota?: ReplicaQuotaSnapshot;
+  upstreamModelName: string;
 }
 
 /**
@@ -130,10 +130,10 @@ export interface ModelReplica {
  */
 export interface ReplicaHealthSnapshot {
   available: boolean;
-  latencyMs?: number;
-  errorRate?: number;
   circuitState?: 'closed' | 'open' | 'half-open';
+  errorRate?: number;
   lastCheckedAt: string;
+  latencyMs?: number;
 }
 
 /**
@@ -141,16 +141,16 @@ export interface ReplicaHealthSnapshot {
  * Populated by @agentsy/tokenomics or derived from provider response headers.
  */
 export interface ReplicaQuotaSnapshot {
-  remainingTokensHour?: number;
-  remainingTokensWeek?: number;
-  remainingTokensMonth?: number;
-  remainingRequestsMinute?: number;
-  remainingTokensMinute?: number;
-  remainingCostHour?: number;
-  remainingCostWeek?: number;
-  remainingCostMonth?: number;
-  lastUpdatedAt: string;
   confidence: 'header-derived' | 'tokenomics-derived' | 'estimated';
+  lastUpdatedAt: string;
+  remainingCostHour?: number;
+  remainingCostMonth?: number;
+  remainingCostWeek?: number;
+  remainingRequestsMinute?: number;
+  remainingTokensHour?: number;
+  remainingTokensMinute?: number;
+  remainingTokensMonth?: number;
+  remainingTokensWeek?: number;
 }
 
 /**
@@ -159,15 +159,15 @@ export interface ReplicaQuotaSnapshot {
  */
 export interface ModelSelectionResult {
   logicalModelId: string;
-  replicaId: string;
   providerId: string;
-  selectedBecause: string[];
   rejectedCandidates: Array<{
     id: string;
     reasons: string[];
   }>;
+  replicaId: string;
   /** Guardrails constraint denials recorded during selection, if any. */
   routingConstraintDenials?: Array<{ code: string; details: string }>;
+  selectedBecause: string[];
 }
 
 /**

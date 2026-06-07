@@ -19,10 +19,10 @@
 // =============================================================================
 
 export interface CircuitBreakerConfig {
-  /** Consecutive failures before the circuit opens. Default: 5. */
-  failureThreshold: number;
   /** Milliseconds before an open circuit transitions to half-open. Default: 30_000. */
   cooldownMs: number;
+  /** Consecutive failures before the circuit opens. Default: 5. */
+  failureThreshold: number;
   /** Max requests permitted in half-open state. Default: 1. */
   halfOpenMaxRequests: number;
 }
@@ -30,16 +30,16 @@ export interface CircuitBreakerConfig {
 export type CircuitState = 'closed' | 'open' | 'half-open';
 
 export interface CircuitBreakerEntry {
-  /** The replica identifier this entry tracks. */
-  replicaId: string;
-  /** Current circuit state. */
-  state: CircuitState;
   /** Consecutive failure count (resets on success). */
   consecutiveFailures: number;
   /** ISO-8601 timestamp of the most recent failure, if any. */
   lastFailureAt?: string;
   /** ISO-8601 timestamp when the circuit was opened, if currently open. */
   openedAt?: string;
+  /** The replica identifier this entry tracks. */
+  replicaId: string;
+  /** Current circuit state. */
+  state: CircuitState;
 }
 
 // =============================================================================
@@ -173,7 +173,7 @@ export class CircuitBreakerSet {
     const elapsed = Date.now() - new Date(entry.openedAt).getTime();
     if (elapsed >= this.#config.cooldownMs) {
       entry.state = 'half-open';
-      delete entry.openedAt;
+      // Keep openedAt — it's ignored while state is half-open; avoids delete lint issue.
     }
   }
 }

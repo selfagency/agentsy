@@ -1,12 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
 import { eq } from 'drizzle-orm';
-
-import { cosineSimilarity } from '../math-utils.js';
-
 import { createWikiFsAdapter } from '../agentfs/wiki-adapter.js';
 import type { MemoryDatabase } from '../database/connection.js';
 import { wikiBacklinks, wikiConcepts, wikiPageHistory, wikiPages, wikiVectors } from '../database/schema.js';
+import { cosineSimilarity } from '../math-utils.js';
 import type { ContentProcessor } from './content-processor.js';
 import { createContentProcessor } from './content-processor.js';
 import type { EntityExtractor } from './entity-extractor.js';

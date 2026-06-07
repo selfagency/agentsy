@@ -1,4 +1,3 @@
-import type { StreamChunk } from '@agentsy/core/processor';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
 
 import { createStepChangeEmitter, createWriteChunkHandler } from '../shared.js';

@@ -23,16 +23,6 @@ export interface ReplicaSelectionContext {
   latencies: ReadonlyMap<string, number>;
   /** True when local models should be preferred. */
   localPreference: 'preferred' | 'required' | 'disabled';
-  /** Tier of the logical model. */
-  tier: 'micro' | 'small' | 'mid' | 'frontier';
-  /** Optional score weights override. */
-  weights?: ReplicaScoreWeights;
-  /**
-   * Guardrails routing constraint to pre-filter replicas.
-   * Replicas that violate the constraint are excluded from scoring
-   * and recorded in `routingConstraintDenials`.
-   */
-  routingConstraints?: import('@agentsy/guardrails').RoutingConstraint;
   /**
    * Capabilities for the logical model (shared by all replicas).
    * Required when `routingConstraints` is set so the constraint
@@ -45,6 +35,16 @@ export interface ReplicaSelectionContext {
    * or undefined when pre-filter was not applied.
    */
   routingConstraintDenials?: Array<{ code: string; details: string }>;
+  /**
+   * Guardrails routing constraint to pre-filter replicas.
+   * Replicas that violate the constraint are excluded from scoring
+   * and recorded in `routingConstraintDenials`.
+   */
+  routingConstraints?: import('@agentsy/guardrails').RoutingConstraint;
+  /** Tier of the logical model. */
+  tier: 'micro' | 'small' | 'mid' | 'frontier';
+  /** Optional score weights override. */
+  weights?: ReplicaScoreWeights;
 }
 
 export interface ReplicaSelector {

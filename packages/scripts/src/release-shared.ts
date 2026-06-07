@@ -22,14 +22,14 @@ export function createReleaseShared(octokitConstructor: typeof OctokitType): typ
 export interface RollbackState {
   commitLocal: boolean;
   commitPushed: boolean;
-  tagPushed: boolean;
   releaseDone: boolean;
+  tagPushed: boolean;
 }
 
 export interface RollbackManager {
-  state: RollbackState;
   rollback(): void;
   setupSignalHandlers(): void;
+  state: RollbackState;
 }
 
 export function createRollbackManager(tag: string): RollbackManager {
@@ -41,7 +41,9 @@ export function createRollbackManager(tag: string): RollbackManager {
   };
 
   function rollback(): void {
-    if (state.releaseDone) return;
+    if (state.releaseDone) {
+      return;
+    }
 
     $.verbose = false;
     try {

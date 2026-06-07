@@ -14,23 +14,38 @@ export {
   type TierAwareModelRouter,
   type TierAwareModelRouterOptions
 } from './intelligence/model-router.js';
+export {
+  createReplicaHealthProbe,
+  type HealthProbeResult,
+  ReplicaHealthProbe,
+  type ReplicaHealthProbeConfig
+} from './recovery/health-probe.js';
 export { createOrchestratorLoop } from './orchestrator-loop.js';
 // Recovery / multi-replica failover chain
 export {
   createFailoverChain,
-  type FailoverChain,
   ExhaustedError,
+  type FailoverChain,
   type FailoverStep,
   type FailoverStepType,
   getNextStep
 } from './recovery/model-failover.js';
-// Replica health probing
+// Recovery / rate-limit escalation
 export {
-  createReplicaHealthProbe,
-  type HealthProbeResult,
-  type ReplicaHealthProbeConfig,
-  ReplicaHealthProbe
-} from './recovery/health-probe.js';
+  allReplicasRateLimited,
+  buildRateLimitMap,
+  getUnlimitedReplicas,
+  RateLimitExceededError,
+  type RateLimitStatus
+} from './recovery/rate-limit-escalation.js';
+// Circuit-breaker state tracking per replica
+export {
+  type CircuitBreakerConfig,
+  type CircuitBreakerEntry,
+  CircuitBreakerSet,
+  type CircuitState,
+  createCircuitBreakerSet
+} from './recovery/circuit-breaker-set.js';
 // Scheduler exports (consolidated from @agentsy/orchestrator/scheduler)
 export * from './scheduler/index.js';
 // Type definitions

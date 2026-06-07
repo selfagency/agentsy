@@ -1,8 +1,7 @@
 import type { OutputPart, StreamChunk } from '@agentsy/core/processor';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
-
-import type { BaseRendererOptions, RendererHandle } from './types.js';
 import type { FinishReason, UsageInfo } from '@agentsy/types';
+import type { BaseRendererOptions, RendererHandle } from './types.js';
 
 export function createStepChangeEmitter(
   onStep: BaseRendererOptions['onStep'] | undefined

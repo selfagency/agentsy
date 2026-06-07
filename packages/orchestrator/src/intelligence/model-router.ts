@@ -15,7 +15,6 @@
  *   - Recovery flow: retry same model replica → spillover → escalate → pause
  */
 
-import { getLogicalModel, spillover } from '@agentsy/gateway';
 import type {
   GatewayClient,
   ModelEntry,
@@ -27,11 +26,10 @@ import type {
   ReplicaSelector,
   TierAwareModelSelector
 } from '@agentsy/gateway';
-
-import type { WorkflowNode } from '../types/workflow.js';
-
+import { getLogicalModel, spillover } from '@agentsy/gateway';
 import type { FailoverChain } from '../recovery/model-failover.js';
 import { createFailoverChain as buildFailoverChain, ExhaustedError, getNextStep } from '../recovery/model-failover.js';
+import type { WorkflowNode } from '../types/workflow.js';
 
 export type { ModelEntry, ModelTier } from '@agentsy/gateway';
 
@@ -70,10 +68,24 @@ export const NO_ESCALATION_POLICY: EscalationPolicy = {
  */
 export interface SelectionRecord {
   attemptedAt: string;
+  /**
+   * Candidates considered during selection with scores and rejection reasons.
+   * May be empty when the selector does not expose candidate details.
+   */
+  candidatesConsidered?: Array<{
+    modelId: string;
+    tier: ModelTier;
+    score: number;
+    rejectionReason?: string;
+  }>;
+  /** Circuit breaker state per replica id at the time of selection. */
+  circuitStates?: Record<string, 'closed' | 'open' | 'half-open'>;
   /** Whether escalation was triggered. */
   escalated: boolean;
   /** Replica ids that were tried and failed, in order. */
   failedReplicas: string[];
+  /** Headroom percentage per replica id at the time of selection. */
+  headroomPercentages?: Record<string, number>;
   logicalModelId: string;
   /** The selected logical model after all fallback. */
   selectedModel?: string;
@@ -101,7 +113,6 @@ export interface TierAwareModelRouterOptions {
  */
 export interface TierAwareModelRouter {
   chooseModelForTask(input: { node: WorkflowNode; taskTier: TaskTier }): Promise<ModelEntry>;
-  getSelectionRecord(): SelectionRecord | undefined;
 
   /**
    * Build a failover chain from the selected model and available replicas.
@@ -109,6 +120,14 @@ export interface TierAwareModelRouter {
    * (same model) → next-model (same tier) → tier-escalation (if allowed).
    */
   createFailoverChain(selectedModel: ModelEntry): FailoverChain;
+
+  /**
+   * Return all selection records from the current session.
+   * Entries are appended for each `chooseModelForTask` call and each
+   * failover step resolved via `nextFailoverModel`.
+   */
+  getSelectionAuditLog(): SelectionRecord[];
+  getSelectionRecord(): SelectionRecord | undefined;
 
   /**
    * Advance the failover chain and resolve the next step to a `ModelEntry`.
@@ -136,6 +155,8 @@ export class GatewayBackedModelRouter implements TierAwareModelRouter {
   readonly #replicaSelector: ReplicaSelector | undefined;
   /** Most recent selection record — overwritten on each `chooseModelForTask` call. */
   #record: SelectionRecord | undefined;
+  /** Append-only audit log of all selection and failover attempts in this session. */
+  readonly #auditLog: SelectionRecord[] = [];
 
   constructor(gateway: GatewayClient, options: TierAwareModelRouterOptions = {}) {
     this.#selector = gateway.getModelSelector();
@@ -151,15 +172,26 @@ export class GatewayBackedModelRouter implements TierAwareModelRouter {
     return this.#record;
   }
 
+  getSelectionAuditLog(): SelectionRecord[] {
+    return this.#auditLog;
+  }
+
   async chooseModelForTask(input: { node: WorkflowNode; taskTier: TaskTier }): Promise<ModelEntry> {
     const useCase = inferUseCaseFromNode(input.node);
+
+    const knownReplicas = this.#replicaRegistry?.getAll() ?? [];
 
     const record: SelectionRecord = {
       attemptedAt: new Date().toISOString(),
       failedReplicas: [],
       escalated: false,
       logicalModelId: '',
-      taskTier: input.taskTier
+      taskTier: input.taskTier,
+      candidatesConsidered: [],
+      ...(knownReplicas.length > 0
+        ? { circuitStates: Object.fromEntries(knownReplicas.map(r => [r.id, 'closed' as const])) }
+        : {}),
+      headroomPercentages: {}
     };
 
     const constraints: ModelSelectionConstraints = {};
@@ -234,7 +266,7 @@ export class GatewayBackedModelRouter implements TierAwareModelRouter {
    *
    * Recording: each failed attempt is appended to `SelectionRecord.failedReplicas`.
    */
-  async nextFailoverModel(chain: FailoverChain, error: Error, context: ReplicaSelectionContext): Promise<ModelEntry> {
+  nextFailoverModel(chain: FailoverChain, error: Error, context: ReplicaSelectionContext): ModelEntry {
     const step = getNextStep(chain, error);
     if (step === undefined) {
       throw new ExhaustedError([...chain.steps], chain.currentStep);
@@ -246,10 +278,8 @@ export class GatewayBackedModelRouter implements TierAwareModelRouter {
     }
 
     // Record the failed replica before trying the next step
-    if (this.#record) {
-      if (step.replicaId) {
-        this.#record.failedReplicas.push(step.replicaId);
-      }
+    if (this.#record && step.replicaId) {
+      this.#record.failedReplicas.push(step.replicaId);
     }
 
     // Use the gateway's spillover to resolve the step to a replica
@@ -265,7 +295,7 @@ export class GatewayBackedModelRouter implements TierAwareModelRouter {
       context,
       {
         allowTierEscalation: this.#options.escalationPolicy.allowEscalation,
-        ...(escalationTierChain !== undefined ? { escalationChain: escalationTierChain } : {}),
+        ...(escalationTierChain === undefined ? {} : { escalationChain: escalationTierChain }),
         excludeReplicas: new Set(this.#record?.failedReplicas)
       }
     );

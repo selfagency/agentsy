@@ -20,10 +20,10 @@ export interface RetryContext {
 
 /** Options for creating a new RetryContext. */
 export interface RetryContextOptions {
-  maxRetries?: number;
-  retryDelayMs?: number;
   attemptedReplicas?: string[];
   escalationLevel?: number;
+  maxRetries?: number;
+  retryDelayMs?: number;
 }
 
 /**

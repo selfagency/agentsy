@@ -3,9 +3,8 @@ import { randomUUID } from 'node:crypto';
 import type { JsonObject } from '@agentsy/types';
 import type * as inkNS from 'ink';
 import type * as reactNS from 'react';
-
-import { createInkRuntimeController, type InkRuntimeControllerOptions } from './ink-runtime-state.js';
 import type { InkRendererHandle, InkRendererOptions } from './create-ink-renderer.js';
+import { createInkRuntimeController, type InkRuntimeControllerOptions } from './ink-runtime-state.js';
 import { resolveTheme } from './themes/index.js';
 
 export interface ConversationTurn {

@@ -2,6 +2,7 @@ import { eq, like } from 'drizzle-orm';
 
 import type { MemoryDatabase } from '../database/connection.js';
 import { kvStore } from '../database/schema.js';
+import { cosineSimilarity } from '../math-utils.js';
 import { createDocumentIngestor } from '../retrieval/rag/document-ingest.js';
 import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
 import { createQueryPlanner } from '../retrieval/rag/query-planner.js';
@@ -14,7 +15,6 @@ import type {
   RAGServerDocument,
   RAGWeightConfig
 } from '../retrieval/rag/types.js';
-import { cosineSimilarity } from '../math-utils.js';
 import { createLocalEmbeddingEngine } from '../wiki/local-embedding-engine.js';
 
 export interface RagFsAdapterOptions {

@@ -34,9 +34,12 @@ For the high-level architecture behind these packages, start with the [Architect
 
 ## Routing and provider operations packages
 
-| Package            | Role                                                  | Status   | Docs                                  |
-| ------------------ | ----------------------------------------------------- | -------- | ------------------------------------- |
-| `@agentsy/gateway` | Multi-provider routing, failover, and health tracking | Internal | [Package page](./packages/gateway.md) |
+| Package              | Role                                                  | Status   | Docs                                                      |
+| -------------------- | ----------------------------------------------------- | -------- | --------------------------------------------------------- |
+| `@agentsy/gateway`   | Model-tier routing, replica selection, failover, and health tracking | Internal | [Package page](./packages/gateway.md)                     |
+| `@agentsy/guardrails` | Routing constraints and policy enforcement                           | Internal | [Routing architecture](./architecture/routing-architecture.md) |
+
+> Routing authority now lives in `@agentsy/gateway`; model-replica routing details are documented in [Routing architecture](./architecture/routing-architecture.md).
 
 ## Core parsing and shaping utilities
 
@@ -101,7 +104,6 @@ For the high-level architecture behind these packages, start with the [Architect
 | Package path          | Role                                                  | Status    | Docs                                                       |
 | --------------------- | ----------------------------------------------------- | --------- | ---------------------------------------------------------- |
 | `packages/connectors` | External system connectors and integration blueprints | Plan only | [Platform evolution](./architecture/platform-evolution.md) |
-| `packages/guardrails` | Safety guardrails and policy enforcement frameworks   | Plan only | [Platform evolution](./architecture/platform-evolution.md) |
 | `packages/mcp`        | Model Context Protocol server implementations         | Plan only | [Platform evolution](./architecture/platform-evolution.md) |
 | `packages/retrieval`  | Retrieval systems and RAG integration frameworks      | Plan only | [Platform evolution](./architecture/platform-evolution.md) |
 

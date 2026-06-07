@@ -23,13 +23,11 @@ import { createCliStreamBridge } from '@agentsy/renderers/adapters';
 import { createInkAgentRenderer, createInkRuntimeController } from '@agentsy/renderers/ink';
 import type { TurnHandler } from '@agentsy/runtime/loop';
 import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
-
+import { getFlagValue, hasFlag } from '../cli-args.js';
 import type { CliIO } from '../index.js';
 import { createMockClient } from '../providers/mock.js';
 import type { CliProviderConfig } from '../providers/resolve-provider.js';
 import { resolveProviderClient } from '../providers/resolve-provider.js';
-
-import { getFlagValue, hasFlag } from '../cli-args.js';
 
 function createProviderClient(isMock: boolean, argv: readonly string[]) {
   if (isMock) {
