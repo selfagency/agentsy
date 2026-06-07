@@ -9,8 +9,11 @@
 import type { CompletionRequest, CompletionResponse } from '@agentsy/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createModelGatewayClient } from '../model-gateway-client.js';
-import type { ModelEntry, ModelReplica } from '../types.js';
+import { createModelGatewayClient, type ReplicaCallFunction } from '../model-gateway-client.js';
+import type { ReplicaRegistry } from '../replica-registry.js';
+import type { DefaultReplicaSelector } from '../replica-selector.js';
+import type { DefaultTierAwareModelSelector } from '../selector.js';
+import type { ModelEntry, ModelRegistry, ModelReplica } from '../types.js';
 
 // ---------------------------------------------------------------------------
 // Module-level mock — getLogicalModel
@@ -72,11 +75,11 @@ const executeProviderCall = vi.fn() as ReturnType<typeof vi.fn>;
 
 function createClient() {
   return createModelGatewayClient({
-    modelRegistry: mockModelRegistry as unknown as typeof mockModelRegistry,
-    replicaRegistry: mockReplicaRegistry as unknown as typeof mockReplicaRegistry,
-    replicaSelector: mockReplicaSelector as unknown as typeof mockReplicaSelector,
-    modelSelector: mockModelSelector as unknown as typeof mockModelSelector,
-    executeProviderCall: executeProviderCall as unknown as typeof executeProviderCall
+    modelRegistry: mockModelRegistry as unknown as ModelRegistry,
+    replicaRegistry: mockReplicaRegistry as unknown as ReplicaRegistry,
+    replicaSelector: mockReplicaSelector as unknown as DefaultReplicaSelector,
+    modelSelector: mockModelSelector as unknown as DefaultTierAwareModelSelector,
+    executeProviderCall: executeProviderCall as unknown as ReplicaCallFunction
   });
 }
 
