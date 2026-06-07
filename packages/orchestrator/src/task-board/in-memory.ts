@@ -78,14 +78,14 @@ export class InvalidStatusTransitionError extends Error {
 // Valid status transitions
 // ---------------------------------------------------------------------------
 
-const VALID_TRANSITIONS: Record<TaskStatus, readonly TaskStatus[]> = {
-  pending: ['ready', 'failed'],
-  ready: ['running', 'failed'],
-  running: ['completed', 'failed', 'paused'],
-  paused: ['running', 'failed'],
-  completed: [],
-  failed: []
-} as const;
+const VALID_TRANSITIONS = new Map<TaskStatus, readonly TaskStatus[]>([
+  ['pending', ['ready', 'failed']],
+  ['ready', ['running', 'failed']],
+  ['running', ['completed', 'failed', 'paused']],
+  ['paused', ['running', 'failed']],
+  ['completed', []],
+  ['failed', []]
+]);
 
 // ---------------------------------------------------------------------------
 // InMemoryTaskBoard
@@ -377,7 +377,7 @@ export class InMemoryTaskBoard implements ITaskBoard {
    * Throws InvalidStatusTransitionError on disallowed transitions.
    */
   #validateTransition(from: TaskStatus, to: TaskStatus, taskId: string): void {
-    const allowed = VALID_TRANSITIONS[from];
+    const allowed = VALID_TRANSITIONS.get(from) ?? [];
     if (!allowed.includes(to)) {
       throw new InvalidStatusTransitionError(taskId, from, to);
     }

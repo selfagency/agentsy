@@ -383,10 +383,158 @@ export class PolicyEnforcer {
  */
 export function evaluateCondition(condition: string, context: Record<string, unknown>): boolean {
   try {
-    const fn = new Function('ctx', `return ${condition}`);
-    const result = fn(context);
-    return Boolean(result);
+    return evaluateExpression(condition, context);
   } catch {
     return false;
+  }
+}
+
+/**
+ * Safe expression evaluator for governance/recovery DSL conditions.
+ *
+ * Supports:
+ * - Property lookups via `ctx.field` or just `fieldName` (auto-prefixed ctx.)
+ * - Comparison operators: `===`, `!==`, `>`, `>=`, `<`, `<=`
+ * - Logical operators: `&&` (AND), `||` (OR) — no precedence, left-to-right
+ * - Literals: string ('foo'), number (42), boolean (true/false)
+ *
+ * NOT arbitrary JavaScript execution — safe by construction.
+ * Only resolves identifiers from the provided `ctx` context object.
+ */
+function evaluateExpression(expression: string, context: Record<string, unknown>): boolean {
+  const tokens = tokenize(expression);
+  return evaluateTokens(tokens, { ctx: context });
+}
+
+type Token = { type: 'ident' | 'op' | 'str' | 'num' | 'bool' | 'paren'; value: string };
+
+function tokenize(input: string): Token[] {
+  const tokens: Token[] = [];
+  const re =
+    /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|true|false|\d+(?:\.\d+)?|[a-zA-Z_$][\w$.]*|===?|!==?|>=?|<=?|&&|\|\||[()]|\s+/gsy;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(input)) !== null) {
+    const raw = match[0];
+    if (/^\s+$/u.test(raw)) continue;
+    if (
+      raw === '&&' ||
+      raw === '||' ||
+      raw === '===' ||
+      raw === '!==' ||
+      raw === '>=' ||
+      raw === '<=' ||
+      raw === '>' ||
+      raw === '<'
+    ) {
+      tokens.push({ type: 'op', value: raw });
+    } else if ((raw.startsWith("'") && raw.endsWith("'")) || (raw.startsWith('"') && raw.endsWith('"'))) {
+      tokens.push({ type: 'str', value: raw.slice(1, -1) });
+    } else if (raw === 'true' || raw === 'false') {
+      tokens.push({ type: 'bool', value: raw });
+    } else if (/^\d/.test(raw)) {
+      tokens.push({ type: 'num', value: raw });
+    } else if (raw === '(' || raw === ')') {
+      tokens.push({ type: 'paren', value: raw });
+    } else {
+      tokens.push({ type: 'ident', value: raw });
+    }
+  }
+  return tokens;
+}
+
+function resolveIdent(path: string, ctx: Record<string, unknown>): unknown {
+  // Strip ctx. prefix if present
+  const parts = path.replace(/^ctx\./u, '').split('.');
+  // Navigate from the inner ctx object when path uses ctx. prefix
+  let current: unknown = path.startsWith('ctx.') ? ((ctx['ctx'] as Record<string, unknown>) ?? ctx) : ctx;
+  for (const part of parts) {
+    if (current === null || current === undefined || typeof current !== 'object') return undefined;
+    current = (current as Record<string, unknown>)[part];
+  }
+  return current;
+}
+
+function evaluateTokens(tokens: Token[], ctx: Record<string, unknown>): boolean {
+  let i = 0;
+  const results: boolean[] = [];
+  const combinators: ('&&' | '||')[] = [];
+
+  while (i < tokens.length) {
+    results.push(evaluateComparison(tokens, i, ctx));
+    i += 3; // ident op value
+
+    if (i < tokens.length) {
+      const op = tokens[i];
+      if (op?.type === 'op' && (op.value === '&&' || op.value === '||')) {
+        combinators.push(op.value as '&&' | '||');
+        i++;
+      } else {
+        break;
+      }
+    }
+  }
+
+  // Left-to-right evaluation
+  let result = results[0] ?? false;
+  for (let j = 0; j < combinators.length; j++) {
+    const next = results[j + 1] ?? false;
+    result = combinators[j] === '&&' ? result && next : result || next;
+  }
+  return result;
+}
+
+function evaluateComparison(tokens: Token[], start: number, ctx: Record<string, unknown>): boolean {
+  const left = tokens[start];
+  const op = tokens[start + 1];
+  const right = tokens[start + 2];
+
+  if (!left || !op || !right) {
+    // Single boolean token
+    if (left?.type === 'bool') return left.value === 'true';
+    if (left?.type === 'ident') return Boolean(resolveIdent(left.value, ctx));
+    return false;
+  }
+
+  const leftVal =
+    left.type === 'ident'
+      ? resolveIdent(left.value, ctx)
+      : left.type === 'str'
+        ? left.value
+        : left.type === 'num'
+          ? Number(left.value)
+          : left.type === 'bool'
+            ? left.value === 'true'
+            : undefined;
+
+  const rightVal =
+    right.type === 'ident'
+      ? resolveIdent(right.value, ctx)
+      : right.type === 'str'
+        ? right.value
+        : right.type === 'num'
+          ? Number(right.value)
+          : right.type === 'bool'
+            ? right.value === 'true'
+            : undefined;
+
+  switch (op.value) {
+    case '===':
+      return leftVal === rightVal;
+    case '==':
+      return leftVal === rightVal;
+    case '!==':
+      return leftVal !== rightVal;
+    case '!=':
+      return leftVal !== rightVal;
+    case '>':
+      return Number(leftVal) > Number(rightVal);
+    case '>=':
+      return Number(leftVal) >= Number(rightVal);
+    case '<':
+      return Number(leftVal) < Number(rightVal);
+    case '<=':
+      return Number(leftVal) <= Number(rightVal);
+    default:
+      return false;
   }
 }
