@@ -4,7 +4,7 @@
  * replica selector calls during routing decisions.
  */
 
-import type { ReplicaHeadroomSnapshot } from '../quotas/headroom.js';
+import type { ReplicaBudget, ReplicaHeadroomSnapshot } from '../quotas/headroom.js';
 import { computeHeadroomPercentage } from '../quotas/headroom.js';
 import type { UsageAggregator } from '../quotas/usage-aggregator.js';
 
@@ -35,34 +35,48 @@ export function createReplicaHeadroomProvider(aggregator: UsageAggregator): Repl
  */
 function computeHeadroomFromAggregator(aggregator: UsageAggregator, replicaId: string): number {
   const snapshot = aggregator.getHeadroomSnapshot(replicaId);
-  if (snapshot === undefined) {
-    return 0;
-  }
   const budget = aggregator.getBudget(replicaId);
-  if (budget === undefined) {
+  if (snapshot === undefined || budget === undefined) {
     return 0;
   }
-
-  return (
-    tryComputeHeadroom(snapshot.remainingTokensMinute, budget.maxTokensMinute) ??
-    tryComputeHeadroom(snapshot.remainingRequestsMinute, budget.maxRequestsMinute) ??
-    tryComputeHeadroom(snapshot.remainingCostMinute, budget.maxCostMinute) ??
-    tryComputeHeadroom(snapshot.remainingTokensHour, budget.maxTokensHour) ??
-    tryComputeHeadroom(snapshot.remainingTokensWeek, budget.maxTokensWeek) ??
-    tryComputeHeadroom(snapshot.remainingTokensMonth, budget.maxTokensMonth) ??
-    tryComputeHeadroom(snapshot.remainingCostHour, budget.maxCostHour) ??
-    tryComputeHeadroom(snapshot.remainingCostWeek, budget.maxCostWeek) ??
-    tryComputeHeadroom(snapshot.remainingCostMonth, budget.maxCostMonth) ??
-    0
-  );
+  return firstMatchingHeadroom(snapshot, budget) ?? 0;
 }
 
 /**
- * Compute headroom percentage when both remaining and max are defined,
- * otherwise return undefined to continue the fallback chain.
+ * Iterate granularity-ordered remaining/max pairs and return the first
+ * headroom percentage where both values are defined.
+ *
+ * Extracted to keep cyclomatic complexity of callers under the CRAP
+ * threshold (≤5) instead of inlining 9 `??` fallback operators.
  */
-function tryComputeHeadroom(remaining: number | undefined, max: number | undefined): number | undefined {
-  if (remaining !== undefined && max !== undefined) {
-    return computeHeadroomPercentage(remaining, max);
+export function firstMatchingHeadroom(snapshot: ReplicaHeadroomSnapshot, budget: ReplicaBudget): number | undefined {
+  const remaining: (number | undefined)[] = [
+    snapshot.remainingTokensMinute,
+    snapshot.remainingRequestsMinute,
+    snapshot.remainingCostMinute,
+    snapshot.remainingTokensHour,
+    snapshot.remainingTokensWeek,
+    snapshot.remainingTokensMonth,
+    snapshot.remainingCostHour,
+    snapshot.remainingCostWeek,
+    snapshot.remainingCostMonth
+  ];
+  const max: (number | undefined)[] = [
+    budget.maxTokensMinute,
+    budget.maxRequestsMinute,
+    budget.maxCostMinute,
+    budget.maxTokensHour,
+    budget.maxTokensWeek,
+    budget.maxTokensMonth,
+    budget.maxCostHour,
+    budget.maxCostWeek,
+    budget.maxCostMonth
+  ];
+  for (let i = 0; i < remaining.length; i++) {
+    const r = remaining[i];
+    const m = max[i];
+    if (r !== undefined && m !== undefined) {
+      return computeHeadroomPercentage(r, m);
+    }
   }
 }

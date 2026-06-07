@@ -12,8 +12,8 @@
  */
 
 import type { ReplicaBudget, ReplicaHeadroomSnapshot } from '../quotas/headroom.js';
-import { computeHeadroomPercentage } from '../quotas/headroom.js';
 import type { UsageAggregator } from '../quotas/usage-aggregator.js';
+import { firstMatchingHeadroom } from './headroom-provider.js';
 import type { ReplicaSkewSignal } from './replica-skew.js';
 import { computeReplicaSkew } from './replica-skew.js';
 
@@ -163,24 +163,10 @@ export function buildRoutingReport(aggregator: UsageAggregator): RoutingDiagnost
 /**
  * Compute a single 0-100 headroom percentage from a snapshot and budget,
  * preferring the most granular available dimension (minute > hour > week > month).
+ *
+ * Cyclomatic complexity is kept at 1 by delegating the fallback chain to
+ * `firstMatchingHeadroom` — keeps CRAP well under the 30.0 threshold.
  */
 function computeHeadroomPercentageFromBudget(snapshot: ReplicaHeadroomSnapshot, budget: ReplicaBudget): number {
-  return (
-    tryBoth(snapshot.remainingTokensMinute, budget.maxTokensMinute) ??
-    tryBoth(snapshot.remainingRequestsMinute, budget.maxRequestsMinute) ??
-    tryBoth(snapshot.remainingCostMinute, budget.maxCostMinute) ??
-    tryBoth(snapshot.remainingTokensHour, budget.maxTokensHour) ??
-    tryBoth(snapshot.remainingTokensWeek, budget.maxTokensWeek) ??
-    tryBoth(snapshot.remainingTokensMonth, budget.maxTokensMonth) ??
-    tryBoth(snapshot.remainingCostHour, budget.maxCostHour) ??
-    tryBoth(snapshot.remainingCostWeek, budget.maxCostWeek) ??
-    tryBoth(snapshot.remainingCostMonth, budget.maxCostMonth) ??
-    0
-  );
-}
-
-function tryBoth(remaining: number | undefined, max: number | undefined): number | undefined {
-  if (remaining !== undefined && max !== undefined) {
-    return computeHeadroomPercentage(remaining, max);
-  }
+  return firstMatchingHeadroom(snapshot, budget) ?? 0;
 }

@@ -150,18 +150,56 @@ function defaultSelectionContext(tier: ModelTier): ReplicaSelectionContext {
 export function createModelGatewayClient(options: ModelGatewayClientOptions): ModelGatewayClient {
   const { modelRegistry, replicaRegistry, replicaSelector, modelSelector, executeProviderCall } = options;
 
+  /**
+   * Shared replica resolution + selection + execution for callByTier
+   * and callLogicalModel — eliminates the 23-line clone.
+   */
+  const resolveAndExecute = async (
+    logicalModelId: string,
+    tier: ModelTier,
+    request: CompletionRequest,
+    rejectedCandidates: ModelSelectionResult['rejectedCandidates'],
+    selectedBecause: string[]
+  ): Promise<CallByTierResult> => {
+    const replicas = replicaRegistry.getByLogicalModel(logicalModelId);
+    if (replicas.length === 0) {
+      throw new Error(`No replicas available for logical model: ${logicalModelId}`);
+    }
+
+    const selectedReplica = replicaSelector.selectReplica(replicas, defaultSelectionContext(tier));
+    if (selectedReplica === undefined) {
+      throw new Error(`No suitable replica for logical model: ${logicalModelId}`);
+    }
+
+    const rejectedReplicas: ModelSelectionResult['rejectedCandidates'] = replicas
+      .filter(r => r.id !== selectedReplica.id)
+      .map(r => ({
+        id: r.id,
+        reasons: ['Not selected by replica scorer']
+      }));
+
+    const response = await executeProviderCall(selectedReplica, requestForReplica(selectedReplica, request));
+
+    return {
+      response,
+      selection: {
+        logicalModelId,
+        replicaId: selectedReplica.id,
+        providerId: selectedReplica.providerId,
+        selectedBecause,
+        rejectedCandidates: [...rejectedCandidates, ...rejectedReplicas]
+      }
+    };
+  };
+
   return {
     // -----------------------------------------------------------------------
     // callByTier
     // -----------------------------------------------------------------------
     async callByTier(tier: ModelTier, useCase: UseCase, request: CompletionRequest): Promise<CallByTierResult> {
-      // 1. Select model entry by tier + use case
       const modelEntry = await modelSelector.selectModelForTier({ tier, useCase });
-
-      // 2. Derive logical model id from the entry convention
       const logicalModelId = logicalModelIdFromEntry(modelEntry.id);
 
-      // 3. Collect rejected candidates (other models in same tier)
       const allInTier = modelRegistry.getModelsByTier(tier);
       const rejectedCandidates: ModelSelectionResult['rejectedCandidates'] = allInTier
         .filter(m => m.id !== modelEntry.id)
@@ -170,87 +208,27 @@ export function createModelGatewayClient(options: ModelGatewayClientOptions): Mo
           reasons: ['Not selected by tier-aware model selector']
         }));
 
-      // 4. Resolve replicas for the logical model
-      const replicas = replicaRegistry.getByLogicalModel(logicalModelId);
-      if (replicas.length === 0) {
-        throw new Error(`No replicas available for logical model: ${logicalModelId}`);
-      }
-
-      // 5. Select the best replica
-      const selectedReplica = replicaSelector.selectReplica(replicas, defaultSelectionContext(tier));
-      if (selectedReplica === undefined) {
-        throw new Error(`No suitable replica for logical model: ${logicalModelId}`);
-      }
-
-      // 6. Build rejected replica entries
-      const rejectedReplicas: ModelSelectionResult['rejectedCandidates'] = replicas
-        .filter(r => r.id !== selectedReplica.id)
-        .map(r => ({
-          id: r.id,
-          reasons: ['Not selected by replica scorer']
-        }));
-
-      // 7. Execute provider call with overridden model name
-      const response = await executeProviderCall(selectedReplica, requestForReplica(selectedReplica, request));
-
-      // 8. Build and return the selection result
-      const selection: ModelSelectionResult = {
-        logicalModelId,
-        replicaId: selectedReplica.id,
-        providerId: selectedReplica.providerId,
-        selectedBecause: [
-          `Model selected by tier-aware selector for tier=${tier}, useCase=${useCase}`,
-          'Replica selected by replica scorer'
-        ],
-        rejectedCandidates: [...rejectedCandidates, ...rejectedReplicas]
-      };
-
-      return { response, selection };
+      return resolveAndExecute(logicalModelId, tier, request, rejectedCandidates, [
+        `Model selected by tier-aware selector for tier=${tier}, useCase=${useCase}`,
+        'Replica selected by replica scorer'
+      ]);
     },
 
     // -----------------------------------------------------------------------
     // callLogicalModel
     // -----------------------------------------------------------------------
-    async callLogicalModel(logicalModelId: string, request: CompletionRequest): Promise<CallByTierResult> {
-      // 1. Validate the logical model exists
+    callLogicalModel(logicalModelId: string, request: CompletionRequest): Promise<CallByTierResult> {
       const logicalModel = getLogicalModel(logicalModelId);
       if (logicalModel === undefined) {
         throw new Error(`Unknown logical model: ${logicalModelId}`);
       }
-
-      // 2. Resolve replicas for the logical model
-      const replicas = replicaRegistry.getByLogicalModel(logicalModelId);
-      if (replicas.length === 0) {
-        throw new Error(`No replicas available for logical model: ${logicalModelId}`);
-      }
-
-      // 3. Select the best replica
-      const selectedReplica = replicaSelector.selectReplica(replicas, defaultSelectionContext(logicalModel.tier));
-      if (selectedReplica === undefined) {
-        throw new Error(`No suitable replica for logical model: ${logicalModelId}`);
-      }
-
-      // 4. Build rejected replica entries
-      const rejectedReplicas: ModelSelectionResult['rejectedCandidates'] = replicas
-        .filter(r => r.id !== selectedReplica.id)
-        .map(r => ({
-          id: r.id,
-          reasons: ['Not selected by replica scorer']
-        }));
-
-      // 5. Execute provider call with overridden model name
-      const response = await executeProviderCall(selectedReplica, requestForReplica(selectedReplica, request));
-
-      // 6. Build and return the selection result
-      const selection: ModelSelectionResult = {
+      return resolveAndExecute(
         logicalModelId,
-        replicaId: selectedReplica.id,
-        providerId: selectedReplica.providerId,
-        selectedBecause: [`Explicitly requested logical model: ${logicalModelId}`],
-        rejectedCandidates: rejectedReplicas
-      };
-
-      return { response, selection };
+        logicalModel.tier,
+        request,
+        [],
+        [`Explicitly requested logical model: ${logicalModelId}`]
+      );
     },
 
     // -----------------------------------------------------------------------
