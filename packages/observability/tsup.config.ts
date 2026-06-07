@@ -6,7 +6,8 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     instrumentation: 'src/instrumentation/index.ts',
-    exporters: 'src/exporters/index.ts'
+    exporters: 'src/exporters/index.ts',
+    spans: 'src/spans/agent-span.ts'
   },
   format: ['esm', 'cjs'],
   sourcemap: true,
