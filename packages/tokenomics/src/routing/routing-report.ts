@@ -26,18 +26,17 @@ import { computeReplicaSkew } from './replica-skew.js';
  * headroom snapshot, and skew classification for a single replica.
  */
 export interface ReplicaDiagnosticEntry {
-  logicalModelId: string;
-  providerId: string;
-  replicaId: string;
+  /** How the headroom value was derived. */
+  confidence: ReplicaHeadroomSnapshot['confidence'];
 
   /** 0-100 headroom percentage. */
   headroomPercentage: number;
 
-  /** How the headroom value was derived. */
-  confidence: ReplicaHeadroomSnapshot['confidence'];
-
   /** ISO date of the last headroom update. */
   lastUpdatedAt: string;
+  logicalModelId: string;
+  providerId: string;
+  replicaId: string;
 
   /** Skew classification (hot / cold / balanced). */
   skew: 'hot' | 'cold' | 'balanced';
@@ -50,20 +49,19 @@ export interface ReplicaDiagnosticEntry {
  * overall health summary for at-a-glance monitoring.
  */
 export interface RoutingDiagnosticsReport {
-  /** Number of replicas in the report. */
-  replicaCount: number;
+  /** Replicas flagged as cold (disproportionately low headroom). */
+  coldReplicaIds: string[];
 
   /** Per-replica diagnostics, sorted by headroom ascending. */
   entries: ReplicaDiagnosticEntry[];
 
-  /** Replicas flagged as cold (disproportionately low headroom). */
-  coldReplicaIds: string[];
+  /** Timestamp the report was generated. */
+  generatedAt: string;
 
   /** Replicas flagged as hot (disproportionately high headroom). */
   hotReplicaIds: string[];
-
-  /** Timestamp the report was generated. */
-  generatedAt: string;
+  /** Number of replicas in the report. */
+  replicaCount: number;
 }
 
 // =============================================================================
@@ -118,15 +116,19 @@ export function buildRoutingReport(aggregator: UsageAggregator): RoutingDiagnost
   const entries: ReplicaDiagnosticEntry[] = budgets
     .map(budget => {
       const snapshot = snapshots.find(s => s.replicaId === budget.replicaId);
-      const headroomPct = snapshot !== undefined ? computeHeadroomPercentageFromBudget(snapshot, budget) : 0;
+      const headroomPct = snapshot === undefined ? 0 : computeHeadroomPercentageFromBudget(snapshot, budget);
       const confidence = snapshot?.confidence ?? 'estimated';
       const lastUpdatedAt = snapshot?.lastUpdatedAt ?? '';
       const skew = skewByReplicaId.get(budget.replicaId);
 
       let skewLabel: ReplicaDiagnosticEntry['skew'] = 'balanced';
       if (skew !== undefined) {
-        if (skew.isHot) skewLabel = 'hot';
-        if (skew.isCold) skewLabel = 'cold';
+        if (skew.isHot) {
+          skewLabel = 'hot';
+        }
+        if (skew.isCold) {
+          skewLabel = 'cold';
+        }
       }
 
       return {
@@ -181,5 +183,4 @@ function tryBoth(remaining: number | undefined, max: number | undefined): number
   if (remaining !== undefined && max !== undefined) {
     return computeHeadroomPercentage(remaining, max);
   }
-  return;
 }

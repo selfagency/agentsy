@@ -65,5 +65,4 @@ function tryComputeHeadroom(remaining: number | undefined, max: number | undefin
   if (remaining !== undefined && max !== undefined) {
     return computeHeadroomPercentage(remaining, max);
   }
-  return;
 }

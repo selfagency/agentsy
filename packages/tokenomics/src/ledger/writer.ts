@@ -26,34 +26,30 @@ import type { ArtifactRecord, FrustrationRecord, QualityRecord, SessionLedgerEnt
  * - `providerId` / `failoverChain` — standalone fields not covered by `ReplicaUsageFields`
  */
 export interface CreateSessionLedgerEntryOptions {
-  /** Unique ledger entry identifier. */
-  id: string;
-  /** The agent session this entry covers. */
-  sessionId: string;
   /** Agent that ran the session. */
   agentId: string;
+  /** Artifact generation stats. */
+  artifacts: ArtifactRecord;
+  /** Duration in milliseconds. */
+  durationMs: number;
+  /** Wall-clock session end. */
+  endedAt: Date;
+
+  /** Ordered list of replica IDs attempted before the session landed. */
+  failoverChain?: string[];
+  /** Frustration signals detected during session. */
+  frustration: FrustrationRecord;
+  /** Unique ledger entry identifier. */
+  id: string;
   /** Model deployed for the session. */
   modelId: string;
   /** Provider that served the session. */
   provider: string;
-  /** Wall-clock session start. */
-  startedAt: Date;
-  /** Wall-clock session end. */
-  endedAt: Date;
-  /** Duration in milliseconds. */
-  durationMs: number;
-  /** Token & cost summary. */
-  spend: SpendRecord;
-  /** Artifact generation stats. */
-  artifacts: ArtifactRecord;
+
+  /** Provider identifier from the replica budget context. */
+  providerId?: string;
   /** Quality score & feedback. */
   quality: QualityRecord;
-  /** Frustration signals detected during session. */
-  frustration: FrustrationRecord;
-  /** Survival rate at 30 days (null if not yet calculable). */
-  survivalRate30d: number | null;
-  /** Arbitrary session tags. */
-  tags: string[];
 
   // ---------------------------------------------------------------------------
   // Replica routing (optional — omit for non-replica sessions)
@@ -66,12 +62,16 @@ export interface CreateSessionLedgerEntryOptions {
    * ledger entry (it lives in the headroom/budget domain).
    */
   replicaFields?: ReplicaUsageFields;
-
-  /** Provider identifier from the replica budget context. */
-  providerId?: string;
-
-  /** Ordered list of replica IDs attempted before the session landed. */
-  failoverChain?: string[];
+  /** The agent session this entry covers. */
+  sessionId: string;
+  /** Token & cost summary. */
+  spend: SpendRecord;
+  /** Wall-clock session start. */
+  startedAt: Date;
+  /** Survival rate at 30 days (null if not yet calculable). */
+  survivalRate30d: number | null;
+  /** Arbitrary session tags. */
+  tags: string[];
 }
 
 // =============================================================================
@@ -110,13 +110,19 @@ export interface CreateSessionLedgerEntryOptions {
 export function createSessionLedgerEntry(options: CreateSessionLedgerEntryOptions): SessionLedgerEntry {
   const { replicaFields, failoverChain, providerId, ...base } = options;
 
-  const entry: SessionLedgerEntry = {
-    ...base,
-    ...(replicaFields?.logicalModelId !== undefined ? { logicalModelId: replicaFields.logicalModelId } : {}),
-    ...(replicaFields?.replicaId !== undefined ? { replicaId: replicaFields.replicaId } : {}),
-    ...(providerId !== undefined ? { providerId } : {}),
-    ...(failoverChain !== undefined ? { failoverChain } : {})
-  };
+  const entry: SessionLedgerEntry = { ...base };
+  if (replicaFields?.logicalModelId !== undefined) {
+    entry.logicalModelId = replicaFields.logicalModelId;
+  }
+  if (replicaFields?.replicaId !== undefined) {
+    entry.replicaId = replicaFields.replicaId;
+  }
+  if (providerId !== undefined) {
+    entry.providerId = providerId;
+  }
+  if (failoverChain !== undefined) {
+    entry.failoverChain = failoverChain;
+  }
 
   return entry;
 }

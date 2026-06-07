@@ -90,6 +90,21 @@ export class ExhaustedError extends Error {
 
 const DEFAULT_CHAIN: readonly ModelTier[] = ['micro', 'small', 'mid', 'frontier'] as const;
 
+/**
+ * Shared context passed to same-tier step-building helpers.
+ * Collects frequently reused state to keep function parameter counts low.
+ */
+interface SameTierBuildContext {
+  availableReplicaIds: (modelId: string) => string[];
+  circuitBreakerSet: CircuitBreakerSet | undefined;
+  isRateLimited: (id: string) => boolean;
+  originalModel: ModelEntry;
+  rateLimitMap: Map<string, RateLimitStatus> | undefined;
+  replicas: ModelReplica[];
+  seenReplicaIds: Set<string>;
+  steps: FailoverStep[];
+}
+
 // ---------------------------------------------------------------------------
 // Escalation step builder (extracted to keep createFailoverChain under the
 // complexity ceiling enforced by Biome).
@@ -186,6 +201,17 @@ export function createFailoverChain(
       )
       .map(r => r.id);
 
+  const sameTierCtx: SameTierBuildContext = {
+    replicas,
+    originalModel,
+    seenReplicaIds,
+    steps,
+    availableReplicaIds,
+    isRateLimited,
+    circuitBreakerSet,
+    rateLimitMap
+  };
+
   // ---------------------------------------------------------------------------
   // 1. Same-replica retry — no replicaId, caller keeps the original
   // ---------------------------------------------------------------------------
@@ -201,15 +227,7 @@ export function createFailoverChain(
   // ---------------------------------------------------------------------------
 
   const sameModelReplicaIds = availableReplicaIds(originalModel.id);
-  markModelAllSeenIfUnavailable(
-    originalModel.id,
-    sameModelReplicaIds,
-    replicas,
-    isRateLimited,
-    circuitBreakerSet,
-    seenReplicaIds,
-    rateLimitMap
-  );
+  markModelAllSeenIfUnavailable(originalModel.id, sameModelReplicaIds, sameTierCtx);
 
   for (const replicaId of sameModelReplicaIds) {
     if (seenReplicaIds.has(replicaId)) {
@@ -228,17 +246,7 @@ export function createFailoverChain(
   // 3. Next logical models in the same tier
   // ---------------------------------------------------------------------------
 
-  buildSameTierSteps(
-    replicas,
-    originalModel,
-    seenReplicaIds,
-    seenModelIds,
-    steps,
-    availableReplicaIds,
-    isRateLimited,
-    circuitBreakerSet,
-    rateLimitMap
-  );
+  buildSameTierSteps(seenModelIds, sameTierCtx);
 
   // ---------------------------------------------------------------------------
   // 4. Tier escalation (only when allowed)
@@ -264,23 +272,17 @@ export function createFailoverChain(
  * If every replica for a model is rate-limited or circuit-broken, mark them
  * all as seen so subsequent phases skip the model entirely.
  */
-function markModelAllSeenIfUnavailable(
-  modelId: string,
-  availableIds: string[],
-  replicas: ModelReplica[],
-  isRateLimited: (id: string) => boolean,
-  circuitBreakerSet: CircuitBreakerSet | undefined,
-  seenReplicaIds: Set<string>,
-  rateLimitMap: Map<string, RateLimitStatus> | undefined
-): void {
-  if (availableIds.length > 0 || rateLimitMap === undefined) {
+function markModelAllSeenIfUnavailable(modelId: string, availableIds: string[], ctx: SameTierBuildContext): void {
+  if (availableIds.length > 0 || ctx.rateLimitMap === undefined) {
     return;
   }
-  const allForModel = replicas.filter(r => r.logicalModelId === modelId);
-  const allUnavailable = allForModel.every(r => isRateLimited(r.id) || circuitBreakerSet?.isOpen(r.id) === true);
+  const allForModel = ctx.replicas.filter(r => r.logicalModelId === modelId);
+  const allUnavailable = allForModel.every(
+    r => ctx.isRateLimited(r.id) || ctx.circuitBreakerSet?.isOpen(r.id) === true
+  );
   if (allUnavailable && allForModel.length > 0) {
     for (const r of allForModel) {
-      seenReplicaIds.add(r.id);
+      ctx.seenReplicaIds.add(r.id);
     }
   }
 }
@@ -290,52 +292,32 @@ function markModelAllSeenIfUnavailable(
  * For each model, either adds individual replica steps or a single
  * skip-model step when all replicas are rate-limited / circuit-broken.
  */
-function buildSameTierSteps(
-  replicas: ModelReplica[],
-  originalModel: ModelEntry,
-  seenReplicaIds: Set<string>,
-  seenModelIds: Set<string>,
-  steps: FailoverStep[],
-  availableReplicaIds: (modelId: string) => string[],
-  isRateLimited: (id: string) => boolean,
-  circuitBreakerSet: CircuitBreakerSet | undefined,
-  rateLimitMap: Map<string, RateLimitStatus> | undefined
-): void {
-  for (const replica of replicas) {
+function buildSameTierSteps(seenModelIds: Set<string>, ctx: SameTierBuildContext): void {
+  for (const replica of ctx.replicas) {
     const logicalModel = getLogicalModel(replica.logicalModelId);
     if (
-      logicalModel?.tier !== originalModel.tier ||
-      replica.logicalModelId === originalModel.id ||
-      seenReplicaIds.has(replica.id)
+      logicalModel?.tier !== ctx.originalModel.tier ||
+      replica.logicalModelId === ctx.originalModel.id ||
+      ctx.seenReplicaIds.has(replica.id)
     ) {
       continue;
     }
 
     if (!seenModelIds.has(replica.logicalModelId)) {
       seenModelIds.add(replica.logicalModelId);
-      handleFirstModelEncounter(
-        replica,
-        replicas,
-        originalModel,
-        seenReplicaIds,
-        steps,
-        availableReplicaIds,
-        isRateLimited,
-        circuitBreakerSet,
-        rateLimitMap
-      );
+      handleFirstModelEncounter(replica, ctx);
       continue;
     }
 
-    if (seenReplicaIds.has(replica.id)) {
+    if (ctx.seenReplicaIds.has(replica.id)) {
       continue;
     }
-    seenReplicaIds.add(replica.id);
-    steps.push({
+    ctx.seenReplicaIds.add(replica.id);
+    ctx.steps.push({
       type: 'next-model',
       logicalModelId: replica.logicalModelId,
       replicaId: replica.id,
-      tier: originalModel.tier
+      tier: ctx.originalModel.tier
     });
   }
 }
@@ -345,30 +327,21 @@ function buildSameTierSteps(
  * If all replicas for this model are rate-limited or circuit-broken, emits a
  * synthetic `next-model` skip step instead of individual replicas.
  */
-function handleFirstModelEncounter(
-  replica: ModelReplica,
-  replicas: ModelReplica[],
-  originalModel: ModelEntry,
-  seenReplicaIds: Set<string>,
-  steps: FailoverStep[],
-  availableReplicaIds: (modelId: string) => string[],
-  _isRateLimited: (id: string) => boolean,
-  _circuitBreakerSet: CircuitBreakerSet | undefined,
-  rateLimitMap: Map<string, RateLimitStatus> | undefined
-): void {
-  const modelReplicaIds = availableReplicaIds(replica.logicalModelId);
-  const allReplicasForModel = replicas.filter(
-    r => r.logicalModelId === replica.logicalModelId && getLogicalModel(r.logicalModelId)?.tier === originalModel.tier
+function handleFirstModelEncounter(replica: ModelReplica, ctx: SameTierBuildContext): void {
+  const modelReplicaIds = ctx.availableReplicaIds(replica.logicalModelId);
+  const allReplicasForModel = ctx.replicas.filter(
+    r =>
+      r.logicalModelId === replica.logicalModelId && getLogicalModel(r.logicalModelId)?.tier === ctx.originalModel.tier
   );
 
-  if (modelReplicaIds.length === 0 && allReplicasForModel.length > 0 && rateLimitMap !== undefined) {
+  if (modelReplicaIds.length === 0 && allReplicasForModel.length > 0 && ctx.rateLimitMap !== undefined) {
     for (const r of allReplicasForModel) {
-      seenReplicaIds.add(r.id);
+      ctx.seenReplicaIds.add(r.id);
     }
-    steps.push({
+    ctx.steps.push({
       type: 'next-model',
       logicalModelId: replica.logicalModelId,
-      tier: originalModel.tier
+      tier: ctx.originalModel.tier
     });
     return;
   }
@@ -376,13 +349,13 @@ function handleFirstModelEncounter(
   if (modelReplicaIds.length > 0) {
     // Add first available replica for this model
     const firstId = modelReplicaIds[0];
-    if (firstId !== undefined && !seenReplicaIds.has(firstId)) {
-      seenReplicaIds.add(firstId);
-      steps.push({
+    if (firstId !== undefined && !ctx.seenReplicaIds.has(firstId)) {
+      ctx.seenReplicaIds.add(firstId);
+      ctx.steps.push({
         type: 'next-model',
         logicalModelId: replica.logicalModelId,
         replicaId: firstId,
-        tier: originalModel.tier
+        tier: ctx.originalModel.tier
       });
     }
   }

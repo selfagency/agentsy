@@ -43,10 +43,10 @@ export class RateLimitExceededError extends Error {
 export interface RateLimitStatus {
   /** Whether this replica has exhausted its rate-limit budget. */
   isRateLimited: boolean;
-  /** Recommended wait before retrying this replica (when known). */
-  retryAfterMs?: number;
   /** Remaining quota headroom (when available). */
   remainingQuota?: number;
+  /** Recommended wait before retrying this replica (when known). */
+  retryAfterMs?: number;
 }
 
 // =============================================================================
@@ -92,10 +92,10 @@ export function buildRateLimitMap(
     const remaining =
       snapshot.remainingTokensMinute ?? snapshot.remainingRequestsMinute ?? snapshot.remainingTokensHour;
 
-    if (remaining !== undefined) {
-      result.set(replica.id, { isRateLimited, remainingQuota: remaining });
-    } else {
+    if (remaining === undefined) {
       result.set(replica.id, { isRateLimited });
+    } else {
+      result.set(replica.id, { isRateLimited, remainingQuota: remaining });
     }
   }
 
@@ -118,7 +118,7 @@ export function buildRateLimitMap(
 export function getUnlimitedReplicas(rateLimitMap: Map<string, RateLimitStatus>, replicaIds: string[]): string[] {
   return replicaIds.filter(id => {
     const status = rateLimitMap.get(id);
-    return status === undefined || !status.isRateLimited;
+    return status?.isRateLimited !== true;
   });
 }
 

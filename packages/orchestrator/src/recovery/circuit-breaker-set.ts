@@ -82,11 +82,11 @@ export class CircuitBreakerSet {
     entry.consecutiveFailures++;
     entry.lastFailureAt = new Date().toISOString();
 
-    if (entry.state === 'half-open') {
-      // Half-open + failure → back to open
-      entry.state = 'open';
-      entry.openedAt = new Date().toISOString();
-    } else if (entry.consecutiveFailures >= this.#config.failureThreshold && entry.state !== 'open') {
+    if (
+      entry.state === 'half-open' ||
+      (entry.consecutiveFailures >= this.#config.failureThreshold && entry.state !== 'open')
+    ) {
+      // Half-open + failure → back to open; closed + threshold met → trip to open
       entry.state = 'open';
       entry.openedAt = new Date().toISOString();
     }

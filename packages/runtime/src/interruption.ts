@@ -137,11 +137,9 @@ export function getFailedReplicas(checkpoint: InterruptionCheckpoint): string[] 
  * @param replicaId - The replica identifier to mark as attempted.
  */
 export function markReplicaAttempted(checkpoint: InterruptionCheckpoint, replicaId: string): void {
-  if (!checkpoint.metadata) {
-    checkpoint.metadata = {};
-  }
+  checkpoint.metadata ??= {};
 
-  const replicas = checkpoint.metadata[METADATA_ATTEMPTED_REPLICAS] as unknown;
+  const replicas = checkpoint.metadata[METADATA_ATTEMPTED_REPLICAS];
   if (!Array.isArray(replicas)) {
     checkpoint.metadata[METADATA_ATTEMPTED_REPLICAS] = [replicaId];
   } else if (!replicas.includes(replicaId)) {
@@ -172,8 +170,6 @@ export function getEscalationState(checkpoint: InterruptionCheckpoint): Record<s
  * @param state - Escalation context to store.
  */
 export function setEscalationState(checkpoint: InterruptionCheckpoint, state: Record<string, unknown>): void {
-  if (!checkpoint.metadata) {
-    checkpoint.metadata = {};
-  }
+  checkpoint.metadata ??= {};
   checkpoint.metadata[METADATA_ESCALATION_STATE] = state;
 }

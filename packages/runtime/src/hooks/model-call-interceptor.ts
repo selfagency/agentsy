@@ -44,7 +44,7 @@ export async function interceptModelCall(
   input: ModelCallInterceptorInput,
   call: () => Promise<CompletionResponse>
 ): Promise<CompletionResponse> {
-  const { estimatedTokens, logicalModelId, providerId, replicaId, request, sessionId } = input;
+  const { estimatedTokens, logicalModelId, providerId, replicaId, sessionId } = input;
 
   // Fire PreModelCall — allows hooks to block or transform
   const preResult = await hooks.fire({
