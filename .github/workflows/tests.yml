@@ -35,6 +35,10 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
     timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
 
     steps:
       - name: Checkout repository
@@ -58,16 +62,23 @@ jobs:
         run: pnpm rebuild
 
       - name: Fallow
-        continue-on-error: true
         uses: fallow-rs/fallow@v2.89.0
         with:
           command: audit
+          format: sarif
           annotations: true
           comment: true
           review-comments: true
           review-guidance: false
-          diff-filter: added
-          max-comments: 50
+          max-annotations: 50
+          fail-on-issues: true
+          gate: new-only
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: fallow-results.sarif
+          category: fallow
 
   unit-test-coverage:
     name: Run unit tests with coverage
