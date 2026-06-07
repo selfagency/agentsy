@@ -32,9 +32,12 @@ concurrency:
 jobs:
   fallow:
     name: Fallow - Codebase Intelligence
-    
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    timeout-minutes: 10
+
     steps:
-       - name: Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Setup pnpm
@@ -51,7 +54,7 @@ jobs:
 
       - name: Rebuild native modules
         run: pnpm rebuild
-               
+
       - name: Fallow
         uses: fallow-rs/fallow@v2.89.0
         with:
@@ -62,7 +65,7 @@ jobs:
           review-guidance: false
           diff-filter: added
           max-comments: 50
-        
+
   unit-test-coverage:
     name: Run unit tests with coverage
     if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
