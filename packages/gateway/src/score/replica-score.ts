@@ -46,12 +46,32 @@ export interface ReplicaScoreInput {
   costInputPer1MTokens: number;
   /** Error rate (0.0–1.0, 0 if unknown). */
   errorRate: number;
+  /** Headroom percentage (0-100) for quota-aware scoring. */
+  headroomPercentage?: number;
   /** Whether this replica is local. */
   isLocal: boolean;
   /** Measured latency in ms (0 if unknown). */
   latencyMs: number;
   /** Tier of the logical model being scored. */
   tier: ModelTier;
+}
+
+/**
+ * Headroom bonus tiers for quota-aware scoring.
+ * Replicas with higher headroom receive a score bonus.
+ * >80% → +20, 50-80% → +10, <50% → 0
+ */
+function computeHeadroomBonus(headroomPercentage: number | undefined): number {
+  if (headroomPercentage === undefined) {
+    return 0;
+  }
+  if (headroomPercentage > 80) {
+    return 20;
+  }
+  if (headroomPercentage >= 50) {
+    return 10;
+  }
+  return 0;
 }
 
 export function computeReplicaScore(input: ReplicaScoreInput, weights?: ReplicaScoreWeights): number {
@@ -62,6 +82,9 @@ export function computeReplicaScore(input: ReplicaScoreInput, weights?: ReplicaS
   if (input.applyLocalBonus !== false && input.isLocal) {
     score += DEFAULT_LOCAL_BONUS[input.tier] * w.localWeight;
   }
+
+  // Headroom bonus — prefer replicas with more quota remaining
+  score += computeHeadroomBonus(input.headroomPercentage);
 
   // Latency penalty (1ms = 0.01 * weight)
   score -= input.latencyMs * w.latencyWeight;

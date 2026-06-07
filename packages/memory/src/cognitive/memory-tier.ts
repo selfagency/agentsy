@@ -1,6 +1,39 @@
 import type { MemoryItem, TierConfig, TierLevel, TierName, TierReadQuery, TierReadResult } from './tier-types.js';
 import { TIER_LEVELS, TIER_NAMES } from './tier-types.js';
 
+/**
+ * Shared demote logic: sort items by ascending importance and write
+ * up to `count` items into `this`, returning the number demoted.
+ * Used by both in-memory and AgentFS-backed tiers.
+ */
+export function demoteItems(
+  items: readonly MemoryItem[],
+  count: number,
+  write: (item: MemoryItem) => MemoryItem | null,
+  now: () => number
+): number {
+  const sorted = [...items].sort((a, b) => a.importance - b.importance);
+  let demoted = 0;
+
+  for (const item of sorted) {
+    if (demoted >= count) {
+      break;
+    }
+
+    const written = write({
+      ...item,
+      lastAccessedAt: now(),
+      accessCount: item.accessCount + 1
+    });
+
+    if (written !== null) {
+      demoted++;
+    }
+  }
+
+  return demoted;
+}
+
 export interface MemoryTierLike {
   capacity(): { usedTokens: number; maxTokens: number; usedItems: number; maxItems: number };
   clear(): void;
@@ -159,26 +192,7 @@ export function createMemoryTier(options: MemoryTierOptions): MemoryTierLike {
     },
 
     demote(count: number, from: MemoryTierLike): number {
-      const sorted = [...from.items()].sort((a, b) => a.importance - b.importance);
-      let demoted = 0;
-
-      for (const item of sorted) {
-        if (demoted >= count) {
-          break;
-        }
-
-        const written = this.write({
-          ...item,
-          lastAccessedAt: now(),
-          accessCount: item.accessCount + 1
-        });
-
-        if (written !== null) {
-          demoted++;
-        }
-      }
-
-      return demoted;
+      return demoteItems(from.items(), count, item => this.write(item), now);
     },
 
     clear(): void {

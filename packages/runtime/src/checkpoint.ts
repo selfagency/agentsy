@@ -14,6 +14,18 @@ export interface RuntimeCheckpoint {
   metadata?: Record<string, unknown>;
   /** Ordered list of pending tool calls at the checkpoint moment. */
   pendingToolCalls: { id: string; name: string; args: unknown }[];
+  /**
+   * Routing metadata for retry/failover continuity.
+   * Preserves which replicas and logical models have been attempted
+   * so that resumed sessions avoid already-failed replicas.
+   */
+  routingMetadata?: {
+    attemptedReplicaIds: string[];
+    attemptedLogicalModelIds: string[];
+    currentLogicalModelId?: string;
+    currentReplicaId?: string;
+    escalationLevel?: number;
+  };
   /** Active subagents and their state summaries. */
   subagentStates: { id: string; status: string; result?: unknown }[];
   timestamp: number;

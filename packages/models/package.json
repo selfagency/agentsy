@@ -7,19 +7,19 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     },
     "./llm-stats-client": {
+      "types": "./dist/llm-stats-client.d.ts",
       "import": "./dist/llm-stats-client.js",
-      "require": "./dist/llm-stats-client.cjs",
-      "types": "./dist/llm-stats-client.d.ts"
+      "require": "./dist/llm-stats-client.cjs"
     },
     "./search-contracts": {
+      "types": "./dist/search-contracts.d.ts",
       "import": "./dist/search-contracts.js",
-      "require": "./dist/search-contracts.cjs",
-      "types": "./dist/search-contracts.d.ts"
+      "require": "./dist/search-contracts.cjs"
     }
   },
   "scripts": {

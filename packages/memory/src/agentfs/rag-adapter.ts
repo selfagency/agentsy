@@ -2,6 +2,7 @@ import { eq, like } from 'drizzle-orm';
 
 import type { MemoryDatabase } from '../database/connection.js';
 import { kvStore } from '../database/schema.js';
+import { cosineSimilarity } from '../math-utils.js';
 import { createDocumentIngestor } from '../retrieval/rag/document-ingest.js';
 import type { KnowledgeBaseManager } from '../retrieval/rag/knowledge-base.js';
 import { createQueryPlanner } from '../retrieval/rag/query-planner.js';
@@ -49,23 +50,6 @@ function serializeDoc(doc: RAGServerDocument): string {
 
 function parseVector(value: string): number[] {
   return JSON.parse(value) as number[];
-}
-
-function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0;
-  let normA = 0;
-  let normB = 0;
-  for (let i = 0; i < a.length; i++) {
-    const ai = a[i] ?? 0;
-    const bi = b[i] ?? 0;
-    dot += ai * bi;
-    normA += ai * ai;
-    normB += bi * bi;
-  }
-  if (normA === 0 || normB === 0) {
-    return 0;
-  }
-  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
 function lexicalScore(queryTerms: string[], text: string): number {

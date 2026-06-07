@@ -21,6 +21,7 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 - **REQ-ORCH-003**: Task-board semantics support durable backend options and deterministic recovery.
 - **REQ-ORCH-004**: Slash-command interception and mode controls are policy-aware and explainable.
 - **REQ-ORCH-005**: Orchestrator must consume plugin-defined agent modes (including official superagents `research`, `plan`, and `agent`) through stable mode contracts rather than hardcoded internal personas.
+- **REQ-ORCH-006**: Orchestrator requests models by task tier and constraints only; gateway remains the sole authority for model and replica selection.
 - **SEC-ORCH-001**: Autonomous mode requires explicit policy profile and hard ceilings.
 - **SEC-ORCH-002**: Decision traces preserve explainability without exposing secrets.
 - **CON-ORCH-001**: Concrete tool execution remains in runtime/tools.
@@ -90,6 +91,8 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 | Task          | Description                                                                                                                                                                                                                                   | Completed | Date |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
 | TASK-ORCH-018 | Implement `decomposeForTiers(task, profile)` in `src/intelligence/decomposer.ts` — splits composite tasks into sub-tasks, annotates each with a tier (micro/small/mid/frontier) based on complexity heuristics (explore→micro, execute→mid).   |           |      |
+| TASK-ORCH-024 | Add `GatewayBackedModelRouter` that maps workflow node + task tier to gateway model selection results.                                                                      |           |      |
+| TASK-ORCH-025 | Add replica-aware failover policy (same logical model → next replica → same tier next model → optional tier escalation).                                             |           |      |
 | TASK-ORCH-019 | Implement `CallCapTracker` class in `src/caps/tracker.ts` — per-session counters for grep/read/glob/ls calls, configurable caps per tier (micro=8, small=5, mid=5, frontier=3), fingerprinting for redundancy detection (same file/pattern).  |           |      |
 | TASK-ORCH-020 | Implement banner injection utility in `src/caps/banner.ts` — injects `[cap: N/MAX]`, `[⚠ REDUNDANT]`, `[⚠ CAP REACHED — escalate tier]` markers into agent prompt context at session boundaries.                                              |           |      |
 | TASK-ORCH-021 | Implement `annotatePlan(plan: string, tiers: Map<string,string>)` in `src/plan/annotator.ts` — tags markdown plan steps with `[tier:micro]`, `[tier:mid]` etc. based on keyword analysis, returns annotated markdown.                        |           |      |
@@ -141,6 +144,7 @@ This plan defines the production implementation order for `@agentsy/orchestrator
 - **SEC-017**: `safetyGuardrails: false` requires `{ override: 'I understand the risks' }` else throws.
 - **SEC-018**: Taste memory stores only `{ approved: boolean, dimensionKey: string, score: number, timestamp: number }` — no LLM free-text.
 - **CON-013**: No gstack source code vendored. SKILL.md files are adapted GPL-3.0-or-later-licensed content; gstack binary/runtime NOT imported.
+- **CON-016**: No provider-tier abstraction is allowed; task tier aligns with gateway model tier.
 - **CON-014**: No running gstack installation required. Sprint skills are self-contained SKILL.md prompts.
 - **CON-015**: No separate `@agentsy/caveman` or `@agentsy/superpowers` packages. `agentsy-features-v1.md` Phase 6 superseded.
 - **GUD-016**: `autoplan` SKILL.md enforces Discrete Phase Separation: no tool writes during plan phase.

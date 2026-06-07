@@ -1,6 +1,6 @@
 import { eq, like } from 'drizzle-orm';
 
-import type { MemoryTierLike } from '../cognitive/memory-tier.js';
+import { demoteItems, type MemoryTierLike } from '../cognitive/memory-tier.js';
 import type { MemoryItem, TierConfig, TierName, TierReadQuery, TierReadResult } from '../cognitive/tier-types.js';
 import type { MemoryDatabase } from '../database/connection.js';
 import { kvStore } from '../database/schema.js';
@@ -231,26 +231,7 @@ export function createTierFsAdapter(options: TierFsAdapterOptions): MemoryTierLi
     },
 
     demote(count: number, from: MemoryTierLike): number {
-      const sorted = [...from.items()].sort((a, b) => a.importance - b.importance);
-      let demoted = 0;
-
-      for (const item of sorted) {
-        if (demoted >= count) {
-          break;
-        }
-
-        const written = this.write({
-          ...item,
-          lastAccessedAt: now(),
-          accessCount: item.accessCount + 1
-        });
-
-        if (written !== null) {
-          demoted++;
-        }
-      }
-
-      return demoted;
+      return demoteItems(from.items(), count, item => this.write(item), now);
     },
 
     clear(): void {

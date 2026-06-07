@@ -1,6 +1,7 @@
 // fallow-ignore-file unused-file
 import type { Octokit as OctokitType } from '@octokit/rest';
 import type ora from 'ora';
+import { $ } from 'zx';
 
 import { createGitHelpers } from './release-git.js';
 import { ROOT, safeRead, safeWrite } from './release-utils.js';
@@ -12,6 +13,88 @@ export type { Octokit as OctokitType };
 
 export function createReleaseShared(octokitConstructor: typeof OctokitType): typeof OctokitType {
   return octokitConstructor;
+}
+
+// ---------------------------------------------------------------------------
+// Rollback manager — shared across release scripts
+// ---------------------------------------------------------------------------
+
+export interface RollbackState {
+  commitLocal: boolean;
+  commitPushed: boolean;
+  releaseDone: boolean;
+  tagPushed: boolean;
+}
+
+export interface RollbackManager {
+  rollback(): void;
+  setupSignalHandlers(): void;
+  state: RollbackState;
+}
+
+export function createRollbackManager(tag: string): RollbackManager {
+  const state: RollbackState = {
+    commitLocal: false,
+    commitPushed: false,
+    tagPushed: false,
+    releaseDone: false
+  };
+
+  function rollback(): void {
+    if (state.releaseDone) {
+      return;
+    }
+
+    $.verbose = false;
+    try {
+      if (state.tagPushed) {
+        console.log(`\n⚠️  Release interrupted. Deleting remote tag ${tag}...`);
+        try {
+          runGit(['push', 'origin', '--delete', tag]);
+          runGit(['tag', '-d', tag]);
+          console.log(`↩️  Tag ${tag} deleted.`);
+        } catch {
+          console.error(`⚠️  Could not delete tag ${tag}. Manually run:`);
+          console.error(`   git push origin --delete '${tag}' && git tag -d '${tag}'`);
+        }
+      }
+
+      if (state.commitPushed) {
+        console.log('\n⚠️  Reverting release commit on origin/main...');
+        try {
+          runGit(['revert', '--no-edit', 'HEAD']);
+          runGit(['push', 'origin', 'main']);
+          console.log('↩️  Commit reverted and pushed.');
+        } catch {
+          console.error('❌ Auto-revert failed. Manually run:');
+          console.error('   git revert HEAD && git push origin main');
+        }
+      } else if (state.commitLocal) {
+        console.log('\n⚠️  Resetting local release commit...');
+        try {
+          runGit(['reset', '--hard', 'HEAD~1']);
+          console.log('↩️  Commit removed.');
+        } catch {
+          console.error('❌ Reset failed. Manually run: git reset --hard HEAD~1');
+        }
+      }
+    } catch {
+      /* best effort */
+    }
+  }
+
+  function setupSignalHandlers(): void {
+    process.on('SIGINT', () => {
+      rollback();
+      process.exit(130);
+    });
+    process.on('SIGTERM', () => {
+      rollback();
+      process.exit(143);
+    });
+  }
+
+  return { state, rollback, setupSignalHandlers };
 }
 
 export type Octokit = InstanceType<ReturnType<typeof createReleaseShared>>;

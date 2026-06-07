@@ -1,7 +1,7 @@
 # Phase 3.5 — Gateway
 
 **Effort:** ~8 hours  
-**Scope:** Replace direct `UniversalClient` with semantic, capability-aware gateway  
+**Scope:** Replace direct `UniversalClient` with semantic, capability-aware, model-tier and replica-aware gateway  
 **Package:** `@agentsy/gateway` (new)  
 **Gate:** Failover + quota tracking working  
 **Next:** Phase 4
@@ -93,6 +93,10 @@ export const genericOpenAiProfiles: ProviderProfile[] = [
 
 ## Status: ✅ DONE
 
+## Rearchitecture note
+
+This gateway now treats **model tier** as the canonical abstraction and is expected to route the same logical model across multiple provider/accounts when quota headroom or health warrants it. Local backends (Apfel, Ollama, Jan) are preferred for micro/small tasks.
+
 The 12 built-in profile modules were moved from `packages/gateway` to `packages/providers/src/profiles/` in commit `5284c0bc` (refactor: move profile knowledge into `@agentsy/providers`). Each profile is a `ProviderProfile` record with `usageProbes: UsageProbe[]`, header parsing, error classification, and capability metadata. The CodexBar-style `usageProbes` shape replaced the original single-`path` field. Built-in profiles: `openai`, `anthropic`, `gemini`, `bedrock`, `mistral`, `deepseek`, `xai`, `perplexity`, `ollama`, `deepinfra`, `zai`, `generic-openai`. The `zai.ts` Zero-API mock and the `ollama.ts` local profile are the Tier 0 entries. Deepinfra remains the Tier 2 Open LLM Leaderboard route.
 
 **Quality gates:**
@@ -125,6 +129,10 @@ export async function resolveProvider(config: CliConfig) {
 No breaking changes to CLI; gateway is transparent upgrade.
 
 ## Status: ✅ DONE
+
+## Rearchitecture note
+
+This gateway now treats **model tier** as the canonical abstraction and is expected to route the same logical model across multiple provider/accounts when quota headroom or health warrants it. Local backends (Apfel, Ollama, Jan) are preferred for micro/small tasks.
 
 `packages/cli/src/providers/resolve-provider.ts` imports `createLoadBalancedClient` from `@agentsy/gateway` (the function was renamed from `createGatewayClient` to `createLoadBalancedClient` in the actual implementation; the plan's name was a placeholder). The CLI's `chat` command and every other consumer of `resolveProvider` now go through the gateway transparently. The returned `LoadBalancedClient` extends `UniversalClient`, so no breaking changes to call sites.
 
@@ -263,6 +271,10 @@ export class RoundRobinStrategy {
 
 ## Status: ✅ DONE
 
+## Rearchitecture note
+
+This gateway now treats **model tier** as the canonical abstraction and is expected to route the same logical model across multiple provider/accounts when quota headroom or health warrants it. Local backends (Apfel, Ollama, Jan) are preferred for micro/small tasks.
+
 `packages/gateway/src/retry.ts` ships `retryWithFailover<T>(context, operation, options)`. The implementation picks ONE provider via the strategy and appends the rest in declared order as explicit fallback; each provider is tried up to `maxAttemptsPerProvider` times before failover. Records health + quota side-effects via the registry hooks. Throws `AllProvidersExhaustedError` with `ProviderFailureDetail[]` on full exhaustion. 10+ tests in `retry.test.ts`. `retryStreamWithFailover` from the plan was not implemented as a separate function — `stream()` reuses the same `retryWithFailover` wrapper since the operation function returns a `Promise<ReadableStream<NormalizedChunk>>` and the wrap is generic. This is a small scope reduction (no streaming-specific failover) but the user-visible behavior is the same: stream errors fail over to the next provider.
 
 ---
@@ -283,6 +295,10 @@ export class RoundRobinStrategy {
 
 ## Status: ✅ DONE
 
+## Rearchitecture note
+
+This gateway now treats **model tier** as the canonical abstraction and is expected to route the same logical model across multiple provider/accounts when quota headroom or health warrants it. Local backends (Apfel, Ollama, Jan) are preferred for micro/small tasks.
+
 `packages/cli/src/commands/lb-status.ts` ships `runLbStatusCommand(argv, io)` with `agentsy lb status` (and the bare `lb` subcommand). Renders per-provider status (healthy / degraded / unhealthy), per-provider RPM/TPM remaining, per-provider latency, and the active strategy. Accepts `--provider`, `--model`, `--api-key`, `--base-url`, `--strategy`, `--json`, `--no-color`. ANSI colors: green (healthy), yellow (degraded), red (unhealthy), gray (unknown). 5 tests in `lb-status.test.ts`. The plan's tabular layout (Provider / Status / Model Count / RPM / TPM) was simplified to a list-style output for terminal width; all required fields are present. Shipped in commit `9fe00c3b`.
 
 ---
@@ -302,6 +318,10 @@ Register in `@agentsy/plugins` slash registry.
 
 ## Status: ✅ DONE
 
+## Rearchitecture note
+
+This gateway now treats **model tier** as the canonical abstraction and is expected to route the same logical model across multiple provider/accounts when quota headroom or health warrants it. Local backends (Apfel, Ollama, Jan) are preferred for micro/small tasks.
+
 All four slash commands (`/lb status`, `/lb providers`, `/lb strategy <name>`, `/lb reset <providerId>`) are wired in `packages/cli/src/commands/chat.ts` alongside `/model select|list|search|refine`. `/lb bare` (no subcommand) falls back to `/lb status`. Strategy names are validated against `StrategyNameSchema` before swapping. `markProviderHealthy` is called on reset. When the client is mock (non-gateway), a graceful "[lb] not a load-balanced gateway client" message is shown instead of throwing. Committed in `55d77fd9`.
 
 ---
@@ -311,6 +331,10 @@ All four slash commands (`/lb status`, `/lb providers`, `/lb strategy <name>`, `
 **Effort:** ~1 hour
 
 ## Status: ✅ DONE
+
+## Rearchitecture note
+
+This gateway now treats **model tier** as the canonical abstraction and is expected to route the same logical model across multiple provider/accounts when quota headroom or health warrants it. Local backends (Apfel, Ollama, Jan) are preferred for micro/small tasks.
 
 `packages/gateway/src/` ships 17 test files totaling ~150+ test cases:
 
@@ -341,6 +365,10 @@ Covers every checklist item: config validation (Zod), registry lookup, alias res
 **Effort:** ~1.5 hours
 
 ## Status: ✅ DONE
+
+## Rearchitecture note
+
+This gateway now treats **model tier** as the canonical abstraction and is expected to route the same logical model across multiple provider/accounts when quota headroom or health warrants it. Local backends (Apfel, Ollama, Jan) are preferred for micro/small tasks.
 
 `packages/gateway/src/__tests__/e2e/gateway-e2e.test.ts` ships 6 MSW-backed HTTP round-trip scenarios:
 
@@ -373,6 +401,10 @@ The **CLI slash command** `/model select <alias-or-upstream-id>` now invokes `cl
 
 ## Status: ✅ DONE
 
+## Rearchitecture note
+
+This gateway now treats **model tier** as the canonical abstraction and is expected to route the same logical model across multiple provider/accounts when quota headroom or health warrants it. Local backends (Apfel, Ollama, Jan) are preferred for micro/small tasks.
+
 `packages/gateway/README.md` was rewritten in commit `85ba1b9e` to match the shipped surface: lists every strategy, every exported type, the migration path from `UniversalClient`, tier-aware + local-provider examples, and a clear subpath-export map. TSDoc on every public type and function. The `packages/gateway/src/index.ts` barrel exports every public surface. `tsup.config.ts` defines subpath entry points (although the gateway currently ships as a single `index` entry; subpath exports are reserved for future use). `package.json` `exports` field is aligned.
 
 ---
@@ -380,6 +412,10 @@ The **CLI slash command** `/model select <alias-or-upstream-id>` now invokes `cl
 ### TASK-LB-OBS (Phase 9 Addition): Metrics
 
 ## Status: ✅ DONE
+
+## Rearchitecture note
+
+This gateway now treats **model tier** as the canonical abstraction and is expected to route the same logical model across multiple provider/accounts when quota headroom or health warrants it. Local backends (Apfel, Ollama, Jan) are preferred for micro/small tasks.
 
 `packages/gateway/src/observability/metrics-collector.ts` ships `MetricsCollector` with `recordRequest`, `recordFailover`, `recordCircuitTrip`, `getUsageSnapshot`, `getProviderAggregate`, `reset`. Per-(provider, model) buckets track request count, success count, failure count, error rate, input/output tokens, USD cost, and latency percentiles (p50 / p95 / p99) via a fixed-capacity `LatencyBuffer` (1000 samples). Auto-instrumentation is wired in `createLoadBalancedClient` (commit `cccd43a0`): one `recordRequest` per caller-visible `complete()` call, one `recordFailover` per cross-provider hop, one `recordCircuitTrip` per closed→open transition. Exposed on the `LoadBalancedClient` surface via `getMetricsSnapshot()` and `getMetricsProviderAggregate(providerId)`. 12 collector tests + 7 instrumentation tests.
 
@@ -390,6 +426,10 @@ The **CLI slash command** `/model select <alias-or-upstream-id>` now invokes `cl
 ### TASK-LB-022: Tier-Aware Routing Strategy
 
 ## Status: ✅ DONE
+
+## Rearchitecture note
+
+This gateway now treats **model tier** as the canonical abstraction and is expected to route the same logical model across multiple provider/accounts when quota headroom or health warrants it. Local backends (Apfel, Ollama, Jan) are preferred for micro/small tasks.
 
 `packages/gateway/src/strategies/tier-aware.ts` ships `TierAwareStrategy` with options `{ defaultStrategy, tierOf, maxEscalationSteps }`. The strategy reads `taskTier` from the `SelectionContext.request` field, looks up the providers in the matching tier, and runs the base `defaultStrategy` for in-tier selection. If the result is `undefined` (no eligible in-tier provider), it escalates through `ESCALATION_CHAIN` (`micro → small → mid → frontier`) up to `maxEscalationSteps`. `DEFAULT_PROVIDER_TIERS` and `buildTierOf(entries)` are exported for callers. Shipped in commit `6a743c87`. 8 tests.
 

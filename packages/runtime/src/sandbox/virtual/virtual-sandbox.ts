@@ -25,9 +25,7 @@ export interface VirtualSandbox {
 }
 
 const DEFAULT_TIMEOUT_MS = 5000;
-const __filename = import.meta.filename;
-const __dirname = import.meta.dirname;
-const WORKER_PATH = join(__dirname, 'sandbox-worker.js');
+const WORKER_PATH = join(process.cwd(), 'packages/runtime/dist/sandbox/virtual/sandbox-worker.js');
 
 interface SandboxTimeoutHandlerOptions {
   resolve: (value: SandboxOutput) => void;
@@ -245,4 +243,3 @@ export function createVirtualSandbox(): VirtualSandbox {
   };
 }
 
-// Remove unused runVirtual function

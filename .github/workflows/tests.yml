@@ -30,6 +30,56 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  fallow:
+    name: Fallow - Codebase Intelligence
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild native modules
+        run: pnpm rebuild
+
+      - name: Fallow
+        uses: fallow-rs/fallow@647fe2d90f7316b9a95ccd690481224e9a95333b # v2.89.0
+        with:
+          command: audit
+          format: sarif
+          annotations: true
+          comment: true
+          review-comments: true
+          review-guidance: false
+          max-annotations: 50
+          fail-on-issues: true
+          gate: new-only
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: fallow-results.sarif
+          category: fallow
+
   unit-test-coverage:
     name: Run unit tests with coverage
     if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore(release):') }}

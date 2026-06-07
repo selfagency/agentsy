@@ -565,7 +565,7 @@ describe('Chat Streaming E2E', () => {
 - [x] TASK-012: E2E tests pass
 - [x] `pnpm check-types` monorepo green
 - [x] `pnpm test` monorepo green
-- [ ] CLI can chat interactively with streaming
+- [x] CLI can chat interactively with streaming
 - [ ] Documentation complete
 
 ---

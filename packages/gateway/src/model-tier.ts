@@ -7,14 +7,21 @@
  * A single logical model may be served by multiple replicas.
  */
 
-export { type ModelAvailability, ModelAvailabilityTracker } from './availability-tracker.js';
+export { type CircuitState, type ModelAvailability, ModelAvailabilityTracker } from './availability-tracker.js';
 export { LocalModelDetector } from './local-detector.js';
 export { getAllLogicalModels, getLogicalModel, getLogicalModelsByTier } from './logical-models.js';
 export { ModelRegistry, modelRegistry } from './model-registry.js';
-export { ReplicaRegistry } from './replica-registry.js';
+export { type ReplicaPhase, ReplicaRegistry } from './replica-registry.js';
 export { DefaultReplicaSelector, type ReplicaSelectionContext, type ReplicaSelector } from './replica-selector.js';
 export { computeReplicaScore, type ReplicaScoreInput, type ReplicaScoreWeights } from './score/replica-score.js';
 export { DefaultTierAwareModelSelector } from './selector.js';
+export {
+  createModelGatewayClient,
+  type CallByTierResult,
+  type ModelGatewayClient,
+  type ModelGatewayClientOptions,
+  type ReplicaCallFunction
+} from './model-gateway-client.js';
 export { type SpilloverResult, spillover } from './spillover.js';
 export type {
   LogicalModel,
@@ -23,6 +30,10 @@ export type {
   ModelEntry,
   ModelReplica,
   ModelSelectionConstraints,
+  ModelSelectionResult,
   ModelTier,
-  TierAwareModelSelector
+  ReplicaHealthSnapshot,
+  ReplicaQuotaSnapshot,
+  TierAwareModelSelector,
+  UseCase
 } from './types.js';

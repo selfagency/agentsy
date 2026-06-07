@@ -1,14 +1,18 @@
 # @agentsy/gateway
 
-Semantic routing layer for multi-provider LLM access. Drop-in replacement for `UniversalClient` that adds circuit breaking, rate-limit tracking, strategy-based model selection, local-first routing, and observability.
+Canonical model-routing layer for multi-provider LLM access. The gateway selects a logical model and a concrete replica, then executes through the provider transport. It adds circuit breaking, rate-limit tracking, strategy-based model selection, local-first routing, replica-aware spillover, and observability.
+
+This is now the canonical routing spine for the repo: task tier → logical model → replica → provider transport.
 
 ## Features
 
+> The gateway is the canonical routing spine for the repo: task tier → logical model → replica → provider transport.
+
 - **Model-tier routing** — Tiers are defined on **models** (`ModelEntry.tier`), not providers. A single provider hosts models across all tiers. Supports `micro`, `small`, `mid`, `frontier`.
-- **Local-first by default** — `LocalModelDetector` auto-discovers local backends (Ollama, Apfel, Jan AI). `ModelAvailabilityTracker` health-checks models with 30s TTL. Scoring gives local models a large bonus for micro/small tasks, declining to zero for frontier.
+- **Local-first for lightweight tasks** — `LocalModelDetector` auto-discovers local backends (Ollama, Apfel, Jan AI). `ModelAvailabilityTracker` health-checks models with 30s TTL. Scoring gives local models a large bonus for micro/small tasks, slight preference for mid, and none for frontier.
 - **Circuit breaking** — Automatic failover on provider outages via `ProviderHealthRegistry` (per-provider circuit breaker).
 - **Rate limit tracking** — `QuotaTracker` wraps `@agentsy/tokenomics` and tracks per-provider RPM/TPM budgets from server response headers.
-- **Routing strategies** — `round-robin`, `weighted`, `least-connections`, `latency`, `priority-fallback`, `cost-based`, `adaptive`, and `tier-aware`.
+- **Routing strategies** — `round-robin`, `weighted`, `least-connections`, `latency`, `priority-fallback`, `cost-based`, `adaptive`, and `tier-aware` (legacy provider-facing path; prefer model-tier selector).
 - **Active usage probing** — `ProviderProfile.usageProbes[]` (CodexBar-style) describes how to query the provider's quota endpoint.
 - **Mid-conversation model switching** — `ModelSwitcher` resolves aliases (e.g. `gpt-4o`, `claude-opus-4`) to provider-specific upstream ids and updates the active model in place. CLI `/model select` wired.
 - **Metrics** — `MetricsCollector` records per-(provider, model) request counts, error rates, token usage, USD cost, and latency percentiles (p50 / p95 / p99).
@@ -35,7 +39,7 @@ interface ModelEntry {
 
 ### Local-First Scoring
 
-The `DefaultTierAwareModelSelector` scores candidates with a tier-aware local bonus:
+The `DefaultTierAwareModelSelector` scores candidates with a tier-aware local bonus and quota-aware replica ranking:
 
 | Task Tier | Local Bonus | Behavior |
 |-----------|-------------|----------|
@@ -52,7 +56,7 @@ Override via `ModelSelectionConstraints.localPreference`:
 
 ### Availability Tracking
 
-`ModelAvailabilityTracker` health-checks all models every 30 seconds. Local models are probed via their provider endpoint; cloud models are assumed available unless a stale failure exists.
+`ModelAvailabilityTracker` health-checks all models every 30 seconds. Local models are probed via their provider endpoint; cloud models are assumed available unless a stale failure exists. Replica cooldown and stale failure state are considered during scoring.
 
 ### Local Model Detection
 
@@ -157,7 +161,7 @@ The returned `LoadBalancedClient` extends `UniversalClient`, so existing call si
 | `cost-based` | Pick the lowest cost per 1K input tokens. |
 | `tier-aware` | Filter by provider-level complexity bucket (legacy — prefer `DefaultTierAwareModelSelector`). |
 
-## Tier-aware model selection (orchestrator integration)
+## Replica-aware model selection (orchestrator integration)
 
 ```typescript
 import { DefaultTierAwareModelSelector } from '@agentsy/gateway';
@@ -170,11 +174,10 @@ const model = await selector.selectModelForTier({
   useCase: 'code',
   constraints: {
     requireTools: true,
-    localPreference: 'preferred'  // try local first, fall back to cloud
+    localPreference: 'preferred'  // local preferred only for lightweight tasks
   }
 });
-// model.id = 'ollama/llama3.3:70b' (local, free, tools-capable)
-// or fallback: 'openai/gpt-4o'
+// model.id may be a local or cloud replica depending on quota/health
 ```
 
 ## Local provider registration
@@ -196,6 +199,87 @@ const { registered, providers } = registerLocalProviders(profile, entries, {
 // entries is now: [openai, local-apfel, local-ollama]
 ```
 
+## Model-Centric Client API
+
+The gateway is the **single routing authority** — it owns all model-selection and replica-selection logic. The orchestrator requests by tier and use case only; the gateway resolves the best model and replica.
+
+Three invocation methods provide increasing levels of control:
+
+### `callByTier(tier, useCase, request)`
+
+Let the gateway select the best logical model and replica for a given capability tier and use case. Ideal for normal task execution.
+
+```typescript
+import { createModelGatewayClient } from '@agentsy/gateway';
+
+const client = createModelGatewayClient({ /* registries, selectors, transport */ });
+
+const { response, selection } = await client.callByTier('mid', 'code', {
+  messages: [{ role: 'user', content: 'Refactor this function' }]
+});
+
+console.log(selection.selectedBecause);
+// ["Model selected by tier-aware selector for tier=mid, useCase=code",
+//  "Replica selected by replica scorer"]
+```
+
+### `callLogicalModel(logicalModelId, request)`
+
+Pin a specific logical model (e.g. `claude-sonnet-4`, `gpt-4o-mini`) but let the gateway select the best available replica. Use when you know which model you need.
+
+```typescript
+const { response, selection } = await client.callLogicalModel('claude-sonnet-4', {
+  messages: [{ role: 'user', content: 'Explain quantum computing' }]
+});
+// Gateway picks the best replica for claude-sonnet-4
+```
+
+### `callReplica(replicaId, request)`
+
+Pin a specific replica — a particular provider account or local backend. No model or replica selection occurs. Use for debugging, testing, or explicit routing.
+
+```typescript
+const { response, selection } = await client.callReplica(
+  'anthropic-main/claude-sonnet-4',
+  { messages: [{ role: 'user', content: 'Hello' }] }
+);
+// Direct invocation — no selection overhead
+```
+
+### Selection result
+
+All three methods return a `ModelSelectionResult` alongside the completion response:
+
+```typescript
+interface ModelSelectionResult {
+  logicalModelId: string;      // "claude-sonnet-4"
+  replicaId: string;           // "anthropic-main/claude-sonnet-4"
+  providerId: string;          // "anthropic-main"
+  selectedBecause: string[];   // Human-readable reasons
+  rejectedCandidates: Array<{  // Other candidates and why they lost
+    id: string;
+    reasons: string[];
+  }>;
+}
+```
+
+This makes every routing decision **explainable** — the consumer can see which model was chosen, which replica, and why all other candidates were rejected.
+
+### How the client interacts with the routing stack
+
+| Method | Model Selection | Replica Selection | Use Case |
+|---|---|---|---|
+| `callByTier` | Tier-aware selector picks model | Replica scorer picks best replica | Normal execution |
+| `callLogicalModel` | Skips (model specified) | Replica scorer picks best replica | Known model, best replica |
+| `callReplica` | Skips (replica specified) | Skips — direct pin | Debug/testing/explicit |
+
+For `callByTier`, the flow is:
+1. Tier-aware selector resolves `(tier, useCase)` → candidate models
+2. Replica registry resolves logical model → candidate replicas
+3. Replica selector scores replicas (health, quota, latency, cost, local bonus)
+4. Provider transport executes against the winning replica
+5. Failover chain: next replica → next same-tier model → tier escalation (if policy allows)
+
 ## Subpath exports
 
 The gateway re-exports from `@agentsy/providers` and `@agentsy/tokenomics` for the bits it depends on:
@@ -208,6 +292,8 @@ The gateway re-exports from `@agentsy/providers` and `@agentsy/tokenomics` for t
 - `DefaultTierAwareModelSelector` (model-tier routing)
 - `ModelAvailabilityTracker` (health checking)
 - `LocalModelDetector` (backend discovery)
+- `ReplicaRegistry` (same-model, multi-provider routing)
+- `ReplicaQuotaSnapshot` / headroom signals (tokenomics-driven selection)
 - `ReplicaRegistry` (index replicas by logical model and provider)
 - `DefaultReplicaSelector` (filter + score + rank replicas)
 - `computeReplicaScore` (tunable scoring formula)

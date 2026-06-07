@@ -17,6 +17,14 @@ export { HealthTracker } from './health/health-tracker.js';
 export { LatencyTracker } from './health/latency-tracker.js';
 export { type ProviderHealthEntry, ProviderHealthRegistry } from './health/provider-health-registry.js';
 export {
+  type CallByTierResult,
+  createModelGatewayClient,
+  type ModelGatewayClient,
+  type ModelGatewayClientOptions,
+  type ReplicaCallFunction
+} from './model-gateway-client.js';
+export {
+  type CircuitState,
   computeReplicaScore,
   DefaultReplicaSelector,
   DefaultTierAwareModelSelector,
@@ -24,14 +32,18 @@ export {
   getLogicalModel,
   getLogicalModelsByTier,
   type LogicalModel,
+  type ModelAvailability,
   type ModelCapabilities,
   type ModelCost,
   type ModelEntry,
   ModelRegistry,
   type ModelReplica,
   type ModelSelectionConstraints,
+  type ModelSelectionResult,
   type ModelTier,
   modelRegistry,
+  type ReplicaHealthSnapshot,
+  type ReplicaQuotaSnapshot,
   ReplicaRegistry,
   type ReplicaScoreInput,
   type ReplicaScoreWeights,
@@ -39,7 +51,8 @@ export {
   type ReplicaSelector,
   type SpilloverResult,
   spillover,
-  type TierAwareModelSelector
+  type TierAwareModelSelector,
+  type UseCase
 } from './model-tier.js';
 export {
   type LatencyPercentiles,
@@ -91,13 +104,7 @@ export {
   type RoutingStrategy,
   type SelectionContext
 } from './strategies/strategy.js';
-export {
-  buildTierOf,
-  DEFAULT_PROVIDER_TIERS,
-  ESCALATION_CHAIN,
-  type TierAwareOptions,
-  TierAwareStrategy
-} from './strategies/tier-aware.js';
+// ProviderTier removed per plan 34 — tiers belong to models, not providers
 export { type ModelInfo, type ModelSwitchConfig, ModelSwitcher, type ModelSwitcherOptions } from './switcher.js';
 export {
   type GatewayClient,

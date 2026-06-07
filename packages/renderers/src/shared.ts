@@ -1,6 +1,6 @@
 import type { OutputPart, StreamChunk } from '@agentsy/core/processor';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
-
+import type { FinishReason, UsageInfo } from '@agentsy/types';
 import type { BaseRendererOptions, RendererHandle } from './types.js';
 
 export function createStepChangeEmitter(
@@ -133,6 +133,42 @@ export function createSharedRendererHandle(
         } else {
           throw error;
         }
+      }
+    }
+  };
+}
+
+/**
+ * Shared writeChunk handler to reduce duplication across renderers.
+ * Captures the common try/catch, process, emit step, and onFinish pattern.
+ * @internal
+ */
+export function createWriteChunkHandler(
+  llmProcessor: LLMStreamProcessor,
+  processParts: (parts: OutputPart[]) => void,
+  emitStepChange: (chunk: StreamChunk | ReturnType<LLMStreamProcessor['flush']>) => Promise<void>,
+  finishedRef: { current: boolean },
+  onFinish:
+    | ((finishReason: FinishReason | undefined, usage: UsageInfo | undefined) => void | Promise<void>)
+    | undefined,
+  onError: ((error: Error) => void) | undefined
+): (chunk: StreamChunk) => Promise<void> {
+  return async (chunk: StreamChunk): Promise<void> => {
+    try {
+      const result = llmProcessor.process(chunk);
+      processParts(result.parts);
+      await emitStepChange(result);
+
+      // Fire onFinish callback if stream is done (guard against double invocation)
+      if (chunk.done === true && !finishedRef.current && onFinish) {
+        finishedRef.current = true;
+        await onFinish(chunk.finishReason, chunk.usage);
+      }
+    } catch (error) {
+      if (onError && error instanceof Error) {
+        onError(error);
+      } else {
+        throw error;
       }
     }
   };

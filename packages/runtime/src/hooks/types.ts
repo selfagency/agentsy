@@ -114,6 +114,23 @@ export interface ModelReplicaSwitchedEvent {
   type: 'ModelReplicaSwitched';
 }
 
+/** Fired after a model selection decision with full diagnostics. */
+export interface ModelSelectionDiagnosticsEvent {
+  attemptedReplicaIds: string[];
+  candidateCount: number;
+  logicalModelId: string;
+  rejectedCandidates: Array<{
+    id: string;
+    reasons: string[];
+    score: number;
+  }>;
+  selectedReplicaId: string | undefined;
+  selectionTimeMs: number;
+  sessionId: string;
+  tier: string;
+  type: 'ModelSelectionDiagnostics';
+}
+
 /** Union of all runtime hook events. */
 export type RuntimeHookEvent =
   | UserPromptSubmitEvent
@@ -127,4 +144,5 @@ export type RuntimeHookEvent =
   | PreModelCallEvent
   | PostModelCallEvent
   | ModelCallFailedEvent
-  | ModelReplicaSwitchedEvent;
+  | ModelReplicaSwitchedEvent
+  | ModelSelectionDiagnosticsEvent;

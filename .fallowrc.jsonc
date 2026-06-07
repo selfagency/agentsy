@@ -3,7 +3,29 @@
   // Root Fallow configuration: start narrow and document modeling decisions.
   // This file should be iteratively refined as we wire package exports and rebuild coverage.
   // Mark packages that are intentionally public (leave empty initially; populate per-package).
-  "publicPackages": [],
+  "publicPackages": [
+    "@agentsy/context",
+    "@agentsy/core",
+    "@agentsy/gateway",
+    "@agentsy/guardrails",
+    "@agentsy/mcp",
+    "@agentsy/memory",
+    "@agentsy/models",
+    "@agentsy/observability",
+    "@agentsy/orchestrator",
+    "@agentsy/plugins",
+    "@agentsy/prompts",
+    "@agentsy/providers",
+    "@agentsy/renderers",
+    "@agentsy/retrieval",
+    "@agentsy/runtime",
+    "@agentsy/secrets",
+    "@agentsy/session",
+    "@agentsy/tokenomics",
+    "@agentsy/tools",
+    "@agentsy/types",
+    "@agentsy/ui"
+  ],
   // Explicit entry points for packages when package.json exports are insufficient.
   "entry": [],
   // Preserve class members that are used via runtime reflection or host integrations.

@@ -10,14 +10,14 @@
 
 The revised Phase 4 orchestration plan identifies **8 critical gaps**. Cross-package review shows:
 
-- ✅ **GATEWAY:** Already implements tier-aware routing, provider health/quota tracking, cost-based selection
+- ✅ **GATEWAY:** Already implements model-tier routing, provider health/quota tracking, local-first scoring, and quota-aware selection
 - ✅ **TOKENOMICS:** Implements token budget management, ledger, frustration signals, learning loop infrastructure
 - ✅ **RUNTIME:** Implements hook registry, checkpoint/interruption, loop infrastructure
 - ✅ **GUARDRAILS:** Plans policy engine, approval gates, audit logging
 - ⚠️ **MCP:** Minimal (types only), protocol bridge only
 - ⚠️ **CORE:** Stream processing, compression (no orchestration logic)
 
-**Key Finding:** 4 of 8 gaps are **already partially or fully addressed** by existing packages. Integration strategy should focus on wiring + bridging gaps, not reimplementing.
+**Key Finding:** 4 of 8 gaps are **already partially or fully addressed** by existing packages. Integration strategy should focus on wiring + bridging gaps, not reimplementing. The remaining work is primarily replica-awareness, headroom plumbing, and runtime failover state.
 
 ---
 
@@ -100,9 +100,10 @@ The revised Phase 4 orchestration plan identifies **8 critical gaps**. Cross-pac
 
 **Current State:**
 
-- `@agentsy/gateway` was rearchitected to **model-tier routing** (2026-06-04):
+- `@agentsy/gateway` was rearchitected to **model-tier routing + replica-aware load balancing** (2026-06-04):
   - `ModelTier` enum (`'micro' | 'small' | 'mid' | 'frontier'`)
-  - `ModelRegistry` with static entries for OpenAI, Anthropic, Ollama
+  - `LogicalModelRegistry` with static entries for OpenAI, Anthropic, Ollama
+  - `ReplicaRegistry` / `ModelReplica` indexing per provider/account/backend
   - `DefaultTierAwareModelSelector` — cost-based scoring + tier-aware local bonus
   - `ModelAvailabilityTracker` — health checks with 30s TTL
   - `LocalModelDetector` — probes Ollama, Apfel, Jan AI at startup
@@ -114,7 +115,8 @@ The revised Phase 4 orchestration plan identifies **8 critical gaps**. Cross-pac
 - **Task tier = Model tier** (1:1). Orchestrator re-exports `TaskTier = ModelTier` from gateway.
 - `GatewayBackedModelRouter` in orchestrator delegates model selection to `DefaultTierAwareModelSelector`.
 - No cost tables in orchestrator — all cost/capability data lives in gateway's `ModelRegistry`.
-- Local preference built into selector scoring (micro=+100, small=+80, mid=+20, frontier=0).
+- Local preference is tier-aware (micro=+100, small=+80, mid=+20, frontier=0), but only for lightweight tasks.
+- Tokenomics provides hourly/weekly/monthly headroom per replica; gateway uses that to cycle same-model replicas across providers/accounts.
 
 **Owner:** Orchestrator team  
 **Effort:** 1.5h (router adapter + wiring); gateway already complete
@@ -201,9 +203,9 @@ The revised Phase 4 orchestration plan identifies **8 critical gaps**. Cross-pac
 
 **Current State:**
 
-- `@agentsy/tokenomics` plans session ledger with spend tracking
+- `@agentsy/tokenomics` plans session ledger with spend tracking and attribution
 - `@agentsy/gateway` has `MetricsCollector` (per-provider metrics)
-- **Gap:** No hierarchical span linking, no multi-agent trace correlation
+- **Gap:** no explicit replica-aware routing span/correlation fields yet; tokenomics needs per-replica headroom and routing metadata
 
 **Integration Strategy:**
 

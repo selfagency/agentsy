@@ -1,7 +1,6 @@
-import type { StreamChunk } from '@agentsy/core/processor';
 import { LLMStreamProcessor } from '@agentsy/core/processor';
 
-import { createStepChangeEmitter } from '../shared.js';
+import { createStepChangeEmitter, createWriteChunkHandler } from '../shared.js';
 import type { BaseRendererOptions, RendererHandle } from '../types.js';
 
 /**
@@ -107,7 +106,7 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
   const llmProcessor = processor ?? new LLMStreamProcessor();
 
   // Guard flag to prevent double onFinish callback invocation
-  let finished = false;
+  const finishedRef = { current: false };
   const emitStepChange = createStepChangeEmitter(options.onStep);
 
   // Accumulator for markdown content
@@ -210,8 +209,8 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
       }
 
       // Fire onFinish callback to signal stream completion (guard against double invocation)
-      if (!finished && result?.done && onFinish) {
-        finished = true;
+      if (!finishedRef.current && result?.done && onFinish) {
+        finishedRef.current = true;
         await onFinish(result.finishReason, result.usage);
       }
     },
@@ -233,24 +232,6 @@ export function createStreamingMarkdownRenderer(options: StreamingMarkdownRender
       }
     },
 
-    async writeChunk(chunk: StreamChunk): Promise<void> {
-      try {
-        const result = llmProcessor.process(chunk);
-        processParts(result.parts);
-        await emitStepChange(result);
-
-        // Fire onFinish callback if stream is done (guard against double invocation)
-        if (chunk.done === true && !finished && onFinish) {
-          finished = true;
-          await onFinish(chunk.finishReason, chunk.usage);
-        }
-      } catch (error) {
-        if (onError && error instanceof Error) {
-          onError(error);
-        } else {
-          throw error;
-        }
-      }
-    }
+    writeChunk: createWriteChunkHandler(llmProcessor, processParts, emitStepChange, finishedRef, onFinish, onError)
   };
 }

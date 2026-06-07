@@ -35,6 +35,10 @@ This plan defines the production implementation for `@agentsy/tokenomics` — th
 - **REQ-TKNM-013**: An MCP server exposes ROI query tools consumable by VS Code, TUI, and external dashboards.
 - **REQ-TKNM-014**: A status-bar widget emits session-level spend + frustration score for VS Code and TUI surfaces.
 - **REQ-TKNM-015**: `agentsy tokenomics report` CLI command renders a weekly spend-vs-value summary.
+- **REQ-TKNM-016**: Tokenomics computes hourly, weekly, and monthly remaining headroom per model replica.
+- **REQ-TKNM-017**: Gateway can query replica headroom before model selection.
+- **REQ-TKNM-018**: Usage attribution records include `logicalModelId`, `replicaId`, `providerId`, and `accountId` when available.
+- **REQ-TKNM-019**: Tokenomics emits saturation and skew signals to reduce load on hot replicas.
 
 ### Security & Privacy
 
@@ -57,6 +61,19 @@ This plan defines the production implementation for `@agentsy/tokenomics` — th
 ---
 
 ## 2. Package Structure
+
+Replica-aware routing support:
+
+```text
+packages/tokenomics/src/
+├── quotas/
+│   ├── replica-budget.ts
+│   ├── usage-aggregator.ts
+│   ├── headroom.ts
+│   └── windows.ts
+├── routing/
+│   └── headroom-provider.ts
+```
 
 ```text
 packages/tokenomics/
@@ -147,6 +164,12 @@ packages/tokenomics/
 
 **Runtime hook integration** (via `@agentsy/runtime` — no direct dep; injected via hook registration):
 
+Replica-aware identity fields used throughout tokenomics:
+
+- `logicalModelId`
+- `replicaId`
+- `providerId`
+- `accountId`
 - `post-session` — writes ledger entry
 - `post-turn` — feeds retry/rewrite detectors
 - `post-tool-call(write_file)` — triggers rewrite window
@@ -160,6 +183,8 @@ packages/tokenomics/
 ---
 
 ### Phase 1 — Ledger Foundation
+
+The ledger must record usage at replica granularity so gateway can balance across provider/accounts serving the same logical model.
 
 **Effort:** ~6h  
 **Gate:** `pnpm check-types` + `pnpm test` green; ledger entries persisted and queryable  
