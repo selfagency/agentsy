@@ -212,3 +212,68 @@ describe('LocalModelDetector', () => {
     }
   });
 });
+// =============================================================================
+// ModelRegistry — use case & composite index coverage
+// =============================================================================
+
+describe('ModelRegistry use case lookups', () => {
+  it('getModelsByUseCase returns models for a known use case', () => {
+    const models = modelRegistry.getModelsByUseCase('vision');
+    expect(models.length).toBeGreaterThanOrEqual(1);
+    for (const m of models) {
+      expect(m.useCases).toContain('vision');
+    }
+  });
+
+  it('getModelsByUseCase returns empty array for unknown use case', () => {
+    const models = modelRegistry.getModelsByUseCase('embed');
+    expect(models).toEqual([]);
+  });
+
+  it('getModelsByTierAndUseCase returns models matching both', () => {
+    const models = modelRegistry.getModelsByTierAndUseCase('mid', 'vision');
+    expect(models.length).toBeGreaterThanOrEqual(1);
+    for (const m of models) {
+      expect(m.tier).toBe('mid');
+      expect(m.useCases).toContain('vision');
+    }
+  });
+
+  it('getModelsByTierAndUseCase returns empty for unmatched combination', () => {
+    const models = modelRegistry.getModelsByTierAndUseCase('micro', 'code');
+    expect(models).toEqual([]);
+  });
+});
+
+// =============================================================================
+// DefaultTierAwareModelSelector — constraint-specific paths
+// =============================================================================
+
+describe('DefaultTierAwareModelSelector constraints', () => {
+  const selector = new DefaultTierAwareModelSelector();
+
+  it('requireJsonMode filters models without JSON mode', async () => {
+    const model = await selector.selectModelForTier({
+      tier: 'small',
+      constraints: { requireJsonMode: true }
+    });
+    expect(model.capabilities.jsonMode).toBe(true);
+  });
+
+  it('minContextWindow constraint filters correctly', async () => {
+    const model = await selector.selectModelForTier({
+      tier: 'small',
+      constraints: { minContextWindow: 150_000 }
+    });
+    // gpt-4o-mini has 128k — excluded; haiku has 200k — passes
+    expect(model.contextWindow).toBeGreaterThanOrEqual(150_000);
+  });
+
+  it('excludeProviders with anthropic excludes correctly', async () => {
+    const model = await selector.selectModelForTier({
+      tier: 'mid',
+      constraints: { excludeProviders: ['anthropic'] }
+    });
+    expect(model.providerId).not.toBe('anthropic');
+  });
+});

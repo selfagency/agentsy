@@ -17,8 +17,8 @@ describe('createReplicaHeadroomProvider', () => {
     const snapshot = await provider.getReplicaHeadroom('test-replica');
 
     expect(snapshot).toBeDefined();
-    expect(snapshot!.replicaId).toBe('test-replica');
-    expect(snapshot!.remainingTokensMinute).toBe(1000);
+    expect(snapshot?.replicaId).toBe('test-replica');
+    expect(snapshot?.remainingTokensMinute).toBe(1000);
   });
 
   it('returns undefined for unknown replica', async () => {
@@ -69,5 +69,58 @@ describe('createReplicaHeadroomProvider', () => {
 
     const provider = createReplicaHeadroomProvider(agg);
     expect(await provider.getHeadroomPercentage('used-replica')).toBe(70);
+  });
+});
+
+describe('computeHeadroomFromAggregator fallback chain', () => {
+  it('falls through minute-level granularity to hour-level when minute limits absent', async () => {
+    const agg = new UsageAggregator();
+    agg.addBudget({
+      replicaId: 'hour-replica',
+      logicalModelId: 'gpt-4o-mini',
+      providerId: 'test',
+      maxTokensHour: 2000
+    });
+    const provider = createReplicaHeadroomProvider(agg);
+    // Skips: minute-tokens, requests, cost (all undefined/undefined)
+    // Hits: tokensHour = 2000/2000
+    expect(await provider.getHeadroomPercentage('hour-replica')).toBe(100);
+  });
+
+  it('computes from cost-week granularity when closer-level limits absent', async () => {
+    const agg = new UsageAggregator();
+    agg.addBudget({
+      replicaId: 'cost-week',
+      logicalModelId: 'gpt-4o-mini',
+      providerId: 'test',
+      maxCostWeek: 1000
+    });
+    agg.recordUsage({
+      budgetId: 'test',
+      model: 'gpt-4o-mini',
+      provider: 'test',
+      requestType: 'completion',
+      timestamp: new Date(),
+      tokensUsed: 100,
+      cost: 300,
+      replicaId: 'cost-week'
+    });
+    const provider = createReplicaHeadroomProvider(agg);
+    // Walks through: minute-tokens → requests → cost-minute → hour-tokens →
+    //   week-tokens → month-tokens → cost-hour → cost-week (700/1000)
+    expect(await provider.getHeadroomPercentage('cost-week')).toBe(70);
+  });
+
+  it('falls through entire chain to 0 when no budget dimensions are configured', async () => {
+    const agg = new UsageAggregator();
+    agg.addBudget({
+      replicaId: 'bare-replica',
+      logicalModelId: 'gpt-4o-mini',
+      providerId: 'test'
+      // No max* limits — every tryComputeHeadroom returns undefined
+    });
+    const provider = createReplicaHeadroomProvider(agg);
+    // All 9 tryComputeHeadroom calls return undefined → final ?? 0
+    expect(await provider.getHeadroomPercentage('bare-replica')).toBe(0);
   });
 });

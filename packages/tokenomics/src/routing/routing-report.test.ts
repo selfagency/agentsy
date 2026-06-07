@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { ReplicaAwareUsage } from '../quotas/headroom.js';
 import { UsageAggregator } from '../quotas/usage-aggregator.js';
 import { buildRoutingReport } from './routing-report.js';
@@ -97,5 +97,85 @@ describe('buildRoutingReport', () => {
     const report = buildRoutingReport(agg);
 
     expect(report.entries.map(e => e.replicaId)).toEqual(['a', 'c', 'b']);
+  });
+});
+
+describe('edge cases and fallback behavior', () => {
+  it('falls back to requestsMinute when tokensMinute is not set on the budget', () => {
+    const agg = new UsageAggregator();
+    agg.addBudget({
+      replicaId: 'r1',
+      logicalModelId: 'm',
+      providerId: 'p',
+      maxRequestsMinute: 40
+    });
+    for (let i = 0; i < 10; i++) {
+      agg.recordUsage(testUsage({ replicaId: 'r1', tokensUsed: 0, logicalModelId: 'm' }));
+    }
+    const report = buildRoutingReport(agg);
+    expect(report.entries[0]?.headroomPercentage).toBe(75);
+  });
+
+  it('falls back to costMinute when minute-level token/request budgets are not set', () => {
+    const agg = new UsageAggregator();
+    agg.addBudget({
+      replicaId: 'r1',
+      logicalModelId: 'm',
+      providerId: 'p',
+      maxCostMinute: 1.0
+    });
+    agg.recordUsage(testUsage({ replicaId: 'r1', cost: 0.25, logicalModelId: 'm' }));
+    const report = buildRoutingReport(agg);
+    expect(report.entries[0]?.headroomPercentage).toBe(75);
+  });
+
+  it('falls back to tokensHour when no minute-level budgets are set', () => {
+    const agg = new UsageAggregator();
+    agg.addBudget({
+      replicaId: 'r1',
+      logicalModelId: 'm',
+      providerId: 'p',
+      maxTokensHour: 1000
+    });
+    agg.recordUsage(testUsage({ replicaId: 'r1', tokensUsed: 250, logicalModelId: 'm' }));
+    const report = buildRoutingReport(agg);
+    expect(report.entries[0]?.headroomPercentage).toBe(75);
+  });
+
+  it('returns 0% headroom when no budget max fields are set (full fall-through)', () => {
+    const agg = new UsageAggregator();
+    agg.addBudget({
+      replicaId: 'r1',
+      logicalModelId: 'm',
+      providerId: 'p'
+    });
+    const report = buildRoutingReport(agg);
+    expect(report.entries[0]?.headroomPercentage).toBe(0);
+  });
+
+  it('uses estimated confidence and empty lastUpdatedAt when snapshot is missing', () => {
+    const agg = new UsageAggregator();
+    agg.addBudget({ replicaId: 'r1', logicalModelId: 'm', providerId: 'p', maxTokensMinute: 100 });
+    vi.spyOn(agg, 'getHeadroomSnapshot').mockReturnValue(undefined);
+    const report = buildRoutingReport(agg);
+    expect(report.entries[0]?.headroomPercentage).toBe(0);
+    expect(report.entries[0]?.confidence).toBe('estimated');
+    expect(report.entries[0]?.lastUpdatedAt).toBe('');
+  });
+
+  it('defaults to balanced skew label when replica has no skew signal', () => {
+    const agg = new UsageAggregator();
+    agg.addBudget({ replicaId: 'r1', logicalModelId: 'm', providerId: 'p1', maxTokensMinute: 200 });
+    agg.recordUsage(testUsage({ replicaId: 'r1', tokensUsed: 50, logicalModelId: 'm' }));
+    agg.addBudget({ replicaId: 'r2', logicalModelId: 'm', providerId: 'p2', maxTokensMinute: 100 });
+    vi.spyOn(agg, 'getHeadroomSnapshot').mockImplementation((replicaId: string) => {
+      if (replicaId === 'r2') {
+        return;
+      }
+      return UsageAggregator.prototype.getHeadroomSnapshot.call(agg, replicaId);
+    });
+    const report = buildRoutingReport(agg);
+    const r2 = report.entries.find(e => e.replicaId === 'r2');
+    expect(r2?.skew).toBe('balanced');
   });
 });
