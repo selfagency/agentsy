@@ -266,7 +266,7 @@ export class GatewayBackedModelRouter implements TierAwareModelRouter {
    *
    * Recording: each failed attempt is appended to `SelectionRecord.failedReplicas`.
    */
-  nextFailoverModel(chain: FailoverChain, error: Error, context: ReplicaSelectionContext): ModelEntry {
+  nextFailoverModel(chain: FailoverChain, error: Error, context: ReplicaSelectionContext): Promise<ModelEntry> {
     const step = getNextStep(chain, error);
     if (step === undefined) {
       throw new ExhaustedError([...chain.steps], chain.currentStep);
@@ -316,7 +316,7 @@ export class GatewayBackedModelRouter implements TierAwareModelRouter {
       this.#record.selectedReplica = spilloverResult.replica.id;
     }
 
-    return modelEntry;
+    return Promise.resolve(modelEntry);
   }
 
   /**
