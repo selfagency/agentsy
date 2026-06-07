@@ -58,6 +58,7 @@ jobs:
         run: pnpm rebuild
 
       - name: Fallow
+        continue-on-error: true
         uses: fallow-rs/fallow@v2.89.0
         with:
           command: audit

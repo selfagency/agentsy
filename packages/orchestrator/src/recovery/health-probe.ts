@@ -72,11 +72,7 @@ export class ReplicaHealthProbe {
   #intervalHandle: ReturnType<typeof setInterval> | undefined;
 
   constructor(config?: Partial<ReplicaHealthProbeConfig>) {
-    this.#config = {
-      ttlMs: config?.ttlMs ?? DEFAULT_CONFIG.ttlMs,
-      timeoutMs: config?.timeoutMs ?? DEFAULT_CONFIG.timeoutMs,
-      probeIntervalMs: config?.probeIntervalMs ?? DEFAULT_CONFIG.probeIntervalMs
-    };
+    this.#config = { ...DEFAULT_CONFIG, ...config };
   }
 
   // ---------------------------------------------------------------------------

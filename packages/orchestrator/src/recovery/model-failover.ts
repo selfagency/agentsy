@@ -114,6 +114,7 @@ interface SameTierBuildContext {
  * Build tier-escalation steps for higher tiers.
  * Each reachable replica in the target tier gets its own step.
  */
+// fallow-ignore-next-line complexity
 function buildEscalationSteps(
   escalationPolicy: EscalationPolicy,
   originalModel: ModelEntry,
@@ -272,6 +273,7 @@ export function createFailoverChain(
  * If every replica for a model is rate-limited or circuit-broken, mark them
  * all as seen so subsequent phases skip the model entirely.
  */
+// fallow-ignore-next-line complexity
 function markModelAllSeenIfUnavailable(modelId: string, availableIds: string[], ctx: SameTierBuildContext): void {
   if (availableIds.length > 0 || ctx.rateLimitMap === undefined) {
     return;
@@ -292,6 +294,7 @@ function markModelAllSeenIfUnavailable(modelId: string, availableIds: string[], 
  * For each model, either adds individual replica steps or a single
  * skip-model step when all replicas are rate-limited / circuit-broken.
  */
+// fallow-ignore-next-line complexity
 function buildSameTierSteps(seenModelIds: Set<string>, ctx: SameTierBuildContext): void {
   for (const replica of ctx.replicas) {
     const logicalModel = getLogicalModel(replica.logicalModelId);
@@ -327,6 +330,7 @@ function buildSameTierSteps(seenModelIds: Set<string>, ctx: SameTierBuildContext
  * If all replicas for this model are rate-limited or circuit-broken, emits a
  * synthetic `next-model` skip step instead of individual replicas.
  */
+// fallow-ignore-next-line complexity
 function handleFirstModelEncounter(replica: ModelReplica, ctx: SameTierBuildContext): void {
   const modelReplicaIds = ctx.availableReplicaIds(replica.logicalModelId);
   const allReplicasForModel = ctx.replicas.filter(

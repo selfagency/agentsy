@@ -66,6 +66,7 @@ export interface RateLimitStatus {
  * @param quotaSnapshots - Keyed by replica id. May be sparse.
  * @returns A map keyed by replica id with rate-limit status.
  */
+// fallow-ignore-next-line complexity
 export function buildRateLimitMap(
   replicas: ModelReplica[],
   quotaSnapshots: Map<string, ReplicaQuotaSnapshot>

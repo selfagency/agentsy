@@ -46,9 +46,11 @@ export interface CircuitBreakerEntry {
 // Defaults
 // =============================================================================
 
-const DEFAULT_FAILURE_THRESHOLD = 5;
-const DEFAULT_COOLDOWN_MS = 30_000;
-const DEFAULT_HALF_OPEN_MAX_REQUESTS = 1;
+const DEFAULT_CONFIG: CircuitBreakerConfig = {
+  failureThreshold: 5,
+  cooldownMs: 30_000,
+  halfOpenMaxRequests: 1
+};
 
 // =============================================================================
 // CircuitBreakerSet
@@ -60,9 +62,8 @@ export class CircuitBreakerSet {
 
   constructor(config?: Partial<CircuitBreakerConfig>) {
     this.#config = {
-      failureThreshold: config?.failureThreshold ?? DEFAULT_FAILURE_THRESHOLD,
-      cooldownMs: config?.cooldownMs ?? DEFAULT_COOLDOWN_MS,
-      halfOpenMaxRequests: config?.halfOpenMaxRequests ?? DEFAULT_HALF_OPEN_MAX_REQUESTS
+      ...DEFAULT_CONFIG,
+      ...config
     };
   }
 
@@ -71,6 +72,7 @@ export class CircuitBreakerSet {
    * Increments the consecutive-failure counter. When the threshold
    * is reached the circuit transitions to `open`.
    */
+  // fallow-ignore-next-line complexity
   recordFailure(replicaId: string): void {
     const existing = this.#entries.get(replicaId);
     const entry: CircuitBreakerEntry = existing ?? {

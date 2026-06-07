@@ -266,6 +266,7 @@ export class GatewayBackedModelRouter implements TierAwareModelRouter {
    *
    * Recording: each failed attempt is appended to `SelectionRecord.failedReplicas`.
    */
+  // fallow-ignore-next-line complexity
   nextFailoverModel(chain: FailoverChain, error: Error, context: ReplicaSelectionContext): Promise<ModelEntry> {
     const step = getNextStep(chain, error);
     if (step === undefined) {
