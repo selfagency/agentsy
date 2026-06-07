@@ -42,3 +42,7 @@ export * from './core/meter.js';
 export * from './core/observability.js';
 export * from './core/tracer.js';
 export type * from './core/types.js';
+
+// Multi-agent span exports
+export type { AgentSpan, AgentToolCall, CostAttribution, SpanStatus } from './spans/agent-span.js';
+export { MultiAgentTracer } from './spans/agent-span.js';

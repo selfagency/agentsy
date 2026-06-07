@@ -30,6 +30,8 @@
       "@agentsy/models/search-contracts": [
         "packages/models/src/search-contracts.ts"
       ],
+      "@agentsy/observability": ["packages/observability/src/index.ts"],
+      "@agentsy/observability/*": ["packages/observability/src/*"],
       "@agentsy/tokenomics": ["packages/tokenomics/src/index.ts"],
       "@agentsy/types": ["packages/types/src/index.ts"]
     },
