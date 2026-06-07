@@ -115,11 +115,10 @@ export class ContextManager {
         continue;
       }
 
-      for (const field of frame.visibleFields) {
-        if (field in frame.metadata) {
-          result[field] = frame.metadata[field];
-        }
-      }
+      const visible = Object.fromEntries(
+        Object.entries(frame.metadata).filter(([k]) => frame.visibleFields.includes(k))
+      );
+      Object.assign(result, visible);
     }
 
     return result;

@@ -90,11 +90,8 @@ export class TierRouter {
     }
 
     // Walk down the tier order to find the first cheaper tier that fits budget
-    for (let i = currentIdx + 1; i < TIER_ORDER.length; i++) {
-      const cheaperTier = TIER_ORDER[i];
-      if (cheaperTier === undefined) {
-        continue;
-      }
+    const cheaperCandidates = TIER_ORDER.slice(currentIdx + 1);
+    for (const cheaperTier of cheaperCandidates) {
       const cheaperCost = this.#estimator.estimateCost({
         tier: cheaperTier,
         estimatedTokens: task.estimatedTokens,
@@ -138,7 +135,7 @@ export class TierRouter {
 
     // Upgrade when cost is under 30% of remaining budget
     if (cost.estimatedCost < this.#budgetRemaining * 0.3) {
-      const higherTier = TIER_ORDER[currentIdx - 1];
+      const higherTier = TIER_ORDER.at(currentIdx - 1);
       if (higherTier === undefined) {
         return null;
       }

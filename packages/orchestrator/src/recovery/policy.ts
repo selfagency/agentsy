@@ -12,6 +12,8 @@
  *     is delegated to the caller via the policy flags
  */
 
+import { evaluateCondition as evaluateConditionDsl } from '../governance/policy.js';
+
 // =============================================================================
 // Types
 // =============================================================================
@@ -266,12 +268,7 @@ export class RecoveryExecutor {
    * @returns Whether the condition evaluates to `true`.
    */
   evaluateCondition(condition: string, context: Record<string, unknown>): boolean {
-    try {
-      const fn = new Function('ctx', `return ${condition}`);
-      return fn(context) === true;
-    } catch {
-      return false;
-    }
+    return evaluateConditionDsl(condition, context);
   }
 
   // ---------------------------------------------------------------------------
