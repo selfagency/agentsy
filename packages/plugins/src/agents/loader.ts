@@ -49,7 +49,7 @@ function parseFrontmatter(content: string): FrontmatterResult {
 
   const raw = trimmed.slice(3, endIndex).trim();
   const body = trimmed.slice(endIndex + 4).trim();
-  const data: Record<string, unknown> = {};
+  const data = Object.create(null) as Record<string, unknown>;
 
   const lines = raw.split('\n');
 

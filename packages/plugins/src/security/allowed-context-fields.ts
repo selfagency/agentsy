@@ -59,10 +59,10 @@ export interface PluginContext {
  * @returns A context object with only allowed fields.
  */
 export function filterContextForPlugin(context: Record<string, unknown>, _pluginId: string): SafeContext {
-  const safe: Record<string, unknown> = {};
+  const safe = Object.create(null) as Record<string, unknown>;
 
   for (const field of ALLOWED_CONTEXT_INJECTION_FIELDS) {
-    if (field in context) {
+    if (Object.hasOwn(context, field)) {
       safe[field] = context[field];
     }
   }

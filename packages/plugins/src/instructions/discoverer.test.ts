@@ -172,15 +172,12 @@ describe('InstructionsDiscoverer', () => {
       const results = await d.discover();
 
       for (let i = 1; i < results.length; i++) {
-        for (let i = 1; i < results.length; i++) {
-          const current = results[i];
-          const prev = results[i - 1];
-          if (current === undefined || prev === undefined) {
-            // unreachable: i >= 1 and i < length
-            throw new Error('unexpected undefined');
-          }
-          expect(current.priority).toBeLessThanOrEqual(prev.priority);
+        const current = results[i];
+        const prev = results[i - 1];
+        if (current === undefined || prev === undefined) {
+          throw new Error('unexpected undefined');
         }
+        expect(current.priority).toBeLessThanOrEqual(prev.priority);
       }
     });
 

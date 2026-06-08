@@ -141,7 +141,7 @@ function splitIntoTasks(input: string): string[] {
  * producing a strict sequence. Tasks with a single item have no edges.
  */
 function buildLinearDependencies(taskIds: readonly string[]): Record<string, readonly string[]> {
-  const deps: Record<string, readonly string[]> = {};
+  const deps = Object.create(null) as Record<string, readonly string[]>;
   for (const id of taskIds) {
     deps[id] = [];
   }

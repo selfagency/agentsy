@@ -195,7 +195,7 @@ export class SkillDiscoverer {
     }
 
     const raw = trimmed.slice(3, end);
-    const result: Record<string, string> = {};
+    const result = Object.create(null) as Record<string, string>;
 
     for (const line of raw.split('\n')) {
       const colonIdx = line.indexOf(':');

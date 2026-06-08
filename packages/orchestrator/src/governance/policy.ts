@@ -452,13 +452,15 @@ function tokenize(input: string): Token[] {
   return tokens;
 }
 
+/** Safely navigate a dot-separated path through a context object without prototype pollution. */
 function resolveIdent(path: string, ctx: Record<string, unknown>): unknown {
-  // Strip ctx. prefix if present
   const parts = path.replace(/^ctx\./u, '').split('.');
-  // Navigate from the inner ctx object when path uses ctx. prefix
   let current: unknown = path.startsWith('ctx.') ? ((ctx.ctx as Record<string, unknown>) ?? ctx) : ctx;
   for (const part of parts) {
     if (current === null || current === undefined || typeof current !== 'object') {
+      return;
+    }
+    if (!Object.hasOwn(current as Record<string, unknown>, part)) {
       return;
     }
     current = (current as Record<string, unknown>)[part];

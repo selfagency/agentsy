@@ -88,11 +88,8 @@ export function createMemoryPreTurnHook(options: CreateMemoryPreTurnHookOptions)
   };
 }
 
+const XML_ENTITIES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' };
+
 function escapeXml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&apos;');
+  return value.replace(/[&<>"']/gu, ch => XML_ENTITIES[ch] ?? '');
 }
