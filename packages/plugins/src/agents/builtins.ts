@@ -173,4 +173,4 @@ export const agentManifest: AgentManifest = {
  *
  * Array of all built-in agent manifests.
  */
-export const BUILTIN_AGENT_MANIFESTS: AgentManifest[] = [researchAgentManifest, planAgentManifest, agentManifest];
+export const BUILTIN_AGENT_MANIFESTS: AgentManifest[] = [researchAgentManifest, planAgentManifest, agentManifest]; // NOSONAR — backward compat

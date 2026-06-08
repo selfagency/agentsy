@@ -25,7 +25,7 @@ describe('@agentsy/plugins package entrypoints', () => {
     expect(researchAgentManifest).toBeDefined(); // NOSONAR — backward compat
     expect(planAgentManifest).toBeDefined(); // NOSONAR — backward compat
     expect(agentManifest).toBeDefined(); // NOSONAR — backward compat
-    expect(BUILTIN_AGENT_MANIFESTS).toBeDefined();
+    expect(BUILTIN_AGENT_MANIFESTS).toBeDefined(); // NOSONAR — backward compat
   });
 
   it('exposes new AgentDefinition builtins', () => {

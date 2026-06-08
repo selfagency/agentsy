@@ -282,7 +282,5 @@ export class TaskDecomposer {
         timeoutMs: 3_600_000 // 1 hour
       };
     }
-
-    return;
   }
 }

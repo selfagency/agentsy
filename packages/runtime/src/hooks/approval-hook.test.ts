@@ -25,7 +25,7 @@ function createNonPreToolCall(): RuntimeHookEvent {
     replicaId: 'rep_01',
     sessionId: 'sess_test_001',
     type: 'PreModelCall'
-  } as RuntimeHookEvent;
+  };
 }
 
 function createMockGate(approve: boolean): ApprovalGate {

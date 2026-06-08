@@ -64,7 +64,7 @@ export function createInstructionsHook(discoverer: InstructionsDiscoverer): {
         }
 
         const composed = instructions
-          .sort((a, b) => b.priority - a.priority)
+          .toSorted((a, b) => b.priority - a.priority)
           .map(i => i.content)
           .join('\n\n');
 

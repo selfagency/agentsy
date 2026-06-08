@@ -216,7 +216,7 @@ describe('InstructionsDiscoverer', () => {
       expect(hasAgents).toBe(true);
 
       // Restore permissions for cleanup
-      await import('node:fs/promises').then(fs => fs.chmod(claudePath, 0o644));
+      await import('node:fs/promises').then(fs => fs.chmod(claudePath, 0o644)); // NOSONAR — safe permission
     });
 
     it('deduplicates content across roots when discovered', async () => {

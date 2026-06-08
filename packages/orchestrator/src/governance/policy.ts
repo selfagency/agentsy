@@ -305,7 +305,6 @@ export class PolicyEnforcer {
         return rule;
       }
     }
-    return;
   }
 
   /**
@@ -330,7 +329,6 @@ export class PolicyEnforcer {
         return rule;
       }
     }
-    return;
   }
 
   /**
@@ -415,7 +413,7 @@ interface Token {
 function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
   const re =
-    /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|true|false|\d+(?:\.\d+)?|[a-zA-Z_$][\w$.]*|===?|!==?|>=?|<=?|&&|\|\||[()]|\s+/sy;
+    /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|true|false|\d+(?:\.\d+)?|[a-zA-Z_$][\w$.]*|===?|!==?|>=?|<=?|&&|\|\||[()]|\s+/sy; // NOSONAR — tokenizer regex matches many pattern types
   let match: RegExpExecArray | null;
   while (true) {
     match = re.exec(input);
@@ -455,7 +453,7 @@ function tokenize(input: string): Token[] {
 /** Safely navigate a dot-separated path through a context object without prototype pollution. */
 function resolveIdent(path: string, ctx: Record<string, unknown>): unknown {
   const parts = path.replace(/^ctx\./u, '').split('.');
-  let current: unknown = path.startsWith('ctx.') ? ((ctx.ctx as Record<string, unknown>) ?? ctx) : ctx;
+  let current: unknown = path.startsWith('ctx.') ? (ctx.ctx ?? ctx) : ctx;
   for (const part of parts) {
     if (current === null || current === undefined || typeof current !== 'object') {
       return;

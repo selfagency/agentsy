@@ -211,7 +211,7 @@ export class InMemoryTaskBoard implements ITaskBoard {
     // Transitive closure via DFS
     const visited = new Set<string>();
 
-    // fallow-ignore-next-line complexity: recursive DFS for DAG traversal
+    // fallow-ignore-next-line complexity
     const traverse = (currentId: string): void => {
       const current = this.#tasks.get(currentId);
       if (!current) {

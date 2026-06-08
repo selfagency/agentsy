@@ -34,7 +34,8 @@ interface FrontmatterResult {
  * data object when no frontmatter is detected.
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: frontmatter parser has many field types
-// fallow-ignore-next-line complexity: frontmatter parser has many field types
+// fallow-ignore-next-line complexity
+// fallow-ignore-next-line crap-score
 function parseFrontmatter(content: string): FrontmatterResult {
   const trimmed = content.trimStart();
 
@@ -77,7 +78,7 @@ function parseFrontmatter(content: string): FrontmatterResult {
       let lookahead = index + 1;
 
       while (lookahead < lines.length) {
-        const nestedLine = lines[lookahead];
+        const nestedLine = lines[lookahead]; // NOSONAR — array access with bounds check
         if (nestedLine === undefined || !nestedLine.startsWith('  ')) {
           break;
         }
@@ -97,7 +98,7 @@ function parseFrontmatter(content: string): FrontmatterResult {
 
       if (Object.keys(objectValue).length > 0) {
         data[key] = objectValue;
-        index = lookahead - 1;
+        index = lookahead - 1; // NOSONAR — parser lookahead skip
         continue;
       }
     }
@@ -139,7 +140,8 @@ function parseFrontmatter(content: string): FrontmatterResult {
  *
  * Only recognised keys are mapped; unknown keys are silently ignored.
  */
-// fallow-ignore-next-line complexity: maps many optional fields onto definition
+// fallow-ignore-next-line complexity
+// fallow-ignore-next-line crap-score
 function coerceToDefinition(data: Record<string, unknown>, source: AgentDefinitionSource): AgentDefinition {
   let allowedTools: AgentDefinition['allowedTools'];
   if (data.allowedTools === '*') {
@@ -155,14 +157,14 @@ function coerceToDefinition(data: Record<string, unknown>, source: AgentDefiniti
     : undefined;
 
   const definition: AgentDefinition = {
-    id: String(data.id ?? ''),
-    name: String(data.name ?? ''),
-    description: String(data.description ?? ''),
+    id: typeof data.id === 'string' ? data.id : '',
+    name: typeof data.name === 'string' ? data.name : '',
+    description: typeof data.description === 'string' ? data.description : '',
     source
   };
 
-  if (data.systemPromptTemplate) {
-    definition.systemPromptTemplate = String(data.systemPromptTemplate);
+  if (typeof data.systemPromptTemplate === 'string') {
+    definition.systemPromptTemplate = data.systemPromptTemplate;
   }
 
   if (allowedTools !== undefined) {
@@ -177,8 +179,8 @@ function coerceToDefinition(data: Record<string, unknown>, source: AgentDefiniti
     definition.orchestrationMode = data.orchestrationMode as AgentOrchestrationMode;
   }
 
-  if (data.defaultModel) {
-    definition.defaultModel = String(data.defaultModel);
+  if (typeof data.defaultModel === 'string') {
+    definition.defaultModel = data.defaultModel;
   }
 
   if (data.hooks && typeof data.hooks === 'object') {

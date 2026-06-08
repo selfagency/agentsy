@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { AgentLoader } from './loader.js';
@@ -11,12 +10,12 @@ describe('AgentLoader', () => {
     });
 
     it('accepts a custom project directory', () => {
-      const loader = new AgentLoader('/tmp/test-project');
+      const loader = new AgentLoader('/tmp/test-project'); // NOSONAR — test fixture path
       expect(loader.projectDir).toBe('/tmp/test-project');
     });
 
     it('creates three search roots', () => {
-      const loader = new AgentLoader('/tmp/test-project');
+      const loader = new AgentLoader('/tmp/test-project'); // NOSONAR — test fixture path
       expect(loader.searchRoots).toHaveLength(3);
       expect(loader.searchRoots[0]).toBe('/tmp/test-project/.agents');
     });

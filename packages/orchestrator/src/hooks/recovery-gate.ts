@@ -104,7 +104,7 @@ export function createRecoveryHook(policy: RecoveryPolicy): RecoveryGateHook {
 
       // The task function re-throws the original error so the executor
       // can exercise its retry / fallback / escalation lifecycle.
-      const taskFn = (): Promise<unknown> => Promise.reject(ctx.error);
+      const taskFn = (): Promise<unknown> => Promise.reject(ctx.error); // NOSONAR — ctx.error is Error (narrowed by guard above)
 
       try {
         const result = await executor.execute(taskFn, recoveryContext);

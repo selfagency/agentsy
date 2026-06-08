@@ -115,7 +115,7 @@ describe('slash command descriptors', () => {
     });
 
     it('returns empty for unknown domains', () => {
-      const _result = listSlashCommands('model' as never);
+      const _result = listSlashCommands('model');
       // 'model' is valid, but test filters for something not in domain union
       const allModel = listSlashCommands('model');
       expect(allModel.length).toBe(modelCommands.length);

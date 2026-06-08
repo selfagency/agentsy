@@ -9,10 +9,11 @@ async function loadVSCodeDiagnostics(): Promise<{
   runVSCodeSettingsDiagnostics: () => DiagnosticReport;
 }> {
   try {
-    return (await import('../../../vscode/src/settings/diagnostics.js')) as {
+    const mod: {
       getVSCodeSetupGuide: () => SetupGuide;
       runVSCodeSettingsDiagnostics: () => DiagnosticReport;
-    };
+    } = await import('../../../vscode/src/settings/diagnostics.js');
+    return mod;
   } catch {
     return {
       getVSCodeSetupGuide: () => ({

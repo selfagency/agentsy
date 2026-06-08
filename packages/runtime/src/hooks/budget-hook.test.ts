@@ -24,7 +24,7 @@ function createNonPreModelCall(): RuntimeHookEvent {
     sessionId: 'sess_test_001',
     toolName: 'read',
     type: 'PreToolCall'
-  } as RuntimeHookEvent;
+  };
 }
 
 // ---------------------------------------------------------------------------

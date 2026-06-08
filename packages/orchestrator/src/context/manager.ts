@@ -246,10 +246,10 @@ export class ContextManager {
       throw new Error('sessionId is required');
     }
     if (!frame.agentId) {
-      throw new Error('agentId is required');
+      throw new TypeError('agentId is required');
     }
     if (!Array.isArray(frame.visibleFields)) {
-      throw new Error('visibleFields must be an array');
+      throw new TypeError('visibleFields must be an array');
     }
     if (!Array.isArray(frame.lockedResources)) {
       throw new Error('lockedResources must be an array');

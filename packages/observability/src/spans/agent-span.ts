@@ -220,7 +220,6 @@ export class MultiAgentTracer {
         return span;
       }
     }
-    return;
   }
 
   /**
