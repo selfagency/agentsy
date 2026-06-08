@@ -47,10 +47,12 @@
     "@agentsy/gateway": "workspace:*",
     "@agentsy/memory": "workspace:*",
     "@agentsy/models": "workspace:*",
+    "@agentsy/plugins": "workspace:*",
     "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",
     "@agentsy/runtime": "workspace:*",
-    "@agentsy/types": "workspace:*"
+    "@agentsy/types": "workspace:*",
+    "@agentsy/vscode": "workspace:*"
   },
   "devDependencies": {
     "@microsoft/tui-test": "^0.0.4",

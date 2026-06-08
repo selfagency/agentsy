@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
-
-import type { CheckpointSnapshot, Task, ToolCallRecord } from './types.js';
 import {
   CircularDependencyError,
+  createInMemoryTaskBoard,
   DependencyNotFoundError,
   InvalidStatusTransitionError,
-  TaskNotFoundError,
-  createInMemoryTaskBoard
+  TaskNotFoundError
 } from './in-memory.js';
+import type { CheckpointSnapshot, Task, ToolCallRecord } from './types.js';
 
 function baseTask(overrides: Partial<Task> = {}): Omit<Task, 'id' | 'createdAt' | 'updatedAt'> {
   return {
@@ -55,7 +54,7 @@ describe('InMemoryTaskBoard', () => {
       const created = await board.createTask(baseTask());
       const found = await board.getTask(created.id);
       expect(found).toBeDefined();
-      expect(found!.id).toBe(created.id);
+      expect(found?.id).toBe(created.id);
     });
 
     it('should return undefined for an unknown id', async () => {
@@ -181,8 +180,8 @@ describe('InMemoryTaskBoard', () => {
       await board.saveCheckpoint(task.id, attempt.id, snapshot);
       const loaded = await board.getCheckpoint(task.id);
       expect(loaded).toBeDefined();
-      expect(loaded!.stepIndex).toBe(1);
-      expect(loaded!.contextSnapshot).toEqual({ progress: 0.5 });
+      expect(loaded?.stepIndex).toBe(1);
+      expect(loaded?.contextSnapshot).toEqual({ progress: 0.5 });
 
       // Unknown task returns undefined
       const missing = await board.getCheckpoint('nonexistent');

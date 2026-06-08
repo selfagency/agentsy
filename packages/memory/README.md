@@ -84,6 +84,12 @@ Cognitive memory engine for AI agents with tiered memory (sensory â†’ working â†
 
 ---
 
+## Framework ownership boundary
+
+`@agentsy/memory` ships a real operator-facing surface (CLI, daemon, MCP server), so package-local operational documentation is appropriate here. Framework-wide `setup` and `doctor` UX still belongs to `@agentsy/cli`, which consumes structured diagnostics and setup hints from this package.
+
+---
+
 ## Installation
 
 ### From the repo (development)

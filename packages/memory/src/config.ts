@@ -152,3 +152,22 @@ export function loadConfig(overrides?: Partial<MemoryConfig>): MemoryConfig {
 }
 
 export { DEFAULT_TIER_CONFIGS };
+
+export function validateMemoryConfig(config: MemoryConfig): { errors: string[]; warnings: string[] } {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!config.db.path || config.db.path.trim().length === 0) {
+    errors.push('Database path must be configured.');
+  }
+
+  if (config.mcp.transport === 'http' && (!config.mcp.port || config.mcp.port <= 0)) {
+    errors.push('HTTP MCP transport requires a positive port.');
+  }
+
+  if (config.db.syncUrl && !config.db.syncAuthToken) {
+    warnings.push('Remote sync URL is configured without an auth token.');
+  }
+
+  return { errors, warnings };
+}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { GovernancePolicy } from './policy.js';
-import { PolicyEnforcer, evaluateCondition } from './policy.js';
+import { evaluateCondition, PolicyEnforcer } from './policy.js';
 
 function createTestPolicy(): GovernancePolicy {
   return {
@@ -89,7 +89,7 @@ describe('PolicyEnforcer', () => {
       const enforcer = new PolicyEnforcer(createTestPolicy());
       const rule = enforcer.checkApprovalRule({ toolName: 'git_push', role: 'developer' });
       expect(rule).toBeDefined();
-      expect(rule!.ruleId).toBe('approval-prod-deploy');
+      expect(rule?.ruleId).toBe('approval-prod-deploy');
     });
 
     it('should return undefined when no rule matches', () => {
@@ -104,7 +104,7 @@ describe('PolicyEnforcer', () => {
       const enforcer = new PolicyEnforcer(createTestPolicy());
       const rule = enforcer.getEscalationRule({ retryable: false });
       expect(rule).toBeDefined();
-      expect(rule!.ruleId).toBe('escalate-non-retryable');
+      expect(rule?.ruleId).toBe('escalate-non-retryable');
     });
 
     it('should return undefined for retryable error that does not match', () => {
@@ -133,7 +133,7 @@ describe('PolicyEnforcer', () => {
       // Should also be in the audit log
       const log = enforcer.getAuditLog();
       expect(log).toHaveLength(1);
-      expect(log[0]!.id).toBe(event.id);
+      expect(log[0]?.id).toBe(event.id);
     });
   });
 });

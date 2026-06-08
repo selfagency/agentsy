@@ -78,10 +78,10 @@ describe('compileHooks', () => {
     ]);
 
     expect(plan.warnings).toHaveLength(1);
-    expect(plan.warnings[0]!.hook1).toBe('hook-a');
-    expect(plan.warnings[0]!.hook2).toBe('hook-b');
-    expect(plan.warnings[0]!.strategy).toBe('merge');
-    expect(plan.warnings[0]!.reason).toBe('Both modify system prompt');
+    expect(plan.warnings[0]?.hook1).toBe('hook-a');
+    expect(plan.warnings[0]?.hook2).toBe('hook-b');
+    expect(plan.warnings[0]?.strategy).toBe('merge');
+    expect(plan.warnings[0]?.reason).toBe('Both modify system prompt');
   });
 
   it('should deduplicate conflict warnings', () => {

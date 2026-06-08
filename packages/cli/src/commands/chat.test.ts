@@ -347,6 +347,225 @@ describe('chat command', () => {
     expect(stderrChunks.join('')).toContain('current model: gpt-4o');
   });
 
+  it('handles /agent list command', async () => {
+    const mockStdin = makeMockStdin(['/agent list', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderrChunks.join('')).toContain('[agent]');
+  });
+
+  it('handles /agent show with an agent id', async () => {
+    const mockStdin = makeMockStdin(['/agent show research', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    const joined = stderrChunks.join('');
+    expect(joined).toContain('[agent]');
+    expect(joined).toContain('research');
+  });
+
+  it('handles /agent show with missing id shows usage', async () => {
+    const mockStdin = makeMockStdin(['/agent show', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = runChatCommand(
+      ['--mock'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    await expect(exitCode).resolves.toBe(0);
+    expect(stderrChunks.join('')).toContain('[agent] usage: /agent show <agentId>');
+  });
+
+  it('handles /agent select command', async () => {
+    const mockStdin = makeMockStdin(['/agent select code', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    const joined = stderrChunks.join('');
+    expect(joined).toContain('[agent] switch intent logged');
+  });
+
+  it('handles /agent select with missing id shows usage', async () => {
+    const mockStdin = makeMockStdin(['/agent select', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = runChatCommand(
+      ['--mock'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    await expect(exitCode).resolves.toBe(0);
+    expect(stderrChunks.join('')).toContain('[agent] usage: /agent select <agentId>');
+  });
+
+  it('handles /skills list command', async () => {
+    const mockStdin = makeMockStdin(['/skills list', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderrChunks.join('')).toContain('[skills]');
+  });
+
+  it('handles /skills show command', async () => {
+    const mockStdin = makeMockStdin(['/skills show nonexistent', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderrChunks.join('')).toContain('[skills] "nonexistent" not found');
+  });
+
+  it('handles bare /agent command shows usage', async () => {
+    const mockStdin = makeMockStdin(['/agent', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderrChunks.join('')).toContain('[agent] usage');
+  });
+
+  it('handles bare /skills command shows usage', async () => {
+    const mockStdin = makeMockStdin(['/skills', '/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderrChunks.join('')).toContain('[skills] usage');
+  });
+
+  it('handles --agent flag loads agent and sets system prompt', async () => {
+    const mockStdin = makeMockStdin(['/exit']);
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const exitCode = await runChatCommand(
+      ['--mock', '--agent', 'research'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    const joined = stderrChunks.join('');
+    expect(joined).toContain('[agent] loaded');
+    expect(joined).toContain('Research Agent');
+  });
+
+  it('handles --plan flag shows plan mode enabled', async () => {
+    const mockStdin = makeMockStdin(['do something', '/exit']);
+    const stderrChunks: string[] = [];
+    const stdoutChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array): boolean => {
+      stdoutChunks.push(String(chunk));
+      return true;
+    });
+
+    const exitCode = await runChatCommand(
+      ['--mock', '--agent', 'default', '--plan'],
+      {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      },
+      { input: mockStdin, mockChunkDelayMs: 1 }
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderrChunks.join('')).toContain('[plan] plan mode enabled');
+    expect(stdoutChunks.join('')).toContain('tools were not executed');
+  });
+
   it('rejects /model select on a non-gateway client', async () => {
     const mockStdin = makeMockStdin(['/model select gpt-4o', '/exit']);
     const stderrChunks: string[] = [];

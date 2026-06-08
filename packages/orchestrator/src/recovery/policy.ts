@@ -28,16 +28,16 @@ export type BackoffStrategy = 'linear' | 'exponential' | 'fixed';
  * to wait between attempts.
  */
 export interface RetryConfig {
-  /** Maximum number of retry attempts before fallback. */
-  maxAttempts: number;
   /** Backoff strategy to use between retries. */
   backoffStrategy: BackoffStrategy;
   /** Base delay in milliseconds (strategy-dependent multiplier). */
   baseDelayMs: number;
-  /** Maximum delay cap in milliseconds. */
-  maxDelayMs: number;
   /** Jitter fraction (0-1) to randomize delays and prevent thundering herd. */
   jitterFraction: number;
+  /** Maximum number of retry attempts before fallback. */
+  maxAttempts: number;
+  /** Maximum delay cap in milliseconds. */
+  maxDelayMs: number;
 }
 
 /**
@@ -48,10 +48,10 @@ export interface RetryConfig {
  * multiple alternative agents/targets.
  */
 export interface Fallback {
-  /** DSL condition string evaluated against execution context. */
-  condition: string;
   /** Ordered list of alternative agent/target IDs to attempt. */
   agentTargets: string[];
+  /** DSL condition string evaluated against execution context. */
+  condition: string;
   /** Maximum attempts per fallback agent target. */
   maxAttemptsPerFallback: number;
 }
@@ -80,30 +80,30 @@ export type EscalationAction = (typeof EscalationAction)[keyof typeof Escalation
  * checkpoint requirements.
  */
 export interface RecoveryPolicy {
-  /** Retry strategy for transient failures. */
-  retryConfig: RetryConfig;
-  /** Ordered fallback alternatives evaluated after retries are exhausted. */
-  fallbacks: Fallback[];
-  /** Action to take when all recovery strategies are exhausted. */
-  escalationAction: EscalationAction;
-  /** Whether checkpoint snapshots are required before execution. */
-  checkpointRequired: boolean;
   /** Interval in milliseconds between automatic checkpoints. */
   checkpointFrequencyMs: number;
+  /** Whether checkpoint snapshots are required before execution. */
+  checkpointRequired: boolean;
+  /** Action to take when all recovery strategies are exhausted. */
+  escalationAction: EscalationAction;
+  /** Ordered fallback alternatives evaluated after retries are exhausted. */
+  fallbacks: Fallback[];
+  /** Retry strategy for transient failures. */
+  retryConfig: RetryConfig;
 }
 
 /**
  * Result of a recovery execution attempt.
  */
 export interface RecoveryResult {
-  /** Whether the task was eventually recovered successfully. */
-  recovered: boolean;
-  /** Final error when recovery failed (only when `recovered === false`). */
-  finalError?: Error;
   /** Total number of retry + fallback attempts made. */
   attempts: number;
   /** The fallback agent/target used for recovery (when applicable). */
   fallbackUsed?: string;
+  /** Final error when recovery failed (only when `recovered === false`). */
+  finalError?: Error;
+  /** Whether the task was eventually recovered successfully. */
+  recovered: boolean;
   /** Total elapsed time in milliseconds for the full recovery lifecycle. */
   totalTimeMs: number;
 }
@@ -135,6 +135,7 @@ export class RecoveryExecutor {
    * @returns A `RecoveryResult` describing the outcome.
    */
   // fallow-ignore-next-line complexity
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: recovery orchestration logic
   async execute(taskFn: () => Promise<unknown>, context: Record<string, unknown>): Promise<RecoveryResult> {
     const startTime = Date.now();
     const config = this.#policy.retryConfig;
@@ -208,7 +209,13 @@ export class RecoveryExecutor {
       case 'default': {
         return this.#result(true, attempt, totalTimeMs);
       }
+      default:
+        // biome-ignore lint/suspicious/noUnusedExpressions: exhaustiveness check
+        this.#policy.escalationAction satisfies never;
     }
+
+    // Unreachable — all escalation actions handled above
+    throw this.#failedResult(lastError, attempt, totalTimeMs);
   }
 
   /**
@@ -227,7 +234,7 @@ export class RecoveryExecutor {
    */
   calculateBackoff(attempt: number): number {
     const config = this.#policy.retryConfig;
-    let delay: number;
+    let delay = 0;
 
     switch (config.backoffStrategy) {
       case 'linear': {
@@ -235,13 +242,16 @@ export class RecoveryExecutor {
         break;
       }
       case 'exponential': {
-        delay = config.baseDelayMs * Math.pow(2, attempt);
+        delay = config.baseDelayMs * 2 ** attempt;
         break;
       }
       case 'fixed': {
         delay = config.baseDelayMs;
         break;
       }
+      default:
+        // biome-ignore lint/suspicious/noUnusedExpressions: exhaustiveness check
+        config.backoffStrategy satisfies never;
     }
 
     delay = Math.min(delay, config.maxDelayMs);

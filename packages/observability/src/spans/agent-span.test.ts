@@ -56,7 +56,7 @@ describe('MultiAgentTracer', () => {
       expect(parent.delegatedTo).toContain(child.spanId);
       const subspan = parent.subspans.find(s => s.spanId === child.spanId);
       expect(subspan).toBeDefined();
-      expect(subspan!.agentId).toBe('agent-2');
+      expect(subspan?.agentId).toBe('agent-2');
     });
 
     it('should throw when no parent span exists', () => {
@@ -83,9 +83,9 @@ describe('MultiAgentTracer', () => {
       });
 
       expect(span.toolCalls).toHaveLength(1);
-      expect(span.toolCalls[0]!.toolName).toBe('read_file');
-      expect(span.toolCalls[0]!.status).toBe('ok');
-      expect(span.toolCalls[0]!.duration).toBe(150);
+      expect(span.toolCalls[0]?.toolName).toBe('read_file');
+      expect(span.toolCalls[0]?.status).toBe('ok');
+      expect(span.toolCalls[0]?.duration).toBe(150);
     });
 
     it('should not throw when spanId is unknown', () => {
@@ -119,9 +119,9 @@ describe('MultiAgentTracer', () => {
         }
       });
 
-      expect(span.toolCalls[0]!.tokens).toBeDefined();
-      expect(span.toolCalls[0]!.tokens!.inputTokens).toBe(100);
-      expect(span.toolCalls[0]!.tokens!.modelName).toBe('gemini-2.0-flash');
+      expect(span.toolCalls[0]?.tokens).toBeDefined();
+      expect(span.toolCalls[0]?.tokens?.inputTokens).toBe(100);
+      expect(span.toolCalls[0]?.tokens?.modelName).toBe('gemini-2.0-flash');
     });
   });
 
@@ -165,10 +165,10 @@ describe('MultiAgentTracer', () => {
 
       const trace = tracer.getTrace(root.traceId);
       expect(trace).toBeDefined();
-      expect(trace!.spanId).toBe(root.spanId);
-      expect(trace!.subspans).toHaveLength(2);
-      expect(trace!.subspans[0]!.agentId).toBe('agent-2');
-      expect(trace!.subspans[1]!.agentId).toBe('agent-3');
+      expect(trace?.spanId).toBe(root.spanId);
+      expect(trace?.subspans).toHaveLength(2);
+      expect(trace?.subspans[0]?.agentId).toBe('agent-2');
+      expect(trace?.subspans[1]?.agentId).toBe('agent-3');
     });
 
     it('should return undefined for unknown traceId', () => {

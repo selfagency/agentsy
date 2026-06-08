@@ -1,16 +1,11 @@
 # `@agentsy/plugins`
 
-Extensibility framework and protocol adapters for the Agentsy ecosystem.
+Extensibility framework, plugin manifest contracts, and capability metadata for the Agentsy ecosystem.
 
 ## Purpose
 
-`@agentsy/plugins` provides the plugin registration system, lifecycle hooks, and protocol adapter contracts that allow third-party extensions to integrate with the Agentsy runtime.
+`@agentsy/plugins` owns plugin registration, manifest metadata, slash contracts, and capability discovery for host or harness integration.
 
-## Status
+## Boundary rule
 
-- Published package.
-- See the [roadmap](../roadmap.md) for planned capabilities.
-
-## Notes
-
-This package is currently in active development. API surface is subject to change.
+This package owns extensibility contracts and manifest metadata. It does **not** own framework doctor UX or helper-agent orchestration semantics.

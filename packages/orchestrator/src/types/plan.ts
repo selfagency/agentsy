@@ -48,42 +48,42 @@ export type StepStatus = (typeof StepStatus)[keyof typeof StepStatus];
  * Gate requiring a specific role to approve before proceeding.
  */
 export interface ApprovalGate {
-  readonly type: 'approval';
   /** Role required to approve this gate (e.g. 'admin', 'lead') */
   readonly role: string;
   /** Max time to wait for approval before timeout (milliseconds) */
   readonly timeoutMs: number;
+  readonly type: 'approval';
 }
 
 /**
  * Gate that auto-passes when a condition expression evaluates to true.
  */
 export interface AutoGate {
-  readonly type: 'auto';
   /** Expression that must evaluate to true for the gate to pass */
   readonly condition: string;
+  readonly type: 'auto';
 }
 
 /**
  * Gate that runs a verification check before proceeding.
  */
 export interface VerificationGate {
-  readonly type: 'verification';
   /** Reference to a verification or check definition */
   readonly checkId: string;
   /** Verification strategy (e.g. 'assertion', 'test-run', 'schema-check') */
   readonly strategy: string;
+  readonly type: 'verification';
 }
 
 /**
  * Gate that pauses execution and hands control to a human or agent loop.
  */
 export interface HumanInLoopGate {
-  readonly type: 'human-in-loop';
   /** Identifier of the agent or human to handle the loop */
   readonly agent: string;
   /** Max minutes to wait before escalating or timing out */
   readonly timeoutMinutes: number;
+  readonly type: 'human-in-loop';
 }
 
 export type SuccessGate = ApprovalGate | AutoGate | VerificationGate | HumanInLoopGate;
@@ -97,14 +97,14 @@ export type SuccessGate = ApprovalGate | AutoGate | VerificationGate | HumanInLo
 export interface WorkflowPlan {
   /** Unique plan identifier */
   readonly id: string;
-  /** Human-readable plan name */
-  readonly name: string;
-  /** Plan schema version (semver) */
-  readonly version: string;
-  /** Ordered steps comprising the plan */
-  readonly steps: readonly PlannedStep[];
   /** Arbitrary metadata (e.g. estimated cost, confidence, tags) */
   readonly metadata: Record<string, unknown>;
+  /** Human-readable plan name */
+  readonly name: string;
+  /** Ordered steps comprising the plan */
+  readonly steps: readonly PlannedStep[];
+  /** Plan schema version (semver) */
+  readonly version: string;
 }
 
 /**
@@ -112,28 +112,28 @@ export interface WorkflowPlan {
  * Dependencies form a valid DAG when resolved by the task board.
  */
 export interface PlannedStep {
-  /** Unique step identifier within the plan */
-  readonly id: string;
-  /** Step type category (task, decision, parallel, sequence, gate, subplan) */
-  readonly type: StepType;
-  /** Task or action to perform */
-  readonly task: string;
-  /** Input parameters for the step */
-  readonly input: Record<string, unknown>;
-  /** Step IDs that must complete before this step runs (DAG edges) */
-  readonly dependencies: readonly string[];
-  /** Conditional expression for gate or decision steps */
-  readonly condition?: string;
-  /** Execution timeout in milliseconds */
-  readonly timeoutMs?: number;
-  /** Maximum number of retries on failure */
-  readonly maxRetries?: number;
   /** Whether a checkpoint is required before executing this step */
   readonly checkpointRequired: boolean;
-  /** Arbitrary metadata (e.g. agent assignment, tier, tags) */
-  readonly metadata: Record<string, unknown>;
+  /** Conditional expression for gate or decision steps */
+  readonly condition?: string;
+  /** Step IDs that must complete before this step runs (DAG edges) */
+  readonly dependencies: readonly string[];
+  /** Unique step identifier within the plan */
+  readonly id: string;
+  /** Input parameters for the step */
+  readonly input: Record<string, unknown>;
   /** Human-readable intent description */
   readonly intent: string;
+  /** Maximum number of retries on failure */
+  readonly maxRetries?: number;
+  /** Arbitrary metadata (e.g. agent assignment, tier, tags) */
+  readonly metadata: Record<string, unknown>;
+  /** Task or action to perform */
+  readonly task: string;
+  /** Execution timeout in milliseconds */
+  readonly timeoutMs?: number;
+  /** Step type category (task, decision, parallel, sequence, gate, subplan) */
+  readonly type: StepType;
 }
 
 // ----- Execution Types -----
@@ -143,76 +143,76 @@ export interface PlannedStep {
  * Created when a plan is approved and execution begins.
  */
 export interface WorkflowExecution {
-  /** Unique execution identifier */
-  readonly id: string;
-  /** References the WorkflowPlan that this execution follows */
-  readonly planId: string;
-  /** Current execution status */
-  readonly status: ExecutionStatus;
-  /** ISO-8601 timestamp when execution started */
-  readonly startedAt: string;
-  /** Steps that have been executed or are in progress */
-  readonly steps: readonly ExecutedStep[];
-  /** ID of the currently executing step (if any) */
-  readonly currentStep?: string;
   /** Checkpoint snapshots for recovery and rollback */
   readonly checkpoints: readonly CheckpointSnapshot[];
+  /** ID of the currently executing step (if any) */
+  readonly currentStep?: string;
+  /** Unique execution identifier */
+  readonly id: string;
   /** Pause-resume event log for approval gates and manual pauses */
   readonly pauseResume: readonly PausedInterval[];
+  /** References the WorkflowPlan that this execution follows */
+  readonly planId: string;
+  /** ISO-8601 timestamp when execution started */
+  readonly startedAt: string;
+  /** Current execution status */
+  readonly status: ExecutionStatus;
+  /** Steps that have been executed or are in progress */
+  readonly steps: readonly ExecutedStep[];
 }
 
 /**
  * Record of a single step's execution attempt.
  */
 export interface ExecutedStep {
-  /** References PlannedStep.id */
-  readonly stepId: string;
-  /** Human-readable step name */
-  readonly stepName: string;
-  /** Execution status of this step */
-  readonly status: StepStatus;
-  /** ISO-8601 timestamp when this step started */
-  readonly startedAt: string;
   /** Number of execution attempts made */
   readonly attempts: number;
-  /** Step output (if completed) */
-  readonly output?: Record<string, unknown>;
   /** Error message (if failed) */
   readonly error?: string;
   /** Path of step IDs executed to reach this point in the DAG */
   readonly executionPath?: readonly string[];
+  /** Step output (if completed) */
+  readonly output?: Record<string, unknown>;
+  /** ISO-8601 timestamp when this step started */
+  readonly startedAt: string;
+  /** Execution status of this step */
+  readonly status: StepStatus;
+  /** References PlannedStep.id */
+  readonly stepId: string;
+  /** Human-readable step name */
+  readonly stepName: string;
 }
 
 /**
  * Record of a step that failed during execution.
  */
 export interface FailedStepRecord {
+  /** Attempt number when the failure occurred */
+  readonly attempt: number;
+  /** Error description */
+  readonly error: string;
   /** References PlannedStep.id */
   readonly stepId: string;
   /** Human-readable step name */
   readonly stepName: string;
-  /** Error description */
-  readonly error: string;
-  /** Attempt number when the failure occurred */
-  readonly attempt: number;
-  /** Whether the orchestrator will retry this step */
-  readonly willRetry: boolean;
   /** ISO-8601 timestamp of the failure */
   readonly timestamp: string;
+  /** Whether the orchestrator will retry this step */
+  readonly willRetry: boolean;
 }
 
 /**
  * Point-in-time snapshot of execution state for recovery.
  */
 export interface CheckpointSnapshot {
-  /** Unique checkpoint identifier */
-  readonly id: string;
-  /** Step ID at which this checkpoint was taken */
-  readonly stepId: string;
   /** Attempt number when checkpoint was taken */
   readonly attempt: number;
   /** Serialized execution context data */
   readonly data: Record<string, unknown>;
+  /** Unique checkpoint identifier */
+  readonly id: string;
+  /** Step ID at which this checkpoint was taken */
+  readonly stepId: string;
   /** ISO-8601 timestamp of the checkpoint */
   readonly timestamp: string;
 }
@@ -221,12 +221,12 @@ export interface CheckpointSnapshot {
  * Record of a paused interval during execution (approval gates, etc.).
  */
 export interface PausedInterval {
-  /** Step ID that triggered the pause */
-  readonly stepId: string;
-  /** ISO-8601 timestamp when the pause started */
-  readonly startTime: string;
-  /** ISO-8601 timestamp when execution resumed (undefined if still paused) */
-  readonly resumedAt?: string;
   /** Identifier of the entity that initiated the pause */
   readonly pausedBy: string;
+  /** ISO-8601 timestamp when execution resumed (undefined if still paused) */
+  readonly resumedAt?: string;
+  /** ISO-8601 timestamp when the pause started */
+  readonly startTime: string;
+  /** Step ID that triggered the pause */
+  readonly stepId: string;
 }

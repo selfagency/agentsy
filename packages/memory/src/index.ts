@@ -1,3 +1,6 @@
+export type { MemoryDiagnosticCheck, MemoryDiagnosticsReport } from './diagnostics/index.js';
+export { getMemorySetupGuide, runMemoryDiagnostics } from './diagnostics/index.js';
+
 // @agentsy/memory — Three-layer memory engine (raw event log, synthesized wiki, vector retrieval)
 // Phase 1 foundation: coordination contracts + three-tier wiki primitives.
 

@@ -49,6 +49,14 @@ export interface ProviderUsageSnapshot {
   tpmRemaining?: number;
 }
 
+export interface ReplicaQuotaSnapshot {
+  remainingRequestsHour?: number;
+  remainingRequestsMinute?: number;
+  remainingTokensHour?: number;
+  remainingTokensMinute?: number;
+  replicaId: string;
+}
+
 export interface RoutingState {
   providerCount: number;
   providerId: string;

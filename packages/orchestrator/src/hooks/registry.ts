@@ -7,7 +7,7 @@
  */
 
 import { compileHooks } from './compile.js';
-import type { ConflictStrategy, ConflictWarning, HookDefinition, HookExecutionPlan, HookPhase } from './types.js';
+import type { ConflictWarning, HookDefinition, HookExecutionPlan, HookPhase } from './types.js';
 
 // ---------------------------------------------------------------------------
 // HookRegistry
@@ -22,7 +22,7 @@ import type { ConflictStrategy, ConflictWarning, HookDefinition, HookExecutionPl
  * - `resolveConflicts()` applies conflict-resolution strategies.
  */
 export class HookRegistry {
-  private hooks = new Map<string, HookDefinition>();
+  private readonly hooks = new Map<string, HookDefinition>();
   private cachedPlan: HookExecutionPlan | null = null;
 
   // -----------------------------------------------------------------------
@@ -166,17 +166,17 @@ export class HookRegistry {
           const planOrder = plan.order;
           const idx1 = planOrder.indexOf(warning.hook1);
           const idx2 = planOrder.indexOf(warning.hook2);
-          if (idx1 !== -1 && idx2 !== -1) {
-            // Defer = ensure hook2 runs before hook1
-            if (idx1 < idx2) {
-              // hook1 currently comes first — swap them
-              const temp = planOrder[idx1]!;
-              planOrder[idx1] = planOrder[idx2]!;
-              planOrder[idx2] = temp;
-            }
+          if (idx1 !== -1 && idx2 !== -1 && idx1 < idx2) {
+            // hook1 currently comes first — swap them
+            const temp = planOrder[idx1] as string;
+            planOrder[idx1] = planOrder[idx2] as string;
+            planOrder[idx2] = temp;
           }
           break;
         }
+        default:
+          // biome-ignore lint/suspicious/noUnusedExpressions: exhaustiveness check
+          warning.strategy satisfies never;
       }
     }
 

@@ -6,7 +6,14 @@ CLI utilities for the Agentsy monorepo.
 
 Internal package; APIs and scripts may evolve.
 
-## Phase 0 commands
+## Operator commands
+
+- `setup [memory|vscode] [--json]`
+- `doctor [memory|vscode] [--json]`
+
+Framework-wide setup and doctor ownership belongs to this package. Lower-level packages expose reusable diagnostics or setup hints; the CLI owns the human-facing command experience.
+
+## Existing development commands
 
 - `compress --level <lite|full|ultra> --text <content>`
 - `compress --level <lite|full|ultra> --file <path>`
@@ -57,7 +64,9 @@ Located in `src/e2e/`:
 | `compress-memory.spec.ts` | `compress-memory --file`, `--no-backup`, missing flag |
 | `memory-sync-dev.spec.ts` | `memory-sync-dev`, `--json`, custom flags, invalid args |
 | `chat.spec.ts` | `/exit`, message send, `/help` |
-| `cli-basics.spec.ts` | Unknown command, default entry |
+| `cli-basics.spec.ts` | Unknown command, default entry, supported command list |
+| `setup.spec.ts` | `setup`, `setup --json`, target selection |
+| `doctor.spec.ts` | `doctor`, `doctor --json`, target selection |
 
 ### Adding tests for new commands
 

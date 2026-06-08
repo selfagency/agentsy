@@ -1,3 +1,5 @@
+export type { McpDiagnosticsReport, McpSetupGuide } from './diagnostics.js';
+export { getMcpSetupGuide, runMcpDiagnostics } from './diagnostics.js';
 export type {
   McpCapabilities,
   McpPrompt,

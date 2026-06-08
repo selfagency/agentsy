@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
-
-import { compileHooks } from './compile.js';
 import { HookRegistry } from './registry.js';
-import type { HookDefinition, HookPhase } from './types.js';
+import type { HookDefinition } from './types.js';
 
 function hook(name: string, overrides: Partial<HookDefinition> = {}): HookDefinition {
   const result: HookDefinition = {
@@ -66,7 +64,7 @@ describe('HookRegistry', () => {
       registry.register(hook('find-me', { phase: 'onError', priority: 30 }));
       const found = registry.getHook('find-me');
       expect(found).toBeDefined();
-      expect(found!.phase).toBe('onError');
+      expect(found?.phase).toBe('onError');
     });
 
     it('should return undefined for unknown name', () => {
@@ -91,7 +89,7 @@ describe('HookRegistry', () => {
 
       const beforeHooks = registry.listHooks('beforeToolCall');
       expect(beforeHooks).toHaveLength(1);
-      expect(beforeHooks[0]!.name).toBe('before');
+      expect(beforeHooks[0]?.name).toBe('before');
     });
   });
 

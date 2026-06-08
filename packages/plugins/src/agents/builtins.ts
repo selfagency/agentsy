@@ -1,4 +1,100 @@
 import type { AgentManifest } from '../manifest/types.js';
+import type { AgentDefinition } from './definition.js';
+
+// ──────────────────────────────────────────────
+// AgentDefinition builtins (new schema)
+// ──────────────────────────────────────────────
+
+/**
+ * Built-in default/general-purpose agent definition.
+ *
+ * General-purpose multi-mode agent with unrestricted tool access.
+ */
+export const defaultAgentDefinition: AgentDefinition = {
+  id: 'default',
+  name: 'Default Agent',
+  description: 'General-purpose multi-mode agent with unrestricted tool access.',
+  allowedTools: '*',
+  orchestrationMode: 'single',
+  source: 'bundled'
+};
+
+/**
+ * Built-in research agent definition.
+ *
+ * Iterative search and synthesis agent for information-gathering tasks.
+ */
+export const researchAgentDefinition: AgentDefinition = {
+  id: 'research',
+  name: 'Research Agent',
+  description: 'Iterative search and synthesis for information gathering and analysis.',
+  systemPromptTemplate:
+    'You are a thorough research assistant. Gather information systematically, evaluate source credibility, synthesize findings across sources, and present conclusions with proper citations. Prioritize accuracy and depth over speed.',
+  allowedTools: ['web-search', 'web-fetch', 'code-search', 'document-analysis', 'arxiv'],
+  memoryScopes: ['session'],
+  orchestrationMode: 'orchestrated',
+  defaultModel: 'claude-sonnet-4-20250514',
+  source: 'bundled'
+};
+
+/**
+ * Built-in code agent definition.
+ *
+ * Structured code development agent with code execution and filesystem access.
+ */
+export const codeAgentDefinition: AgentDefinition = {
+  id: 'code',
+  name: 'Code Agent',
+  description: 'Structured code development with execution and filesystem tooling.',
+  systemPromptTemplate:
+    'You are a capable autonomous engineer. Break down complex tasks, investigate systematically, verify your work, and iterate until complete. Follow the discipline: investigate first, implement second, review third, test fourth.',
+  allowedTools: [
+    'code-search',
+    'web-fetch',
+    'file-read',
+    'file-write',
+    'code-execution',
+    'shell-command',
+    'git-operations',
+    'package-management'
+  ],
+  memoryScopes: ['session'],
+  orchestrationMode: 'orchestrated',
+  defaultModel: 'claude-sonnet-4-20250514',
+  source: 'bundled'
+};
+
+/**
+ * Built-in planner agent definition.
+ *
+ * Interview-driven planning and architecture design agent.
+ */
+export const plannerAgentDefinition: AgentDefinition = {
+  id: 'plan',
+  name: 'Planner Agent',
+  description: 'Interview-driven planning and architecture design with memory append.',
+  systemPromptTemplate:
+    'You are a senior technical architect. Design clear, actionable plans with explicit trade-offs, risk assessment, and incremental delivery steps. Ask clarifying questions when requirements are ambiguous. Produce structured output with rationale for each decision.',
+  allowedTools: ['code-search', 'web-fetch', 'file-read', 'architecture-analysis', 'memory-append'],
+  memoryScopes: ['workspace'],
+  orchestrationMode: 'single',
+  defaultModel: 'claude-opus-4-20250514',
+  source: 'bundled'
+};
+
+/**
+ * Array of all built-in agent definitions (new schema).
+ */
+export const BUILTIN_AGENT_DEFINITIONS: AgentDefinition[] = [
+  defaultAgentDefinition,
+  researchAgentDefinition,
+  codeAgentDefinition,
+  plannerAgentDefinition
+];
+
+// ──────────────────────────────────────────────
+// Backward-compatible AgentManifest exports
+// ──────────────────────────────────────────────
 
 /**
  * @deprecated Scaffold status type — retained for backwards compatibility.
@@ -7,10 +103,9 @@ import type { AgentManifest } from '../manifest/types.js';
 export type AgentsScaffoldStatus = 'pending-implementation';
 
 /**
- * Built-in research agent manifest.
+ * @deprecated Use {@link researchAgentDefinition} instead.
  *
- * Systematic research agent for gathering and synthesizing information.
- * Operates with session-scoped memory and broad information-gathering tool access.
+ * Built-in research agent manifest.
  */
 export const researchAgentManifest: AgentManifest = {
   id: 'superagents/research',
@@ -27,10 +122,9 @@ export const researchAgentManifest: AgentManifest = {
 };
 
 /**
- * Built-in plan agent manifest.
+ * @deprecated Use {@link plannerAgentDefinition} instead.
  *
- * Strategic planning agent for architecture and implementation design.
- * Operates with project-scoped memory and analysis-oriented tools.
+ * Built-in plan agent manifest.
  */
 export const planAgentManifest: AgentManifest = {
   id: 'superagents/plan',
@@ -47,10 +141,9 @@ export const planAgentManifest: AgentManifest = {
 };
 
 /**
- * Built-in general-purpose agent manifest.
+ * @deprecated Use {@link defaultAgentDefinition} or {@link codeAgentDefinition} instead.
  *
- * Autonomous agent for multi-step execution with investigate/review/test discipline.
- * Has broad tool access and operates with session-scoped memory.
+ * Built-in general-purpose agent manifest.
  */
 export const agentManifest: AgentManifest = {
   id: 'superagents/agent',
@@ -76,6 +169,8 @@ export const agentManifest: AgentManifest = {
 };
 
 /**
+ * @deprecated Use {@link BUILTIN_AGENT_DEFINITIONS} instead.
+ *
  * Array of all built-in agent manifests.
  */
 export const BUILTIN_AGENT_MANIFESTS: AgentManifest[] = [researchAgentManifest, planAgentManifest, agentManifest];

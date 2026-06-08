@@ -1,16 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import type {
-  ApprovalGate,
-  AutoGate,
   CheckpointSnapshot,
   ExecutedStep,
   FailedStepRecord,
-  HumanInLoopGate,
   PausedInterval,
   PlannedStep,
   SuccessGate,
-  VerificationGate,
   WorkflowExecution,
   WorkflowPlan
 } from './plan.js';

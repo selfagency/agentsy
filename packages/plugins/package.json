@@ -36,6 +36,21 @@
       "import": "./dist/manifest.js",
       "require": "./dist/manifest.cjs"
     },
+    "./sandbox": {
+      "types": "./dist/sandbox.d.ts",
+      "import": "./dist/sandbox.js",
+      "require": "./dist/sandbox.cjs"
+    },
+    "./instructions": {
+      "types": "./dist/instructions.d.ts",
+      "import": "./dist/instructions.js",
+      "require": "./dist/instructions.cjs"
+    },
+    "./skills": {
+      "types": "./dist/skills.d.ts",
+      "import": "./dist/skills.js",
+      "require": "./dist/skills.cjs"
+    },
     "./slash": {
       "types": "./dist/slash.d.ts",
       "import": "./dist/slash.js",
@@ -51,7 +66,8 @@
     "coverage": "vitest --run --coverage"
   },
   "dependencies": {
-    "@agentsy/types": "workspace:*"
+    "@agentsy/types": "workspace:*",
+    "isolated-vm": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
@@ -63,5 +79,5 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "pnpm@10.33.2"
+  "packageManager": "pnpm@10.33.4+sha512.1c67b3b359b2d408119ba1ed289f34b8fc3c6873412bec6fd264fbdc82489e510fcbecb9ce9d22dae7f3b76269d8441046014bdca53b9979cd7a561ad631b800"
 }

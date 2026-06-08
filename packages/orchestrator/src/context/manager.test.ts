@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ContextManager } from './manager.js';
 
@@ -172,7 +172,7 @@ describe('ContextManager', () => {
 
       // Can't easily make frames expire since expiry is set 30 min in future.
       // Instead verify cleanup does not throw and leaves valid data intact.
-      const frame = cm.pushContext({
+      const _frame = cm.pushContext({
         agentId: 'agent-1',
         sessionId: 'session-1',
         visibleFields: [],

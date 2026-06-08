@@ -51,7 +51,13 @@ export { BaseLanguageModelChatProvider } from './provider/index.js';
 export { createRetryUtility, RetryUtility } from './retry/index.js';
 export type { SchemaProperty, SettingsSchema } from './settings/index.js';
 // Settings
-export { applyDefaults, SettingsLoader, validateSettings } from './settings/index.js';
+export {
+  applyDefaults,
+  getVSCodeSetupGuide,
+  runVSCodeSettingsDiagnostics,
+  SettingsLoader,
+  validateSettings
+} from './settings/index.js';
 export { createMCPChatBridge, MCPChatBridge } from './stream-bridge/mcp-chat-bridge.js';
 export type { VSCodeStreamBridgeOptions } from './stream-bridge.js';
 // Stream bridge

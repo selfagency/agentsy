@@ -100,7 +100,7 @@ describe('createGovernanceGate', () => {
     const log = enforcer.getAuditLog();
     const deniedEvent = log.find(e => e.result === 'deny');
     expect(deniedEvent).toBeDefined();
-    expect(deniedEvent!.resource).toBe('restricted_tool');
+    expect(deniedEvent?.resource).toBe('restricted_tool');
   });
 
   it('should log audit event on allowed access', async () => {
@@ -117,6 +117,6 @@ describe('createGovernanceGate', () => {
     const log = enforcer.getAuditLog();
     const allowEvent = log.find(e => e.result === 'allow');
     expect(allowEvent).toBeDefined();
-    expect(allowEvent!.resource).toBe('restricted_tool');
+    expect(allowEvent?.resource).toBe('restricted_tool');
   });
 });

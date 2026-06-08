@@ -21,6 +21,10 @@ import { loadSlashCommands } from '@agentsy/core';
 import type { LoadBalancedClient, StrategyName } from '@agentsy/gateway';
 import { StrategyNameSchema } from '@agentsy/gateway';
 import { discoverLocalProviders, selectModel } from '@agentsy/models';
+import { AgentRegistry } from '@agentsy/plugins';
+import { SkillDiscoverer } from '@agentsy/plugins/skills';
+import type { PlanAgentDefinition } from '@agentsy/runtime';
+import { createAgentSession } from '@agentsy/runtime';
 import type { TurnHandler } from '@agentsy/runtime/loop';
 import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
 
@@ -104,6 +108,50 @@ async function listProviders(): Promise<string> {
   }
 }
 
+// ── Agent helpers ───────────────────────────────────────────────────────────────
+
+function formatAgentDescription(agent: {
+  id: string;
+  name: string;
+  description: string;
+  allowedTools?: readonly string[] | '*';
+  orchestrationMode?: string;
+  defaultModel?: string;
+}): string {
+  const lines: string[] = [];
+  lines.push(`  ${agent.name} (${agent.id})`);
+  lines.push(`    description: ${agent.description}`);
+  if (agent.orchestrationMode) {
+    lines.push(`    mode: ${agent.orchestrationMode}`);
+  }
+  if (agent.defaultModel) {
+    lines.push(`    default model: ${agent.defaultModel}`);
+  }
+  if (agent.allowedTools) {
+    const toolCount = agent.allowedTools === '*' ? 'all' : String(agent.allowedTools.length);
+    lines.push(`    tools: ${toolCount}`);
+  }
+  return lines.join('\n');
+}
+
+function formatSkillDescription(skill: {
+  name: string;
+  description: string;
+  version?: string;
+  author?: string;
+}): string {
+  const lines: string[] = [];
+  lines.push(`  ${skill.name}`);
+  lines.push(`    description: ${skill.description}`);
+  if (skill.version) {
+    lines.push(`    version: ${skill.version}`);
+  }
+  if (skill.author) {
+    lines.push(`    author: ${skill.author}`);
+  }
+  return lines.join('\n');
+}
+
 // ── Chat command ────────────────────────────────────────────────────────────────
 
 export interface ChatHeaders {
@@ -115,6 +163,8 @@ export interface ChatHeaders {
  * Options for fine-tuning chat command behaviour.
  */
 export interface ChatCommandOptions {
+  /** Pre-selected agent ID (from --agent flag or test seam). */
+  agentId?: string | undefined;
   /** Headers printed before each assistant response block. */
   headers?: ChatHeaders | undefined;
   /**
@@ -133,6 +183,8 @@ export interface ChatCommandOptions {
   mockChunkDelayMs?: number | undefined;
   /** Custom mock client response text (for testing). */
   mockResponseText?: string | undefined;
+  /** When true, run in plan mode (no tool execution). */
+  planMode?: boolean | undefined;
   /** Custom provider configuration (for testing / programmatic use). */
   providerConfig?: CliProviderConfig | undefined;
 }
@@ -202,6 +254,7 @@ function safePrompt(rl: Interface): void {
   }
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: interactive REPL dispatch is inherently conditional
 export async function runChatCommand(
   argv: readonly string[],
   io: CliIO,
@@ -211,6 +264,42 @@ export async function runChatCommand(
   const isMock = hasFlag(argv, '--mock');
   const model = getFlagValue(argv, '--model') ?? 'gpt-4o-mini';
   const headers = options?.headers ?? DEFAULT_HEADERS;
+
+  // Parse --agent and --plan flags
+  const selectedAgentId = getFlagValue(argv, '--agent') ?? options?.agentId ?? null;
+  const planMode = hasFlag(argv, '--plan') || options?.planMode === true;
+
+  // Resolve agent definition if an agent ID was provided
+  let systemPrompt = 'You are a helpful assistant.';
+  const registry = selectedAgentId === null ? null : new AgentRegistry();
+
+  if (registry !== null && selectedAgentId !== null) {
+    try {
+      const agentDef = await registry.get(selectedAgentId);
+      systemPrompt = agentDef.systemPromptTemplate ?? systemPrompt;
+      stderr(dim(`[agent] loaded: ${agentDef.name} (${agentDef.id})\n`));
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      stderr(dim(`[agent] failed to load "${selectedAgentId}": ${msg}\n`));
+    }
+  }
+
+  // Create plan session if in plan mode
+  const planSession =
+    planMode && selectedAgentId !== null
+      ? await createAgentSession(
+          {
+            id: selectedAgentId,
+            name: selectedAgentId,
+            description: ''
+          } satisfies PlanAgentDefinition,
+          { agentId: selectedAgentId, plan: true }
+        )
+      : null;
+
+  if (planMode) {
+    stderr(dim('[plan] plan mode enabled — tools will not be executed\n'));
+  }
 
   const client = createProviderClient(isMock, argv, options);
 
@@ -224,7 +313,7 @@ export async function runChatCommand(
   const loop = createSimpleTurnLoop({
     handler,
     model,
-    systemPrompt: 'You are a helpful assistant.'
+    systemPrompt
   });
 
   const rl = createInterface({
@@ -359,7 +448,9 @@ export async function runChatCommand(
       lines.push(parts.join(' '));
     }
     lines.push(
-      `[lb] metrics: requests=${metrics.requestCount} success=${metrics.successCount} failure=${metrics.failureCount} failovers=${metrics.failoverCount} circuitTrips=${metrics.circuitTrips}`,
+      `[lb] metrics: requests=${metrics.requestCount} success=${metrics.successCount} failure=${metrics.failureCount} failovers=${metrics.failoverCount} circuitTrips=${metrics.circuitTrips}`
+    );
+    lines.push(
       `[lb] totals: tokens=${metrics.totalTokens} (in=${metrics.totalInputTokens} out=${metrics.totalOutputTokens}) cost=$${metrics.totalCostUsd.toFixed(4)}`
     );
     if (metrics.streamCount > 0) {
@@ -433,6 +524,117 @@ export async function runChatCommand(
     stderr(dim(`[status] model: ${model}\n`));
   }
 
+  // ── /agent command handlers ───────────────────────────────────────────────────────
+
+  async function handleAgentList(): Promise<void> {
+    const reg = registry ?? new AgentRegistry();
+    try {
+      const agents = await reg.list();
+      if (agents.length === 0) {
+        stderr(dim('[agent] no agents found\n'));
+        return;
+      }
+      const descriptions = agents.map(formatAgentDescription);
+      stderr(dim(`[agent] ${agents.length} agent(s) available:\n${descriptions.join('\n')}\n`));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      stderr(dim(`[agent] list failed: ${message}\n`));
+    }
+  }
+
+  async function handleAgentShow(agentId: string): Promise<void> {
+    const reg = registry ?? new AgentRegistry();
+    try {
+      const agent = await reg.get(agentId);
+      stderr(dim(`[agent] ${agentId}:\n${formatAgentDescription(agent)}\n`));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      stderr(dim(`[agent] "${agentId}" not found: ${message}\n`));
+    }
+  }
+
+  function handleAgentSelect(agentId: string): void {
+    stderr(dim(`[agent] switch intent logged: ${agentId}\n`));
+    stderr(dim('[agent] note: full agent switching is not yet implemented\n'));
+  }
+
+  async function handleAgentDispatch(args: string[]): Promise<void> {
+    const [action, ...rest] = args;
+    if (action === 'list') {
+      await handleAgentList();
+    } else if (action === 'show') {
+      const agentId = rest[0] ?? '';
+      if (agentId.length === 0) {
+        stderr(dim('[agent] usage: /agent show <agentId>\n'));
+        return;
+      }
+      await handleAgentShow(agentId);
+    } else if (action === 'select') {
+      const agentId = rest[0] ?? '';
+      if (agentId.length === 0) {
+        stderr(dim('[agent] usage: /agent select <agentId>\n'));
+        return;
+      }
+      handleAgentSelect(agentId);
+    } else if (action === undefined) {
+      stderr(dim('[agent] usage: /agent list | show <agentId> | select <agentId>\n'));
+    } else {
+      stderr(dim(`[agent] unknown action: ${action}\n`));
+    }
+  }
+
+  // ── /skills command handlers ──────────────────────────────────────────────────────
+
+  async function handleSkillsList(): Promise<void> {
+    const discoverer = new SkillDiscoverer();
+    try {
+      const skills = await discoverer.discover();
+      if (skills.length === 0) {
+        stderr(dim('[skills] no skills found\n'));
+        return;
+      }
+      const descriptions = skills.map(formatSkillDescription);
+      stderr(dim(`[skills] ${skills.length} skill(s) available:\n${descriptions.join('\n')}\n`));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      stderr(dim(`[skills] list failed: ${message}\n`));
+    }
+  }
+
+  async function handleSkillsShow(skillName: string): Promise<void> {
+    const discoverer = new SkillDiscoverer();
+    try {
+      const skills = await discoverer.discover();
+      const match = skills.find((s: { name: string }) => s.name.toLowerCase() === skillName.toLowerCase());
+      if (match === undefined) {
+        stderr(dim(`[skills] "${skillName}" not found\n`));
+        return;
+      }
+      stderr(dim(`[skills] ${skillName}:\n${formatSkillDescription(match)}\n`));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      stderr(dim(`[skills] show failed: ${message}\n`));
+    }
+  }
+
+  async function handleSkillsDispatch(args: string[]): Promise<void> {
+    const [action, ...rest] = args;
+    if (action === 'list') {
+      await handleSkillsList();
+    } else if (action === 'show') {
+      const skillName = rest[0] ?? '';
+      if (skillName.length === 0) {
+        stderr(dim('[skills] usage: /skills show <skillName>\n'));
+        return;
+      }
+      await handleSkillsShow(skillName);
+    } else if (action === undefined) {
+      stderr(dim('[skills] usage: /skills list | show <skillName>\n'));
+    } else {
+      stderr(dim(`[skills] unknown action: ${action}\n`));
+    }
+  }
+
   // NOSONAR -- Intentional no-op: unknown commands are silently ignored
   function handleUnknownCommand(_command: string): void {
     /* intentional no-op */
@@ -478,6 +680,18 @@ export async function runChatCommand(
       return false;
     }
 
+    if (trimmed.startsWith('/agent ')) {
+      await handleAgentDispatch(trimmed.slice(7).trim().split(/\s+/u));
+      safePrompt(rl);
+      return false;
+    }
+
+    if (trimmed.startsWith('/skills ')) {
+      await handleSkillsDispatch(trimmed.slice(8).trim().split(/\s+/u));
+      safePrompt(rl);
+      return false;
+    }
+
     if (trimmed.startsWith('/lb ')) {
       handleLbDispatch(trimmed);
       safePrompt(rl);
@@ -506,6 +720,18 @@ export async function runChatCommand(
   }
 
   async function processUserMessage(message: string): Promise<void> {
+    // Plan mode — generate structured plan instead of executing tools
+    if (planSession !== null) {
+      try {
+        const result = await planSession.step(message);
+        process.stdout.write(`${result.text}\n`);
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        stderr(`\n${dim('[plan] error:')} ${msg}\n`);
+      }
+      return;
+    }
+
     process.stdout.write(`${headers.prefix}\n`);
 
     try {
@@ -540,6 +766,8 @@ export async function runChatCommand(
     ['/provider', args => handleProviderCommand(args)],
     ['/status', () => handleStatusCommand()],
     ['/model', () => handleModelCommand([])],
+    ['/agent', () => handleAgentDispatch([])],
+    ['/skills', () => handleSkillsDispatch([])],
     ['/lb', () => handleLbStatusCommand()],
     ['/lb status', () => handleLbStatusCommand()],
     ['/lb providers', () => handleLbProvidersCommand()],

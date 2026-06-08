@@ -26,22 +26,21 @@ export type TaskStatus = 'pending' | 'ready' | 'running' | 'paused' | 'completed
  * Represents one atomic unit of work within a plan step.
  */
 export interface Task {
-  id: string;
-  planId: string;
-  stepId: string;
-  type: string;
-  status: TaskStatus;
-  metadata: Record<string, unknown>;
-  dependencies: string[];
+  /** Snapshot stored at time of pause for recovery. */
+  checkpointData?: CheckpointSnapshot;
 
   createdAt: Date;
-  updatedAt: Date;
+  dependencies: string[];
+  id: string;
+  metadata: Record<string, unknown>;
 
   /** Link to parent task for sub-task decomposition trees. */
   parentTaskId?: string;
-
-  /** Snapshot stored at time of pause for recovery. */
-  checkpointData?: CheckpointSnapshot;
+  planId: string;
+  status: TaskStatus;
+  stepId: string;
+  type: string;
+  updatedAt: Date;
 }
 
 /**
@@ -49,17 +48,17 @@ export interface Task {
  * Tasks may be retried; each retry creates a new attempt.
  */
 export interface TaskAttempt {
-  id: string;
-  taskId: string;
   attemptNumber: number;
-
-  startedAt: Date;
   completedAt?: Date;
-
-  status: 'running' | 'completed' | 'failed';
+  error?: { message: string; stack?: string };
+  id: string;
 
   output?: unknown;
-  error?: { message: string; stack?: string };
+
+  startedAt: Date;
+
+  status: 'running' | 'completed' | 'failed';
+  taskId: string;
 
   toolCalls: ToolCallRecord[];
 }
@@ -69,11 +68,11 @@ export interface TaskAttempt {
  * Used for idempotency replay and audit.
  */
 export interface ToolCallRecord {
-  toolName: string;
   input: unknown;
   output: unknown;
-  tokens?: number;
   resultId?: string;
+  tokens?: number;
+  toolName: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,17 +84,16 @@ export interface ToolCallRecord {
  * Stored for recovery after failure or pause.
  */
 export interface CheckpointSnapshot {
+  /** Serialised context at checkpoint time. */
+  contextSnapshot: Record<string, unknown>;
   /** How many steps completed up to this point. */
   stepIndex: number;
 
-  /** Serialised context at checkpoint time. */
-  contextSnapshot: Record<string, unknown>;
+  /** When the checkpoint was taken. */
+  timestamp: Date;
 
   /** Cached tool results for idempotent replay (keyed by toolCallId). */
   toolResultCache: Record<string, unknown>;
-
-  /** When the checkpoint was taken. */
-  timestamp: Date;
 }
 
 // ---------------------------------------------------------------------------
@@ -112,16 +110,20 @@ export interface CheckpointSnapshot {
  * this with a database (Redis, Postgres, etc.).
  */
 export interface ITaskBoard {
+  // ── Attempt lifecycle ─────────────────────────────────────────────────
+
+  /** Create a new execution attempt for the given task. */
+  createAttempt(taskId: string): Promise<TaskAttempt>;
   // ── CRUD ──────────────────────────────────────────────────────────────
 
   /** Create a new task and return it with generated id / timestamps. */
   createTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task>;
 
-  /** Retrieve a task by id, or undefined if not found. */
-  getTask(id: string): Promise<Task | undefined>;
-
-  /** Apply partial updates to an existing task and return the updated task. */
-  updateTask(id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<Task>;
+  /**
+   * Load the latest checkpoint for a task.
+   * Returns undefined when no checkpoint exists.
+   */
+  getCheckpoint(taskId: string): Promise<CheckpointSnapshot | undefined>;
 
   // ── Dependency resolution ────────────────────────────────────────────
 
@@ -134,10 +136,14 @@ export interface ITaskBoard {
    */
   getReadyTasks(planId: string): Task[];
 
-  // ── Attempt lifecycle ─────────────────────────────────────────────────
+  /** Retrieve a task by id, or undefined if not found. */
+  getTask(id: string): Promise<Task | undefined>;
 
-  /** Create a new execution attempt for the given task. */
-  createAttempt(taskId: string): Promise<TaskAttempt>;
+  /**
+   * Retrieve a previously cached tool result by toolCallId.
+   * Returns undefined when no cached result exists.
+   */
+  getToolExecutionResult(toolCallId: string): Promise<unknown | undefined>;
 
   // ── Idempotency ──────────────────────────────────────────────────────
 
@@ -147,12 +153,6 @@ export interface ITaskBoard {
    */
   recordToolExecution(attemptId: string, toolCallId: string, record: ToolCallRecord): Promise<void>;
 
-  /**
-   * Retrieve a previously cached tool result by toolCallId.
-   * Returns undefined when no cached result exists.
-   */
-  getToolExecutionResult(toolCallId: string): Promise<unknown | undefined>;
-
   // ── Checkpoint / recovery ────────────────────────────────────────────
 
   /**
@@ -161,9 +161,6 @@ export interface ITaskBoard {
    */
   saveCheckpoint(taskId: string, attemptId: string, data: CheckpointSnapshot): Promise<void>;
 
-  /**
-   * Load the latest checkpoint for a task.
-   * Returns undefined when no checkpoint exists.
-   */
-  getCheckpoint(taskId: string): Promise<CheckpointSnapshot | undefined>;
+  /** Apply partial updates to an existing task and return the updated task. */
+  updateTask(id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<Task>;
 }

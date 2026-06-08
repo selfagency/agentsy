@@ -109,7 +109,7 @@ export class InMemoryTaskBoard implements ITaskBoard {
   // CRUD
   // -----------------------------------------------------------------------
 
-  async createTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> {
+  createTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> {
     // Validate all dependency references exist
     for (const depId of task.dependencies) {
       if (!this.#tasks.has(depId)) {
@@ -136,14 +136,14 @@ export class InMemoryTaskBoard implements ITaskBoard {
     };
 
     this.#tasks.set(id, newTask);
-    return newTask;
+    return Promise.resolve(newTask);
   }
 
-  async getTask(id: string): Promise<Task | undefined> {
-    return this.#tasks.get(id);
+  getTask(id: string): Promise<Task | undefined> {
+    return Promise.resolve(this.#tasks.get(id));
   }
 
-  async updateTask(id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<Task> {
+  updateTask(id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<Task> {
     const existing = this.#tasks.get(id);
     if (!existing) {
       throw new TaskNotFoundError(id);
@@ -175,7 +175,7 @@ export class InMemoryTaskBoard implements ITaskBoard {
     };
 
     this.#tasks.set(id, updated);
-    return updated;
+    return Promise.resolve(updated);
   }
 
   // -----------------------------------------------------------------------
@@ -190,7 +190,7 @@ export class InMemoryTaskBoard implements ITaskBoard {
     return candidates.filter(task => {
       for (const depId of task.dependencies) {
         const dep = this.#tasks.get(depId);
-        if (!dep || dep.status !== 'completed') {
+        if (dep?.status !== 'completed') {
           return false;
         }
       }
@@ -213,9 +213,13 @@ export class InMemoryTaskBoard implements ITaskBoard {
 
     const traverse = (currentId: string): void => {
       const current = this.#tasks.get(currentId);
-      if (!current) return;
+      if (!current) {
+        return;
+      }
       for (const depId of current.dependencies) {
-        if (visited.has(depId)) continue;
+        if (visited.has(depId)) {
+          continue;
+        }
         visited.add(depId);
         traverse(depId);
       }
@@ -229,7 +233,7 @@ export class InMemoryTaskBoard implements ITaskBoard {
   // Attempt lifecycle
   // -----------------------------------------------------------------------
 
-  async createAttempt(taskId: string): Promise<TaskAttempt> {
+  createAttempt(taskId: string): Promise<TaskAttempt> {
     const task = this.#tasks.get(taskId);
     if (!task) {
       throw new TaskNotFoundError(taskId);
@@ -250,32 +254,33 @@ export class InMemoryTaskBoard implements ITaskBoard {
     existingAttempts.push(attempt);
     this.#attempts.set(taskId, existingAttempts);
 
-    return attempt;
+    return Promise.resolve(attempt);
   }
 
   // -----------------------------------------------------------------------
   // Idempotency — tool execution results keyed by toolCallId
   // -----------------------------------------------------------------------
 
-  async recordToolExecution(attemptId: string, toolCallId: string, record: ToolCallRecord): Promise<void> {
+  recordToolExecution(_attemptId: string, toolCallId: string, record: ToolCallRecord): Promise<void> {
     this.#toolResults.set(toolCallId, record.output);
+    return Promise.resolve();
   }
 
-  async getToolExecutionResult(toolCallId: string): Promise<unknown | undefined> {
-    const result = this.#toolResults.get(toolCallId);
-    return result;
+  getToolExecutionResult(toolCallId: string): Promise<unknown | undefined> {
+    return Promise.resolve(this.#toolResults.get(toolCallId));
   }
 
   // -----------------------------------------------------------------------
   // Checkpoint / recovery
   // -----------------------------------------------------------------------
 
-  async saveCheckpoint(taskId: string, attemptId: string, data: CheckpointSnapshot): Promise<void> {
+  saveCheckpoint(taskId: string, _attemptId: string, data: CheckpointSnapshot): Promise<void> {
     this.#checkpoints.set(taskId, data);
+    return Promise.resolve();
   }
 
-  async getCheckpoint(taskId: string): Promise<CheckpointSnapshot | undefined> {
-    return this.#checkpoints.get(taskId);
+  getCheckpoint(taskId: string): Promise<CheckpointSnapshot | undefined> {
+    return Promise.resolve(this.#checkpoints.get(taskId));
   }
 
   // -----------------------------------------------------------------------
@@ -331,6 +336,7 @@ export class InMemoryTaskBoard implements ITaskBoard {
       parent.set(node, null);
     }
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: DFS-based cycle detection
     const dfs = (node: string): void => {
       color.set(node, GREY);
 
@@ -338,7 +344,9 @@ export class InMemoryTaskBoard implements ITaskBoard {
       for (const dep of deps) {
         // Skip references to tasks outside this plan — they exist but can't
         // create cycles since the new task only has outgoing edges to them.
-        if (!graph.has(dep)) continue;
+        if (!graph.has(dep)) {
+          continue;
+        }
 
         const depColor = color.get(dep);
         if (depColor === GREY) {
@@ -348,7 +356,9 @@ export class InMemoryTaskBoard implements ITaskBoard {
           while (current !== dep) {
             cycle.push(current);
             const p = parent.get(current);
-            if (p === null || p === undefined) break;
+            if (p === null || p === undefined) {
+              break;
+            }
             current = p;
           }
           cycle.push(dep);

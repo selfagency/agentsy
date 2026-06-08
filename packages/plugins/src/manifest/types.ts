@@ -45,17 +45,34 @@ export interface ExternalInstallation {
 }
 
 /**
+ * Optional diagnostics metadata for outer-layer operator tooling.
+ */
+export interface ManifestDiagnosticsMetadata {
+  commandHint?: string;
+  supported?: boolean;
+}
+
+/**
  * A superagent mode manifest describing an agent's capabilities, tools, and behavior.
  */
 export interface AgentManifest {
   /** Allowed tool categories. */
   allowedTools?: string[];
 
+  /** Optional capability tags for integration or harness negotiation. */
+  capabilities?: string[];
+
   /** Default model preferences. */
   defaultModel?: string;
 
   /** Description of what this agent does. */
   description: string;
+
+  /** Optional diagnostics metadata surfaced to outer operator tooling. */
+  diagnostics?: ManifestDiagnosticsMetadata;
+
+  /** Optional host targets this manifest is intended for. */
+  hostTargets?: string[];
   /** Unique identifier (e.g., 'superagents/research'). */
   id: string;
 
@@ -76,6 +93,9 @@ export interface AgentManifest {
 
   /** Whether this requires user approval for actions. */
   requiresApproval?: boolean;
+
+  /** Optional setup hints for host tooling. */
+  setupHints?: string[];
 
   /** System prompt template or reference. */
   systemPrompt?: string;

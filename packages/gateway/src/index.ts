@@ -115,6 +115,7 @@ export {
   type ProviderStatus,
   ProviderStatusSchema,
   type ProviderUsageSnapshot,
+  type ReplicaQuotaSnapshot,
   type RoutingState,
   type StrategyName,
   StrategyNameSchema

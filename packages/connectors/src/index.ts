@@ -1,3 +1,5 @@
+export type { ConnectorDiagnosticsReport, ConnectorSetupGuide } from './diagnostics.js';
+export { getConnectorSetupGuide, runConnectorDiagnostics } from './diagnostics.js';
 export { isDiscordAdapterAvailable } from './discord.js';
 export { isSlackAdapterAvailable } from './slack.js';
 export { isTelegramAdapterAvailable } from './telegram.js';

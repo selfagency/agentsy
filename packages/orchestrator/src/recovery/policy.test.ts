@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { RecoveryPolicy, RecoveryResult } from './policy.js';
+import type { RecoveryPolicy } from './policy.js';
 import { RecoveryExecutor } from './policy.js';
 
 function basePolicy(overrides: Partial<RecoveryPolicy> = {}): RecoveryPolicy {
@@ -69,7 +69,7 @@ describe('RecoveryExecutor', () => {
       expect(result.recovered).toBe(false);
       expect(result.attempts).toBe(2);
       expect(result.finalError).toBeDefined();
-      expect(result.finalError!.message).toBe('persistent failure');
+      expect(result.finalError?.message).toBe('persistent failure');
     });
   });
 

@@ -75,6 +75,9 @@ importers:
       '@agentsy/models':
         specifier: workspace:*
         version: link:../models
+      '@agentsy/plugins':
+        specifier: workspace:*
+        version: link:../plugins
       '@agentsy/providers':
         specifier: workspace:*
         version: link:../providers
@@ -87,6 +90,9 @@ importers:
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
+      '@agentsy/vscode':
+        specifier: workspace:*
+        version: link:../vscode
     devDependencies:
       '@microsoft/tui-test':
         specifier: ^0.0.4
@@ -390,6 +396,9 @@ importers:
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory
+      '@agentsy/observability':
+        specifier: workspace:*
+        version: link:../observability
       '@agentsy/runtime':
         specifier: workspace:*
         version: link:../runtime
@@ -424,6 +433,9 @@ importers:
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
+      isolated-vm:
+        specifier: ^5.0.0
+        version: 5.0.4
     devDependencies:
       '@types/node':
         specifier: ^25.9.0
@@ -574,6 +586,9 @@ importers:
 
   packages/runtime:
     dependencies:
+      '@agentsy/context':
+        specifier: workspace:*
+        version: link:../context
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory
@@ -624,6 +639,9 @@ importers:
 
   packages/secrets:
     dependencies:
+      '@agentsy/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -3494,6 +3512,10 @@ packages:
   isexe@3.1.5:
     resolution: {integrity: sha512-6B3tLtFqtQS4ekarvLVMZ+X+VlvQekbe4taUkf/rhVO3d/h0M2rfARm/pXLcPEsjjMsFgrFgSrhQIxcSVrBz8w==}
     engines: {node: '>=18'}
+
+  isolated-vm@5.0.4:
+    resolution: {integrity: sha512-RYUf/JC4ldWz/oi2BVs8a1XIprQ71q6eQPBwySaF5Apu0KMyf2gIpElbCyPh2OEmRT+FYw1GOKSdkv7jw2KLxw==}
+    engines: {node: '>=18.0.0'}
 
   istanbul-lib-coverage@3.2.2:
     resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
@@ -7184,6 +7206,10 @@ snapshots:
   isexe@2.0.0: {}
 
   isexe@3.1.5: {}
+
+  isolated-vm@5.0.4:
+    dependencies:
+      prebuild-install: 7.1.3
 
   istanbul-lib-coverage@3.2.2: {}
 

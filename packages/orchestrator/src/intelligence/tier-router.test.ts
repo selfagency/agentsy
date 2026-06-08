@@ -22,8 +22,8 @@ describe('TierRouter', () => {
       });
 
       expect(result).not.toBeNull();
-      expect(result!.newTier).toBe('small');
-      expect(result!.reason).toBe('cost_exceeds_budget');
+      expect(result?.newTier).toBe('small');
+      expect(result?.reason).toBe('cost_exceeds_budget');
     });
 
     it('should return null when no cheaper tier fits within budget', () => {
@@ -79,8 +79,8 @@ describe('TierRouter', () => {
       });
 
       expect(result).not.toBeNull();
-      expect(result!.newTier).toBe('mid');
-      expect(result!.reason).toBe('budget_available_for_upgrade');
+      expect(result?.newTier).toBe('mid');
+      expect(result?.reason).toBe('budget_available_for_upgrade');
     });
 
     it('should return null at the highest tier', () => {

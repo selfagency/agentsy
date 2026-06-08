@@ -8,13 +8,11 @@
 
 _Source: changes from @agentsy/context@0.2.3 to @agentsy/context@0.2.4._
 
-
 ## [0.2.3] - 2026-06-04
 
 **Full Changelog**: <https://github>.com/selfagency/agentsy/compare/@agentsy/context@0.2.2...@agentsy/context@0.2.3
 
 _Source: changes from @agentsy/context@0.2.2 to @agentsy/context@0.2.3._
-
 
 ## [0.2.2] - 2026-06-04
 
@@ -22,21 +20,20 @@ _Source: changes from @agentsy/context@0.2.2 to @agentsy/context@0.2.3._
 
 _Source: changes from @agentsy/context@0.2.1 to @agentsy/context@0.2.2._
 
-
 ## [0.2.1] - 2026-06-04
 
 ## What's Changed
-* feat: migrate TokenManager to new @agentsy/tokenomics package by @selfagency in <https://github>.com/selfagency/agentsy/pull/102
 
+* feat: migrate TokenManager to new @agentsy/tokenomics package by @selfagency in <https://github>.com/selfagency/agentsy/pull/102
 
 **Full Changelog**: <https://github>.com/selfagency/agentsy/compare/@agentsy/context@0.2.0...@agentsy/context@0.2.1
 
 _Source: changes from @agentsy/context@0.2.0 to @agentsy/context@0.2.1._
 
-
 ## [0.2.0] - 2026-06-04
 
 ## What's Changed
+
 * docs: expand platform catalog and package references by @selfagency in <https://github>.com/selfagency/agentsy/pull/60
 * Add orchestration helpers and progressive real-world examples by @selfagency in <https://github>.com/selfagency/agentsy/pull/61
 * refactor: resolve code-smell findings across monorepo by @selfagency in <https://github>.com/selfagency/agentsy/pull/62
@@ -67,8 +64,6 @@ _Source: changes from @agentsy/context@0.2.0 to @agentsy/context@0.2.1._
 * feat: providers 0.2.0 release + tier routing + Headroom-inspired compression plans by @selfagency in <https://github>.com/selfagency/agentsy/pull/100
 * feat: consolidate tokenomics, models, renderers, and vscode by @selfagency in <https://github>.com/selfagency/agentsy/pull/101
 
-
 **Full Changelog**: <https://github>.com/selfagency/agentsy/compare/@agentsy/context@0.1.1...@agentsy/context@0.2.0
 
 _Source: changes from @agentsy/context@0.1.1 to @agentsy/context@0.2.0._
-

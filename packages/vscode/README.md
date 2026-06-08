@@ -416,3 +416,7 @@ GPL-3.0-or-later
 - [@agentsy/normalizers](https://github.com/selfagency/agentsy/tree/main/packages/normalizers) — Provider normalizers
 - [VS Code Language Model API](https://code.visualstudio.com/api/extension-guides/language-model)
 - [MCP Protocol](https://modelcontextprotocol.io/)
+
+## Boundary notes
+
+`@agentsy/vscode` may expose structured diagnostics and setup hints for VS Code integration, but framework-wide operator-facing `setup` and `doctor` workflows belong to `@agentsy/cli`.

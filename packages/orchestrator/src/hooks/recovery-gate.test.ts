@@ -1,7 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type { RecoveryPolicy } from '../recovery/policy.js';
-import { RecoveryExecutor } from '../recovery/policy.js';
 import { createRecoveryHook } from './recovery-gate.js';
 
 function createRecoveryPolicy(): RecoveryPolicy {
@@ -46,8 +45,8 @@ describe('createRecoveryHook', () => {
     // Recovery was attempted — error remains since escalation is 'escalate'
     const recoveryResult = result.metadata.recoveryResult as { recovered: boolean; attempts: number } | undefined;
     expect(recoveryResult).toBeDefined();
-    expect(recoveryResult!.recovered).toBe(false);
-    expect(recoveryResult!.attempts).toBe(2);
+    expect(recoveryResult?.recovered).toBe(false);
+    expect(recoveryResult?.attempts).toBe(2);
   });
 
   it('should no-op when context has no error', async () => {

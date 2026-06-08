@@ -406,16 +406,26 @@ function evaluateExpression(expression: string, context: Record<string, unknown>
   return evaluateTokens(tokens, { ctx: context });
 }
 
-type Token = { type: 'ident' | 'op' | 'str' | 'num' | 'bool' | 'paren'; value: string };
+interface Token {
+  type: 'ident' | 'op' | 'str' | 'num' | 'bool' | 'paren';
+  value: string;
+}
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: tokenizer handles many pattern types
 function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
   const re =
     /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|true|false|\d+(?:\.\d+)?|[a-zA-Z_$][\w$.]*|===?|!==?|>=?|<=?|&&|\|\||[()]|\s+/gsy;
   let match: RegExpExecArray | null;
-  while ((match = re.exec(input)) !== null) {
+  while (true) {
+    match = re.exec(input);
+    if (match === null) {
+      break;
+    }
     const raw = match[0];
-    if (/^\s+$/u.test(raw)) continue;
+    if (/^\s+$/u.test(raw)) {
+      continue;
+    }
     if (
       raw === '&&' ||
       raw === '||' ||
@@ -446,9 +456,11 @@ function resolveIdent(path: string, ctx: Record<string, unknown>): unknown {
   // Strip ctx. prefix if present
   const parts = path.replace(/^ctx\./u, '').split('.');
   // Navigate from the inner ctx object when path uses ctx. prefix
-  let current: unknown = path.startsWith('ctx.') ? ((ctx['ctx'] as Record<string, unknown>) ?? ctx) : ctx;
+  let current: unknown = path.startsWith('ctx.') ? ((ctx.ctx as Record<string, unknown>) ?? ctx) : ctx;
   for (const part of parts) {
-    if (current === null || current === undefined || typeof current !== 'object') return undefined;
+    if (current === null || current === undefined || typeof current !== 'object') {
+      return;
+    }
     current = (current as Record<string, unknown>)[part];
   }
   return current;
@@ -483,39 +495,39 @@ function evaluateTokens(tokens: Token[], ctx: Record<string, unknown>): boolean 
   return result;
 }
 
+function resolveTokenValue(token: Token, ctx: Record<string, unknown>): unknown {
+  switch (token.type) {
+    case 'ident':
+      return resolveIdent(token.value, ctx);
+    case 'str':
+      return token.value;
+    case 'num':
+      return Number(token.value);
+    case 'bool':
+      return token.value === 'true';
+    default:
+      return;
+  }
+}
+
 function evaluateComparison(tokens: Token[], start: number, ctx: Record<string, unknown>): boolean {
   const left = tokens[start];
   const op = tokens[start + 1];
   const right = tokens[start + 2];
 
-  if (!left || !op || !right) {
+  if (!(left && op && right)) {
     // Single boolean token
-    if (left?.type === 'bool') return left.value === 'true';
-    if (left?.type === 'ident') return Boolean(resolveIdent(left.value, ctx));
+    if (left?.type === 'bool') {
+      return left.value === 'true';
+    }
+    if (left?.type === 'ident') {
+      return Boolean(resolveIdent(left.value, ctx));
+    }
     return false;
   }
 
-  const leftVal =
-    left.type === 'ident'
-      ? resolveIdent(left.value, ctx)
-      : left.type === 'str'
-        ? left.value
-        : left.type === 'num'
-          ? Number(left.value)
-          : left.type === 'bool'
-            ? left.value === 'true'
-            : undefined;
-
-  const rightVal =
-    right.type === 'ident'
-      ? resolveIdent(right.value, ctx)
-      : right.type === 'str'
-        ? right.value
-        : right.type === 'num'
-          ? Number(right.value)
-          : right.type === 'bool'
-            ? right.value === 'true'
-            : undefined;
+  const leftVal = resolveTokenValue(left, ctx);
+  const rightVal = resolveTokenValue(right, ctx);
 
   switch (op.value) {
     case '===':

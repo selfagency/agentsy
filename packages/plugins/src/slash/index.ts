@@ -1,6 +1,6 @@
-export type SlashCommandDomain = 'model' | 'provider';
+export type SlashCommandDomain = 'model' | 'provider' | 'agent' | 'skills';
 
-export type SlashCommandAction = 'search' | 'select' | 'refine';
+export type SlashCommandAction = 'search' | 'select' | 'refine' | 'list' | 'show';
 
 export interface SlashCommandDescriptor {
   readonly action: SlashCommandAction;
@@ -39,7 +39,43 @@ export const providerCommands = [
   }
 ] as const satisfies readonly SlashCommandDescriptor[];
 
-export const slashCommands = [...modelCommands, ...providerCommands] as const;
+export const agentCommands = [
+  {
+    action: 'list',
+    command: '/agent list',
+    description: 'List available agents',
+    domain: 'agent'
+  },
+  {
+    action: 'show',
+    command: '/agent show',
+    description: 'Describe an agent by ID',
+    domain: 'agent'
+  },
+  {
+    action: 'select',
+    command: '/agent select',
+    description: 'Switch to a different agent',
+    domain: 'agent'
+  }
+] as const satisfies readonly SlashCommandDescriptor[];
+
+export const skillsCommands = [
+  {
+    action: 'list',
+    command: '/skills list',
+    description: 'List available skills',
+    domain: 'skills'
+  },
+  {
+    action: 'show',
+    command: '/skills show',
+    description: 'Describe a skill by name',
+    domain: 'skills'
+  }
+] as const satisfies readonly SlashCommandDescriptor[];
+
+export const slashCommands = [...modelCommands, ...providerCommands, ...agentCommands, ...skillsCommands] as const;
 
 export function listSlashCommands(domain?: SlashCommandDomain): readonly SlashCommandDescriptor[] {
   return domain === undefined ? [...slashCommands] : slashCommands.filter(command => command.domain === domain);
