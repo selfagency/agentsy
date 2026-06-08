@@ -3,28 +3,28 @@ import { describe, expect, it } from 'vitest';
 import {
   AgentLoader,
   AgentRegistry,
-  agentManifest,
+  agentManifest, // NOSONAR — backward compat test
   BUILTIN_AGENT_DEFINITIONS,
   BUILTIN_AGENT_MANIFESTS,
   codeAgentDefinition,
   defaultAgentDefinition,
-  planAgentManifest,
+  planAgentManifest, // NOSONAR — backward compat test
   plannerAgentDefinition,
   researchAgentDefinition,
-  researchAgentManifest
+  researchAgentManifest // NOSONAR — backward compat test
 } from './agents/index.js';
 import { createAgentManifestRegistry, listManifestCapabilities, manifestExposesDiagnostics } from './index.js';
 
 describe('@agentsy/plugins package entrypoints', () => {
   it('loads the root module and agents module without throwing', () => {
     expect(createAgentManifestRegistry).toBeDefined();
-    expect(researchAgentManifest).toBeDefined();
+    expect(researchAgentManifest).toBeDefined(); // NOSONAR — backward compat
   });
 
   it('exposes builtin agent manifest exports from agents sub-module', () => {
-    expect(researchAgentManifest).toBeDefined();
-    expect(planAgentManifest).toBeDefined();
-    expect(agentManifest).toBeDefined();
+    expect(researchAgentManifest).toBeDefined(); // NOSONAR — backward compat
+    expect(planAgentManifest).toBeDefined(); // NOSONAR — backward compat
+    expect(agentManifest).toBeDefined(); // NOSONAR — backward compat
     expect(BUILTIN_AGENT_MANIFESTS).toBeDefined();
   });
 
@@ -46,15 +46,15 @@ describe('@agentsy/plugins package entrypoints', () => {
   });
 
   it('researchAgentManifest has the correct mode', () => {
-    expect(researchAgentManifest.mode).toBe('research');
+    expect(researchAgentManifest.mode).toBe('research'); // NOSONAR — backward compat
   });
 
   it('planAgentManifest has the correct mode', () => {
-    expect(planAgentManifest.mode).toBe('plan');
+    expect(planAgentManifest.mode).toBe('plan'); // NOSONAR — backward compat
   });
 
   it('agentManifest has the correct mode', () => {
-    expect(agentManifest.mode).toBe('agent');
+    expect(agentManifest.mode).toBe('agent'); // NOSONAR — backward compat
   });
 
   it('BUILTIN_AGENT_MANIFESTS contains all three built-in manifests', () => {

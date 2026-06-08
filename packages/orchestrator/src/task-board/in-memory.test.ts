@@ -31,11 +31,9 @@ describe('InMemoryTaskBoard', () => {
       expect(task.planId).toBe('plan-1');
     });
 
-    it('should validate that dependency references exist', async () => {
+    it('should validate that dependency references exist', () => {
       const board = createInMemoryTaskBoard();
-      await expect(board.createTask(baseTask({ dependencies: ['nonexistent'] }))).rejects.toThrow(
-        DependencyNotFoundError
-      );
+      expect(() => board.createTask(baseTask({ dependencies: ['nonexistent'] }))).toThrow(DependencyNotFoundError);
     });
 
     it('should reject circular dependencies via updateTask', async () => {
@@ -44,7 +42,7 @@ describe('InMemoryTaskBoard', () => {
       // taskA has no deps. Create taskB that depends on taskA. Now make taskA depend on taskB → cycle A→B→A
       const taskB = await board.createTask(baseTask({ planId: 'plan-1', dependencies: [taskA.id] }));
       // Update taskA to depend on taskB — this creates a cycle
-      await expect(board.updateTask(taskA.id, { dependencies: [taskB.id] })).rejects.toThrow(CircularDependencyError);
+      expect(() => board.updateTask(taskA.id, { dependencies: [taskB.id] })).toThrow(CircularDependencyError);
     });
   });
 
@@ -76,12 +74,12 @@ describe('InMemoryTaskBoard', () => {
     it('should throw on invalid status transitions', async () => {
       const board = createInMemoryTaskBoard();
       const task = await board.createTask(baseTask({ planId: 'plan-1', status: 'pending' }));
-      await expect(board.updateTask(task.id, { status: 'completed' })).rejects.toThrow(InvalidStatusTransitionError);
+      expect(() => board.updateTask(task.id, { status: 'completed' })).toThrow(InvalidStatusTransitionError);
     });
 
-    it('should throw TaskNotFoundError for unknown id', async () => {
+    it('should throw TaskNotFoundError for unknown id', () => {
       const board = createInMemoryTaskBoard();
-      await expect(board.updateTask('nonexistent', { status: 'running' })).rejects.toThrow(TaskNotFoundError);
+      expect(() => board.updateTask('nonexistent', { status: 'running' })).toThrow(TaskNotFoundError);
     });
   });
 
@@ -139,9 +137,9 @@ describe('InMemoryTaskBoard', () => {
       expect(attempt2.attemptNumber).toBe(2);
     });
 
-    it('should throw for unknown task', async () => {
+    it('should throw for unknown task', () => {
       const board = createInMemoryTaskBoard();
-      await expect(board.createAttempt('nonexistent')).rejects.toThrow(TaskNotFoundError);
+      expect(() => board.createAttempt('nonexistent')).toThrow(TaskNotFoundError);
     });
   });
 

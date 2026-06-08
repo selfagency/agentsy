@@ -79,14 +79,18 @@ export interface SandboxResult {
 
 /**
  * Sandbox execution error with typed discriminator.
+ * Thrown as an Error subclass so callers can use `instanceof`.
  */
-export interface SandboxError {
-  /** Optional underlying error details. */
-  readonly cause?: unknown;
-  /** Error type discriminator. */
+export class SandboxError extends Error {
   readonly kind: 'timeout' | 'memory' | 'runtime' | 'capability';
-  /** Human-readable error message. */
-  readonly message: string;
+  readonly cause: unknown;
+
+  constructor(opts: { kind: SandboxError['kind']; message: string; cause: unknown }) {
+    super(opts.message);
+    this.name = 'SandboxError';
+    this.kind = opts.kind;
+    this.cause = opts.cause;
+  }
 }
 
 const DEFAULT_MEMORY_LIMIT_MB = 64;
@@ -178,29 +182,29 @@ export async function runPluginInSandbox(
     return { result, durationMs };
   } catch (error: unknown) {
     if (error instanceof ivm.TimeoutError) {
-      throw {
+      throw new SandboxError({
         kind: 'timeout',
         message: `Plugin "${plugin.id}" timed out after ${resolvedOptions.timeoutMs}ms`,
         cause: error
-      } satisfies SandboxError;
+      });
     }
 
     if (error instanceof Error && /memory/i.test(error.message) && resolvedOptions.memoryLimitMb > 0) {
-      throw {
+      throw new SandboxError({
         kind: 'memory',
         message: `Plugin "${plugin.id}" exceeded memory limit of ${resolvedOptions.memoryLimitMb}MB`,
         cause: error
-      } satisfies SandboxError;
+      });
     }
 
-    throw {
+    throw new SandboxError({
       kind: 'runtime',
       message:
         error instanceof Error
           ? `Plugin "${plugin.id}" runtime error: ${error.message}`
           : `Plugin "${plugin.id}" encountered an unknown error`,
       cause: error
-    } satisfies SandboxError;
+    });
   } finally {
     isolate.dispose();
   }

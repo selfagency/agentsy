@@ -143,7 +143,7 @@ export interface ITaskBoard {
    * Retrieve a previously cached tool result by toolCallId.
    * Returns undefined when no cached result exists.
    */
-  getToolExecutionResult(toolCallId: string): Promise<unknown | undefined>;
+  getToolExecutionResult(toolCallId: string): Promise<unknown>;
 
   // ── Idempotency ──────────────────────────────────────────────────────
 

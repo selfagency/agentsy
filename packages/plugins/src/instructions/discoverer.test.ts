@@ -47,8 +47,8 @@ describe('InstructionsDiscoverer', () => {
     });
 
     it('accepts an explicit projectDir', () => {
-      const d = new InstructionsDiscoverer('/tmp/test');
-      expect(d.projectDir).toBe('/tmp/test');
+      const d = new InstructionsDiscoverer(resolve(import.meta.dirname, '__fixtures__', 'test-instructions'));
+      expect(d.projectDir).toBe(resolve(import.meta.dirname, '__fixtures__', 'test-instructions'));
     });
 
     it('initialises 6 roots with descending priority', () => {

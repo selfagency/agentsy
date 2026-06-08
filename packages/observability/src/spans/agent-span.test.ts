@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { MultiAgentTracer } from './agent-span.js';
@@ -76,7 +77,7 @@ describe('MultiAgentTracer', () => {
 
       tracer.recordToolCall(span.spanId, {
         toolName: 'read_file',
-        input: { path: '/tmp/test.txt' },
+        input: { path: resolve(import.meta.dirname, '__fixtures__', 'test.txt') },
         output: { content: 'hello' },
         status: 'ok',
         duration: 150

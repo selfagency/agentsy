@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { type Plugin, runPluginInSandbox, type SandboxResult } from './index.js';
+import { type Plugin, runPluginInSandbox } from './index.js';
 
 const createTestPlugin = (code: string): Plugin => ({
   id: 'test-plugin',
@@ -93,11 +93,12 @@ describe('runPluginInSandbox', () => {
     const result = await runPluginInSandbox(createTestPlugin(SIMPLE_HANDLER), 'handler', [42]);
 
     expect(result).toBeDefined();
-    expect((result as SandboxResult).result).toStrictEqual({
+    const sandboxResult = result;
+    expect(sandboxResult.result).toStrictEqual({
       received: 42,
       doubled: 84
     });
-    expect((result as SandboxResult).durationMs).toBeGreaterThanOrEqual(0);
+    expect(sandboxResult.durationMs).toBeGreaterThanOrEqual(0);
   });
 
   it('handles string arguments', async () => {

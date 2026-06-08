@@ -1,4 +1,4 @@
-import type { HookResult, PostResponseEvent, RuntimeHookEvent } from './types.js';
+import type { HookResult, RuntimeHookEvent } from './types.js';
 
 /**
  * Contract for the memory capture dependency consumed by the post-turn hook.
@@ -89,8 +89,7 @@ export function createMemoryPostTurnHook(options: CreateMemoryPostTurnHookOption
           return { continue: true };
         }
 
-        const postResponse = event as PostResponseEvent;
-        const observations = extractObservations(postResponse.response);
+        const observations = extractObservations(event.response);
 
         if (observations.length === 0) {
           return { continue: true };
@@ -98,7 +97,7 @@ export function createMemoryPostTurnHook(options: CreateMemoryPostTurnHookOption
 
         await options.memory.capture({
           observations,
-          sessionId: postResponse.sessionId
+          sessionId: event.sessionId
         });
 
         return { continue: true };

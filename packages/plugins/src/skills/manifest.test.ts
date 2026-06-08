@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import type { SkillManifest, SkillMetadata } from './manifest.js';
@@ -66,7 +67,7 @@ describe('SkillMetadata', () => {
 
   it('accepts a full metadata entry', () => {
     const meta: SkillMetadata = {
-      path: '/tmp/skills/awesome',
+      path: resolve(import.meta.dirname, '__fixtures__', 'skills', 'awesome'),
       name: 'awesome-skill',
       description: 'An awesome discovered skill',
       version: '0.1.0',
@@ -74,7 +75,7 @@ describe('SkillMetadata', () => {
       license: 'Apache-2.0'
     };
 
-    expect(meta.path).toBe('/tmp/skills/awesome');
+    expect(meta.path).toBe(resolve(import.meta.dirname, '__fixtures__', 'skills', 'awesome'));
     expect(meta.version).toBe('0.1.0');
     expect(meta.author).toBe('Skill Dev');
     expect(meta.license).toBe('Apache-2.0');

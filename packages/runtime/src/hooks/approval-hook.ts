@@ -104,16 +104,16 @@ export function createApprovalHook(approvalGate: ApprovalGate): {
           .requestApproval(event.toolName, event.args)
           .then(approved => {
             if (approved) {
-              return { continue: true } as HookResult;
+              return { continue: true } satisfies HookResult;
             }
             return {
               continue: false,
               reason: `Operation rejected by user: "${event.toolName}" requires approval`
-            } as HookResult;
+            } satisfies HookResult;
           })
           .catch(() => {
             // Isolate hook errors — never propagate to the main execution loop
-            return { continue: true } as HookResult;
+            return { continue: true } satisfies HookResult;
           });
       } catch {
         // Isolate synchronous errors

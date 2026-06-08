@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { type ApprovalGate, createApprovalHook, isDestructiveTool } from './approval-hook.js';
 import type { PreToolCallEvent, RuntimeHookEvent } from './types.js';
@@ -8,7 +9,7 @@ import type { PreToolCallEvent, RuntimeHookEvent } from './types.js';
 
 function createPreToolCall(overrides: Partial<PreToolCallEvent> = {}): PreToolCallEvent {
   return {
-    args: { path: '/tmp/test' },
+    args: { path: resolve(import.meta.dirname, '__fixtures__', 'test.txt') },
     sessionId: 'sess_test_001',
     toolName: 'read',
     type: 'PreToolCall',
@@ -96,10 +97,17 @@ describe('createApprovalHook', () => {
     const gate = createMockGate(true);
     const hook = createApprovalHook(gate);
 
-    const result = await hook.handler(createPreToolCall({ toolName: 'delete_file', args: { path: '/tmp/test' } }));
+    const result = await hook.handler(
+      createPreToolCall({
+        toolName: 'delete_file',
+        args: { path: resolve(import.meta.dirname, '__fixtures__', 'test.txt') }
+      })
+    );
 
     expect(result).toEqual({ continue: true });
-    expect(gate.requestApproval).toHaveBeenCalledWith('delete_file', { path: '/tmp/test' });
+    expect(gate.requestApproval).toHaveBeenCalledWith('delete_file', {
+      path: resolve(import.meta.dirname, '__fixtures__', 'test.txt')
+    });
   });
 
   it('blocks when user rejects a destructive tool', async () => {

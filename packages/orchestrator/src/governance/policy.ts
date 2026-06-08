@@ -415,7 +415,7 @@ interface Token {
 function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
   const re =
-    /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|true|false|\d+(?:\.\d+)?|[a-zA-Z_$][\w$.]*|===?|!==?|>=?|<=?|&&|\|\||[()]|\s+/gsy;
+    /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|true|false|\d+(?:\.\d+)?|[a-zA-Z_$][\w$.]*|===?|!==?|>=?|<=?|&&|\|\||[()]|\s+/sy;
   let match: RegExpExecArray | null;
   while (true) {
     match = re.exec(input);
@@ -479,9 +479,16 @@ function evaluateTokens(tokens: Token[], ctx: Record<string, unknown>): boolean 
 
     if (i < tokens.length) {
       const op = tokens[i];
-      if (op?.type === 'op' && (op.value === '&&' || op.value === '||')) {
-        combinators.push(op.value as '&&' | '||');
-        i++;
+      if (op?.type === 'op') {
+        if (op.value === '&&') {
+          combinators.push('&&');
+          i++;
+        } else if (op.value === '||') {
+          combinators.push('||');
+          i++;
+        } else {
+          break;
+        }
       } else {
         break;
       }

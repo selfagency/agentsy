@@ -155,8 +155,16 @@ describe('SkillActivator', () => {
 
     it('filters skills below the threshold', async () => {
       const meta: SkillMetadata[] = [
-        makeMeta({ name: 'git-helper', description: 'Version control with git', path: '/tmp/git' }),
-        makeMeta({ name: 'weather-bot', description: 'Weather forecasts and climate data', path: '/tmp/weather' })
+        makeMeta({
+          name: 'git-helper',
+          description: 'Version control with git',
+          path: resolve(import.meta.dirname, '__fixtures__', 'git')
+        }),
+        makeMeta({
+          name: 'weather-bot',
+          description: 'Weather forecasts and climate data',
+          path: resolve(import.meta.dirname, '__fixtures__', 'weather')
+        })
       ];
 
       const a = new SkillActivator({ threshold: 0.25 });
@@ -186,7 +194,7 @@ describe('SkillActivator', () => {
 
     it('returns empty body when no skill file exists', async () => {
       const a = new SkillActivator({ threshold: 0 });
-      const meta = [makeMeta({ name: 'missing', description: 'Has no file on disk', path: '/tmp/nowhere' })];
+      const meta = [makeMeta({ name: 'missing', description: 'Has no file on disk', path: 'nowhere' })];
 
       const result = await a.activate('missing', meta);
 
@@ -196,7 +204,7 @@ describe('SkillActivator', () => {
 
     it('handles case-insensitive matching', async () => {
       const meta: SkillMetadata[] = [
-        makeMeta({ name: 'Docker-Manager', description: 'Container management and orchestration', path: '/tmp/docker' })
+        makeMeta({ name: 'Docker-Manager', description: 'Container management and orchestration', path: 'docker' })
       ];
 
       const a = new SkillActivator({ threshold: 0.1 });

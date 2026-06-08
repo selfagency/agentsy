@@ -119,7 +119,7 @@ function detectConflicts(hooks: HookDefinition[]): ConflictWarning[] {
   for (const hook of hooks) {
     for (const conflict of hook.conflicts ?? []) {
       // Produce a stable deduplication key independent of declaration order.
-      const key = [hook.name, conflict.hookName].sort().join('::');
+      const key = [hook.name, conflict.hookName].sort((a, b) => a.localeCompare(b)).join('::');
       if (seen.has(key)) {
         continue;
       }

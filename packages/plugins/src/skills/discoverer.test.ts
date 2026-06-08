@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 /** Isolated user home dir for tests — prevents scanning real ~/.agents/ etc. */
-const TEST_USER_DIR = '/tmp/agentsy-test-nobody';
+const TEST_USER_DIR = resolve(import.meta.dirname, '__fixtures__', 'test-nobody');
 
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -48,8 +48,8 @@ describe('SkillDiscoverer', () => {
     });
 
     it('accepts an explicit projectDir', () => {
-      const d = new SkillDiscoverer('/tmp/test');
-      expect(d.projectDir).toBe('/tmp/test');
+      const d = new SkillDiscoverer(resolve(import.meta.dirname, '__fixtures__', 'test'));
+      expect(d.projectDir).toBe(resolve(import.meta.dirname, '__fixtures__', 'test'));
     });
 
     it('creates 4 roots when bundledDir is omitted', () => {
