@@ -365,8 +365,8 @@ export class PolicyEnforcer {
 /**
  * Evaluate a DSL condition expression against a context object.
  *
- * Uses `new Function()` to compile the expression at runtime. The
- * expression receives the context as `ctx` — for example:
+ * Uses a tokenizer-based safe expression evaluator (NOT `new Function()`).
+ * The expression receives the context as `ctx` — for example:
  *
  * ```ts
  * evaluateCondition("ctx.toolName === 'git_push'", { toolName: 'git_push' }) // true
@@ -466,6 +466,7 @@ function resolveIdent(path: string, ctx: Record<string, unknown>): unknown {
   return current;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: left-to-right expression evaluator
 function evaluateTokens(tokens: Token[], ctx: Record<string, unknown>): boolean {
   let i = 0;
   const results: boolean[] = [];

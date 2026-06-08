@@ -33,9 +33,9 @@ interface FrontmatterResult {
  * `key: value` pairs, and a closing `---` line.  Returns an empty
  * data object when no frontmatter is detected.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: frontmatter parser has many field types
 // fallow-ignore-next-line complexity
 // fallow-ignore-next-line crap-score
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: frontmatter parser has many field types
 function parseFrontmatter(content: string): FrontmatterResult {
   const trimmed = content.trimStart();
 

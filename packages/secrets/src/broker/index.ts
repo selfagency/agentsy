@@ -142,8 +142,7 @@ export class CredentialBroker {
     const now = new Date();
     const active: IssuedCredential[] = [];
     for (const cred of this.credentials.values()) {
-      const meta = cred.meta as Record<string, unknown>;
-      if (meta.sessionId === sessionId && cred.expiresAt > now) {
+      if (cred.meta.sessionId === sessionId && cred.expiresAt > now) {
         active.push(cred);
       }
     }

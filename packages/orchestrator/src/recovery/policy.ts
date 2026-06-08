@@ -263,8 +263,8 @@ export class RecoveryExecutor {
   /**
    * Evaluate a DSL condition string against the given context.
    *
-   * Uses a `new Function('ctx', ...)` sandbox. Returns `false` for any
-   * evaluation error (malformed condition, missing context fields, etc.),
+   * Uses a tokenizer-based safe expression evaluator (NOT `new Function()`).
+   * Returns `false` for any evaluation error (malformed condition, missing
    * making conditions safe to use in production.
    *
    * Supported syntax: standard JavaScript expressions referencing a `ctx`
