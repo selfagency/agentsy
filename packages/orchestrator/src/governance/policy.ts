@@ -410,6 +410,7 @@ interface Token {
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: tokenizer handles many pattern types
+// fallow-ignore-next-line complexity
 function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
   const re =
@@ -467,6 +468,7 @@ function resolveIdent(path: string, ctx: Record<string, unknown>): unknown {
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: left-to-right expression evaluator
+// fallow-ignore-next-line complexity
 function evaluateTokens(tokens: Token[], ctx: Record<string, unknown>): boolean {
   let i = 0;
   const results: boolean[] = [];

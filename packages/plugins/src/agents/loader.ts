@@ -34,7 +34,6 @@ interface FrontmatterResult {
  * data object when no frontmatter is detected.
  */
 // fallow-ignore-next-line complexity
-// fallow-ignore-next-line crap-score
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: frontmatter parser has many field types
 function parseFrontmatter(content: string): FrontmatterResult {
   const trimmed = content.trimStart();
@@ -141,7 +140,6 @@ function parseFrontmatter(content: string): FrontmatterResult {
  * Only recognised keys are mapped; unknown keys are silently ignored.
  */
 // fallow-ignore-next-line complexity
-// fallow-ignore-next-line crap-score
 function coerceToDefinition(data: Record<string, unknown>, source: AgentDefinitionSource): AgentDefinition {
   let allowedTools: AgentDefinition['allowedTools'];
   if (data.allowedTools === '*') {

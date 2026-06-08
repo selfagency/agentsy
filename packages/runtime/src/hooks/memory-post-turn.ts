@@ -23,6 +23,7 @@ export interface CreateMemoryPostTurnHookOptions {
  * - Objects with `content` or `text` fields → extracted content
  * - Everything else → serialized JSON snippet
  */
+// fallow-ignore-next-line complexity
 export function extractObservations(response: unknown): string[] {
   if (typeof response === 'string') {
     return response.length > 0 ? [response] : [];

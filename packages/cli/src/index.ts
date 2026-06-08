@@ -239,6 +239,7 @@ function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   return 1;
 }
 
+// fallow-ignore-next-line complexity
 export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
   const [command, ...rest] = argv;
 

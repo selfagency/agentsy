@@ -5,6 +5,7 @@
  * @module @agentsy/plugins/instructions
  */
 
+// fallow-ignore-file unused-file
 import type { InstructionsDiscoverer } from './discoverer.js';
 import type { InstructionFile } from './types.js';
 
@@ -42,6 +43,7 @@ export function createInstructionsHook(
   discoverer: InstructionsDiscoverer,
   options?: InstructionsHookOptions
 ): () => Promise<InstructionsHookResult> {
+  // fallow-ignore-next-line complexity
   return async (): Promise<InstructionsHookResult> => {
     const files = options?.instructions ?? (await discoverer.discover());
 

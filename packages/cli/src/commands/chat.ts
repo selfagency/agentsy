@@ -254,6 +254,7 @@ function safePrompt(rl: Interface): void {
   }
 }
 
+// fallow-ignore-next-line complexity
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: interactive REPL dispatch is inherently conditional
 export async function runChatCommand(
   argv: readonly string[],

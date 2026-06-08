@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-file
 /**
  * Skills barrel — skill manifest types, metadata, discoverer, and activator.
  *

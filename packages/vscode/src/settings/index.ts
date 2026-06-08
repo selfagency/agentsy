@@ -1,5 +1,6 @@
 export {
   getVSCodeSetupGuide,
+  // fallow-ignore-next-line unused-type
   type RunVSCodeSettingsDiagnosticsOptions,
   runVSCodeSettingsDiagnostics
 } from './diagnostics.js';

@@ -35,7 +35,6 @@ export class AgentRegistry {
    * @returns A promise resolving to an array of agent definitions.
    */
   // fallow-ignore-next-line complexity
-  // fallow-ignore-next-line crap-score
   async list(): Promise<AgentDefinition[]> {
     const seen = new Set<string>();
     const result: AgentDefinition[] = [];

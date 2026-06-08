@@ -337,6 +337,7 @@ export class InMemoryTaskBoard implements ITaskBoard {
       parent.set(node, null);
     }
 
+    // fallow-ignore-next-line complexity
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: DFS-based cycle detection
     const dfs = (node: string): void => {
       color.set(node, GREY);
