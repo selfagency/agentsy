@@ -53,32 +53,66 @@ describe('InstructionsDiscoverer', () => {
 
     it('initialises 6 roots with descending priority', () => {
       const d = new InstructionsDiscoverer('/project');
+      const rootSpecs = [
+        { idx: 0, path: '/project/AGENTS.md', priority: 90, scope: 'workspace', alwaysInject: true, isGlob: undefined },
+        {
+          idx: 1,
+          path: '/project/CLAUDE.md',
+          priority: 80,
+          scope: undefined,
+          alwaysInject: undefined,
+          isGlob: undefined
+        },
+        {
+          idx: 2,
+          path: '/project/copilot-instructions.md',
+          priority: 70,
+          scope: undefined,
+          alwaysInject: undefined,
+          isGlob: undefined
+        },
+        {
+          idx: 3,
+          path: '/project/.cursor/rules',
+          priority: 60,
+          scope: undefined,
+          alwaysInject: undefined,
+          isGlob: true
+        },
+        {
+          idx: 4,
+          path: '.agentsy/instructions.md',
+          priority: 50,
+          scope: 'user',
+          alwaysInject: undefined,
+          isGlob: undefined
+        },
+        {
+          idx: 5,
+          path: '.config/agentsy/instructions.md',
+          priority: 40,
+          scope: 'user',
+          alwaysInject: undefined,
+          isGlob: undefined
+        }
+      ] as const;
 
-      expect(d.roots).toHaveLength(6);
-
-      // Highest priority first
-      expect(d.roots[0]?.path).toContain('/project/AGENTS.md');
-      expect(d.roots[0]?.priority).toBe(90);
-      expect(d.roots[0]?.scope).toBe('workspace');
-      expect(d.roots[0]?.alwaysInject).toBe(true);
-
-      expect(d.roots[1]?.path).toContain('/project/CLAUDE.md');
-      expect(d.roots[1]?.priority).toBe(80);
-
-      expect(d.roots[2]?.path).toContain('/project/copilot-instructions.md');
-      expect(d.roots[2]?.priority).toBe(70);
-
-      expect(d.roots[3]?.path).toContain('/project/.cursor/rules');
-      expect(d.roots[3]?.priority).toBe(60);
-      expect(d.roots[3]?.isGlob).toBe(true);
-
-      expect(d.roots[4]?.path).toContain('.agentsy/instructions.md');
-      expect(d.roots[4]?.priority).toBe(50);
-      expect(d.roots[4]?.scope).toBe('user');
-
-      expect(d.roots[5]?.path).toContain('.config/agentsy/instructions.md');
-      expect(d.roots[5]?.priority).toBe(40);
-      expect(d.roots[5]?.scope).toBe('user');
+      expect(d.roots).toHaveLength(rootSpecs.length);
+      for (const spec of rootSpecs) {
+        const root = d.roots[spec.idx];
+        expect(root).toBeDefined();
+        expect(root?.path).toContain(spec.path);
+        expect(root?.priority).toBe(spec.priority);
+        if (spec.scope !== undefined) {
+          expect(root?.scope).toBe(spec.scope);
+        }
+        if (spec.alwaysInject !== undefined) {
+          expect(root?.alwaysInject).toBe(spec.alwaysInject);
+        }
+        if (spec.isGlob !== undefined) {
+          expect(root?.isGlob).toBe(spec.isGlob);
+        }
+      }
     });
   });
 

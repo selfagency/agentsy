@@ -5,7 +5,6 @@ import {
   AgentRegistry,
   agentManifest, // NOSONAR — backward compat test
   BUILTIN_AGENT_DEFINITIONS,
-  BUILTIN_AGENT_MANIFESTS,
   codeAgentDefinition,
   defaultAgentDefinition,
   planAgentManifest, // NOSONAR — backward compat test
@@ -25,7 +24,7 @@ describe('@agentsy/plugins package entrypoints', () => {
     expect(researchAgentManifest).toBeDefined(); // NOSONAR — backward compat
     expect(planAgentManifest).toBeDefined(); // NOSONAR — backward compat
     expect(agentManifest).toBeDefined(); // NOSONAR — backward compat
-    expect(BUILTIN_AGENT_MANIFESTS).toBeDefined(); // NOSONAR — backward compat
+    expect(BUILTIN_AGENT_DEFINITIONS).toBeDefined();
   });
 
   it('exposes new AgentDefinition builtins', () => {
@@ -55,10 +54,6 @@ describe('@agentsy/plugins package entrypoints', () => {
 
   it('agentManifest has the correct mode', () => {
     expect(agentManifest.mode).toBe('agent'); // NOSONAR — backward compat
-  });
-
-  it('BUILTIN_AGENT_MANIFESTS contains all three built-in manifests', () => {
-    expect(BUILTIN_AGENT_MANIFESTS).toHaveLength(3);
   });
 
   it('exposes manifest capability helpers from root module', () => {
