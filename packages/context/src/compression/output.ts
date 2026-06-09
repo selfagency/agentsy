@@ -180,11 +180,11 @@ function protectPreservedContent(
   }
 
   if (preserve.has('errors')) {
-    masked = masked.replaceAll(/\b(?:error|exception|errno)\s*[:#]?\s*[A-Z0-9_-]+\b/giu, stash);
+    masked = masked.replaceAll(/\b(?:error|exception|errno)[\s:#]*[A-Z0-9_-]+\b/giu, stash);
   }
 
   if (preserve.has('technical')) {
-    masked = masked.replaceAll(/\b[A-Za-z_]+\([\w\s,.:<>'"-]*\)/gu, stash);
+    masked = masked.replaceAll(/\b[A-Za-z_]+\([^)]*\)/gu, stash);
   }
 
   const restore = (value: string): string =>

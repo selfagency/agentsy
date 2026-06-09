@@ -433,10 +433,31 @@ function classifyToken(raw: string): Token | undefined {
   return { type: 'ident', value: raw };
 }
 
+/** Named sub-patterns for the tokenizer, each targeting one token type. */
+const TOKEN_PATTERNS = {
+  stringLit: /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/,
+  booleanLit: /true|false/,
+  numberLit: /\d+(?:\.\d+)?/,
+  identifier: /[a-zA-Z_$][\w$.]*/,
+  operator: /===?|!==?|>=?|<=?|&&|\|\|/,
+  paren: /[()]/,
+  whitespace: /\s+/
+} as const;
+
 function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
-  const re =
-    /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|true|false|\d+(?:\.\d+)?|[a-zA-Z_$][\w$.]*|===?|!==?|>=?|<=?|&&|\|\||[()]|\s+/sy;
+  const re = new RegExp(
+    [
+      TOKEN_PATTERNS.stringLit.source,
+      TOKEN_PATTERNS.booleanLit.source,
+      TOKEN_PATTERNS.numberLit.source,
+      TOKEN_PATTERNS.identifier.source,
+      TOKEN_PATTERNS.operator.source,
+      TOKEN_PATTERNS.paren.source,
+      TOKEN_PATTERNS.whitespace.source
+    ].join('|'),
+    'sy'
+  );
   let match = re.exec(input);
   while (match !== null) {
     const token = classifyToken(match[0]);
