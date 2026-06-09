@@ -147,21 +147,22 @@ function parseFrontmatter(content: string): FrontmatterResult {
 
   const lines = raw.split('\n');
 
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
     if (!line || line === '\r') {
+      i += 1;
       continue;
     }
 
-    const parsed = parseFrontmatterLine(line, lines, index);
+    const parsed = parseFrontmatterLine(line, lines, i);
     if (parsed === undefined) {
+      i += 1;
       continue;
     }
 
     data[parsed.key] = parsed.value;
-    if (parsed.newIndex > index) {
-      index = parsed.newIndex;
-    }
+    i = parsed.newIndex >= i ? parsed.newIndex + 1 : i + 1;
   }
 
   return { data, body };

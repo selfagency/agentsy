@@ -249,16 +249,45 @@ export class RecoveryExecutor {
         continue;
       }
 
-      for (const target of fallback.agentTargets) {
-        for (let fbAttempt = 0; fbAttempt < fallback.maxAttemptsPerFallback; fbAttempt++) {
-          attempt++;
-          const { recovered, lastError: fbError } = await this.#tryFallbackAttempt(taskFn, target, attempt, startTime);
-          if (recovered !== undefined) {
-            return { recovered, attempt, lastError: undefined };
-          }
-          if (fbError !== undefined) {
-            lastError = fbError;
-          }
+      const targetResult = await this.#tryTargetAttempts(
+        taskFn,
+        fallback.agentTargets,
+        fallback.maxAttemptsPerFallback,
+        startTime,
+        attempt
+      );
+
+      attempt = targetResult.attempt;
+      if (targetResult.recovered !== undefined) {
+        return targetResult;
+      }
+      if (targetResult.lastError !== undefined) {
+        lastError = targetResult.lastError;
+      }
+    }
+
+    return { lastError, attempt };
+  }
+
+  async #tryTargetAttempts(
+    taskFn: () => Promise<unknown>,
+    agentTargets: string[],
+    maxAttemptsPerFallback: number,
+    startTime: number,
+    currentAttempt: number
+  ): Promise<{ recovered?: RecoveryResult; lastError: Error | undefined; attempt: number }> {
+    let lastError: Error | undefined;
+    let attempt = currentAttempt;
+
+    for (const target of agentTargets) {
+      for (let fbAttempt = 0; fbAttempt < maxAttemptsPerFallback; fbAttempt++) {
+        attempt++;
+        const { recovered, lastError: fbError } = await this.#tryFallbackAttempt(taskFn, target, attempt, startTime);
+        if (recovered !== undefined) {
+          return { recovered, attempt, lastError: undefined };
+        }
+        if (fbError !== undefined) {
+          lastError = fbError;
         }
       }
     }

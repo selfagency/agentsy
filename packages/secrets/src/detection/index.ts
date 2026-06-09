@@ -32,7 +32,7 @@ const PATTERNS: Pattern[] = [
   // GitHub Personal Access Token: ghp_ followed by 36 alphanumeric chars
   { type: 'GitHub Token', regex: /ghp_[a-zA-Z0-9]{36}/g },
   // GitHub Fine-Grained PAT: github_pat_ followed by 4+4+4+4+12+59 base64 chars with underscores
-  { type: 'GitHub Token', regex: /github_pat_[\w]{82}/g },
+  { type: 'GitHub Token', regex: /github_pat_\w{82}/g },
   // Anthropic API Key: sk-ant- followed by alphanumeric + hyphens (95 chars after prefix)
   { type: 'Anthropic Key', regex: /sk-ant-[a-zA-Z0-9-]{95}/g },
   // Anthropic API Key v2: sk-ant- followed by 3-32 alphanumeric + hyphens (shorter keys)
@@ -40,7 +40,7 @@ const PATTERNS: Pattern[] = [
   // OpenAI API Key: sk- followed by 48 alphanumeric chars (no hyphens)
   { type: 'OpenAI Key', regex: /sk-[a-zA-Z0-9]{48}/g },
   // OpenAI Project API Key: sk-proj- followed by alphanumeric + underscores (82+ chars)
-  { type: 'OpenAI Key', regex: /sk-proj-[\w]{50,}/g }
+  { type: 'OpenAI Key', regex: /sk-proj-\w{50,}/g }
 ];
 
 // ---------------------------------------------------------------------------
