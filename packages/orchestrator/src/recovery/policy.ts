@@ -221,6 +221,19 @@ export class RecoveryExecutor {
    * and updated `attempt` count when all fallbacks are exhausted.
    */
   // fallow-ignore-next-line complexity
+  async #tryFallbackAttempt(
+    taskFn: () => Promise<unknown>,
+    target: string,
+    attempt: number,
+    startTime: number
+  ): Promise<{ recovered?: RecoveryResult; lastError: Error | undefined }> {
+    try {
+      await taskFn();
+      return { recovered: this.#result(true, attempt, Date.now() - startTime, target), lastError: undefined };
+    } catch (error: unknown) {
+      return { lastError: error instanceof Error ? error : new Error(String(error)) };
+    }
+  }
   async #tryFallbacks(
     taskFn: () => Promise<unknown>,
     fallbackCtx: Record<string, unknown>,
@@ -239,15 +252,12 @@ export class RecoveryExecutor {
       for (const target of fallback.agentTargets) {
         for (let fbAttempt = 0; fbAttempt < fallback.maxAttemptsPerFallback; fbAttempt++) {
           attempt++;
-          try {
-            await taskFn();
-            return {
-              recovered: this.#result(true, attempt, Date.now() - startTime, target),
-              attempt,
-              lastError: undefined
-            };
-          } catch (error: unknown) {
-            lastError = error instanceof Error ? error : new Error(String(error));
+          const { recovered, lastError: fbError } = await this.#tryFallbackAttempt(taskFn, target, attempt, startTime);
+          if (recovered !== undefined) {
+            return { recovered, attempt, lastError: undefined };
+          }
+          if (fbError !== undefined) {
+            lastError = fbError;
           }
         }
       }

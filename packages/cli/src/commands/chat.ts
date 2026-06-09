@@ -23,7 +23,7 @@ import { StrategyNameSchema } from '@agentsy/gateway';
 import { discoverLocalProviders, selectModel } from '@agentsy/models';
 import { AgentRegistry } from '@agentsy/plugins';
 import { SkillDiscoverer } from '@agentsy/plugins/skills';
-import type { PlanAgentDefinition } from '@agentsy/runtime';
+import type { AgentLoopHandle, PlanAgentDefinition } from '@agentsy/runtime';
 import { createAgentSession } from '@agentsy/runtime';
 import type { TurnHandler } from '@agentsy/runtime/loop';
 import { createSimpleTurnLoop } from '@agentsy/runtime/loop';
@@ -150,6 +150,59 @@ function formatSkillDescription(skill: {
   return lines.join('\n');
 }
 
+// ── Agent & plan helpers ─────────────────────────────────────────────────
+
+async function resolveAgent(selectedAgentId: string | null, stderr: (msg: string) => void): Promise<string> {
+  let systemPrompt = 'You are a helpful assistant.';
+  const registry = selectedAgentId === null ? null : new AgentRegistry();
+
+  if (registry !== null && selectedAgentId !== null) {
+    try {
+      const agentDef = await registry.get(selectedAgentId);
+      systemPrompt = agentDef.systemPromptTemplate ?? systemPrompt;
+      stderr(dim(`[agent] loaded: ${agentDef.name} (${agentDef.id})\n`));
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      stderr(dim(`[agent] failed to load "${selectedAgentId}": ${msg}\n`));
+    }
+  }
+
+  return systemPrompt;
+}
+
+async function createPlanSessionIfNeeded(
+  planMode: boolean,
+  selectedAgentId: string | null
+): Promise<AgentLoopHandle | null> {
+  if (planMode && selectedAgentId !== null) {
+    return await createAgentSession(
+      {
+        id: selectedAgentId,
+        name: selectedAgentId,
+        description: ''
+      } satisfies PlanAgentDefinition,
+      { agentId: selectedAgentId, plan: true }
+    );
+  }
+  return null;
+}
+
+function createClientAndAnnounce(
+  isMock: boolean,
+  argv: readonly string[],
+  options: ChatCommandOptions | undefined,
+  model: string,
+  stderr: (msg: string) => void
+): ReturnType<typeof createProviderClient> {
+  const client = createProviderClient(isMock, argv, options);
+  if (isMock) {
+    stderr(dim(`[mock] model=${model}\n`));
+  } else {
+    stderr(dim(`model=${model}\n`));
+  }
+  return client;
+}
+
 // ── Chat command ────────────────────────────────────────────────────────────────
 
 export interface ChatHeaders {
@@ -253,7 +306,6 @@ function safePrompt(rl: Interface): void {
 }
 
 // fallow-ignore-next-line complexity
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: interactive REPL dispatch is inherently conditional
 export async function runChatCommand(
   argv: readonly string[],
   io: CliIO,
@@ -269,44 +321,16 @@ export async function runChatCommand(
   const planMode = hasFlag(argv, '--plan') || options?.planMode === true;
 
   // Resolve agent definition if an agent ID was provided
-  let systemPrompt = 'You are a helpful assistant.';
-  const registry = selectedAgentId === null ? null : new AgentRegistry();
-
-  if (registry !== null && selectedAgentId !== null) {
-    try {
-      const agentDef = await registry.get(selectedAgentId);
-      systemPrompt = agentDef.systemPromptTemplate ?? systemPrompt;
-      stderr(dim(`[agent] loaded: ${agentDef.name} (${agentDef.id})\n`));
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      stderr(dim(`[agent] failed to load "${selectedAgentId}": ${msg}\n`));
-    }
-  }
+  const systemPrompt = await resolveAgent(selectedAgentId, stderr);
 
   // Create plan session if in plan mode
-  const planSession =
-    planMode && selectedAgentId !== null
-      ? await createAgentSession(
-          {
-            id: selectedAgentId,
-            name: selectedAgentId,
-            description: ''
-          } satisfies PlanAgentDefinition,
-          { agentId: selectedAgentId, plan: true }
-        )
-      : null;
+  const planSession = await createPlanSessionIfNeeded(planMode, selectedAgentId);
 
   if (planMode) {
     stderr(dim('[plan] plan mode enabled — tools will not be executed\n'));
   }
 
-  const client = createProviderClient(isMock, argv, options);
-
-  if (isMock) {
-    stderr(dim(`[mock] model=${model}\n`));
-  } else {
-    stderr(dim(`model=${model}\n`));
-  }
+  const client = createClientAndAnnounce(isMock, argv, options, model, stderr);
 
   const handler: TurnHandler = { stream: req => client.stream(req) };
   const loop = createSimpleTurnLoop({
@@ -524,9 +548,8 @@ export async function runChatCommand(
   // ── /agent command handlers ───────────────────────────────────────────────────────
 
   async function handleAgentList(): Promise<void> {
-    const reg = registry ?? new AgentRegistry();
     try {
-      const agents = await reg.list();
+      const agents = await new AgentRegistry().list();
       if (agents.length === 0) {
         stderr(dim('[agent] no agents found\n'));
         return;
@@ -540,9 +563,8 @@ export async function runChatCommand(
   }
 
   async function handleAgentShow(agentId: string): Promise<void> {
-    const reg = registry ?? new AgentRegistry();
     try {
-      const agent = await reg.get(agentId);
+      const agent = await new AgentRegistry().get(agentId);
       stderr(dim(`[agent] ${agentId}:\n${formatAgentDescription(agent)}\n`));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

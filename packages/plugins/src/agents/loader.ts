@@ -93,6 +93,41 @@ function parseNestedObject(
   return { value: objectValue, lastIndex: lookahead - 1 };
 }
 
+function parseFrontmatterLine(
+  line: string,
+  lines: string[],
+  index: number
+): { key: string; value: unknown; newIndex: number } | undefined {
+  const colonIndex = line.indexOf(':');
+  if (colonIndex === -1) {
+    return;
+  }
+
+  const key = line.slice(0, colonIndex).trim();
+  if (!key) {
+    return;
+  }
+
+  let value: unknown = line.slice(colonIndex + 1).trim();
+
+  if (value === '') {
+    const nested = parseNestedObject(lines, index);
+    if (nested !== undefined) {
+      return { key, value: nested.value, newIndex: nested.lastIndex };
+    }
+  }
+
+  if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
+    value = parseArrayValue(value);
+  }
+
+  if (typeof value === 'string') {
+    value = parseSimpleValue(value);
+  }
+
+  return { key, value, newIndex: index };
+}
+
 function parseFrontmatter(content: string): FrontmatterResult {
   const trimmed = content.trimStart();
 
@@ -108,7 +143,7 @@ function parseFrontmatter(content: string): FrontmatterResult {
 
   const raw = trimmed.slice(3, endIndex).trim();
   const body = trimmed.slice(endIndex + 4).trim();
-  const data = Object.create(null) as Record<string, unknown>;
+  const data: Record<string, unknown> = Object.create(null);
 
   const lines = raw.split('\n');
 
@@ -118,36 +153,15 @@ function parseFrontmatter(content: string): FrontmatterResult {
       continue;
     }
 
-    const colonIndex = line.indexOf(':');
-    if (colonIndex === -1) {
+    const parsed = parseFrontmatterLine(line, lines, index);
+    if (parsed === undefined) {
       continue;
     }
 
-    const key = line.slice(0, colonIndex).trim();
-    if (!key) {
-      continue;
+    data[parsed.key] = parsed.value;
+    if (parsed.newIndex > index) {
+      index = parsed.newIndex;
     }
-
-    let value: unknown = line.slice(colonIndex + 1).trim();
-
-    if (value === '') {
-      const nested = parseNestedObject(lines, index);
-      if (nested) {
-        data[key] = nested.value;
-        index = nested.lastIndex;
-        continue;
-      }
-    }
-
-    if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
-      value = parseArrayValue(value);
-    }
-
-    if (typeof value === 'string') {
-      value = parseSimpleValue(value);
-    }
-
-    data[key] = value;
   }
 
   return { data, body };
@@ -172,6 +186,24 @@ const DEFINITION_STRING_FIELDS: ReadonlySet<string> = new Set([
 
 const DEFINITION_ARRAY_FIELDS: ReadonlySet<string> = new Set(['tools', 'keywords', 'allowedTools']);
 
+function coerceDefinitionProperties(data: Record<string, unknown>, definition: Partial<AgentDefinition>): void {
+  if (data.allowedTools === '*') {
+    definition.allowedTools = '*';
+  }
+
+  if (Array.isArray(data.memoryScopes)) {
+    definition.memoryScopes = data.memoryScopes as AgentMemoryScope[];
+  }
+
+  if (data.orchestrationMode) {
+    definition.orchestrationMode = data.orchestrationMode as AgentOrchestrationMode;
+  }
+
+  if (typeof data.hooks === 'object' && data.hooks !== null) {
+    definition.hooks = data.hooks as Record<string, string>;
+  }
+}
+
 function coerceToDefinition(data: Record<string, unknown>, source: AgentDefinitionSource): AgentDefinition {
   const definition: AgentDefinition = {
     id: typeof data.id === 'string' ? data.id : '',
@@ -194,21 +226,7 @@ function coerceToDefinition(data: Record<string, unknown>, source: AgentDefiniti
     }
   }
 
-  if (data.allowedTools === '*') {
-    definition.allowedTools = '*';
-  }
-
-  if (Array.isArray(data.memoryScopes)) {
-    definition.memoryScopes = data.memoryScopes as AgentMemoryScope[];
-  }
-
-  if (data.orchestrationMode) {
-    definition.orchestrationMode = data.orchestrationMode as AgentOrchestrationMode;
-  }
-
-  if (data.hooks && typeof data.hooks === 'object') {
-    definition.hooks = data.hooks as Record<string, string>;
-  }
+  coerceDefinitionProperties(data, definition);
 
   return definition;
 }

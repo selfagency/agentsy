@@ -127,17 +127,61 @@ function buildHostAPI(
 /**
  * Run a plugin's entrypoint function in an isolated v8 sandbox.
  */
+function resolveSandboxOptions(options: SandboxOptions = {}): Required<SandboxOptions> {
+  return {
+    memoryLimitMb: options.memoryLimitMb ?? DEFAULT_MEMORY_LIMIT_MB,
+    timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+    allowedCapabilities: options.allowedCapabilities ?? []
+  };
+}
+
+async function executePluginInSandbox(
+  plugin: Plugin,
+  entrypoint: string,
+  args: readonly unknown[],
+  resolvedOptions: Required<SandboxOptions>,
+  isolate: InstanceType<IsolatedVmModule['Isolate']>,
+  hostAPI: Record<string, unknown>
+): Promise<SandboxResult> {
+  const context = await isolate.createContext();
+  const jail = context.global;
+
+  await jail.set('global', jail.derefInto());
+
+  for (const [key, value] of Object.entries(hostAPI)) {
+    if (value !== undefined) {
+      await jail.set(key, value);
+    }
+  }
+
+  const script = await isolate.compileScript(plugin.code, { filename: `plugin://${plugin.id}/entry.js` });
+
+  await script.run(context, {
+    timeout: resolvedOptions.timeoutMs,
+    release: true
+  });
+
+  const start = Date.now();
+  const entryFn = await jail.get(entrypoint);
+
+  const result = await entryFn.apply(undefined, args, {
+    timeout: resolvedOptions.timeoutMs,
+    arguments: { copy: true },
+    result: { copy: true, promise: true }
+  });
+
+  const durationMs = Date.now() - start;
+
+  return { result, durationMs };
+}
+
 export async function runPluginInSandbox(
   plugin: Plugin,
   entrypoint: string,
   args: readonly unknown[],
   options: SandboxOptions = {}
 ): Promise<SandboxResult> {
-  const resolvedOptions: Required<SandboxOptions> = {
-    memoryLimitMb: options.memoryLimitMb ?? DEFAULT_MEMORY_LIMIT_MB,
-    timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-    allowedCapabilities: options.allowedCapabilities ?? []
-  };
+  const resolvedOptions = resolveSandboxOptions(options);
 
   const ivm = await loadIsolatedVm();
   const isolate = new ivm.Isolate({
@@ -145,42 +189,8 @@ export async function runPluginInSandbox(
   });
 
   try {
-    const context = await isolate.createContext();
-    const jail = context.global;
-
-    // Make the global object accessible as `globalThis` inside the sandbox
-    await jail.set('global', jail.derefInto());
-
-    // Expose host API with only allowed capabilities
     const hostAPI = buildHostAPI(ivm, plugin, resolvedOptions);
-    for (const [key, value] of Object.entries(hostAPI)) {
-      if (value !== undefined) {
-        await jail.set(key, value);
-      }
-    }
-
-    // Compile the plugin code as a script
-    const script = await isolate.compileScript(plugin.code, { filename: `plugin://${plugin.id}/entry.js` });
-
-    // Run the script to define the entrypoint
-    await script.run(context, {
-      timeout: resolvedOptions.timeoutMs,
-      release: true
-    });
-
-    // Call the entrypoint function with provided args
-    const start = Date.now();
-    const entryFn = await jail.get(entrypoint);
-
-    const result = await entryFn.apply(undefined, args, {
-      timeout: resolvedOptions.timeoutMs,
-      arguments: { copy: true },
-      result: { copy: true, promise: true }
-    });
-
-    const durationMs = Date.now() - start;
-
-    return { result, durationMs };
+    return await executePluginInSandbox(plugin, entrypoint, args, resolvedOptions, isolate, hostAPI);
   } catch (error: unknown) {
     if (error instanceof ivm.TimeoutError) {
       throw new SandboxError({
