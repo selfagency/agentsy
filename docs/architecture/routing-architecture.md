@@ -14,7 +14,7 @@
 
 ## Routing Flow
 
-```
+```text
 User / Task
     │
     ▼
@@ -162,14 +162,13 @@ Guardrails emit policy constraints (`local-only`, `excludeProviders`, `requireJs
 
 ## Local-First Routing Policy
 
-| Task Tier | Local Bonus | Behavior |
-|---|---|---|
-| `micro` | +100 | Always prefer local (classifications, lookups) |
-| `small` | +80 | Strongly prefer local (summarization) |
-| `mid` | +20 | Slight local preference if capable (coding) |
-| `frontier` | +0 | No preference — use best cloud model (synthesis) |
-
-Configurable via `ModelSelectionConstraints.localPreference`: `'preferred'` | `'required'` | `'disabled'`.
+| Task Tier                                                                   | Local Bonus  | Behavior                                         |
+| --------------------------------------------------------------------------- | ------------ | ------------------------------------------------ |
+| `micro`                                                                     | +100         | Always prefer local (classifications, lookups)   |
+| `small`                                                                     | +80          | Strongly prefer local (summarization)            |
+| `mid`                                                                       | +20          | Slight local preference if capable (coding)      |
+| `frontier`                                                                  | +0           | No preference — use best cloud model (synthesis) |
+| Configurable via `ModelSelectionConstraints.localPreference`: `'preferred'` | `'required'` | `'disabled'`.                                    |
 
 ## Client API
 
@@ -203,7 +202,7 @@ Legacy Phase 0–3.5 docs are historical milestones only; this architecture is t
 
 ## Related Documents
 
-- [Cross-package plan (source of truth)](../../plan/34-CROSS-PACKAGE-MODEL-REPLICA-ROUTING-PLAN.md)
-- [Gateway README](../../packages/gateway/README.md)
+- [Cross-package plan (source of truth)](https://github.com/selfagency/agentsy/blob/main/plan/34-CROSS-PACKAGE-MODEL-REPLICA-ROUTING-PLAN.md)
+- [Gateway package docs](../packages/gateway.md)
 - [Gateway package docs](../packages/gateway.md)
 - [Architecture overview](./index.md)
