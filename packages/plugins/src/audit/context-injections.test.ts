@@ -44,7 +44,7 @@ describe('ContextInjectionAuditor', () => {
 
   it('never stores raw content', () => {
     const auditor = new ContextInjectionAuditor();
-    const secret = 'sk-ant-secret-key-12345';
+    const secret = 'test-secret-key-12345'; // Not a real credential — test fixture only
 
     auditor.record(plugin, makeInjection({ content: secret }));
 

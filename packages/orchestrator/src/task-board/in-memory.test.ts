@@ -10,12 +10,12 @@ import type { CheckpointSnapshot, Task, ToolCallRecord } from './types.js';
 
 function baseTask(overrides: Partial<Task> = {}): Omit<Task, 'id' | 'createdAt' | 'updatedAt'> {
   return {
-    planId: overrides.planId ?? 'plan-1',
-    stepId: overrides.stepId ?? 'step-1',
-    type: overrides.type ?? 'task',
-    status: overrides.status ?? 'pending',
-    metadata: overrides.metadata ?? {},
-    dependencies: overrides.dependencies ?? [],
+    planId: 'plan-1',
+    stepId: 'step-1',
+    type: 'task',
+    status: 'pending',
+    metadata: {},
+    dependencies: [],
     ...overrides
   };
 }

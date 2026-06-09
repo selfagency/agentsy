@@ -182,13 +182,15 @@ function coerceToDefinition(data: Record<string, unknown>, source: AgentDefiniti
 
   for (const key of DEFINITION_STRING_FIELDS) {
     if (typeof data[key] === 'string') {
-      (definition as unknown as Record<string, unknown>)[key] = data[key] as string;
+      // nosemgrep: detect-object-injection — key from controlled DEFINITION_STRING_FIELDS set
+      (definition as unknown as Record<string, unknown>)[key] = data[key];
     }
   }
 
   for (const key of DEFINITION_ARRAY_FIELDS) {
     if (Array.isArray(data[key])) {
-      (definition as unknown as Record<string, unknown>)[key] = data[key] as string[];
+      // nosemgrep: detect-object-injection — key from controlled DEFINITION_ARRAY_FIELDS set
+      (definition as unknown as Record<string, unknown>)[key] = data[key];
     }
   }
 

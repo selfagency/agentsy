@@ -461,7 +461,7 @@ function resolveIdent(path: string, ctx: Record<string, unknown>): unknown {
     if (current === null || current === undefined || typeof current !== 'object') {
       return;
     }
-    if (!Object.hasOwn(current as Record<string, unknown>, part)) {
+    if (!Object.hasOwn(current, part)) {
       return;
     }
     current = (current as Record<string, unknown>)[part];
@@ -482,12 +482,13 @@ function evaluateTokens(tokens: Token[], ctx: Record<string, unknown>): boolean 
     if (op?.type !== 'op' || (op.value !== '&&' && op.value !== '||')) {
       break;
     }
-    combinators.push(op.value as '&&' | '||');
+    combinators.push(op.value);
     i++;
   }
 
   return combinators.reduce(
     (acc, op, j) => (op === '&&' ? acc && (results[j + 1] ?? false) : acc || (results[j + 1] ?? false)),
+    // nosemgrep: detect-object-injection — j is reduce index, results is local array
     results[0] ?? false
   );
 }
@@ -533,7 +534,7 @@ function evaluateComparison(tokens: Token[], start: number, ctx: Record<string, 
     return false;
   }
 
-  const fn = COMPARISON_OPS[op.value];
+  const fn = COMPARISON_OPS[op.value]; // nosemgrep: detect-object-injection — op.value was validated by ?.[] check
   if (!fn) {
     return false;
   }

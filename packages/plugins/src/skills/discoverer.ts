@@ -206,13 +206,7 @@ export class SkillDiscoverer {
       this.#parseFrontmatterLine(line, result);
     }
 
-    return result as {
-      name?: string;
-      description?: string;
-      version?: string;
-      author?: string;
-      license?: string;
-    };
+    return result;
   }
 
   /**

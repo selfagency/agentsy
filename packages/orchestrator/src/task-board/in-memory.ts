@@ -268,7 +268,7 @@ export class InMemoryTaskBoard implements ITaskBoard {
     return Promise.resolve();
   }
 
-  getToolExecutionResult(toolCallId: string): Promise<unknown | undefined> {
+  getToolExecutionResult(toolCallId: string): Promise<unknown> {
     return Promise.resolve(this.#toolResults.get(toolCallId));
   }
 

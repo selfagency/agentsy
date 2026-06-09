@@ -178,7 +178,10 @@ export class HookRegistry {
       }
       seen.add(key);
 
-      STRATEGY_HANDLERS[warning.strategy]?.(warning, plan, resolved);
+      const strategy = warning.strategy;
+      if (Object.hasOwn(STRATEGY_HANDLERS, strategy)) {
+        STRATEGY_HANDLERS[strategy]?.(warning, plan, resolved); // nosemgrep: detect-object-injection — guarded by Object.hasOwn
+      }
     }
 
     return plan.order.filter(h => resolved.has(h));

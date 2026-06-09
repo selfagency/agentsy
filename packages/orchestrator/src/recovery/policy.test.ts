@@ -6,16 +6,17 @@ import { RecoveryExecutor } from './policy.js';
 function basePolicy(overrides: Partial<RecoveryPolicy> = {}): RecoveryPolicy {
   return {
     retryConfig: {
-      maxAttempts: overrides.retryConfig?.maxAttempts ?? 3,
-      backoffStrategy: overrides.retryConfig?.backoffStrategy ?? 'linear',
-      baseDelayMs: overrides.retryConfig?.baseDelayMs ?? 100,
-      maxDelayMs: overrides.retryConfig?.maxDelayMs ?? 5000,
-      jitterFraction: overrides.retryConfig?.jitterFraction ?? 0
+      maxAttempts: 3,
+      backoffStrategy: 'linear',
+      baseDelayMs: 100,
+      maxDelayMs: 5000,
+      jitterFraction: 0
     },
-    fallbacks: overrides.fallbacks ?? [],
-    escalationAction: overrides.escalationAction ?? 'fail',
-    checkpointRequired: overrides.checkpointRequired ?? false,
-    checkpointFrequencyMs: overrides.checkpointFrequencyMs ?? 5000
+    fallbacks: [],
+    escalationAction: 'fail',
+    checkpointRequired: false,
+    checkpointFrequencyMs: 5000,
+    ...overrides
   };
 }
 
@@ -157,7 +158,7 @@ describe('RecoveryExecutor', () => {
     it('should add variation when jitterFraction > 0', () => {
       // Mock Math.random to produce deterministic jitter
       const origRandom = Math.random;
-      Math.random = vi.fn().mockReturnValue(0.0);
+      Math.random = vi.fn().mockReturnValue(0);
 
       const executor = new RecoveryExecutor(
         basePolicy({
@@ -176,7 +177,7 @@ describe('RecoveryExecutor', () => {
       expect(withMinJitter).toBe(180); // 200 - 20
 
       // When random() returns 1.0: jitter = 200 * 0.2 * 0.5 = 20
-      Math.random = vi.fn().mockReturnValue(1.0);
+      Math.random = vi.fn().mockReturnValue(1);
       const withMaxJitter = executor.calculateBackoff(0);
       expect(withMaxJitter).toBe(220); // 200 + 20
 

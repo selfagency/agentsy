@@ -120,14 +120,13 @@ describe('buildRateLimitMap', () => {
   it('should fall back to hourly remaining when minute-level is undefined', () => {
     const replicas = [baseReplica({ id: 'r1' })];
     // Omit minute-level fields entirely to simulate no minute-level data
-    const {
-      remainingTokensMinute: _tm,
-      remainingRequestsMinute: _rm,
-      ...snapshotRest
-    } = quotaSnapshot('r1', {
+    const snapshot: ReplicaQuotaSnapshot = {
+      confidence: 'header-derived',
+      lastUpdatedAt: new Date().toISOString(),
+      replicaId: 'r1',
       remainingTokensHour: 500
-    });
-    const snapshots = new Map<string, ReplicaQuotaSnapshot>([['r1', snapshotRest as ReplicaQuotaSnapshot]]);
+    };
+    const snapshots = new Map<string, ReplicaQuotaSnapshot>([['r1', snapshot]]);
 
     const map = buildRateLimitMap(replicas, snapshots);
 

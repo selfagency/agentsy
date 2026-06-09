@@ -65,7 +65,7 @@ export function filterContextForPlugin(context: Record<string, unknown>, _plugin
 
   for (const [key, value] of entries) {
     if (fieldSet.has(key)) {
-      safe[key] = value;
+      safe[key] = value; // nosemgrep: detect-object-injection — key gated by fieldSet.has(key)
     }
   }
 

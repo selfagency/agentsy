@@ -119,8 +119,7 @@ function formatAgentDescription(agent: {
   defaultModel?: string;
 }): string {
   const lines: string[] = [];
-  lines.push(`  ${agent.name} (${agent.id})`);
-  lines.push(`    description: ${agent.description}`);
+  lines.push(`  ${agent.name} (${agent.id})`, `    description: ${agent.description}`);
   if (agent.orchestrationMode) {
     lines.push(`    mode: ${agent.orchestrationMode}`);
   }
@@ -141,8 +140,7 @@ function formatSkillDescription(skill: {
   author?: string;
 }): string {
   const lines: string[] = [];
-  lines.push(`  ${skill.name}`);
-  lines.push(`    description: ${skill.description}`);
+  lines.push(`  ${skill.name}`, `    description: ${skill.description}`);
   if (skill.version) {
     lines.push(`    version: ${skill.version}`);
   }
@@ -449,9 +447,7 @@ export async function runChatCommand(
       lines.push(parts.join(' '));
     }
     lines.push(
-      `[lb] metrics: requests=${metrics.requestCount} success=${metrics.successCount} failure=${metrics.failureCount} failovers=${metrics.failoverCount} circuitTrips=${metrics.circuitTrips}`
-    );
-    lines.push(
+      `[lb] metrics: requests=${metrics.requestCount} success=${metrics.successCount} failure=${metrics.failureCount} failovers=${metrics.failoverCount} circuitTrips=${metrics.circuitTrips}`,
       `[lb] totals: tokens=${metrics.totalTokens} (in=${metrics.totalInputTokens} out=${metrics.totalOutputTokens}) cost=$${metrics.totalCostUsd.toFixed(4)}`
     );
     if (metrics.streamCount > 0) {

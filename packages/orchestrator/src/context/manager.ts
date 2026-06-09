@@ -252,7 +252,7 @@ export class ContextManager {
       throw new TypeError('visibleFields must be an array');
     }
     if (!Array.isArray(frame.lockedResources)) {
-      throw new Error('lockedResources must be an array');
+      throw new TypeError('lockedResources must be an array');
     }
     if (!frame.metadata || typeof frame.metadata !== 'object') {
       throw new Error('metadata must be a non-null object');

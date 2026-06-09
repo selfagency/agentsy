@@ -121,7 +121,7 @@ export class BudgetEnforcer {
       throw new Error(`Cannot record negative token usage: ${tokens}`);
     }
     if (!Number.isFinite(tokens)) {
-      throw new Error(`Invalid token count: ${tokens}`);
+      throw new TypeError(`Invalid token count: ${tokens}`);
     }
 
     const cap = this.#capFor(category);

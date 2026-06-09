@@ -210,15 +210,16 @@ export function formatPlan(plan: PlanResult): string {
     lines.push(`- **${task.id}**${depText}: ${task.description}`);
   }
 
-  lines.push('');
-  lines.push('### Estimate');
-  lines.push(`- Total steps: ${plan.estimate.totalSteps}`);
-  lines.push(`- Parallel groups: ${plan.estimate.parallelGroups}`);
-  lines.push(`- Estimated tokens: ${plan.estimate.estimatedTokens}`);
-
-  lines.push('');
-  lines.push('> Plan mode — tools were not executed.');
-  lines.push('> Review the plan above and approve it to begin execution.');
+  lines.push(
+    '',
+    '### Estimate',
+    `- Total steps: ${plan.estimate.totalSteps}`,
+    `- Parallel groups: ${plan.estimate.parallelGroups}`,
+    `- Estimated tokens: ${plan.estimate.estimatedTokens}`,
+    '',
+    '> Plan mode — tools were not executed.',
+    '> Review the plan above and approve it to begin execution.'
+  );
 
   return lines.join('\n');
 }

@@ -1,6 +1,10 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { AgentLoader } from './loader.js';
+
+const testDir = join(tmpdir(), 'agentsy-test-project');
 
 describe('AgentLoader', () => {
   describe('constructor', () => {
@@ -10,14 +14,14 @@ describe('AgentLoader', () => {
     });
 
     it('accepts a custom project directory', () => {
-      const loader = new AgentLoader('/tmp/test-project'); // NOSONAR — test fixture path
-      expect(loader.projectDir).toBe('/tmp/test-project');
+      const loader = new AgentLoader(testDir);
+      expect(loader.projectDir).toBe(testDir);
     });
 
     it('creates three search roots', () => {
-      const loader = new AgentLoader('/tmp/test-project'); // NOSONAR — test fixture path
+      const loader = new AgentLoader(testDir);
       expect(loader.searchRoots).toHaveLength(3);
-      expect(loader.searchRoots[0]).toBe('/tmp/test-project/.agents');
+      expect(loader.searchRoots[0]).toBe(`${testDir}/.agents`);
     });
   });
 

@@ -75,7 +75,7 @@ export const TIER_COST_MODELS: readonly TierCostModel[] = [
     tier: 'frontier',
     modelName: 'gemini-2.5-pro',
     inputCostPer1kTokens: 1.25,
-    outputCostPer1kTokens: 5.0,
+    outputCostPer1kTokens: 5,
     averageOutputRatio: 0.3
   }
 ] as const;

@@ -113,7 +113,8 @@ function buildHostAPI(
   if (plugin.config?.trusted || capabilities.has('log')) {
     api.log = new ivm.Callback(
       (...args: unknown[]) => {
-        const message = String(args[0] ?? '');
+        const message =
+          typeof args[0] === 'object' && args[0] !== null ? JSON.stringify(args[0]) : String(args[0] ?? '');
         console.log(`[plugin:${plugin.id}] ${message}`);
       },
       { sync: true }

@@ -27,7 +27,10 @@ export interface CreateMemoryPostTurnHookOptions {
  * Extract a string value from a known field on an object.
  */
 function extractStringField(obj: Record<string, unknown>, field: string): string | undefined {
-  const val = obj[field];
+  if (!Object.hasOwn(obj, field)) {
+    return;
+  }
+  const val = obj[field]; // nosemgrep: detect-object-injection — guarded by Object.hasOwn
   return typeof val === 'string' && val.length > 0 ? val : undefined;
 }
 

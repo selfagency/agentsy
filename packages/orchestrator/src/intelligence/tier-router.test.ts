@@ -43,7 +43,7 @@ describe('TierRouter', () => {
     it('should return null when cost is already within budget', () => {
       const estimator = new CostEstimator();
       // mid tier with 100 tokens ≈ $0.039, budget is $1
-      const router = new TierRouter(estimator, 1.0);
+      const router = new TierRouter(estimator, 1);
 
       const result = router.suggestEscalation({
         tier: 'mid',
@@ -71,7 +71,7 @@ describe('TierRouter', () => {
       const estimator = new CostEstimator();
       // small tier with 1000 tokens ≈ $0.26
       // budget $1.00 → 30% = $0.30, $0.26 < $0.30 → upgrade
-      const router = new TierRouter(estimator, 1.0);
+      const router = new TierRouter(estimator, 1);
 
       const result = router.suggestUpgrade({
         tier: 'small',
@@ -85,7 +85,7 @@ describe('TierRouter', () => {
 
     it('should return null at the highest tier', () => {
       const estimator = new CostEstimator();
-      const router = new TierRouter(estimator, 100.0);
+      const router = new TierRouter(estimator, 100);
 
       const result = router.suggestUpgrade({
         tier: 'frontier',
