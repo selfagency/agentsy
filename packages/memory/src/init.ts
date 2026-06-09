@@ -109,5 +109,6 @@ export function initMemory(options: InitOptions = {}): InitResult {
   return { engine, config };
 }
 
+export { getMemorySetupGuide } from './diagnostics/index.js';
 export type { MemoryConfig };
 export { DEFAULT_TIER_CONFIGS, loadConfig };

@@ -45,6 +45,7 @@
     "@agentsy/core": "workspace:*",
     "@agentsy/gateway": "workspace:*",
     "@agentsy/memory": "workspace:*",
+    "@agentsy/observability": "workspace:*",
     "@agentsy/runtime": "workspace:*",
     "@agentsy/types": "workspace:*",
     "zod": "^4.4.3"

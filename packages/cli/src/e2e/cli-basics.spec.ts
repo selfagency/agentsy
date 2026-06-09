@@ -11,7 +11,9 @@ test.describe('CLI basics', () => {
     // tui-test requires global flag for regex assertions
     await expect(terminal.getByText(/Supported commands:/g)).toBeVisible();
     // Use non-strict mode: the regex matches multiple command names in the output
-    await expect(terminal.getByText(/chat|compress|compress-memory|memory-sync-dev/g, { strict: false })).toBeVisible();
+    await expect(
+      terminal.getByText(/chat|compress|compress-memory|memory-sync-dev|setup|doctor/g, { strict: false })
+    ).toBeVisible();
   });
 
   test('runs default entry (no subcommand) without crash', async ({ terminal }) => {

@@ -131,6 +131,25 @@ export interface ModelSelectionDiagnosticsEvent {
   type: 'ModelSelectionDiagnostics';
 }
 
+export interface HelperStartEvent {
+  helperId: string;
+  sessionId: string;
+  type: 'HelperStart';
+}
+
+export interface HelperCompleteEvent {
+  helperId: string;
+  sessionId: string;
+  type: 'HelperComplete';
+}
+
+export interface HelperFailedEvent {
+  error: string;
+  helperId: string;
+  sessionId: string;
+  type: 'HelperFailed';
+}
+
 /** Union of all runtime hook events. */
 export type RuntimeHookEvent =
   | UserPromptSubmitEvent
@@ -145,4 +164,7 @@ export type RuntimeHookEvent =
   | PostModelCallEvent
   | ModelCallFailedEvent
   | ModelReplicaSwitchedEvent
-  | ModelSelectionDiagnosticsEvent;
+  | ModelSelectionDiagnosticsEvent
+  | HelperStartEvent
+  | HelperCompleteEvent
+  | HelperFailedEvent;

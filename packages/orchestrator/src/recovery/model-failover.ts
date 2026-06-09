@@ -382,5 +382,5 @@ export function getNextStep(chain: FailoverChain, _lastError: Error): FailoverSt
     throw new ExhaustedError([...chain.steps], chain.currentStep);
   }
 
-  return chain.steps[chain.currentStep];
+  return chain.steps.at(chain.currentStep);
 }

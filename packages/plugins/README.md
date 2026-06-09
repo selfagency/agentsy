@@ -12,3 +12,7 @@ Pre-release package; plugin contracts may evolve.
 
 - `@agentsy/plugins` — root plugin package surface
 - `@agentsy/plugins/agents` — A2A coordination scaffold
+
+## Ownership boundary
+
+`@agentsy/plugins` owns manifest metadata, capability discovery, and extensibility contracts. Framework-level `setup` and `doctor` UX belongs to `@agentsy/cli`, while helper-role semantics belong to `@agentsy/orchestrator`.

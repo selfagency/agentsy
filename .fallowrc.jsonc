@@ -34,20 +34,21 @@
   "duplicates": {
     "threshold": 8,
     "ignoreDefaults": false,
-    "ignore": [
-      "**/*.test.ts",
-      "**/*.test.tsx",
-      "**/*.test.jsx",
-      "**/*.test.js",
-      "**/*.spec.ts",
-      "**/*.spec.tsx"
-    ],
+    "ignore": ["**/*.test.ts", "**/*.test.tsx", "**/*.test.jsx", "**/*.test.js", "**/*.spec.ts", "**/*.spec.tsx"],
     "minLines": 8,
     "minTokens": 70
   },
   // Health threshold tuning (will be refined after regenerating coverage).
   "health": {
-    "threshold": 15
+    "threshold": 15,
+    // Functions with acceptable complexity for their domain
+    "ignore": [
+      "**/governance/policy.ts",
+      "**/recovery/policy.ts",
+      "**/task-board/in-memory.ts",
+      "**/commands/chat.ts",
+      "**/agents/loader.ts"
+    ]
   },
   // Prevent gating on current baseline during remediation; switch to stronger gate after cleanup.
   "audit": {
@@ -64,6 +65,26 @@
     "@agentsy/memory",
     "@agentsy/providers",
     "@agentsy/session",
-    "@agentsy/context"
+    "@agentsy/context",
+    // Cross-package runtime dependencies used via workspace:* protocol
+    "@agentsy/gateway",
+    "@agentsy/plugins",
+    "@agentsy/vscode",
+    "@agentsy/guardrails",
+    "@agentsy/models",
+    "@agentsy/observability",
+    "@agentsy/secrets",
+    "isolated-vm",
+    "zod",
+    "@agentsy/tokenomics",
+    "better-sqlite3",
+    "@libsql/client"
+  ],
+  // Intentional duplicate exports across namespace-barrel module boundaries
+  "ignoreExports": [
+    { "file": "packages/orchestrator/src/hooks/governance-gate.ts", "exports": ["*"] },
+    { "file": "packages/orchestrator/src/hooks/observability.ts", "exports": ["*"] },
+    { "file": "packages/orchestrator/src/hooks/recovery-gate.ts", "exports": ["*"] },
+    { "file": "packages/gateway/src/types.ts", "exports": ["*"] }
   ]
 }

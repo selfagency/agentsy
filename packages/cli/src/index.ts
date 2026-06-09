@@ -205,6 +205,16 @@ async function handleChatCommand(rest: readonly string[], io: CliIO): Promise<nu
   return runChatCommand(rest, io);
 }
 
+async function handleSetupCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runSetupCommand } = await import('./commands/setup.js');
+  return runSetupCommand(rest, io);
+}
+
+async function handleDoctorCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runDoctorCommand } = await import('./commands/doctor.js');
+  return runDoctorCommand(rest, io);
+}
+
 async function handleTuiCommand(argv: readonly string[], io: CliIO): Promise<number> {
   const { runTuiCommand } = await import('./commands/tui.js');
   return runTuiCommand(argv, io);
@@ -223,11 +233,13 @@ async function handleLbStatusCommand(rest: readonly string[], io: CliIO): Promis
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
-    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, sandbox-diagnostics, content-address-stats, lb'
+    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, setup, doctor, sandbox-diagnostics, content-address-stats, lb'
   );
+  (io.stderr ?? DEFAULT_IO.stderr)('Chat flags: --agent <name> --plan --mock --model <id> --provider <id>');
   return 1;
 }
 
+// fallow-ignore-next-line complexity
 export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
   const [command, ...rest] = argv;
 
@@ -250,6 +262,14 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
 
   if (command === 'memory-sync-dev') {
     return handleMemorySyncDevCommand(rest, io);
+  }
+
+  if (command === 'setup') {
+    return await handleSetupCommand(rest, io);
+  }
+
+  if (command === 'doctor') {
+    return await handleDoctorCommand(rest, io);
   }
 
   if (command === 'sandbox-diagnostics') {

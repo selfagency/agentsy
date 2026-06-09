@@ -63,3 +63,13 @@ Add `@agentsy/orchestrator/agent`, then choose one or more projection layers:
 - Do not move VS Code concepts into lower-level parsing packages.
 - Do not document planned runtime packages as if they already sit between the current layers.
 - Treat package-local `src/index.ts` barrels as the source of truth for current documented API.
+
+## Operator surfaces vs library packages
+
+Agentsy distinguishes between reusable library packages and outer-layer operator surfaces:
+
+- Library packages such as `@agentsy/context`, `@agentsy/session`, and most of `@agentsy/core/*` should stay host-agnostic.
+- `@agentsy/cli` owns framework-level setup and doctor UX.
+- `@agentsy/orchestrator` and `@agentsy/runtime` own helper/background role semantics and execution.
+- `@agentsy/plugins`, `@agentsy/vscode`, `@agentsy/mcp`, and `@agentsy/connectors` own host- or protocol-specific integration behavior.
+- Repository `docs/` plus host-facing READMEs own broad operational and compatibility guidance.

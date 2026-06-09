@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { name, runCli } from './index.js';
 
@@ -171,6 +171,20 @@ describe('cli package scaffold', () => {
     expect(stderr.join(' ')).toContain('Invalid --sync-interval-ms value');
   });
 
+  it('runs setup command', async () => {
+    const stdout: string[] = [];
+    const code = await runCli(['setup', 'memory'], { stdout: message => stdout.push(message) });
+    expect(code).toBe(0);
+    expect(stdout.join('\n')).toContain('memory');
+  });
+
+  it('runs doctor command as JSON', async () => {
+    const stdout: string[] = [];
+    const code = await runCli(['doctor', 'memory', '--json'], { stdout: message => stdout.push(message) });
+    expect(code).toBe(0);
+    expect(JSON.parse(stdout[0] ?? '[]')[0].target).toBe('memory');
+  });
+
   it('returns non-zero for unknown command', async () => {
     const stderr: string[] = [];
     const code = await runCli(['unknown-command'], {
@@ -184,5 +198,95 @@ describe('cli package scaffold', () => {
 
     expect(code).toBe(1);
     expect(stderr.join(' ')).toContain('Unknown command');
+  });
+
+  it('passes --agent flag through to chat command', async () => {
+    const mockStdin = new (await import('node:stream')).PassThrough();
+    const origStdin = process.stdin;
+    Object.defineProperty(process, 'stdin', {
+      configurable: true,
+      enumerable: true,
+      get: () => mockStdin
+    });
+    const stderrChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    setImmediate(() => {
+      mockStdin.write('/exit\n');
+      mockStdin.end();
+    });
+
+    try {
+      const exitCode = await runCli(['chat', '--mock', '--agent', 'research'], {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      });
+      expect(exitCode).toBe(0);
+      expect(stderrChunks.join('')).toContain('[agent] loaded');
+    } finally {
+      Object.defineProperty(process, 'stdin', {
+        configurable: true,
+        enumerable: true,
+        get: () => origStdin
+      });
+    }
+  });
+
+  it('passes --plan flag through to chat command', async () => {
+    const mockStdin = new (await import('node:stream')).PassThrough();
+    const origStdin = process.stdin;
+    Object.defineProperty(process, 'stdin', {
+      configurable: true,
+      enumerable: true,
+      get: () => mockStdin
+    });
+    const stderrChunks: string[] = [];
+    const stdoutChunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array): boolean => {
+      stdoutChunks.push(String(chunk));
+      return true;
+    });
+
+    setImmediate(() => {
+      mockStdin.write('build a plan\n');
+      mockStdin.write('/exit\n');
+      mockStdin.end();
+    });
+
+    try {
+      const exitCode = await runCli(['chat', '--mock', '--agent', 'default', '--plan'], {
+        stderr: (msg: string) => {
+          stderrChunks.push(msg);
+        }
+      });
+      expect(exitCode).toBe(0);
+      expect(stderrChunks.join('')).toContain('[plan] plan mode enabled');
+      expect(stdoutChunks.join('')).toContain('tools were not executed');
+    } finally {
+      Object.defineProperty(process, 'stdin', {
+        configurable: true,
+        enumerable: true,
+        get: () => origStdin
+      });
+    }
+  });
+
+  it('shows chat flags in help text for unknown command', async () => {
+    const stderr: string[] = [];
+    const code = await runCli(['--help'], {
+      stderr: (message: string) => {
+        stderr.push(message);
+      },
+      stdout: () => {
+        // no-op
+      }
+    });
+
+    expect(code).toBe(1);
+    const joined = stderr.join(' ');
+    expect(joined).toContain('Chat flags');
+    expect(joined).toContain('--agent');
+    expect(joined).toContain('--plan');
   });
 });

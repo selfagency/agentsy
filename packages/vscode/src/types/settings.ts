@@ -22,3 +22,16 @@ export interface SettingsChangeEvent {
 export type SettingsChangeListener = (event: SettingsChangeEvent) => void;
 
 export type { LoadedSettings, SettingsLoaderConfig } from './errors.js';
+
+export interface VSCodeSettingsDiagnosticCheck {
+  id: string;
+  level: 'info' | 'warn' | 'error';
+  message: string;
+}
+
+export interface VSCodeSettingsDiagnosticsReport {
+  checks: VSCodeSettingsDiagnosticCheck[];
+  status: 'pass' | 'warn' | 'fail';
+  summary: string;
+  target: 'vscode';
+}

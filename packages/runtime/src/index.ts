@@ -40,9 +40,50 @@ export type {
   OutputGuardrail,
   ToolGuardrail
 } from './guardrails/index.js';
-export type { HookHandler, HookRegistry, HookResult, RuntimeHookEvent } from './hooks/index.js';
+export { executeRuntimeHelper } from './helpers/execute-helper.js';
+export { type RuntimeHelperCheckpoint, toRuntimeHelperCheckpoint } from './helpers/helper-checkpoint.js';
+export type { RuntimeHelperExecutionResult, RuntimeHelperExecutor, RuntimeHelperInvocation } from './helpers/types.js';
+export type {
+  ActiveSkill,
+  AgentLoopHandle,
+  AgentSessionMode,
+  AgentStepResult,
+  ApprovalGate,
+  BudgetHookOptions,
+  CreateMemoryPostTurnHookOptions,
+  CreateMemoryPreTurnHookOptions,
+  HookHandler,
+  HookRegistry,
+  HookResult,
+  InstructionFile,
+  InstructionsDiscoverer,
+  MemoryCapturer,
+  MemoryItem,
+  MemoryRetriever,
+  PlanAgentDefinition,
+  PlanResult,
+  PlanTask,
+  RuntimeHookEvent,
+  SessionOptions,
+  SkillActivator,
+  SkillDiscoverer,
+  SkillMetadata
+} from './hooks/index.js';
 // Hook registry and lifecycle events
-export { createRuntimeHookRegistry } from './hooks/index.js';
+export {
+  createAgentSession,
+  createApprovalHook,
+  createBudgetHook,
+  createInstructionsHook,
+  createMemoryPostTurnHook,
+  createMemoryPreTurnHook,
+  createRuntimeHookRegistry,
+  createSkillsHook,
+  extractObservations,
+  formatPlan,
+  generatePlan,
+  isDestructiveTool
+} from './hooks/index.js';
 export type { InterruptionCheckpoint } from './interruption.js';
 // Interruption and checkpoint
 export {

@@ -57,6 +57,10 @@ Editor- or product-specific integration code belongs at the outer layers, not in
 
 The `plan/` directory points toward a broader platform that may eventually include runtime, session, memory, retrieval, MCP, provider-management, and connector layers. Those are documented as roadmap concepts until the packages actually exist.
 
+## Decisions
+
+- [ADR 0001: Framework ownership for setup/doctor flows, orchestration helpers, and integration documentation](./decisions/0001-framework-ownership-for-operations-and-integration.md)
+
 ## Read next
 
 - [Package ecosystem](./package-ecosystem.md)

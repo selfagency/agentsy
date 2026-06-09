@@ -7,3 +7,19 @@
 
 // Public API exports
 export const packageName = '@agentsy/prompts';
+
+// Layer types, composers, and budget allocation
+export type {
+  ActiveSkill,
+  BudgetAllocation,
+  InstructionFile,
+  InstructionsLayer,
+  SkillEntry,
+  SkillsLayer
+} from './layers/index.js';
+export {
+  allocateBudget,
+  estimateTokens,
+  InstructionsComposer,
+  SkillsComposer
+} from './layers/index.js';
