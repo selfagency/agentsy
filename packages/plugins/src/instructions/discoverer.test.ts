@@ -99,6 +99,7 @@ describe('InstructionsDiscoverer', () => {
 
       expect(d.roots).toHaveLength(rootSpecs.length);
       for (const spec of rootSpecs) {
+        // nosemgrep: detect-object-injection -- spec.idx is a hardcoded test constant
         const root = d.roots[spec.idx];
         expect(root).toBeDefined();
         expect(root?.path).toContain(spec.path);

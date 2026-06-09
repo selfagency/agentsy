@@ -446,6 +446,7 @@ const TOKEN_PATTERNS = {
 
 function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
+  // nosemgrep: detect-non-literal-regexp -- all TOKEN_PATTERNS are static hardcoded regex
   const re = new RegExp(
     [
       TOKEN_PATTERNS.stringLit.source,
