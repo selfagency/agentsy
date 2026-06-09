@@ -161,6 +161,7 @@ function parseFrontmatter(content: string): FrontmatterResult {
       continue;
     }
 
+    // nosemgrep: detect-object-injection -- data is Object.create(null), no prototype to pollute
     data[parsed.key] = parsed.value;
     i = parsed.newIndex >= i ? parsed.newIndex + 1 : i + 1;
   }
