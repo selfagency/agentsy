@@ -17,6 +17,9 @@
  */
 export type TaskStatus = 'pending' | 'ready' | 'running' | 'paused' | 'completed' | 'failed';
 
+/** Discriminator for the type of work a Task represents. */
+export type TaskType = 'task';
+
 // ---------------------------------------------------------------------------
 // Core data types
 // ---------------------------------------------------------------------------
@@ -39,7 +42,7 @@ export interface Task {
   planId: string;
   status: TaskStatus;
   stepId: string;
-  type: string;
+  type: TaskType;
   updatedAt: Date;
 }
 

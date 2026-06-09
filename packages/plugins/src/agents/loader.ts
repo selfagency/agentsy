@@ -14,7 +14,7 @@ import { readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 import { BUILTIN_AGENT_DEFINITIONS } from './builtins.js';
-import type { AgentDefinition, AgentDefinitionSource, AgentOrchestrationMode } from './definition.js';
+import type { AgentDefinition, AgentDefinitionSource, AgentMemoryScope, AgentOrchestrationMode } from './definition.js';
 
 /**
  * Parsed frontmatter result.
@@ -33,8 +33,66 @@ interface FrontmatterResult {
  * `key: value` pairs, and a closing `---` line.  Returns an empty
  * data object when no frontmatter is detected.
  */
-// fallow-ignore-next-line complexity
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: frontmatter parser has many field types
+
+function parseArrayValue(raw: string): string[] {
+  const inner = raw.slice(1, -1);
+  return inner
+    .split(',')
+    .map(i => i.trim().replace(/^["']|["']$/g, ''))
+    .filter(Boolean);
+}
+
+function parseSimpleValue(raw: string): unknown {
+  if (raw === 'true') {
+    return true;
+  }
+  if (raw === 'false') {
+    return false;
+  }
+  if (raw === '*') {
+    return '*';
+  }
+  if (/^\d+$/.test(raw)) {
+    return Number(raw);
+  }
+  if (/^\d+\.\d+$/.test(raw)) {
+    return Number(raw);
+  }
+  return raw.replace(/^["']|["']$/g, '');
+}
+
+function parseNestedObject(
+  lines: string[],
+  startIndex: number
+): { value: Record<string, string>; lastIndex: number } | undefined {
+  const objectValue: Record<string, string> = {};
+  let lookahead = startIndex + 1;
+
+  while (lookahead < lines.length) {
+    const nestedLine = lines[lookahead];
+    if (!nestedLine?.startsWith('  ')) {
+      break;
+    }
+
+    const nestedColon = nestedLine.indexOf(':');
+    if (nestedColon !== -1) {
+      const nestedKey = nestedLine.slice(0, nestedColon).trim();
+      const nestedValue = nestedLine
+        .slice(nestedColon + 1)
+        .trim()
+        .replace(/^["']|["']$/g, '');
+      objectValue[nestedKey] = nestedValue;
+    }
+
+    lookahead += 1;
+  }
+
+  if (Object.keys(objectValue).length === 0) {
+    return;
+  }
+  return { value: objectValue, lastIndex: lookahead - 1 };
+}
+
 function parseFrontmatter(content: string): FrontmatterResult {
   const trimmed = content.trimStart();
 
@@ -56,7 +114,7 @@ function parseFrontmatter(content: string): FrontmatterResult {
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
-    if (!line) {
+    if (!line || line === '\r') {
       continue;
     }
 
@@ -73,59 +131,20 @@ function parseFrontmatter(content: string): FrontmatterResult {
     let value: unknown = line.slice(colonIndex + 1).trim();
 
     if (value === '') {
-      const objectValue: Record<string, string> = {};
-      let lookahead = index + 1;
-
-      while (lookahead < lines.length) {
-        const nestedLine = lines[lookahead]; // NOSONAR — array access with bounds check
-        if (nestedLine === undefined || !nestedLine.startsWith('  ')) {
-          break;
-        }
-
-        const nestedColon = nestedLine.indexOf(':');
-        if (nestedColon !== -1) {
-          const nestedKey = nestedLine.slice(0, nestedColon).trim();
-          const nestedValue = nestedLine
-            .slice(nestedColon + 1)
-            .trim()
-            .replace(/^["']|["']$/g, '');
-          objectValue[nestedKey] = nestedValue;
-        }
-
-        lookahead += 1;
-      }
-
-      if (Object.keys(objectValue).length > 0) {
-        data[key] = objectValue;
-        index = lookahead - 1; // NOSONAR — parser lookahead skip
+      const nested = parseNestedObject(lines, index);
+      if (nested) {
+        data[key] = nested.value;
+        index = nested.lastIndex;
         continue;
       }
     }
 
     if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
-      const inner = value.slice(1, -1);
-      const items = inner
-        .split(',')
-        .map(i => i.trim().replace(/^["']|["']$/g, ''))
-        .filter(Boolean);
-
-      value = items.length > 0 ? items : [];
+      value = parseArrayValue(value);
     }
 
     if (typeof value === 'string') {
-      if (value === 'true') {
-        value = true;
-      } else if (value === 'false') {
-        value = false;
-      } else if (value === '*') {
-        value = '*';
-      } else if (/^\d+$/.test(value)) {
-        value = Number(value);
-      } else if (/^\d+\.\d+$/.test(value)) {
-        value = Number(value);
-      } else {
-        value = value.replace(/^["']|["']$/g, '');
-      }
+      value = parseSimpleValue(value);
     }
 
     data[key] = value;
@@ -139,21 +158,21 @@ function parseFrontmatter(content: string): FrontmatterResult {
  *
  * Only recognised keys are mapped; unknown keys are silently ignored.
  */
-// fallow-ignore-next-line complexity
+
+const DEFINITION_STRING_FIELDS: ReadonlySet<string> = new Set([
+  'id',
+  'name',
+  'description',
+  'systemPromptTemplate',
+  'defaultModel',
+  'model',
+  'provider',
+  'systemPrompt'
+]);
+
+const DEFINITION_ARRAY_FIELDS: ReadonlySet<string> = new Set(['tools', 'keywords', 'allowedTools']);
+
 function coerceToDefinition(data: Record<string, unknown>, source: AgentDefinitionSource): AgentDefinition {
-  let allowedTools: AgentDefinition['allowedTools'];
-  if (data.allowedTools === '*') {
-    allowedTools = '*';
-  } else if (Array.isArray(data.allowedTools)) {
-    allowedTools = data.allowedTools as string[];
-  } else {
-    allowedTools = undefined;
-  }
-
-  const memoryScopes = Array.isArray(data.memoryScopes)
-    ? (data.memoryScopes as AgentDefinition['memoryScopes'])
-    : undefined;
-
   const definition: AgentDefinition = {
     id: typeof data.id === 'string' ? data.id : '',
     name: typeof data.name === 'string' ? data.name : '',
@@ -161,24 +180,28 @@ function coerceToDefinition(data: Record<string, unknown>, source: AgentDefiniti
     source
   };
 
-  if (typeof data.systemPromptTemplate === 'string') {
-    definition.systemPromptTemplate = data.systemPromptTemplate;
+  for (const key of DEFINITION_STRING_FIELDS) {
+    if (typeof data[key] === 'string') {
+      (definition as unknown as Record<string, unknown>)[key] = data[key] as string;
+    }
   }
 
-  if (allowedTools !== undefined) {
-    definition.allowedTools = allowedTools;
+  for (const key of DEFINITION_ARRAY_FIELDS) {
+    if (Array.isArray(data[key])) {
+      (definition as unknown as Record<string, unknown>)[key] = data[key] as string[];
+    }
   }
 
-  if (memoryScopes !== undefined) {
-    definition.memoryScopes = memoryScopes;
+  if (data.allowedTools === '*') {
+    definition.allowedTools = '*';
+  }
+
+  if (Array.isArray(data.memoryScopes)) {
+    definition.memoryScopes = data.memoryScopes as AgentMemoryScope[];
   }
 
   if (data.orchestrationMode) {
     definition.orchestrationMode = data.orchestrationMode as AgentOrchestrationMode;
-  }
-
-  if (typeof data.defaultModel === 'string') {
-    definition.defaultModel = data.defaultModel;
   }
 
   if (data.hooks && typeof data.hooks === 'object') {

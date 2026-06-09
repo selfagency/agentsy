@@ -17,6 +17,7 @@ describe('detectSecrets', () => {
   });
 
   it('detects GitHub personal access tokens (ghp_...)', () => {
+    // nosemgrep: detected-github-token
     const text = 'Token: ghp_abcdefghijklmnopqrstuvwxyz0123456789abcd';
     const matches = detectSecrets(text);
     expect(matches).toHaveLength(1);
@@ -70,6 +71,7 @@ describe('detectSecrets', () => {
   });
 
   it('detects multiple secret types in one string', () => {
+    // nosemgrep: detected-github-token
     const text = 'AWS: AKIAIOSFODNN7EXAMPLE\nGH: ghp_abcdefghijklmnopqrstuvwxyz0123456789abcd';
     const matches = detectSecrets(text);
     expect(matches.length).toBeGreaterThanOrEqual(2);
@@ -112,6 +114,7 @@ describe('redactSecrets', () => {
   });
 
   it('redacts multiple secrets in one string', () => {
+    // nosemgrep: detected-github-token
     const text = 'AWS: AKIAIOSFODNN7EXAMPLE\nGH: ghp_abcdefghijklmnopqrstuvwxyz0123456789abcd';
     const { redacted, matches } = redactSecrets(text);
     expect(redacted).toContain('[REDACTED:AWS Access Key]');

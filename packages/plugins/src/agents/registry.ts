@@ -34,52 +34,66 @@ export class AgentRegistry {
    *
    * @returns A promise resolving to an array of agent definitions.
    */
-  // fallow-ignore-next-line complexity
   async list(): Promise<AgentDefinition[]> {
-    const seen = new Set<string>();
-    const result: AgentDefinition[] = [];
+    const result: AgentDefinition[] = [...BUILTIN_AGENT_DEFINITIONS];
+    const seen = new Set(result.map(d => d.id));
 
-    // Start with bundled definitions as the baseline
-    for (const def of BUILTIN_AGENT_DEFINITIONS) {
-      result.push(def);
-      seen.add(def.id);
-    }
-
-    // Search filesystem roots for additional definitions
     for (const root of this.loader.searchRoots) {
-      try {
-        const entries = await readdir(root);
-
-        for (const entry of entries) {
-          if (!entry.endsWith('.md')) {
-            continue;
-          }
-
-          const agentId = entry.slice(0, -3); // strip '.md'
-
-          try {
-            const def = await this.loader.load(agentId);
-
-            if (seen.has(agentId)) {
-              // Override bundled entry
-              const idx = result.findIndex(d => d.id === agentId);
-              if (idx !== -1) {
-                result[idx] = def;
-              }
-            } else {
-              result.push(def);
-              seen.add(agentId);
-            }
-          } catch {
-            // Silently skip unparseable files
-          }
-        }
-      } catch {
-        // Root doesn't exist or is unreadable — skip
-      }
+      const defs = await this.#loadFromRoot(root, seen);
+      this.#mergeDefinitions(result, seen, defs);
     }
 
     return result;
+  }
+
+  /**
+   * Load all agent definitions from a single filesystem root.
+   * Silently skips unreadable or unparseable entries.
+   */
+  async #loadFromRoot(root: string, seen: Set<string>): Promise<AgentDefinition[]> {
+    const defs: AgentDefinition[] = [];
+
+    try {
+      const entries = await readdir(root);
+
+      for (const entry of entries) {
+        if (!entry.endsWith('.md')) {
+          continue;
+        }
+
+        const agentId = entry.slice(0, -3);
+
+        try {
+          const def = await this.loader.load(agentId);
+          defs.push(def);
+          seen.add(agentId);
+        } catch {
+          // Silently skip unparseable files
+        }
+      }
+    } catch {
+      // Root doesn't exist or is unreadable — skip
+    }
+
+    return defs;
+  }
+
+  /**
+   * Merge newly loaded definitions into the result list.
+   * Filesystem definitions override bundled ones of the same id.
+   */
+  #mergeDefinitions(result: AgentDefinition[], seen: Set<string>, defs: AgentDefinition[]): void {
+    for (const def of defs) {
+      if (seen.has(def.id)) {
+        // Override bundled entry in-place
+        const idx = result.findIndex(d => d.id === def.id);
+        if (idx !== -1) {
+          result[idx] = def;
+        }
+      } else {
+        result.push(def);
+      }
+    }
   }
 
   /**

@@ -143,12 +143,12 @@ function splitIntoTasks(input: string): string[] {
 function buildLinearDependencies(taskIds: readonly string[]): Record<string, readonly string[]> {
   const deps = Object.create(null) as Record<string, readonly string[]>;
   for (const id of taskIds) {
-    deps[id] = [];
+    Object.assign(deps, { [id]: [] });
   }
   for (let i = 1; i < taskIds.length; i++) {
     const current = taskIds[i] as string;
     const previous = taskIds[i - 1] as string;
-    deps[current] = [previous];
+    Object.assign(deps, { [current]: [previous] });
   }
   return deps;
 }
@@ -184,8 +184,7 @@ export function generatePlan(input: string, _agentDef: PlanAgentDefinition): Pla
   if (isParallel && taskIds.length >= 2) {
     const first = taskIds[0] as string;
     const second = taskIds[1] as string;
-    dependencies[second] = [];
-    dependencies[first] = [];
+    Object.assign(dependencies, { [second]: [], [first]: [] });
   }
 
   return {
@@ -206,7 +205,7 @@ export function formatPlan(plan: PlanResult): string {
   const lines: string[] = ['## Plan'];
 
   for (const task of plan.tasks) {
-    const deps = plan.dependencies[task.id];
+    const deps = Object.hasOwn(plan.dependencies, task.id) ? plan.dependencies[task.id] : undefined;
     const depText = deps && deps.length > 0 ? ` (after: ${deps.join(', ')})` : '';
     lines.push(`- **${task.id}**${depText}: ${task.description}`);
   }

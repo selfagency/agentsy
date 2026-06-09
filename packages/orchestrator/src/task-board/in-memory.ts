@@ -210,23 +210,24 @@ export class InMemoryTaskBoard implements ITaskBoard {
 
     // Transitive closure via DFS
     const visited = new Set<string>();
+    const stack: string[] = [taskId];
 
-    // fallow-ignore-next-line complexity
-    const traverse = (currentId: string): void => {
+    while (stack.length > 0) {
+      const currentId = stack.pop();
+      if (!currentId || visited.has(currentId)) {
+        continue;
+      }
+      visited.add(currentId);
+
       const current = this.#tasks.get(currentId);
-      if (!current) {
-        return;
-      }
-      for (const depId of current.dependencies) {
-        if (visited.has(depId)) {
-          continue;
+      if (current) {
+        for (const depId of current.dependencies) {
+          if (!visited.has(depId)) {
+            stack.push(depId);
+          }
         }
-        visited.add(depId);
-        traverse(depId);
       }
-    };
-
-    traverse(taskId);
+    }
     return Array.from(visited);
   }
 
@@ -337,13 +338,10 @@ export class InMemoryTaskBoard implements ITaskBoard {
       parent.set(node, null);
     }
 
-    // fallow-ignore-next-line complexity
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: DFS-based cycle detection
     const dfs = (node: string): void => {
       color.set(node, GREY);
 
-      const deps = graph.get(node) ?? [];
-      for (const dep of deps) {
+      for (const dep of graph.get(node) ?? []) {
         // Skip references to tasks outside this plan — they exist but can't
         // create cycles since the new task only has outgoing edges to them.
         if (!graph.has(dep)) {
@@ -352,20 +350,7 @@ export class InMemoryTaskBoard implements ITaskBoard {
 
         const depColor = color.get(dep);
         if (depColor === GREY) {
-          // Back edge found — reconstruct cycle path
-          const cycle: string[] = [dep];
-          let current = node;
-          while (current !== dep) {
-            cycle.push(current);
-            const p = parent.get(current);
-            if (p === null || p === undefined) {
-              break;
-            }
-            current = p;
-          }
-          cycle.push(dep);
-          cycle.reverse();
-          throw new CircularDependencyError(node, cycle);
+          throw new CircularDependencyError(node, buildCyclePath(dep, node, parent));
         }
 
         if (depColor === WHITE) {
@@ -376,6 +361,27 @@ export class InMemoryTaskBoard implements ITaskBoard {
 
       color.set(node, BLACK);
     };
+
+    /**
+     * Walk backwards through the DFS parent map to reconstruct the cycle path
+     * from `start` back to `end`, then reverse to get the natural order.
+     */
+    // fallow-ignore-next-line complexity
+    function buildCyclePath(end: string, start: string, parent: Map<string, string | null>): string[] {
+      const cycle: string[] = [end];
+      let current = start;
+      while (current !== end) {
+        cycle.push(current);
+        const p = parent.get(current);
+        if (p === null || p === undefined) {
+          break;
+        }
+        current = p;
+      }
+      cycle.push(end);
+      cycle.reverse();
+      return cycle;
+    }
 
     for (const node of graph.keys()) {
       if (color.get(node) === WHITE) {

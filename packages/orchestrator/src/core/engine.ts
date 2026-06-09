@@ -478,6 +478,15 @@ export class OrchestrationEngine extends EventEmitter {
     return workflow;
   }
 
+  /**
+   * Execute a workflow that was created via `create()`.
+   *
+   * @param workflow - The workflow to execute.
+   * @param options - Execution options (progress callbacks, etc.).
+   * @returns The workflow result with status, metrics, and outputs.
+   * @throws {Error} If `workflow` was not created via `create()` on this engine.
+   * @throws {Error} If `workflow` is already executing.
+   */
   async execute(workflow: Workflow, options: ExecutionOptions = {}): Promise<WorkflowResult> {
     const context = this.workflows.get(workflow.id);
     if (!context) {

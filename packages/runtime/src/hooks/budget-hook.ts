@@ -57,6 +57,26 @@ export function createBudgetHook(
   /** Whether a yellow warning has been emitted in the current window. */
   let yellowWarningEmitted = false;
 
+  function checkInputBudget(estimated: number): HookResult | null {
+    // Hard block if estimated tokens exceed the input cap
+    if (Number.isFinite(inputCap) && estimated > inputCap) {
+      return {
+        continue: false,
+        reason: `Input budget exceeded: estimated ${estimated}, cap ${inputCap}`
+      };
+    }
+
+    // Pre-flight check: can the enforcer accommodate this call?
+    if (!enforcer.canAccommodate('input', estimated)) {
+      return {
+        continue: false,
+        reason: `Insufficient remaining input budget: need ${estimated}, available ${enforcer.remaining('input')}`
+      };
+    }
+
+    return null;
+  }
+
   return {
     id: 'budget:enforce',
     priority: 10,
@@ -74,20 +94,10 @@ export function createBudgetHook(
           return Promise.resolve({ continue: true });
         }
 
-        // Hard block if estimated tokens exceed the input cap
-        if (Number.isFinite(inputCap) && estimated > inputCap) {
-          return Promise.resolve({
-            continue: false,
-            reason: `Input budget exceeded: estimated ${estimated}, cap ${inputCap}`
-          });
-        }
-
-        // Pre-flight check: can the enforcer accommodate this call?
-        if (!enforcer.canAccommodate('input', estimated)) {
-          return Promise.resolve({
-            continue: false,
-            reason: `Insufficient remaining input budget: need ${estimated}, available ${enforcer.remaining('input')}`
-          });
+        // Check budget caps
+        const budgetResult = checkInputBudget(estimated);
+        if (budgetResult !== null) {
+          return Promise.resolve(budgetResult);
         }
 
         // Record usage so subsequent calls see accumulated consumption

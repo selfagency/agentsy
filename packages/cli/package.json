@@ -51,8 +51,7 @@
     "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",
     "@agentsy/runtime": "workspace:*",
-    "@agentsy/types": "workspace:*",
-    "@agentsy/vscode": "workspace:*"
+    "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
     "@microsoft/tui-test": "^0.0.4",

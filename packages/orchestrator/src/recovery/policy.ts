@@ -133,9 +133,9 @@ export class RecoveryExecutor {
    * @param taskFn - The task function to execute and potentially retry.
    * @param context - Execution context used for DSL condition evaluation.
    * @returns A `RecoveryResult` describing the outcome.
+   * @throws {Error} When the escalation action is `'fail'` and all recovery
+   * attempts are exhausted (retries + fallbacks).
    */
-  // fallow-ignore-next-line complexity
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: recovery orchestration logic
   async execute(taskFn: () => Promise<unknown>, context: Record<string, unknown>): Promise<RecoveryResult> {
     const startTime = Date.now();
     const config = this.#policy.retryConfig;
@@ -172,23 +172,12 @@ export class RecoveryExecutor {
       attempts: attempt
     };
 
-    for (const fallback of this.#policy.fallbacks) {
-      if (!this.evaluateCondition(fallback.condition, fallbackCtx)) {
-        continue;
-      }
-
-      for (const target of fallback.agentTargets) {
-        for (let fbAttempt = 0; fbAttempt < fallback.maxAttemptsPerFallback; fbAttempt++) {
-          attempt++;
-          try {
-            await taskFn();
-            return this.#result(true, attempt, Date.now() - startTime, target);
-          } catch (error: unknown) {
-            lastError = error instanceof Error ? error : new Error(String(error));
-          }
-        }
-      }
+    const fallbackResult = await this.#tryFallbacks(taskFn, fallbackCtx, startTime, attempt, lastError);
+    if (fallbackResult.recovered) {
+      return fallbackResult.recovered;
     }
+    lastError = fallbackResult.lastError;
+    attempt = fallbackResult.attempt;
 
     // -------------------------------------------------------------------------
     // 3. Escalation
@@ -216,6 +205,55 @@ export class RecoveryExecutor {
 
     // Unreachable — all escalation actions handled above
     throw this.#failedResult(lastError, attempt, totalTimeMs);
+  }
+
+  /**
+   * Evaluate and attempt fallback targets in priority order.
+   *
+   * Iterates over each fallback definition, filtering by DSL condition,
+   * then tries each target up to `maxAttemptsPerFallback` times.
+   *
+   * @param taskFn - The task function to execute for each fallback attempt.
+   * @param fallbackCtx - Enriched context with error and attempt info.
+   * @param startTime - Timestamp when the full recovery lifecycle started.
+   * @param currentAttempt - Retry-attempt count before fallbacks begin.
+   * @returns An object with either a `recovered` result or the final `lastError`
+   * and updated `attempt` count when all fallbacks are exhausted.
+   */
+  // fallow-ignore-next-line complexity
+  async #tryFallbacks(
+    taskFn: () => Promise<unknown>,
+    fallbackCtx: Record<string, unknown>,
+    startTime: number,
+    currentAttempt: number,
+    retryLastError: Error | undefined
+  ): Promise<{ recovered?: RecoveryResult; lastError: Error | undefined; attempt: number }> {
+    let lastError = retryLastError;
+    let attempt = currentAttempt;
+
+    for (const fallback of this.#policy.fallbacks) {
+      if (!this.evaluateCondition(fallback.condition, fallbackCtx)) {
+        continue;
+      }
+
+      for (const target of fallback.agentTargets) {
+        for (let fbAttempt = 0; fbAttempt < fallback.maxAttemptsPerFallback; fbAttempt++) {
+          attempt++;
+          try {
+            await taskFn();
+            return {
+              recovered: this.#result(true, attempt, Date.now() - startTime, target),
+              attempt,
+              lastError: undefined
+            };
+          } catch (error: unknown) {
+            lastError = error instanceof Error ? error : new Error(String(error));
+          }
+        }
+      }
+    }
+
+    return { lastError, attempt };
   }
 
   /**

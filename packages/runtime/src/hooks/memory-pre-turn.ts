@@ -88,8 +88,14 @@ export function createMemoryPreTurnHook(options: CreateMemoryPreTurnHookOptions)
   };
 }
 
-const XML_ENTITIES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' };
+const XML_ENTITIES = new Map<string, string>([
+  ['&', '&amp;'],
+  ['<', '&lt;'],
+  ['>', '&gt;'],
+  ['"', '&quot;'],
+  ["'", '&apos;']
+]);
 
 function escapeXml(value: string): string {
-  return value.replace(/[&<>"']/gu, ch => XML_ENTITIES[ch] ?? '');
+  return value.replace(/[&<>"']/gu, ch => XML_ENTITIES.get(ch) ?? '');
 }

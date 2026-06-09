@@ -171,6 +171,11 @@ export class SkillDiscoverer {
   }
 
   /**
+   * Known frontmatter keys that are accepted during parsing.
+   */
+  static readonly #FRONTMATTER_KEYS = new Set(['name', 'description', 'version', 'author', 'license']);
+
+  /**
    * Parse YAML-like frontmatter from markdown content.
    *
    * Extracts only the fields relevant to {@link SkillMetadata}.
@@ -198,34 +203,40 @@ export class SkillDiscoverer {
     const result = Object.create(null) as Record<string, string>;
 
     for (const line of raw.split('\n')) {
-      const colonIdx = line.indexOf(':');
-      if (colonIdx === -1 || colonIdx === 0) {
-        continue;
-      }
-
-      const key = line.slice(0, colonIdx).trim();
-      const value = line
-        .slice(colonIdx + 1)
-        .trim()
-        .replace(/^['"]|['"]$/g, '');
-
-      if (key.length === 0 || value.length === 0) {
-        continue;
-      }
-
-      switch (key.toLowerCase()) {
-        case 'name':
-        case 'description':
-        case 'version':
-        case 'author':
-        case 'license':
-          result[key.toLowerCase()] = value;
-          break;
-        default:
-          break;
-      }
+      this.#parseFrontmatterLine(line, result);
     }
 
-    return result as { name?: string; description?: string; version?: string; author?: string; license?: string };
+    return result as {
+      name?: string;
+      description?: string;
+      version?: string;
+      author?: string;
+      license?: string;
+    };
+  }
+
+  /**
+   * Parse a single frontmatter line and populate the result map.
+   */
+  #parseFrontmatterLine(line: string, result: Record<string, string>): void {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1 || colonIdx === 0) {
+      return;
+    }
+
+    const key = line.slice(0, colonIdx).trim();
+    const value = line
+      .slice(colonIdx + 1)
+      .trim()
+      .replace(/^['"]|['"]$/g, '');
+
+    if (key.length === 0 || value.length === 0) {
+      return;
+    }
+
+    const keyLower = key.toLowerCase();
+    if (SkillDiscoverer.#FRONTMATTER_KEYS.has(keyLower)) {
+      result[keyLower] = value;
+    }
   }
 }

@@ -551,6 +551,20 @@ export function createAgentLoop(options: AgentLoopOptions): AgentLoopHandle {
     };
   }
 
+  /**
+   * Handle an unrecoverable error in the agent loop.
+   *
+   * Fires the `onError` callback and `RUN_ERROR` event, invokes final
+   * lifecycle hooks (`beforeFinal` / `afterFinal`), then re-throws the
+   * original error so the caller can handle it.
+   *
+   * @param error - The error that caused the agent loop to fail.
+   * @param runId - Current run identifier.
+   * @param threadId - Optional thread identifier for multi-turn conversations.
+   * @param state - Current agent loop state snapshot.
+   * @param currentMessages - Messages at the point of failure.
+   * @throws {unknown} Always throws the original `error` after cleanup.
+   */
   async function handleRunError(
     error: unknown,
     runId: string,

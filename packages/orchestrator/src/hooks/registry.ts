@@ -139,6 +139,38 @@ export class HookRegistry {
     const resolved = new Set(plan.order);
     const seen = new Set<string>();
 
+    type StrategyHandler = (warning: ConflictWarning, plan: HookExecutionPlan, resolved: Set<string>) => void;
+
+    const STRATEGY_HANDLERS: {
+      skip: StrategyHandler;
+      merge: StrategyHandler;
+      fail: StrategyHandler;
+      defer: StrategyHandler;
+    } = {
+      skip: (warning, _plan, resolved) => {
+        resolved.delete(warning.hook1);
+      },
+      merge: () => {
+        /* keep both — no action */
+      },
+      fail: warning => {
+        throw new Error(
+          `Hook conflict: "${warning.hook1}" conflicts with "${warning.hook2}" ` +
+            `over field "${warning.field}" — ${warning.reason}`
+        );
+      },
+      defer: (warning, plan) => {
+        const planOrder = plan.order;
+        const idx1 = planOrder.indexOf(warning.hook1);
+        const idx2 = planOrder.indexOf(warning.hook2);
+        if (idx1 !== -1 && idx2 !== -1 && idx1 < idx2) {
+          const temp = planOrder[idx1] as string;
+          planOrder[idx1] = planOrder[idx2] as string;
+          planOrder[idx2] = temp;
+        }
+      }
+    };
+
     for (const warning of warnings) {
       const key = [warning.hook1, warning.hook2, warning.field].join('::');
       if (seen.has(key)) {
@@ -146,38 +178,7 @@ export class HookRegistry {
       }
       seen.add(key);
 
-      switch (warning.strategy) {
-        case 'skip': {
-          resolved.delete(warning.hook1);
-          break;
-        }
-        case 'merge': {
-          // keep both — no action
-          break;
-        }
-        case 'fail': {
-          throw new Error(
-            `Hook conflict: "${warning.hook1}" conflicts with "${warning.hook2}" ` +
-              `over field "${warning.field}" — ${warning.reason}`
-          );
-        }
-        case 'defer': {
-          // swap positions in the plan so hook2 runs before hook1
-          const planOrder = plan.order;
-          const idx1 = planOrder.indexOf(warning.hook1);
-          const idx2 = planOrder.indexOf(warning.hook2);
-          if (idx1 !== -1 && idx2 !== -1 && idx1 < idx2) {
-            // hook1 currently comes first — swap them
-            const temp = planOrder[idx1] as string;
-            planOrder[idx1] = planOrder[idx2] as string;
-            planOrder[idx2] = temp;
-          }
-          break;
-        }
-        default:
-          // biome-ignore lint/suspicious/noUnusedExpressions: exhaustiveness check
-          warning.strategy satisfies never;
-      }
+      STRATEGY_HANDLERS[warning.strategy]?.(warning, plan, resolved);
     }
 
     return plan.order.filter(h => resolved.has(h));

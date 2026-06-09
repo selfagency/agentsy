@@ -23,38 +23,44 @@ export interface CreateMemoryPostTurnHookOptions {
  * - Objects with `content` or `text` fields → extracted content
  * - Everything else → serialized JSON snippet
  */
-// fallow-ignore-next-line complexity
+/**
+ * Extract a string value from a known field on an object.
+ */
+function extractStringField(obj: Record<string, unknown>, field: string): string | undefined {
+  const val = obj[field];
+  return typeof val === 'string' && val.length > 0 ? val : undefined;
+}
+
 export function extractObservations(response: unknown): string[] {
   if (typeof response === 'string') {
     return response.length > 0 ? [response] : [];
   }
 
-  if (typeof response === 'object' && response !== null) {
-    const obj = response as Record<string, unknown>;
-
-    if (typeof obj.content === 'string' && obj.content.length > 0) {
-      return [obj.content];
-    }
-
-    if (typeof obj.text === 'string' && obj.text.length > 0) {
-      return [obj.text];
-    }
-
-    // If the object only has empty known fields, return nothing
-    const keys = Object.keys(obj);
-    const knownKeys = keys.filter(k => k === 'content' || k === 'text');
-    if (knownKeys.length === keys.length && keys.length > 0) {
-      return [];
-    }
-
-    // Object shape without recognizable content fields — serialize
-    const serialized = JSON.stringify(obj);
-    if (serialized.length > 0 && serialized !== '{}') {
-      return [serialized];
-    }
+  if (typeof response !== 'object' || response === null) {
+    return [];
   }
 
-  return [];
+  const obj = response as Record<string, unknown>;
+
+  const content = extractStringField(obj, 'content');
+  if (content !== undefined) {
+    return [content];
+  }
+
+  const text = extractStringField(obj, 'text');
+  if (text !== undefined) {
+    return [text];
+  }
+
+  // Object with only empty known fields — nothing useful
+  const keys = Object.keys(obj);
+  if (keys.every(k => k === 'content' || k === 'text')) {
+    return [];
+  }
+
+  // Unknown shape — serialize
+  const serialized = JSON.stringify(obj);
+  return serialized.length > 0 && serialized !== '{}' ? [serialized] : [];
 }
 
 /**

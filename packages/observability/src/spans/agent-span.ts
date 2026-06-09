@@ -164,12 +164,7 @@ export class MultiAgentTracer {
       metadata: opts?.metadata ?? {}
     };
 
-    if (opts?.role !== undefined) {
-      span.agentRole = opts.role;
-    }
-    if (opts?.tier !== undefined) {
-      span.agentTier = opts.tier;
-    }
+    this.#applyChildSpanOptions(span, opts);
 
     parent.delegatedTo.push(spanId);
     parent.subspans.push(span);
@@ -177,6 +172,18 @@ export class MultiAgentTracer {
     this.spans.set(spanId, span);
     this.currentSpanId = spanId;
     return span;
+  }
+
+  /**
+   * Apply optional child-span fields (role, tier) from options.
+   */
+  #applyChildSpanOptions(span: AgentSpan, opts?: ChildSpanOptions): void {
+    if (opts?.role !== undefined) {
+      span.agentRole = opts.role;
+    }
+    if (opts?.tier !== undefined) {
+      span.agentTier = opts.tier;
+    }
   }
 
   /**

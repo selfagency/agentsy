@@ -409,53 +409,55 @@ interface Token {
   value: string;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: tokenizer handles many pattern types
-// fallow-ignore-next-line complexity
+const OPERATORS = new Set(['&&', '||', '===', '!==', '>=', '<=', '>', '<']);
+
+function classifyToken(raw: string): Token | undefined {
+  if (/^\s+$/u.test(raw)) {
+    return;
+  }
+  if (OPERATORS.has(raw)) {
+    return { type: 'op', value: raw };
+  }
+  if ((raw.startsWith("'") && raw.endsWith("'")) || (raw.startsWith('"') && raw.endsWith('"'))) {
+    return { type: 'str', value: raw.slice(1, -1) };
+  }
+  if (raw === 'true' || raw === 'false') {
+    return { type: 'bool', value: raw };
+  }
+  if (/^\d/.test(raw)) {
+    return { type: 'num', value: raw };
+  }
+  if (raw === '(' || raw === ')') {
+    return { type: 'paren', value: raw };
+  }
+  return { type: 'ident', value: raw };
+}
+
 function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
   const re =
-    /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|true|false|\d+(?:\.\d+)?|[a-zA-Z_$][\w$.]*|===?|!==?|>=?|<=?|&&|\|\||[()]|\s+/sy; // NOSONAR — tokenizer regex matches many pattern types
-  let match: RegExpExecArray | null;
-  while (true) {
+    /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|true|false|\d+(?:\.\d+)?|[a-zA-Z_$][\w$.]*|===?|!==?|>=?|<=?|&&|\|\||[()]|\s+/sy;
+  let match = re.exec(input);
+  while (match !== null) {
+    const token = classifyToken(match[0]);
+    if (token) {
+      tokens.push(token);
+    }
     match = re.exec(input);
-    if (match === null) {
-      break;
-    }
-    const raw = match[0];
-    if (/^\s+$/u.test(raw)) {
-      continue;
-    }
-    if (
-      raw === '&&' ||
-      raw === '||' ||
-      raw === '===' ||
-      raw === '!==' ||
-      raw === '>=' ||
-      raw === '<=' ||
-      raw === '>' ||
-      raw === '<'
-    ) {
-      tokens.push({ type: 'op', value: raw });
-    } else if ((raw.startsWith("'") && raw.endsWith("'")) || (raw.startsWith('"') && raw.endsWith('"'))) {
-      tokens.push({ type: 'str', value: raw.slice(1, -1) });
-    } else if (raw === 'true' || raw === 'false') {
-      tokens.push({ type: 'bool', value: raw });
-    } else if (/^\d/.test(raw)) {
-      tokens.push({ type: 'num', value: raw });
-    } else if (raw === '(' || raw === ')') {
-      tokens.push({ type: 'paren', value: raw });
-    } else {
-      tokens.push({ type: 'ident', value: raw });
-    }
   }
   return tokens;
 }
+
+const BLOCKED_PROTO_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 /** Safely navigate a dot-separated path through a context object without prototype pollution. */
 function resolveIdent(path: string, ctx: Record<string, unknown>): unknown {
   const parts = path.replace(/^ctx\./u, '').split('.');
   let current: unknown = path.startsWith('ctx.') ? (ctx.ctx ?? ctx) : ctx;
   for (const part of parts) {
+    if (BLOCKED_PROTO_KEYS.has(part)) {
+      return;
+    }
     if (current === null || current === undefined || typeof current !== 'object') {
       return;
     }
@@ -467,42 +469,27 @@ function resolveIdent(path: string, ctx: Record<string, unknown>): unknown {
   return current;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: left-to-right expression evaluator
-// fallow-ignore-next-line complexity
 function evaluateTokens(tokens: Token[], ctx: Record<string, unknown>): boolean {
-  let i = 0;
   const results: boolean[] = [];
   const combinators: ('&&' | '||')[] = [];
+  let i = 0;
 
   while (i < tokens.length) {
     results.push(evaluateComparison(tokens, i, ctx));
-    i += 3; // ident op value
+    i += 3;
 
-    if (i < tokens.length) {
-      const op = tokens[i];
-      if (op?.type === 'op') {
-        if (op.value === '&&') {
-          combinators.push('&&');
-          i++;
-        } else if (op.value === '||') {
-          combinators.push('||');
-          i++;
-        } else {
-          break;
-        }
-      } else {
-        break;
-      }
+    const op = tokens[i];
+    if (op?.type !== 'op' || (op.value !== '&&' && op.value !== '||')) {
+      break;
     }
+    combinators.push(op.value as '&&' | '||');
+    i++;
   }
 
-  // Left-to-right evaluation
-  let result = results[0] ?? false;
-  for (let j = 0; j < combinators.length; j++) {
-    const next = results[j + 1] ?? false;
-    result = combinators[j] === '&&' ? result && next : result || next;
-  }
-  return result;
+  return combinators.reduce(
+    (acc, op, j) => (op === '&&' ? acc && (results[j + 1] ?? false) : acc || (results[j + 1] ?? false)),
+    results[0] ?? false
+  );
 }
 
 function resolveTokenValue(token: Token, ctx: Record<string, unknown>): unknown {
@@ -520,13 +507,23 @@ function resolveTokenValue(token: Token, ctx: Record<string, unknown>): unknown 
   }
 }
 
+const COMPARISON_OPS: Record<string, (l: unknown, r: unknown) => boolean> = {
+  '===': (l, r) => l === r,
+  '==': (l, r) => l === r,
+  '!==': (l, r) => l !== r,
+  '!=': (l, r) => l !== r,
+  '>': (l, r) => Number(l) > Number(r),
+  '>=': (l, r) => Number(l) >= Number(r),
+  '<': (l, r) => Number(l) < Number(r),
+  '<=': (l, r) => Number(l) <= Number(r)
+};
+
 function evaluateComparison(tokens: Token[], start: number, ctx: Record<string, unknown>): boolean {
   const left = tokens[start];
   const op = tokens[start + 1];
   const right = tokens[start + 2];
 
   if (!(left && op && right)) {
-    // Single boolean token
     if (left?.type === 'bool') {
       return left.value === 'true';
     }
@@ -536,27 +533,9 @@ function evaluateComparison(tokens: Token[], start: number, ctx: Record<string, 
     return false;
   }
 
-  const leftVal = resolveTokenValue(left, ctx);
-  const rightVal = resolveTokenValue(right, ctx);
-
-  switch (op.value) {
-    case '===':
-      return leftVal === rightVal;
-    case '==':
-      return leftVal === rightVal;
-    case '!==':
-      return leftVal !== rightVal;
-    case '!=':
-      return leftVal !== rightVal;
-    case '>':
-      return Number(leftVal) > Number(rightVal);
-    case '>=':
-      return Number(leftVal) >= Number(rightVal);
-    case '<':
-      return Number(leftVal) < Number(rightVal);
-    case '<=':
-      return Number(leftVal) <= Number(rightVal);
-    default:
-      return false;
+  const fn = COMPARISON_OPS[op.value];
+  if (!fn) {
+    return false;
   }
+  return fn(resolveTokenValue(left, ctx), resolveTokenValue(right, ctx));
 }
