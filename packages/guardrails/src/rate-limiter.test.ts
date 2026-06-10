@@ -21,7 +21,9 @@ describe('RateLimiterScanner', () => {
     }
     const r = await scanner.evaluate('req', { toolName: 'fs_read' });
     expect(r.status).toBe('block');
-    expect(r.reason).toContain('Rate limit exceeded');
+    if (r.status === 'block') {
+      expect(r.reason).toContain('Rate limit exceeded');
+    }
   });
 
   it('resets correctly', async () => {

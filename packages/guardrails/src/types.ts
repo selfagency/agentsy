@@ -44,11 +44,11 @@ export type GuardrailPhase =
  * A single detection emitted by a guardrail scanner.
  */
 export interface Detection {
-  readonly id: string;
   readonly category?: OWASPCategory;
   readonly description: string;
-  readonly severity: 'low' | 'medium' | 'high' | 'critical';
+  readonly id: string;
   readonly location?: string;
+  readonly severity: 'low' | 'medium' | 'high' | 'critical';
   readonly snippet?: string;
 }
 
@@ -90,20 +90,20 @@ export type GuardrailResult =
 // =============================================================================
 
 export interface GuardrailMetadata {
+  /** One-line description. */
+  readonly description: string;
   /** Stable unique identifier (e.g. 'hub://guardrails/prompt_injection@1.0'). */
   readonly id: string;
   /** Human-readable name. */
   readonly name: string;
-  /** SemVer string. */
-  readonly version: string;
-  /** One-line description. */
-  readonly description: string;
-  /** Execution priority — lower values run first (rule-based = 0-99, ML = 100-500). */
-  readonly priority: number;
   /** OWASP ASI categories this guardrail addresses. */
   readonly owaspCategories: readonly OWASPCategory[];
+  /** Execution priority — lower values run first (rule-based = 0-99, ML = 100-500). */
+  readonly priority: number;
   /** Free-form tags for querying/discovery. */
   readonly tags: readonly string[];
+  /** SemVer string. */
+  readonly version: string;
 }
 
 // =============================================================================
@@ -116,8 +116,8 @@ export interface GuardrailMetadata {
  * be safe to call multiple times.
  */
 export interface GuardrailScanner {
-  readonly metadata: GuardrailMetadata;
   evaluate(input: string, context?: Record<string, unknown>): GuardrailResult | Promise<GuardrailResult>;
+  readonly metadata: GuardrailMetadata;
 }
 
 // =============================================================================
@@ -125,10 +125,10 @@ export interface GuardrailScanner {
 // =============================================================================
 
 export interface PipelineConfig {
-  /** Stop evaluating further scanners on the first `block`. */
-  readonly shortCircuitOnBlock?: boolean;
-  /** When true, an `escalate` result triggers a prompt instead of blocking. */
-  readonly promptOnEscalate?: boolean;
   /** Maximum number of detections to collect before truncating. */
   readonly maxDetections?: number;
+  /** When true, an `escalate` result triggers a prompt instead of blocking. */
+  readonly promptOnEscalate?: boolean;
+  /** Stop evaluating further scanners on the first `block`. */
+  readonly shortCircuitOnBlock?: boolean;
 }

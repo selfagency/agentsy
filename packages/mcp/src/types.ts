@@ -17,11 +17,11 @@ export type ToolUri = string & { readonly __brand: unique symbol };
  * Text content returned from a tool call.
  */
 export interface TextContent {
-  type: 'text';
-  /** The text content body. */
-  text: string;
   /** Optional identifier for audit tracing. */
   auditId?: string;
+  /** The text content body. */
+  text: string;
+  type: 'text';
 }
 
 /**
@@ -29,38 +29,38 @@ export interface TextContent {
  * The image data is base64-encoded.
  */
 export interface ImageContent {
-  type: 'image';
+  /** Optional identifier for audit tracing. */
+  auditId?: string;
   /** Base64-encoded image data. */
   data: string;
   /** MIME type of the image (e.g. "image/png"). */
   mimeType: string;
-  /** Optional identifier for audit tracing. */
-  auditId?: string;
+  type: 'image';
 }
 
 /**
  * Embedded resource content returned from a tool call.
  */
 export interface EmbeddedResource {
-  type: 'resource';
-  /** The embedded resource contents. */
-  resource: ResourceContents;
   /** Optional identifier for audit tracing. */
   auditId?: string;
+  /** The embedded resource contents. */
+  resource: ResourceContents;
+  type: 'resource';
 }
 
 /**
  * Contents of a resource used in embedded resource content.
  */
 export interface ResourceContents {
-  /** Resource URI, branded as a ToolUri. */
-  uri: ToolUri;
+  /** Binary representation of the resource (mutually exclusive with text). */
+  blob?: string;
   /** Optional MIME type of the resource. */
   mimeType?: string;
   /** Text representation of the resource (mutually exclusive with blob). */
   text?: string;
-  /** Binary representation of the resource (mutually exclusive with text). */
-  blob?: string;
+  /** Resource URI, branded as a ToolUri. */
+  uri: ToolUri;
 }
 
 /**
@@ -77,12 +77,12 @@ export type ToolContent = TextContent | ImageContent | EmbeddedResource;
 export interface ToolAnnotations {
   /** When true, this tool may perform destructive operations (delete, overwrite). */
   destructiveHint?: boolean;
-  /** When true, this tool only reads data without modifying state. */
-  readOnlyHint?: boolean;
   /** When true, calling this tool with the same arguments produces the same result. */
   idempotentHint?: boolean;
   /** When true, this tool may interact with or depend on external systems. */
   openWorldHint?: boolean;
+  /** When true, this tool only reads data without modifying state. */
+  readOnlyHint?: boolean;
 }
 
 // ── Tool Definitions ─────────────────────────────────────────────────────────
@@ -92,17 +92,17 @@ export interface ToolAnnotations {
  * Describes a callable tool that can be exposed to MCP clients.
  */
 export interface McpTool {
-  name: string;
-  description: string;
-  /** JSON Schema describing the expected tool input. */
-  inputSchema?: JsonSchema;
   /** Optional annotations describing tool behavior. */
   annotations?: ToolAnnotations;
+  description: string;
   /**
    * Handler function invoked when the tool is called.
    * This is an implementation detail, not part of the MCP wire protocol.
    */
   handler: (input: unknown) => Promise<unknown>;
+  /** JSON Schema describing the expected tool input. */
+  inputSchema?: JsonSchema;
+  name: string;
 }
 
 /**

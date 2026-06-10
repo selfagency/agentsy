@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ToolRegistry,
   createFsTools,
   createHttpTool,
   createMcpBridgeTool,
   createReplTool,
   createShellTool,
-  registerBaselineTools
+  registerBaselineTools,
+  ToolRegistry
 } from './index.js';
 
 describe('ToolRegistry', () => {

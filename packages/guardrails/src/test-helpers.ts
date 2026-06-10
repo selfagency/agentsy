@@ -24,9 +24,10 @@ export async function assertBlock(
   return result;
 }
 
-export function assertDetections(result: GuardrailResult & { detections?: Detection[] }, expectedIds: string[]): void {
-  expect(result.detections).toBeDefined();
-  const ids = result.detections?.map(d => d.id) ?? [];
+export function assertDetections(result: GuardrailResult, expectedIds: string[]): void {
+  const dr = result as unknown as { detections?: Detection[] };
+  expect(dr.detections).toBeDefined();
+  const ids = dr.detections?.map(d => d.id) ?? [];
   for (const id of expectedIds) {
     expect(ids).toContain(id);
   }

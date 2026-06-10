@@ -17,7 +17,7 @@ export function createMcpBridgeTool(): ToolDefinition {
     handler: async input => {
       const server = String(input.server ?? '');
       const tool = String(input.tool ?? '');
-      if (!server || !tool) {
+      if (!(server && tool)) {
         return { ok: false, data: null, error: 'Missing required parameters: server and tool' };
       }
       return { ok: true, data: { result: `[mcp_call placeholder] ${server}/${tool}` } };

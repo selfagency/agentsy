@@ -21,9 +21,9 @@ describe('computeReplicaSkew', () => {
   it('returns even shares for a single replica', () => {
     const signals = computeReplicaSkew([snapshot({ replicaId: 'a', remainingTokensMinute: 500 })]);
     expect(signals).toHaveLength(1);
-    expect(signals[0]!.share).toBe(1);
-    expect(signals[0]!.isHot).toBe(false);
-    expect(signals[0]!.isCold).toBe(false);
+    expect(signals[0]?.share).toBe(1);
+    expect(signals[0]?.isHot).toBe(false);
+    expect(signals[0]?.isCold).toBe(false);
   });
 
   it('detects hot replica with disproportionate headroom', () => {
@@ -61,7 +61,7 @@ describe('computeReplicaSkew', () => {
       snapshot({ replicaId: 'b', remainingTokensHour: 200 })
     ]);
 
-    expect(signals[0]!.share).toBeCloseTo(0.8);
+    expect(signals[0]?.share).toBeCloseTo(0.8);
   });
 
   it('falls back to cost minute when no token data', () => {
@@ -70,6 +70,6 @@ describe('computeReplicaSkew', () => {
       snapshot({ replicaId: 'b', remainingCostMinute: 1 })
     ]);
 
-    expect(signals[0]!.share).toBeCloseTo(0.75);
+    expect(signals[0]?.share).toBeCloseTo(0.75);
   });
 });

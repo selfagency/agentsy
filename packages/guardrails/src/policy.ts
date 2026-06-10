@@ -92,63 +92,134 @@ export interface PolicyEvalResult {
  * - `expr && expr` — logical AND (higher precedence than ||)
  * - `expr || expr` — logical OR
  */
+/**
+ * Try to evaluate condition as logical OR (||).
+ * Returns a result and whether it was handled, or null if this operator is not present.
+ */
+function tryEvaluateOr(trimmed: string, context: PolicyContext): boolean | null {
+  const orParts = splitAtTopLevel(trimmed, '||');
+  if (orParts.length <= 1) {
+    return null;
+  }
+  return orParts.some(part => evaluateCondition(part, context));
+}
+
+/**
+ * Try to evaluate condition as logical AND (&&).
+ * Returns null if this operator is not present.
+ */
+function tryEvaluateAnd(trimmed: string, context: PolicyContext): boolean | null {
+  const andParts = splitAtTopLevel(trimmed, '&&');
+  if (andParts.length <= 1) {
+    return null;
+  }
+  return andParts.every(part => evaluateCondition(part, context));
+}
+
+/**
+ * Try to strip outer parentheses from a condition.
+ * Returns the inner expression or null if no parens.
+ */
+function tryStripParens(trimmed: string): string | null {
+  if (trimmed.startsWith('(') && trimmed.endsWith(')')) {
+    return trimmed.slice(1, -1);
+  }
+  return null;
+}
+
+/**
+ * Try to evaluate a `starts_with` operator expression.
+ * Format: <path> starts_with '<literal>'
+ */
+function tryEvaluateStartsWith(trimmed: string, context: PolicyContext): boolean | null {
+  const match = /^(.+?)\s+starts_with\s+'(.+)'$/.exec(trimmed);
+  if (!match) {
+    return null;
+  }
+  const leftPath = match[1];
+  const rightVal = match[2];
+  if (leftPath === undefined || rightVal === undefined) {
+    return false;
+  }
+  const value = resolvePath(leftPath, context);
+  return typeof value === 'string' && value.startsWith(rightVal);
+}
+
+/**
+ * Try to evaluate a `contains` operator expression.
+ * Format: <path> contains '<literal>'
+ */
+function tryEvaluateContains(trimmed: string, context: PolicyContext): boolean | null {
+  const match = /^(.+?)\s+contains\s+'(.+)'$/.exec(trimmed);
+  if (!match) {
+    return null;
+  }
+  const leftPath = match[1];
+  const rightVal = match[2];
+  if (leftPath === undefined || rightVal === undefined) {
+    return false;
+  }
+  const value = resolvePath(leftPath, context);
+  return typeof value === 'string' && value.includes(rightVal);
+}
+
+/**
+ * Try to evaluate a `==` equals expression.
+ * Format: <path-or-literal> == <literal>
+ */
+function tryEvaluateEquals(trimmed: string, context: PolicyContext): boolean | null {
+  const match = /^(.+?)\s+==\s+(.+)$/.exec(trimmed);
+  if (!match) {
+    return null;
+  }
+  const leftRaw = match[1];
+  const rightRaw = match[2];
+  if (leftRaw === undefined || rightRaw === undefined) {
+    return false;
+  }
+  const left = resolvePath(leftRaw.trim(), context);
+  const leftVal = left === undefined && leftRaw !== 'undefined' ? parseLiteral(leftRaw.trim()) : left;
+  const rightVal = parseLiteral(rightRaw.trim());
+  return leftVal === rightVal;
+}
+
 export function evaluateCondition(condition: string, context: PolicyContext): boolean {
   const trimmed = condition.trim();
 
-  // Handle || for test compatibility (e.g. tool.name == "repl_execute" || tool.name == "shell_exec")
-  // Split on || but not inside quotes — simple approach: split top-level only
-  const orParts = splitAtTopLevel(trimmed, '||');
-  if (orParts.length > 1) {
-    return orParts.some(part => evaluateCondition(part, context));
+  // Evaluate compound expressions in order of precedence
+  const orResult = tryEvaluateOr(trimmed, context);
+  if (orResult !== null) {
+    return orResult;
   }
 
-  // Handle && (logical AND)
-  const andParts = splitAtTopLevel(trimmed, '&&');
-  if (andParts.length > 1) {
-    return andParts.every(part => evaluateCondition(part, context));
+  const andResult = tryEvaluateAnd(trimmed, context);
+  if (andResult !== null) {
+    return andResult;
   }
 
   // Strip outer parens
-  if (trimmed.startsWith('(') && trimmed.endsWith(')')) {
-    return evaluateCondition(trimmed.slice(1, -1), context);
+  const inner = tryStripParens(trimmed);
+  if (inner !== null) {
+    return evaluateCondition(inner, context);
   }
 
-  // <string> starts_with <string>
-  const startsWithMatch = /^(.+?)\s+starts_with\s+'(.+)'$/.exec(trimmed);
-  if (startsWithMatch) {
-    const [, leftPath, rightVal] = startsWithMatch;
-    const value = resolvePath(leftPath, context);
-    if (typeof value === 'string') {
-      return value.startsWith(rightVal);
-    }
-    return false;
+  // Simple operator expressions
+  const startsWithResult = tryEvaluateStartsWith(trimmed, context);
+  if (startsWithResult !== null) {
+    return startsWithResult;
   }
 
-  // <string> contains <string>
-  const containsMatch = /^(.+?)\s+contains\s+'(.+)'$/.exec(trimmed);
-  if (containsMatch) {
-    const [, leftPath, rightVal] = containsMatch;
-    const value = resolvePath(leftPath, context);
-    if (typeof value === 'string') {
-      return value.includes(rightVal);
-    }
-    return false;
+  const containsResult = tryEvaluateContains(trimmed, context);
+  if (containsResult !== null) {
+    return containsResult;
   }
 
-  // <path> == <value> — resolve left as path OR literal
-  const equalsMatch = /^(.+?)\s+==\s+(.+)$/.exec(trimmed);
-  if (equalsMatch) {
-    const leftRaw = equalsMatch[1]?.trim();
-    const rightRaw = equalsMatch[2]?.trim();
-    // Try resolving left as a path first
-    const left = resolvePath(leftRaw, context);
-    // If path resolution fails and leftRaw looks like a literal, parse it
-    const leftVal = left === undefined && leftRaw !== 'undefined' ? parseLiteral(leftRaw) : left;
-    const rightVal = parseLiteral(rightRaw);
-    return leftVal === rightVal;
+  const equalsResult = tryEvaluateEquals(trimmed, context);
+  if (equalsResult !== null) {
+    return equalsResult;
   }
 
-  // <path> (truthy) — resolve as path only
+  // Fallthrough: treat as truthy path reference
   const value = resolvePath(trimmed, context);
   return value === true || value !== undefined;
 }

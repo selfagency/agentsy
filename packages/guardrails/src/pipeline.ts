@@ -78,7 +78,7 @@ export class GuardrailPipeline {
       }
       if (
         result.status === 'escalate' &&
-        (!escalateResult || (result.riskScore ?? 0) > (escalateResult.riskScore ?? 0))
+        (result.riskScore ?? 0) > ((escalateResult?.status === 'escalate' ? escalateResult.riskScore : 0) ?? 0)
       ) {
         escalateResult = result;
       }
@@ -101,10 +101,11 @@ export class GuardrailPipeline {
    * Collect detections from a result, respecting the max limit.
    */
   #collectResult(result: GuardrailResult, dest: Detection[]): void {
-    if (!result.detections) {
+    if (result.status === 'pass') {
       return;
     }
-    for (const d of result.detections) {
+    const detectionList = result.detections ?? [];
+    for (const d of detectionList) {
       if (dest.length >= (this.#config.maxDetections ?? 50)) {
         break;
       }

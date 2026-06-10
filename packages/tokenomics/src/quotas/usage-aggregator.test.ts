@@ -40,9 +40,9 @@ describe('UsageAggregator', () => {
 
     const snapshot = agg.getHeadroomSnapshot('openai-main/gpt-4o-mini');
     expect(snapshot).toBeDefined();
-    expect(snapshot!.replicaId).toBe('openai-main/gpt-4o-mini');
-    expect(snapshot!.logicalModelId).toBe('gpt-4o-mini');
-    expect(snapshot!.confidence).toBe('tokenomics-derived');
+    expect(snapshot?.replicaId).toBe('openai-main/gpt-4o-mini');
+    expect(snapshot?.logicalModelId).toBe('gpt-4o-mini');
+    expect(snapshot?.confidence).toBe('tokenomics-derived');
   });
 
   it('subtracts used tokens from budget', () => {
@@ -59,7 +59,7 @@ describe('UsageAggregator', () => {
     );
 
     const snapshot = agg.getHeadroomSnapshot('openai-main/gpt-4o-mini');
-    expect(snapshot!.remainingTokensMinute).toBe(400);
+    expect(snapshot?.remainingTokensMinute).toBe(400);
   });
 
   it('returns undefined when no budget is configured', () => {
@@ -90,8 +90,8 @@ describe('UsageAggregator', () => {
       })
     );
 
-    expect(agg.getHeadroomSnapshot('openai-main/gpt-4o-mini')!.remainingTokensMinute).toBe(300);
-    expect(agg.getHeadroomSnapshot('anthropic-main/claude-3-5-sonnet')!.remainingTokensMinute).toBe(1000);
+    expect(agg.getHeadroomSnapshot('openai-main/gpt-4o-mini')?.remainingTokensMinute).toBe(300);
+    expect(agg.getHeadroomSnapshot('anthropic-main/claude-3-5-sonnet')?.remainingTokensMinute).toBe(1000);
   });
 
   it('computes remaining cost from budget', () => {
@@ -112,8 +112,8 @@ describe('UsageAggregator', () => {
     );
 
     const snapshot = agg.getHeadroomSnapshot('cost-test');
-    expect(snapshot!.remainingCostHour).toBeCloseTo(0.9);
-    expect(snapshot!.remainingCostMinute).toBeCloseTo(0.4);
+    expect(snapshot?.remainingCostHour).toBeCloseTo(0.9);
+    expect(snapshot?.remainingCostMinute).toBeCloseTo(0.4);
   });
 
   it('does not count usage outside the time window', () => {
@@ -132,7 +132,7 @@ describe('UsageAggregator', () => {
 
     // Minute window only covers last 60s, so this shouldn't be counted
     const snapshot = agg.getHeadroomSnapshot('openai-main/gpt-4o-mini');
-    expect(snapshot!.remainingTokensMinute).toBe(500);
+    expect(snapshot?.remainingTokensMinute).toBe(500);
   });
 
   it('counts requests correctly', () => {
@@ -144,6 +144,6 @@ describe('UsageAggregator', () => {
     agg.recordUsage(makeUsage({ replicaId: 'openai-main/gpt-4o-mini', tokensUsed: 1, cost: 0 }));
 
     const snapshot = agg.getHeadroomSnapshot('openai-main/gpt-4o-mini');
-    expect(snapshot!.remainingRequestsMinute).toBe(7);
+    expect(snapshot?.remainingRequestsMinute).toBe(7);
   });
 });

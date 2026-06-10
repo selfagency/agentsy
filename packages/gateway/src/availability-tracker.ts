@@ -79,7 +79,7 @@ export class ModelAvailabilityTracker {
       // Half-open + failure → reopen
       entry.state = 'open';
       entry.openedAt = Date.now();
-      delete entry.halfOpenStartedAt;
+      entry.halfOpenStartedAt = undefined;
     } else if (entry.consecutiveFailures >= this.#circuitFailureThreshold && entry.state !== 'open') {
       entry.state = 'open';
       entry.openedAt = Date.now();

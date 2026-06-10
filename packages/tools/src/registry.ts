@@ -71,7 +71,7 @@ export class ToolRegistry {
   }
 
   listByAnnotation(key: keyof ToolAnnotations): ToolRegistration[] {
-    return this.list().filter(t => t.annotations !== undefined && t.annotations[key]);
+    return this.list().filter(t => t.annotations?.[key]);
   }
 
   toJSON(): ToolStatus[] {

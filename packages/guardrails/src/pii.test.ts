@@ -37,7 +37,8 @@ describe('PIIScanner', () => {
     if (r.status === 'block') {
       assertDetections(r, ['ssn']);
     } else {
-      expect(r.detections?.some(d => d.id === 'ssn')).toBe(true);
+      const dr = r as { detections?: Detection[] };
+      expect(dr.detections?.some(d => d.id === 'ssn')).toBe(true);
     }
   });
 

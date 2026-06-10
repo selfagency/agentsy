@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApprovalManager } from './approval-manager.js';
 
 describe('ApprovalManager', () => {
@@ -33,8 +33,8 @@ describe('ApprovalManager', () => {
     });
 
     it('supports multiple concurrent pending requests', () => {
-      const p1 = manager.requestApproval('tool-a', {});
-      const p2 = manager.requestApproval('tool-b', {});
+      const _p1 = manager.requestApproval('tool-a', {});
+      const _p2 = manager.requestApproval('tool-b', {});
       expect(manager.pendingCount).toBe(2);
       expect(manager.listPending()).toHaveLength(2);
       // Clean up — resolve both to avoid unhandled rejections

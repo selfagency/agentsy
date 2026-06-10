@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPolicyApprovalHook } from './approval-hook.js';
 import { ApprovalManager } from './approval-manager.js';
 

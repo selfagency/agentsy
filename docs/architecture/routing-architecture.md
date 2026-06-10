@@ -203,7 +203,11 @@ Legacy Phase 0–3.5 docs are historical milestones only; this architecture is t
 
 ## Related Documents
 
+<<<<<<< Updated upstream
 - [Cross-package plan (source of truth)](../../plan/34-CROSS-PACKAGE-MODEL-REPLICA-ROUTING-PLAN.md)
 - [Gateway README](../../packages/gateway/README.md)
+- [Gateway package docs](../packages/gateway.md)
+||||||| Stash base
+- [Cross-package plan (source of truth)](https://github.com/selfagency/agentsy/blob/main/plan/34-CROSS-PACKAGE-MODEL-REPLICA-ROUTING-PLAN.md)
 - [Gateway package docs](../packages/gateway.md)
 - [Architecture overview](./index.md)

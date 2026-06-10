@@ -66,6 +66,9 @@ importers:
       '@agentsy/gateway':
         specifier: workspace:*
         version: link:../gateway
+      '@agentsy/guardrails':
+        specifier: workspace:*
+        version: link:../guardrails
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory
@@ -580,6 +583,9 @@ importers:
       '@agentsy/context':
         specifier: workspace:*
         version: link:../context
+      '@agentsy/guardrails':
+        specifier: workspace:*
+        version: link:../guardrails
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory
@@ -5689,7 +5695,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.2)(@vitest/coverage-v8@4.1.8)(msw@2.14.6(@types/node@25.9.2)(typescript@6.0.3))(vite@7.3.3(@types/node@25.9.2)(tsx@4.22.4)(yaml@2.9.0))
+      vitest: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.8)(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@7.3.3(@types/node@25.9.1)(tsx@4.22.4)(yaml@2.9.0))
 
   '@vitest/expect@4.1.8':
     dependencies:
@@ -7085,7 +7091,7 @@ snapshots:
       statuses: 2.0.2
       strict-event-emitter: 0.5.1
       tough-cookie: 6.0.1
-      type-fest: 5.7.0
+      type-fest: 5.6.0
       until-async: 3.0.2
       yargs: 17.7.2
     optionalDependencies:

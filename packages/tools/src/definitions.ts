@@ -2,14 +2,14 @@
  * Annotations about tool behavior used for safety gating.
  */
 export interface ToolAnnotations {
-  /** Tool primarily reads data without side effects. */
-  readonly readOnlyHint?: boolean;
   /** Tool can modify or delete user data. */
   readonly destructiveHint?: boolean;
   /** Tool is safe to call multiple times (same input → same output). */
   readonly idempotentHint?: boolean;
   /** Tool interacts with external systems beyond the agent's workspace. */
   readonly openWorldHint?: boolean;
+  /** Tool primarily reads data without side effects. */
+  readonly readOnlyHint?: boolean;
   /** Tool requires explicit user approval before execution. */
   readonly requiresApproval?: boolean;
 }
@@ -32,7 +32,7 @@ export interface ToolParameter {
 /**
  * Canonical tool definition used by the registry and approval gating.
  */
-export interface ToolDefinition<T = unknown> {
+export interface ToolDefinition<_T = unknown> {
   /** Tool annotations for safety gating. */
   readonly annotations?: ToolAnnotations;
   /** Human-readable description of what the tool does. */

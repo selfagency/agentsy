@@ -7,10 +7,10 @@ import type { ApprovalManager } from './approval-manager.js';
 export interface ToolPolicyRule {
   /** Action to take. */
   readonly action: 'allow' | 'deny' | 'require_approval';
-  /** Glob or exact tool name pattern (`*` matches any suffix). */
-  readonly pattern: string;
   /** Optional human-readable label for diagnostics. */
   readonly label?: string;
+  /** Glob or exact tool name pattern (`*` matches any suffix). */
+  readonly pattern: string;
 }
 
 /**
@@ -21,15 +21,15 @@ export interface PolicyApprovalHookOptions {
   approvalManager: ApprovalManager;
 
   /**
+   * Default action when no rule matches. Defaults to `require_approval`.
+   */
+  defaultAction?: 'allow' | 'deny' | 'require_approval';
+
+  /**
    * Ordered list of tool policy rules.
    * First match wins. When no rule matches, the default action is used.
    */
   policyRules?: ToolPolicyRule[];
-
-  /**
-   * Default action when no rule matches. Defaults to `require_approval`.
-   */
-  defaultAction?: 'allow' | 'deny' | 'require_approval';
 
   /**
    * Hook priority. Defaults to 100 (runs after guardrails at 75).
