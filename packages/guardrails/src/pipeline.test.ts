@@ -49,7 +49,7 @@ describe('GuardrailPipeline', () => {
     expect((result as Extract<GuardrailResult, { status: 'block' }>).reason).toBe('First block');
     // Only first scanner should have been called
     const scanners = pipeline.listScanners();
-    expect(scanners[0]!.evaluate as ReturnType<typeof vi.fn>).toHaveBeenCalledOnce();
+    expect(scanners[0]?.evaluate as ReturnType<typeof vi.fn>).toHaveBeenCalledOnce();
     // The 3rd scanner should NOT have been called since block-1 short-circuits
   });
 
@@ -73,6 +73,7 @@ describe('GuardrailPipeline', () => {
         owaspCategories: [],
         tags: []
       },
+      // biome-ignore lint/suspicious/useAwait: required by GuardrailScanner interface
       evaluate: async () => {
         calls.push(id);
         return { status: 'pass' as const, phase: 'input' as const };
@@ -114,7 +115,7 @@ describe('GuardrailPipeline', () => {
     expect(result.status).toBe('block');
   });
 
-  it('remove() unregisters a scanner', async () => {
+  it('remove() unregisters a scanner', () => {
     const pipeline = new GuardrailPipeline();
     pipeline.add(makeBlockScanner('block-1', 'Should be removed'));
     pipeline.remove('block-1');
@@ -134,7 +135,7 @@ describe('GuardrailPipeline', () => {
     expect((result as Extract<GuardrailResult, { status: 'block' }>).reason).toBe('First block');
   });
 
-  it('clear() removes all scanners', async () => {
+  it('clear() removes all scanners', () => {
     const pipeline = new GuardrailPipeline();
     pipeline.add(makePassScanner('pass-1'));
     pipeline.clear();

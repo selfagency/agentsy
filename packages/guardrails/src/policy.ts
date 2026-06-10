@@ -26,14 +26,14 @@ export type PolicyAction = 'deny' | 'require_approval' | 'allow' | 'log' | 'reda
  * A single policy rule with a condition and action.
  */
 export interface PolicyRule {
-  /** Human-readable name for diagnostics and audit logs. */
-  readonly name: string;
-  /** Description of what this rule guards against. */
-  readonly description?: string;
-  /** Path expression that evaluates to a boolean (e.g. 'tool.annotations.destructiveHint == true'). */
-  readonly condition: string;
   /** Action to take when the condition matches. */
   readonly action: PolicyAction;
+  /** Path expression that evaluates to a boolean (e.g. 'tool.annotations.destructiveHint == true'). */
+  readonly condition: string;
+  /** Description of what this rule guards against. */
+  readonly description?: string;
+  /** Human-readable name for diagnostics and audit logs. */
+  readonly name: string;
   /** Which phase this rule applies to. */
   readonly phase?: GuardrailPhase;
   /** Optional severity override. */
@@ -44,12 +44,12 @@ export interface PolicyRule {
  * Full policy document loaded from `.agentsy/policy.yaml`.
  */
 export interface PolicyDocument {
-  /** Policy schema version. */
-  readonly version: string;
   /** Optional description of this policy. */
   readonly description?: string;
   /** Ordered list of rules (first match wins). */
   readonly rules: readonly PolicyRule[];
+  /** Policy schema version. */
+  readonly version: string;
 }
 
 // =============================================================================
@@ -57,12 +57,12 @@ export interface PolicyDocument {
 // =============================================================================
 
 export interface PolicyContext {
+  readonly input?: Record<string, unknown>;
+  readonly metadata?: Record<string, unknown>;
   readonly tool?: {
     readonly name: string;
     readonly annotations?: Record<string, boolean | undefined>;
   };
-  readonly input?: Record<string, unknown>;
-  readonly metadata?: Record<string, unknown>;
 }
 
 // =============================================================================
@@ -70,9 +70,9 @@ export interface PolicyContext {
 // =============================================================================
 
 export interface PolicyEvalResult {
+  readonly action?: PolicyAction;
   readonly matched: boolean;
   readonly rule?: PolicyRule;
-  readonly action?: PolicyAction;
 }
 
 // =============================================================================
@@ -93,7 +93,7 @@ export interface PolicyEvalResult {
  * - `expr || expr` — logical OR
  */
 export function evaluateCondition(condition: string, context: PolicyContext): boolean {
-  let trimmed = condition.trim();
+  const trimmed = condition.trim();
 
   // Handle || for test compatibility (e.g. tool.name == "repl_execute" || tool.name == "shell_exec")
   // Split on || but not inside quotes — simple approach: split top-level only
@@ -116,9 +116,10 @@ export function evaluateCondition(condition: string, context: PolicyContext): bo
   // <string> starts_with <string>
   const startsWithMatch = /^(.+?)\s+starts_with\s+'(.+)'$/.exec(trimmed);
   if (startsWithMatch) {
-    const value = resolvePath(startsWithMatch[1]!, context);
+    const [, leftPath, rightVal] = startsWithMatch;
+    const value = resolvePath(leftPath, context);
     if (typeof value === 'string') {
-      return value.startsWith(startsWithMatch[2]!);
+      return value.startsWith(rightVal);
     }
     return false;
   }
@@ -126,9 +127,10 @@ export function evaluateCondition(condition: string, context: PolicyContext): bo
   // <string> contains <string>
   const containsMatch = /^(.+?)\s+contains\s+'(.+)'$/.exec(trimmed);
   if (containsMatch) {
-    const value = resolvePath(containsMatch[1]!, context);
+    const [, leftPath, rightVal] = containsMatch;
+    const value = resolvePath(leftPath, context);
     if (typeof value === 'string') {
-      return value.includes(containsMatch[2]!);
+      return value.includes(rightVal);
     }
     return false;
   }
@@ -136,8 +138,8 @@ export function evaluateCondition(condition: string, context: PolicyContext): bo
   // <path> == <value> — resolve left as path OR literal
   const equalsMatch = /^(.+?)\s+==\s+(.+)$/.exec(trimmed);
   if (equalsMatch) {
-    const leftRaw = equalsMatch[1]!.trim();
-    const rightRaw = equalsMatch[2]!.trim();
+    const leftRaw = equalsMatch[1]?.trim();
+    const rightRaw = equalsMatch[2]?.trim();
     // Try resolving left as a path first
     const left = resolvePath(leftRaw, context);
     // If path resolution fails and leftRaw looks like a literal, parse it
@@ -155,9 +157,11 @@ export function evaluateCondition(condition: string, context: PolicyContext): bo
  * Split a string by a delimiter only at the top level (not inside parentheses
  * or single/double-quoted strings). Used for && and || splitting.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: state machine with necessary quote/paren/delimiter tracking
 function splitAtTopLevel(input: string, delimiter: '&&' | '||'): string[] {
-  // Quick check — if delimiter isn't even present, return early
-  if (!input.includes(delimiter)) return [input];
+  if (!input.includes(delimiter)) {
+    return [input];
+  }
 
   const results: string[] = [];
   let current = '';
@@ -166,25 +170,25 @@ function splitAtTopLevel(input: string, delimiter: '&&' | '||'): string[] {
   let inDoubleQuote = false;
 
   for (let i = 0; i < input.length; i++) {
-    const ch = input[i]!;
+    const ch = input[i] as string;
     const lookahead = input.slice(i, i + delimiter.length);
 
-    // Track quotes (they prevent operator detection inside strings)
     if (ch === "'" && !inDoubleQuote) {
       inSingleQuote = !inSingleQuote;
     }
     if (ch === '"' && !inSingleQuote) {
       inDoubleQuote = !inDoubleQuote;
     }
-
-    // Track paren depth (not inside quotes)
-    if (!inSingleQuote && !inDoubleQuote) {
-      if (ch === '(') depth++;
-      if (ch === ')') depth--;
+    if (!(inSingleQuote || inDoubleQuote)) {
+      if (ch === '(') {
+        depth++;
+      }
+      if (ch === ')') {
+        depth--;
+      }
     }
 
-    // If we find the delimiter at depth 0 and not inside quotes, split here
-    if (!inSingleQuote && !inDoubleQuote && depth === 0 && lookahead === delimiter) {
+    if (!(inSingleQuote || inDoubleQuote) && depth === 0 && lookahead === delimiter) {
       results.push(current.trim());
       current = '';
       i += delimiter.length - 1;
@@ -194,7 +198,9 @@ function splitAtTopLevel(input: string, delimiter: '&&' | '||'): string[] {
     current += ch;
   }
 
-  if (current.trim()) results.push(current.trim());
+  if (current.trim()) {
+    results.push(current.trim());
+  }
   return results;
 }
 
@@ -206,11 +212,13 @@ function resolvePath(path: string, context: PolicyContext): unknown {
   let current: unknown = context;
 
   for (const part of parts) {
-    if (current === null || current === undefined) return undefined;
+    if (current === null || current === undefined) {
+      return;
+    }
     if (typeof current === 'object' && part in (current as Record<string, unknown>)) {
       current = (current as Record<string, unknown>)[part];
     } else {
-      return undefined;
+      return;
     }
   }
   return current;
@@ -221,11 +229,19 @@ function resolvePath(path: string, context: PolicyContext): unknown {
  */
 function parseLiteral(literal: string): string | boolean | number | null {
   const trimmed = literal.trim();
-  if (trimmed === 'true') return true;
-  if (trimmed === 'false') return false;
-  if (trimmed === 'null') return null;
+  if (trimmed === 'true') {
+    return true;
+  }
+  if (trimmed === 'false') {
+    return false;
+  }
+  if (trimmed === 'null') {
+    return null;
+  }
   const num = Number(trimmed);
-  if (!Number.isNaN(num)) return num;
+  if (!Number.isNaN(num)) {
+    return num;
+  }
   // Strip surrounding quotes for string literals
   if ((trimmed.startsWith("'") && trimmed.endsWith("'")) || (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
     return trimmed.slice(1, -1);

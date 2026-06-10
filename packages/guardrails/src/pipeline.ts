@@ -33,7 +33,9 @@ export class GuardrailPipeline {
    */
   remove(id: string): boolean {
     const idx = this.#scanners.findIndex(s => s.metadata.id === id);
-    if (idx === -1) return false;
+    if (idx === -1) {
+      return false;
+    }
     this.#scanners.splice(idx, 1);
     return true;
   }
@@ -55,6 +57,7 @@ export class GuardrailPipeline {
    * Returns the first `block` result (if shortCircuitOnBlock is true), or
    * collects all detections and returns the most severe non-pass result.
    */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: evaluate maps 4 status outcomes per scanner — unavoidable branches
   async evaluate(input: string, phase: GuardrailPhase, context?: Record<string, unknown>): Promise<GuardrailResult> {
     const detections: Detection[] = [];
     let blockResult: GuardrailResult | undefined;
@@ -63,38 +66,21 @@ export class GuardrailPipeline {
 
     for (const scanner of this.#scanners) {
       const result = await scanner.evaluate(input, context);
-
+      this.#collectResult(result, detections);
+      if (result.status === 'block' && (this.#config.shortCircuitOnBlock ?? true)) {
+        return result;
+      }
       if (result.status === 'block') {
-        if (this.#config.shortCircuitOnBlock ?? true) {
-          return result;
-        }
-        // Without short-circuit, capture first block and collect detections
         blockResult ??= result;
-        if (result.detections) {
-          for (const d of result.detections) {
-            addDetection(detections, d, this.#config.maxDetections ?? 50);
-          }
-        }
-      } else if (result.status === 'transform') {
-        // Apply transformation and remember it (subsequent scanners may add more)
-        if (result.detections) {
-          for (const d of result.detections) {
-            addDetection(detections, d, this.#config.maxDetections ?? 50);
-          }
-        }
+      }
+      if (result.status === 'transform') {
         transformResult = result;
-      } else if (result.status === 'escalate') {
-        if (result.detections) {
-          for (const d of result.detections) {
-            addDetection(detections, d, this.#config.maxDetections ?? 50);
-          }
-        }
-        // Keep the highest-risk escalate
-        if (!escalateResult) {
-          escalateResult = result;
-        } else if (result.riskScore > (escalateResult as typeof result).riskScore) {
-          escalateResult = result;
-        }
+      }
+      if (
+        result.status === 'escalate' &&
+        (!escalateResult || (result.riskScore ?? 0) > (escalateResult.riskScore ?? 0))
+      ) {
+        escalateResult = result;
       }
     }
 
@@ -109,6 +95,21 @@ export class GuardrailPipeline {
       return detections.length > 0 ? ({ ...escalateResult, detections } as GuardrailResult) : escalateResult;
     }
     return { status: 'pass', phase };
+  }
+
+  /**
+   * Collect detections from a result, respecting the max limit.
+   */
+  #collectResult(result: GuardrailResult, dest: Detection[]): void {
+    if (!result.detections) {
+      return;
+    }
+    for (const d of result.detections) {
+      if (dest.length >= (this.#config.maxDetections ?? 50)) {
+        break;
+      }
+      dest.push(d);
+    }
   }
 
   /**
@@ -140,12 +141,4 @@ export class GuardrailPipeline {
   clear(): void {
     this.#scanners.length = 0;
   }
-}
-
-/**
- * Append a detection, respecting the max limit.
- */
-function addDetection(dest: Detection[], detection: Detection, max: number): void {
-  if (dest.length >= max) return;
-  dest.push(detection);
 }

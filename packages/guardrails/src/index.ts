@@ -16,33 +16,40 @@
  * instruction can be.
  */
 
-export { GuardrailPipeline } from './pipeline.js';
-export { GuardrailHub, parseHubUri, BUILTIN_GUARDRAIL_URIS } from './hub.js';
 export {
-  evaluateCondition,
-  evaluatePolicy,
-  DEFAULT_POLICY
-} from './policy.js';
-
+  CommandValidationScanner,
+  createBuiltinScanners,
+  PathSanitizationScanner,
+  PIIScanner,
+  PromptInjectionScanner,
+  RateLimiterScanner,
+  SecretDetectionScanner,
+  ToxicityScanner
+} from './builtins.js';
+export type { GuardrailFactory, HubEntry, HubUri } from './hub.js';
+export { BUILTIN_GUARDRAIL_URIS, GuardrailHub, parseHubUri } from './hub.js';
+export { GuardrailPipeline } from './pipeline.js';
 export type {
-  GuardrailResult,
-  GuardrailPhase,
-  GuardrailMetadata,
-  GuardrailScanner,
+  PolicyAction,
+  PolicyContext,
+  PolicyDocument,
+  PolicyEvalResult,
+  PolicyRule
+} from './policy.js';
+export {
+  DEFAULT_POLICY,
+  evaluateCondition,
+  evaluatePolicy
+} from './policy.js';
+export type {
   Detection,
+  GuardrailMetadata,
+  GuardrailPhase,
+  GuardrailResult,
+  GuardrailScanner,
   OWASPCategory,
   PipelineConfig
 } from './types.js';
-
-export type {
-  PolicyDocument,
-  PolicyRule,
-  PolicyAction,
-  PolicyContext,
-  PolicyEvalResult
-} from './policy.js';
-
-export type { HubEntry, HubUri, GuardrailFactory } from './hub.js';
 
 // ---------------------------------------------------------------------------
 // Legacy error classes (Phase 3.7)

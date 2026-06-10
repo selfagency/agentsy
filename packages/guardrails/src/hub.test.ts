@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { GuardrailHub, parseHubUri, BUILTIN_GUARDRAIL_URIS } from './hub.js';
+import { BUILTIN_GUARDRAIL_URIS, GuardrailHub, parseHubUri } from './hub.js';
 import type { GuardrailScanner } from './types.js';
 
 describe('parseHubUri', () => {
   it('parses hub://guardrails/prompt_injection', () => {
     const parsed = parseHubUri('hub://guardrails/prompt_injection');
     expect(parsed).not.toBeNull();
-    expect(parsed!.scheme).toBe('hub');
-    expect(parsed!.packageName).toBe('guardrails/prompt_injection');
-    expect(parsed!.version).toBeUndefined();
+    expect(parsed?.scheme).toBe('hub');
+    expect(parsed?.packageName).toBe('guardrails/prompt_injection');
+    expect(parsed?.version).toBeUndefined();
   });
 
   it('parses hub://guardrails/prompt_injection@1.0 with version', () => {
     const parsed = parseHubUri('hub://guardrails/prompt_injection@1.0');
     expect(parsed).not.toBeNull();
-    expect(parsed!.packageName).toBe('guardrails/prompt_injection');
-    expect(parsed!.version).toBe('1.0');
+    expect(parsed?.packageName).toBe('guardrails/prompt_injection');
+    expect(parsed?.version).toBe('1.0');
   });
 
   it('returns null for invalid URIs', () => {
@@ -44,8 +44,8 @@ describe('GuardrailHub', () => {
     hub.install('hub://test/my_scanner@1.0', 'My Scanner', 'A test scanner', factory);
     const scanner = await hub.resolve('hub://test/my_scanner@1.0');
     expect(scanner).not.toBeNull();
-    expect(scanner!.metadata.name).toBe('My Scanner');
-    const result = await scanner!.evaluate('test');
+    expect(scanner?.metadata.name).toBe('My Scanner');
+    const result = await scanner?.evaluate('test');
     expect(result.status).toBe('pass');
   });
 
@@ -55,7 +55,7 @@ describe('GuardrailHub', () => {
     expect(scanner).toBeNull();
   });
 
-  it('uninstall removes a guardrail', async () => {
+  it('uninstall removes a guardrail', () => {
     const hub = new GuardrailHub();
     hub.install('hub://test/temp', 'Temp', '', () => ({
       metadata: {

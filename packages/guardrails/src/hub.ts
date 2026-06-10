@@ -23,9 +23,9 @@ import type { GuardrailScanner } from './types.js';
  * - `file:///path/to/module` — local path (future)
  */
 export interface HubUri {
-  readonly scheme: 'hub' | 'npm' | 'file';
   readonly full: string;
   readonly packageName: string;
+  readonly scheme: 'hub' | 'npm' | 'file';
   readonly version?: string;
 }
 
@@ -34,14 +34,16 @@ const VERSION_SPLIT = /@(\d+(?:\.\d+)?(?:\.\d+)?)$/;
 
 export function parseHubUri(uri: string): HubUri | null {
   const match = HUB_URI_PATTERN.exec(uri);
-  if (!match) return null;
+  if (!match) {
+    return null;
+  }
 
   const scheme = match[1] as HubUri['scheme'];
   let rest = match[2] as string;
 
   // Extract version suffix
   const versionMatch = VERSION_SPLIT.exec(rest);
-  const version = versionMatch?.[1];
+  const _version = versionMatch?.[1];
   if (versionMatch) {
     rest = rest.slice(0, versionMatch.index);
   }
@@ -50,8 +52,8 @@ export function parseHubUri(uri: string): HubUri | null {
     scheme,
     full: uri,
     packageName: rest,
-    ...(versionMatch ? { version: versionMatch[1]! } : {})
-  };
+    ...(versionMatch ? { version: versionMatch[1] } : {})
+  } as HubUri;
 }
 
 // =============================================================================
@@ -61,11 +63,11 @@ export function parseHubUri(uri: string): HubUri | null {
 export type GuardrailFactory = () => GuardrailScanner | Promise<GuardrailScanner>;
 
 export interface HubEntry {
-  readonly uri: string;
-  readonly name: string;
   readonly description: string;
   readonly factory: GuardrailFactory;
   readonly installedAt?: Date;
+  readonly name: string;
+  readonly uri: string;
 }
 
 // =============================================================================
@@ -101,18 +103,22 @@ export class GuardrailHub {
    */
   async resolve(uri: string): Promise<GuardrailScanner | null> {
     const parsed = parseHubUri(uri);
-    if (!parsed || parsed.scheme !== 'hub') return null;
+    if (parsed?.scheme !== 'hub') {
+      return null;
+    }
 
     const entry = this.#entries.get(uri);
-    if (!entry) return null;
+    if (!entry) {
+      return null;
+    }
 
-    return entry.factory();
+    return await entry.factory();
   }
 
   /**
    * Resolve multiple hub URIs concurrently.
    */
-  async resolveAll(uris: string[]): Promise<(GuardrailScanner | null)[]> {
+  resolveAll(uris: string[]): Promise<(GuardrailScanner | null)[]> {
     return Promise.all(uris.map(u => this.resolve(u)));
   }
 

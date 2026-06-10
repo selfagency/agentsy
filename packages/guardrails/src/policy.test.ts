@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateCondition, evaluatePolicy, DEFAULT_POLICY } from './policy.js';
 import type { PolicyContext, PolicyDocument } from './policy.js';
+import { DEFAULT_POLICY, evaluateCondition, evaluatePolicy } from './policy.js';
 
 describe('evaluateCondition', () => {
   it('tool.name == string equality', () => {
@@ -142,9 +142,9 @@ describe('DEFAULT_POLICY', () => {
   it('has 3 rules with expected structure', () => {
     expect(DEFAULT_POLICY.version).toBe('1.0');
     expect(DEFAULT_POLICY.rules).toHaveLength(3);
-    expect(DEFAULT_POLICY.rules[0]!.name).toBe('deny-destructive-open-world-writes');
-    expect(DEFAULT_POLICY.rules[1]!.name).toBe('require-approval-code-execution');
-    expect(DEFAULT_POLICY.rules[2]!.name).toBe('allow-read-only-tools');
+    expect(DEFAULT_POLICY.rules[0]?.name).toBe('deny-destructive-open-world-writes');
+    expect(DEFAULT_POLICY.rules[1]?.name).toBe('require-approval-code-execution');
+    expect(DEFAULT_POLICY.rules[2]?.name).toBe('allow-read-only-tools');
   });
 
   it('deny-destructive-open-world-writes blocks dangerous tools', () => {

@@ -34,7 +34,7 @@ describe('GuardrailResult discriminated union', () => {
       detections: [detection]
     };
     expect(result.detections).toHaveLength(1);
-    expect(result.detections![0]!.id).toBe('det-001');
+    expect(result.detections?.[0]?.id).toBe('det-001');
   });
 
   it('transform variant carries sanitized string', () => {
