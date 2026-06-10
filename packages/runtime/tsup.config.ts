@@ -6,8 +6,10 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     'ag-ui': 'src/ag-ui/index.ts',
+    approval: 'src/approval/index.ts',
     loop: 'src/loop/index.ts'
   },
+  external: ['@agentsy/guardrails'],
   format: ['esm', 'cjs'],
   sourcemap: true,
   splitting: false,

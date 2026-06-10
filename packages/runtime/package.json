@@ -27,6 +27,11 @@
       "import": "./dist/ag-ui.js",
       "require": "./dist/ag-ui.cjs"
     },
+    "./approval": {
+      "types": "./dist/approval.d.ts",
+      "import": "./dist/approval.js",
+      "require": "./dist/approval.cjs"
+    },
     "./loop": {
       "types": "./dist/loop.d.ts",
       "import": "./dist/loop.js",
@@ -43,6 +48,7 @@
   },
   "dependencies": {
     "@agentsy/context": "workspace:*",
+    "@agentsy/guardrails": "workspace:*",
     "@agentsy/memory": "workspace:*",
     "@agentsy/session": "workspace:*",
     "@agentsy/types": "workspace:*",
