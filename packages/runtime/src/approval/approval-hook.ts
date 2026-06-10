@@ -96,7 +96,10 @@ export function createPolicyApprovalHook(options: PolicyApprovalHookOptions): {
               });
             }
             default: {
-              break;
+              return Promise.resolve({
+                continue: false,
+                reason: `Unhandled rule action: ${rule.action satisfies never}`
+              });
             }
           }
         }
@@ -124,7 +127,10 @@ export function createPolicyApprovalHook(options: PolicyApprovalHookOptions): {
             });
           }
           default: {
-            break;
+            return Promise.resolve({
+              continue: false,
+              reason: `Unhandled default action: ${defaultAction satisfies never}`
+            });
           }
         }
       } catch {
