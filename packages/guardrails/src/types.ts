@@ -64,6 +64,7 @@ export type GuardrailResult =
   | {
       readonly status: 'pass';
       readonly phase: GuardrailPhase;
+      readonly detections?: readonly Detection[];
     }
   | {
       readonly status: 'block';

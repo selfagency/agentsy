@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PIIScanner } from './pii.js';
 import { assertDetections, assertPass } from './test-helpers.js';
+import type { Detection } from './types.js';
 
 describe('PIIScanner', () => {
   const scanner = new PIIScanner();
@@ -37,7 +38,7 @@ describe('PIIScanner', () => {
     if (r.status === 'block') {
       assertDetections(r, ['ssn']);
     } else {
-      const dr = r as { detections?: Detection[] };
+      const dr = r as { detections: readonly Detection[] };
       expect(dr.detections?.some(d => d.id === 'ssn')).toBe(true);
     }
   });
