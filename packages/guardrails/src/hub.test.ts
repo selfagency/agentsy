@@ -45,7 +45,7 @@ describe('GuardrailHub', () => {
     const scanner = await hub.resolve('hub://test/my_scanner@1.0');
     expect(scanner).not.toBeNull();
     expect(scanner?.metadata.name).toBe('My Scanner');
-    const result = await scanner?.evaluate('test');
+    const result = await scanner!.evaluate('test');
     expect(result.status).toBe('pass');
   });
 
