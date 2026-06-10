@@ -227,12 +227,100 @@ function stripOuterQuotes(value: string): string {
   return value;
 }
 
+/**
+ * Internal state for line-by-line YAML policy parsing.
+ */
+interface PolicyParseState {
+  currentRule: Record<string, string> | null;
+  description: string | undefined;
+  rules: Record<string, string>[];
+  version: string;
+}
+
+/**
+ * Patterns that can appear indented under a rule entry.
+ */
+const RULE_FIELD_PATTERN = /^\s+(name|condition|action|description|phase|severity):\s*(.+)$/;
+
+/**
+ * Try to parse a top-level key-value line (version, description).
+ * Returns true if the line was consumed as a top-level key.
+ */
+function tryParseTopLevel(line: string, state: PolicyParseState): boolean {
+  const versionMatch = /^version:\s*(.+)$/.exec(line);
+  if (versionMatch) {
+    const val = versionMatch[1];
+    if (val !== undefined) {
+      state.version = stripOuterQuotes(val.trim());
+    }
+    return true;
+  }
+
+  const descriptionMatch = /^description:\s*(.+)$/.exec(line);
+  if (descriptionMatch) {
+    const val = descriptionMatch[1];
+    if (val !== undefined) {
+      state.description = stripOuterQuotes(val.trim());
+    }
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Try to parse a YAML rule entry line (- name: ... or -).
+ * Returns true if the line was consumed as a rule start.
+ */
+function tryParseRuleStart(line: string, state: PolicyParseState): boolean {
+  if (!(line.trim() === '-' || /^\s*-\s+name:/.test(line))) {
+    return false;
+  }
+
+  if (state.currentRule !== null) {
+    state.rules.push(state.currentRule);
+  }
+  state.currentRule = {};
+
+  const nameMatch = /^\s*-\s+name:\s*(.+)$/.exec(line);
+  if (nameMatch) {
+    const val = nameMatch[1];
+    if (val !== undefined) {
+      state.currentRule.name = stripOuterQuotes(val.trim());
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Try to parse indented field lines under a rule entry (e.g., "  action: deny").
+ */
+function tryParseRuleField(line: string, state: PolicyParseState): void {
+  if (state.currentRule === null) {
+    return;
+  }
+
+  const fieldMatch = RULE_FIELD_PATTERN.exec(line);
+  if (!fieldMatch) {
+    return;
+  }
+
+  const key = fieldMatch[1] as string;
+  const val = fieldMatch[2] as string;
+  if (val !== undefined) {
+    state.currentRule[key] = stripOuterQuotes(val.trim());
+  }
+}
+
 export function parseSimplePolicy(raw: string): PolicyDocument {
   const lines = raw.split('\n');
-  const rules: Record<string, string>[] = [];
-  let currentRule: Record<string, string> | null = null;
-  let version = '1.0';
-  let description: string | undefined;
+  const state: PolicyParseState = {
+    rules: [],
+    currentRule: null,
+    version: '1.0',
+    description: undefined
+  };
 
   for (const rawLine of lines) {
     const line = rawLine.trimEnd();
@@ -242,61 +330,25 @@ export function parseSimplePolicy(raw: string): PolicyDocument {
       continue;
     }
 
-    // Top-level keys
-    const versionMatch = /^version:\s*(.+)$/.exec(line);
-    if (versionMatch) {
-      const val = versionMatch[1];
-      if (val !== undefined) {
-        version = stripOuterQuotes(val.trim());
-      }
+    // Try each parser in order
+    if (tryParseTopLevel(line, state)) {
       continue;
     }
-
-    const descriptionMatch = /^description:\s*(.+)$/.exec(line);
-    if (descriptionMatch) {
-      const val = descriptionMatch[1];
-      if (val !== undefined) {
-        description = stripOuterQuotes(val.trim());
-      }
+    if (tryParseRuleStart(line, state)) {
       continue;
     }
-
-    // Rule list entry
-    if (/^\s*-\s*$/.test(line) || /^\s*-\s+name:/.test(line)) {
-      if (currentRule !== null) {
-        rules.push(currentRule);
-      }
-      currentRule = {};
-      const nameMatch = /^\s*-\s+name:\s*(.+)$/.exec(line);
-      if (nameMatch) {
-        const val = nameMatch[1];
-        if (val !== undefined) {
-          currentRule.name = stripOuterQuotes(val.trim());
-        }
-      }
-      continue;
-    }
-
-    // Rule fields (indented under a rule entry)
-    if (currentRule !== null) {
-      const fieldMatch = /^\s+(name|condition|action|description|phase|severity):\s*(.+)$/.exec(line);
-      if (fieldMatch) {
-        const key = fieldMatch[1] as string;
-        const val = fieldMatch[2] as string;
-        currentRule[key] = stripOuterQuotes(val.trim());
-      }
-    }
+    tryParseRuleField(line, state);
   }
 
-  // Push the last rule
-  if (currentRule !== null) {
-    rules.push(currentRule);
+  // Push the final rule if one is in progress
+  if (state.currentRule !== null) {
+    state.rules.push(state.currentRule);
   }
 
   return {
-    version,
-    ...(description ? { description } : {}),
-    rules: rules.map(r => {
+    version: state.version,
+    ...(state.description ? { description: state.description } : {}),
+    rules: state.rules.map(r => {
       const rule: Record<string, string> & { phase?: string; severity?: string } = { ...r };
       return {
         name: rule.name ?? 'unnamed',

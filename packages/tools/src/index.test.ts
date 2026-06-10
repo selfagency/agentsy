@@ -51,7 +51,7 @@ describe('ToolRegistry', () => {
 
   it('returns error when handler throws', async () => {
     const registry = new ToolRegistry();
-    registry.register('broken', async () => {
+    registry.register('broken', () => {
       throw new Error('kaboom');
     });
     const result = await registry.execute('broken', {});
@@ -163,7 +163,10 @@ describe('Baseline tool handlers', () => {
 
   it('fs_read requires path parameter', async () => {
     const tools = createFsTools();
-    const readTool = tools.find(t => t.name === 'fs_read')!;
+    const readTool = tools.find(t => t.name === 'fs_read');
+    if (!readTool) {
+      throw new Error('fs_read not found');
+    }
     const result = await readTool.handler({});
     expect(result.ok).toBe(false);
     expect(result.error).toContain('path');
@@ -171,14 +174,20 @@ describe('Baseline tool handlers', () => {
 
   it('fs_read succeeds with path', async () => {
     const tools = createFsTools();
-    const readTool = tools.find(t => t.name === 'fs_read')!;
+    const readTool = tools.find(t => t.name === 'fs_read');
+    if (!readTool) {
+      throw new Error('fs_read not found');
+    }
     const result = await readTool.handler({ path: '/tmp/test.txt' });
     expect(result.ok).toBe(true);
   });
 
   it('fs_write requires path parameter', async () => {
     const tools = createFsTools();
-    const writeTool = tools.find(t => t.name === 'fs_write')!;
+    const writeTool = tools.find(t => t.name === 'fs_write');
+    if (!writeTool) {
+      throw new Error('fs_write not found');
+    }
     const result = await writeTool.handler({ content: 'data' });
     expect(result.ok).toBe(false);
     expect(result.error).toContain('path');
@@ -186,7 +195,10 @@ describe('Baseline tool handlers', () => {
 
   it('fs_write succeeds with path and content', async () => {
     const tools = createFsTools();
-    const writeTool = tools.find(t => t.name === 'fs_write')!;
+    const writeTool = tools.find(t => t.name === 'fs_write');
+    if (!writeTool) {
+      throw new Error('fs_write not found');
+    }
     const result = await writeTool.handler({ path: '/tmp/test.txt', content: 'hello' });
     expect(result.ok).toBe(true);
     expect(result.data).toHaveProperty('written', true);
@@ -194,7 +206,10 @@ describe('Baseline tool handlers', () => {
 
   it('fs_patch requires path parameter', async () => {
     const tools = createFsTools();
-    const patchTool = tools.find(t => t.name === 'fs_patch')!;
+    const patchTool = tools.find(t => t.name === 'fs_patch');
+    if (!patchTool) {
+      throw new Error('fs_patch not found');
+    }
     const result = await patchTool.handler({ oldString: 'foo' });
     expect(result.ok).toBe(false);
     expect(result.error).toContain('path');

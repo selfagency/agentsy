@@ -135,6 +135,67 @@ describe('GuardrailPipeline', () => {
     expect((result as Extract<GuardrailResult, { status: 'block' }>).reason).toBe('First block');
   });
 
+  it('chains transform output as input for subsequent scanners', async () => {
+    const detectionAfterRedact: string[] = [];
+    const redactThenCheck = [
+      {
+        metadata: {
+          id: 'redact-x',
+          name: 'Redact X',
+          version: '1.0.0',
+          description: 'Replaces X with [REDACTED]',
+          priority: 10,
+          owaspCategories: [],
+          tags: []
+        },
+        // biome-ignore lint/suspicious/useAwait: must satisfy GuardrailScanner interface
+        evaluate: async (inp: string) => {
+          if (inp.includes('x') || inp.includes('X')) {
+            return {
+              status: 'transform' as const,
+              phase: 'input' as const,
+              sanitized: inp.replace(/x/gi, '[REDACTED]')
+            };
+          }
+          return { status: 'pass' as const, phase: 'input' as const };
+        }
+      },
+      {
+        metadata: {
+          id: 'detect-secret',
+          name: 'Detect secret',
+          version: '1.0.0',
+          description: 'Flags lines containing SECRET',
+          priority: 20,
+          owaspCategories: [],
+          tags: []
+        },
+        // biome-ignore lint/suspicious/useAwait: must satisfy GuardrailScanner interface
+        evaluate: async (inp: string) => {
+          if (inp.toUpperCase().includes('SECRET')) {
+            detectionAfterRedact.push(inp);
+            return { status: 'block' as const, phase: 'input' as const, reason: 'Secret found' };
+          }
+          return { status: 'pass' as const, phase: 'input' as const };
+        }
+      }
+    ];
+
+    const pipeline = new GuardrailPipeline();
+    pipeline.add(...redactThenCheck);
+
+    // Input contains both 'secret' and 'x' — transform should fire first,
+    // then the block scanner sees the REDACTED version (which still contains 'secret')
+    const input = 'The x secret is xyz';
+    const result = await pipeline.evaluate(input, 'input');
+
+    // The detection scanner should have been called with the REDACTED input
+    // (NOT the original which contained 'secret' multiple times)
+    expect(detectionAfterRedact.length).toBe(1);
+    expect(detectionAfterRedact[0]).toBe('The [REDACTED] secret is [REDACTED]yz');
+    expect(result.status).toBe('block');
+  });
+
   it('clear() removes all scanners', () => {
     const pipeline = new GuardrailPipeline();
     pipeline.add(makePassScanner('pass-1'));

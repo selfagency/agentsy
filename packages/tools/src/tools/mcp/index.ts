@@ -14,7 +14,7 @@ export function createMcpBridgeTool(): ToolDefinition {
       { name: 'tool', type: 'string', required: true, description: 'Tool name on that server' },
       { name: 'args', type: 'object', required: false, description: 'Arguments to pass to the tool' }
     ],
-    handler: async input => {
+    handler: input => {
       const server = String(input.server ?? '');
       const tool = String(input.tool ?? '');
       if (!(server && tool)) {

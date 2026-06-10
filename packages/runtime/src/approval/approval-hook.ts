@@ -95,6 +95,9 @@ export function createPolicyApprovalHook(options: PolicyApprovalHookOptions): {
                 } satisfies HookResult;
               });
             }
+            default: {
+              break;
+            }
           }
         }
 
@@ -120,9 +123,12 @@ export function createPolicyApprovalHook(options: PolicyApprovalHookOptions): {
               } satisfies HookResult;
             });
           }
+          default: {
+            break;
+          }
         }
       } catch {
-        return Promise.resolve({ continue: true });
+        return Promise.resolve({ continue: false, reason: 'Policy evaluation error — denied by default' });
       }
     }
   };

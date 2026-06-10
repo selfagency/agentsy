@@ -75,6 +75,11 @@ export class GuardrailPipeline {
       }
       if (result.status === 'transform') {
         transformResult = result;
+        // Chain sanitized output as input for subsequent scanners
+        if (result.sanitized !== undefined) {
+          // biome-ignore lint/style/noParameterAssign: intentional — chains sanitized output through pipeline
+          input = result.sanitized;
+        }
       }
       if (
         result.status === 'escalate' &&
@@ -84,7 +89,7 @@ export class GuardrailPipeline {
       }
     }
 
-    // Priority: block > transform > escalate > pass (non-short-circuit)
+    // Priority: block > transform > escalate > pass (non-short-circuit, with chained transforms)
     if (blockResult) {
       return detections.length > 0 ? ({ ...blockResult, detections } as GuardrailResult) : blockResult;
     }

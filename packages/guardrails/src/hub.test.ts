@@ -45,7 +45,11 @@ describe('GuardrailHub', () => {
     const scanner = await hub.resolve('hub://test/my_scanner@1.0');
     expect(scanner).not.toBeNull();
     expect(scanner?.metadata.name).toBe('My Scanner');
-    const result = await scanner!.evaluate('test');
+    // Guard: scanner is guaranteed non-null by the assertion above
+    if (scanner === null) {
+      throw new Error('Expected scanner to be resolved');
+    }
+    const result = await scanner.evaluate('test');
     expect(result.status).toBe('pass');
   });
 

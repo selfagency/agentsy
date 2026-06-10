@@ -28,6 +28,7 @@ export class ToolRegistry {
     } else {
       this.#tools.set(nameOrTool, {
         ...(annotations ? { annotations: { ...annotations } } : {}),
+        // biome-ignore lint/style/noNonNullAssertion: validated by overload — handler required when nameOrTool is string
         handler: handler!,
         name: nameOrTool
       });

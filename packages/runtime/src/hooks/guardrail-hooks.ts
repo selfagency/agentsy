@@ -147,6 +147,12 @@ export function createToolOutputGuardrailHook(pipeline: GuardrailPipeline): {
             } satisfies HookResult;
           }
 
+          if (result.status === 'transform' && result.sanitized) {
+            return {
+              transform: { sanitized: result.sanitized }
+            } satisfies HookResult;
+          }
+
           if (result.status === 'escalate' && result.reason) {
             return {
               continue: false,

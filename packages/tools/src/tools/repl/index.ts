@@ -13,7 +13,7 @@ export function createReplTool(): ToolDefinition {
       { name: 'code', type: 'string', required: true, description: 'The code to execute' },
       { name: 'timeout', type: 'number', required: false, description: 'Execution timeout in ms' }
     ],
-    handler: async input => {
+    handler: input => {
       const code = String(input.code ?? '');
       if (!code) {
         return { ok: false, data: null, error: 'Missing required parameter: code' };

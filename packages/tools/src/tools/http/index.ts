@@ -15,7 +15,7 @@ export function createHttpTool(): ToolDefinition {
       { name: 'body', type: 'string', required: false, description: 'Request body (POST/PUT)' },
       { name: 'timeout', type: 'number', required: false, description: 'Timeout in ms' }
     ],
-    handler: async input => {
+    handler: input => {
       const url = String(input.url ?? '');
       if (!url) {
         return { ok: false, data: null, error: 'Missing required parameter: url' };
