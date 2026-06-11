@@ -30,7 +30,7 @@ describe('PathSanitizationScanner', () => {
   });
 
   it('blocks symlink in tmp', async () => {
-    const r = await assertBlock(scanner, '/dev/shm/symlink', 'Sensitive path');
+    const r = await assertBlock(scanner, '/dev/shm/symlink', 'Sensitive path'); // NOSONAR
     assertDetections(r, ['sensitive-path']);
   });
 

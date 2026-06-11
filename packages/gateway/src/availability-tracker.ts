@@ -62,7 +62,7 @@ export class ModelAvailabilityTracker {
   recordSuccess(replicaId: string): void {
     this.#circuitBreakers.set(replicaId, {
       consecutiveFailures: 0,
-      halfOpenStartedAt: undefined as undefined,
+      halfOpenStartedAt: undefined,
       state: 'closed'
     });
   }
@@ -71,7 +71,7 @@ export class ModelAvailabilityTracker {
   recordFailure(replicaId: string): void {
     const entry = this.#circuitBreakers.get(replicaId) ?? {
       consecutiveFailures: 0,
-      halfOpenStartedAt: undefined as undefined,
+      halfOpenStartedAt: undefined,
       state: 'closed' as CircuitState
     };
 

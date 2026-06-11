@@ -34,7 +34,8 @@ describe('evaluateCondition', () => {
   it('contains substring match', () => {
     const ctx: PolicyContext = { input: { path: '/var/log/../../etc/passwd' } };
     expect(evaluateCondition("input.path contains '..'", ctx)).toBe(true);
-    expect(evaluateCondition(`input.path contains ${String.raw`\x00`}`, ctx)).toBe(false);
+    const rawNull = String.raw`\x00`;
+    expect(evaluateCondition(`input.path contains ${rawNull}`, ctx)).toBe(false);
   });
 
   it('compound condition with &&', () => {
@@ -61,9 +62,9 @@ describe('evaluateCondition', () => {
   });
 
   it('boolean literals parse correctly', () => {
-    const truthy = evaluateCondition('true == true', {} as PolicyContext);
+    const truthy = evaluateCondition('true == true', {});
     expect(truthy).toBe(true);
-    const falsy = evaluateCondition('false == true', {} as PolicyContext);
+    const falsy = evaluateCondition('false == true', {});
     expect(falsy).toBe(false);
   });
 });
