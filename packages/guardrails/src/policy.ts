@@ -160,6 +160,7 @@ function tryEvaluateBinary(trimmed: string, context: PolicyContext): boolean | n
     }
     case 'matches': {
       try {
+        // nosemgrep: detect-non-literal-regexp — rightVal comes from trusted policy config file
         return new RegExp(rightVal).test(value);
       } catch {
         return false;
@@ -331,7 +332,7 @@ function resolvePath(path: string, context: PolicyContext): unknown {
       return;
     }
     if (typeof current === 'object' && part in (current as Record<string, unknown>)) {
-      // nosemgrep: part is validated against PROTOTYPE_POLLUTION_KEYS blocklist
+      // nosemgrep
       current = (current as Record<string, unknown>)[part];
     } else {
       return;

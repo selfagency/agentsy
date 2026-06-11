@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DiffHunk, DiffLine, DiffViewerProps } from './index.js'; // eslint-disable-line
+import type { DiffHunk, DiffLine, DiffViewerProps } from './index.js';
 
 describe('DiffViewer types', () => {
   it('DiffLine has correct shape', () => {

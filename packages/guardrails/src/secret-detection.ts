@@ -106,7 +106,7 @@ const CLOUD_PATTERNS: { pattern: RegExp; id: string; severity: 'critical' | 'hig
   { pattern: /\bnf_[A-Za-z0-9]{40,}\b/g, id: 'netlify-access-token', severity: 'high', confidence: 0.85 },
   // Cloudflare API token
   {
-    pattern: /\b[0-9a-f]{32,}(?:\|[A-Za-z0-9]+)?\b.*?(?:cloudflare|CLOUDFLARE)/gi,
+    pattern: /\b[0-9a-f]{32,}(?:\|[A-Z0-9]+)?\b.*?cloudflare/gi,
     id: 'cloudflare-api-token',
     severity: 'high',
     confidence: 0.8
@@ -255,14 +255,14 @@ const PACKAGE_PATTERNS: { pattern: RegExp; id: string; severity: 'critical' | 'h
 const DB_PATTERNS: { pattern: RegExp; id: string; severity: 'critical' | 'high' | 'medium'; confidence: number }[] = [
   // PostgreSQL: postgresql://user:password@host:port/db
   {
-    pattern: /postgres(?:ql)?:\/\/[A-Za-z0-9_%]+:[^@\s]+@[A-Za-z0-9.-]+:\d+\/[A-Za-z0-9_]+/g,
+    pattern: /postgres(?:ql)?:\/\/[\w%]+:[^@\s]+@[\w.-]+:\d+\/\w+/g,
     id: 'postgres-connection-string',
     severity: 'critical',
     confidence: 0.9
   },
   // MySQL: mysql://user:password@host:port/db
   {
-    pattern: /mysql:\/\/[A-Za-z0-9_%]+:[^@\s]+@[A-Za-z0-9.-]+:\d+\/[A-Za-z0-9_]+/g,
+    pattern: /mysql:\/\/[\w%]+:[^@\s]+@[\w.-]+:\d+\/\w+/g,
     id: 'mysql-connection-string',
     severity: 'critical',
     confidence: 0.9

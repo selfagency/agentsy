@@ -13,7 +13,7 @@ export type CircuitState = 'closed' | 'open' | 'half-open';
 
 export interface CircuitBreakerEntry {
   consecutiveFailures: number;
-  halfOpenStartedAt?: number;
+  halfOpenStartedAt: number | undefined;
   openedAt?: number;
   state: CircuitState;
 }

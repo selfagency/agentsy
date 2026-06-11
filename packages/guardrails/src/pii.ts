@@ -70,17 +70,26 @@ const STREET_SUFFIXES = [
   'Hwy'
 ] as const;
 
-const VAT_PATTERN = new RegExp(`\\b(?:${VAT_COUNTRY_CODES.join('|')})\\s?\\d{4,12}\\b`, 'g');
+const VAT_PATTERN = new RegExp(String.raw`\b(?:${VAT_COUNTRY_CODES.join('|')})\s?\d{4,12}\b`, 'g');
 
 const STREET_PATTERN = new RegExp(
-  `\\b\\d{1,5}\\s+[A-Za-z]+(?:\\s+[A-Za-z]+)*\\s+(?:${STREET_SUFFIXES.join('|')})\\b`,
+  String.raw`\b\d{1,5}\s+[A-Za-z]+(?:\s+[A-Za-z]+)*\s+(?:${STREET_SUFFIXES.join('|')})\b`,
   'g'
 );
 
 /**
  * Contact and identity patterns.
  */
-const CONTACT_PATTERNS: { pattern: RegExp; id: string; severity: 'high' | 'medium' | 'low'; confidence: number }[] = [
+type PatternSeverity = 'high' | 'medium' | 'low';
+
+interface ContactPatternEntry {
+  confidence: number;
+  id: string;
+  pattern: RegExp;
+  severity: PatternSeverity;
+}
+
+const CONTACT_PATTERNS: ContactPatternEntry[] = [
   // Email addresses
   { pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, id: 'email', severity: 'medium', confidence: 0.95 },
   // Phone numbers (international, NA, E.164)

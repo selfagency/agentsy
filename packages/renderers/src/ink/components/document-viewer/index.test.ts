@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DocumentViewerProps, LineRange } from './index.js'; // eslint-disable-line
+import type { DocumentViewerProps, LineRange } from './index.js';
 
 describe('DocumentViewer types', () => {
   it('LineRange has start and end', () => {

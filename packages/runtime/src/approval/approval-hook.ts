@@ -4,9 +4,11 @@ import type { ApprovalManager } from './approval-manager.js';
 /**
  * A simple policy rule that matches a tool name.
  */
+export type PolicyApprovalAction = 'allow' | 'deny' | 'require_approval';
+
 export interface ToolPolicyRule {
   /** Action to take. */
-  readonly action: 'allow' | 'deny' | 'require_approval';
+  readonly action: PolicyApprovalAction;
   /** Optional human-readable label for diagnostics. */
   readonly label?: string;
   /** Glob or exact tool name pattern (`*` matches any suffix). */

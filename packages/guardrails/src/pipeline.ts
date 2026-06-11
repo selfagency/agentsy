@@ -138,13 +138,13 @@ export class GuardrailPipeline {
     phase: GuardrailPhase
   ): GuardrailResult {
     if (blockResult) {
-      return detections.length > 0 ? ({ ...blockResult, detections } as GuardrailResult) : blockResult;
+      return detections.length > 0 ? { ...blockResult, detections } : blockResult;
     }
     if (transformResult) {
-      return detections.length > 0 ? ({ ...transformResult, detections } as GuardrailResult) : transformResult;
+      return detections.length > 0 ? { ...transformResult, detections } : transformResult;
     }
     if (escalateResult) {
-      return detections.length > 0 ? ({ ...escalateResult, detections } as GuardrailResult) : escalateResult;
+      return detections.length > 0 ? { ...escalateResult, detections } : escalateResult;
     }
     return { status: 'pass', phase };
   }

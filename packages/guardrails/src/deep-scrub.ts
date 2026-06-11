@@ -76,8 +76,7 @@ async function scrubDeep(
   placeholder: string,
   maxDepth: number,
   depth: number
-  // biome-ignore lint/suspicious/noConfusingVoidType: safe union for recursive return
-): Promise<unknown | void> {
+): Promise<unknown> {
   // Base cases
   if (value === null || value === undefined) {
     return value;

@@ -149,31 +149,11 @@ export class EntropyScanner implements GuardrailScanner {
   };
 
   readonly #threshold: number;
-  readonly #knownSecretIds: Set<string>;
-
   /**
    * @param threshold — Shannon entropy threshold (default 4.0). Higher = fewer false positives.
-   * @param knownSecretIds — Detection IDs to exclude (avoids double-reporting with other scanners).
-   *                        Defaults to exclude common provider-pattern detections.
    */
-  constructor(options?: { threshold?: number; knownSecretIds?: string[] }) {
-    this.#threshold = options?.threshold ?? 4.0;
-
-    // Exclude known provider-pattern detection IDs to avoid double-reporting
-    this.#knownSecretIds = new Set(
-      options?.knownSecretIds ?? [
-        'aws-access-key',
-        'github-token',
-        'gitlab-token',
-        'generic-api-key',
-        'slack-token',
-        'slack-webhook',
-        'private-key',
-        'jwt-token',
-        'stripe-live-key',
-        'discord-token'
-      ]
-    );
+  constructor(options?: { threshold?: number }) {
+    this.#threshold = options?.threshold ?? 4;
   }
 
   evaluate(input: string, _context?: Record<string, unknown>): Promise<GuardrailResult> {

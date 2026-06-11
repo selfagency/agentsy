@@ -46,6 +46,7 @@ export function collectRegexMatches(
 export function getHighestSeverity(detections: Detection[]): string {
   const order: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
   return detections.reduce<string>((max, d) => {
+    // nosemgrep: detect-object-injection — order is a hardcoded constant with 4 known keys
     const rank = order[d.severity] ?? 0;
     return rank > (order[max] ?? 0) ? d.severity : max;
   }, 'low');
@@ -57,6 +58,7 @@ export function getHighestSeverity(detections: Detection[]): string {
 export function sortDetections(detections: Detection[]): Detection[] {
   const order: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
   return [...detections].sort((a, b) => {
+    // nosemgrep: detect-object-injection — order is a hardcoded constant with 4 known keys
     const sevDiff = (order[b.severity] ?? 0) - (order[a.severity] ?? 0);
     if (sevDiff !== 0) {
       return sevDiff;
