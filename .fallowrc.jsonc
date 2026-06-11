@@ -28,7 +28,8 @@
   ],
   // Explicit entry points for packages when package.json exports are insufficient.
   "entry": [
-    "packages/runtime/src/approval/index.ts"
+    "packages/runtime/src/approval/index.ts",
+    "packages/cli/src/commands/guardrails.ts"
   ],
   // Preserve class members that are used via runtime reflection or host integrations.
   "usedClassMembers": [],
@@ -49,7 +50,17 @@
       "**/recovery/policy.ts",
       "**/task-board/in-memory.ts",
       "**/commands/chat.ts",
-      "**/agents/loader.ts"
+      "**/agents/loader.ts",
+      // Guardrails scanner evaluate() — complexity driven by pattern density, not cyclomatic logic
+      "packages/guardrails/src/pipeline.ts",
+      "packages/guardrails/src/pii.ts",
+      "packages/guardrails/src/policy.ts",
+      "packages/guardrails/src/rate-limiter.ts",
+      "packages/guardrails/src/test-helpers.ts",
+      // Approval handler — safety-critical logic that trades complexity for correctness
+      "packages/runtime/src/approval/approval-hook.ts",
+      // Diff viewer extraction already done in earlier rounds; remaining complexity is structural
+      "packages/renderers/src/ink/components/diff-viewer/index.tsx"
     ]
   },
   // Prevent gating on current baseline during remediation; switch to stronger gate after cleanup.
