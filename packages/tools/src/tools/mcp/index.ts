@@ -15,8 +15,8 @@ export function createMcpBridgeTool(): ToolDefinition {
       { name: 'args', type: 'object', required: false, description: 'Arguments to pass to the tool' }
     ],
     handler: input => {
-      const server = String(input.server ?? '');
-      const tool = String(input.tool ?? '');
+      const server = typeof input.server === 'string' ? input.server : '';
+      const tool = typeof input.tool === 'string' ? input.tool : '';
       if (!(server && tool)) {
         return { ok: false, data: null, error: 'Missing required parameters: server and tool' };
       }

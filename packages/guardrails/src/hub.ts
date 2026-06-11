@@ -38,8 +38,8 @@ export function parseHubUri(uri: string): HubUri | null {
     return null;
   }
 
-  const scheme = match[1] as HubUri['scheme'];
-  let rest = match[2] as string;
+  const scheme = match[1] as 'hub' | 'npm' | 'file';
+  let rest = match[2] ?? '';
 
   // Extract version suffix
   const versionMatch = VERSION_SPLIT.exec(rest);
@@ -52,8 +52,8 @@ export function parseHubUri(uri: string): HubUri | null {
     scheme,
     full: uri,
     packageName: rest,
-    ...(versionMatch ? { version: versionMatch[1] } : {})
-  } as HubUri;
+    ...(versionMatch?.[1] ? { version: versionMatch[1] } : {})
+  };
 }
 
 // =============================================================================

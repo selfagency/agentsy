@@ -11,7 +11,7 @@ export function createFsTools(): ToolDefinition[] {
         { name: 'encoding', type: 'string', required: false, description: 'File encoding (default: utf-8)' }
       ],
       handler: input => {
-        const path = String(input.path ?? '');
+        const path = typeof input.path === 'string' ? input.path : '';
         if (!path) {
           return { ok: false, data: null, error: 'Missing required parameter: path' };
         }
@@ -28,7 +28,7 @@ export function createFsTools(): ToolDefinition[] {
         { name: 'append', type: 'boolean', required: false, description: 'Append instead of overwrite' }
       ],
       handler: input => {
-        const path = String(input.path ?? '');
+        const path = typeof input.path === 'string' ? input.path : '';
         if (!path) {
           return { ok: false, data: null, error: 'Missing required parameter: path' };
         }
@@ -45,7 +45,7 @@ export function createFsTools(): ToolDefinition[] {
         { name: 'newString', type: 'string', required: false, description: 'Replacement text (omit to delete)' }
       ],
       handler: input => {
-        const path = String(input.path ?? '');
+        const path = typeof input.path === 'string' ? input.path : '';
         if (!path) {
           return { ok: false, data: null, error: 'Missing required parameter: path' };
         }

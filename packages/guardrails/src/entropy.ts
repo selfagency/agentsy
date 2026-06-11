@@ -69,8 +69,9 @@ const FP_EXCLUSIONS: RegExp[] = [
   /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i,
   // ULIDs: 01ARZ3NDEKTSV4RRFFQ69G5FAV
   /\b[0-7][0-9A-HJKMNP-TV-Z]{25}\b/,
-  // ISO dates: 2024-01-15T14:30:00Z
-  /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?\b/,
+  // ISO dates: 2024-01-15T14:30:00Z | 2024-01-15T14:30:00+00:00
+  /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\b/,
+  /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?[+-]\d{2}:?\d{2}\b/,
   // Git SHAs: abcdef0123456789
   /\b[0-9a-f]{7,40}\b(?!.*\S)/i,
   // Base64 short padding segments (under 16 chars)

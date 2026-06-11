@@ -30,7 +30,7 @@ describe('RateLimiterScanner', () => {
     for (let i = 0; i < 6; i++) {
       await scanner.evaluate('req', { toolName: 'fs_read' });
     }
-    await (scanner as { reset: () => void }).reset();
+    (scanner as { reset: () => void }).reset();
     const r = await scanner.evaluate('req', { toolName: 'fs_read' });
     expect(r.status).toBe('pass');
   });

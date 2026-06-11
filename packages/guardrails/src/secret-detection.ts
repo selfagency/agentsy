@@ -412,7 +412,7 @@ export class SecretDetectionScanner implements GuardrailScanner {
         status: 'block',
         phase: 'output',
         reason: `Critical secrets detected: ${critical.map(d => d.id).join(', ')}`,
-        riskScore: Math.min(critical.length * 0.3, 1.0),
+        riskScore: Math.min(critical.length * 0.3, 1),
         detections
       });
     }

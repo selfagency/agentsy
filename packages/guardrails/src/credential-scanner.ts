@@ -95,6 +95,24 @@ const DEFAULT_CREDENTIAL_PATTERNS: CredentialPattern[] = [
 // =============================================================================
 
 /**
+ * Replace known credential patterns in the input with their resolved values.
+ * Each pattern is applied in pattern order, matching by resource type against
+ * the resolved value map.
+ */
+function replaceSecrets(input: string, patterns: CredentialPattern[], resolved: Map<string, string>): string {
+  let result = input;
+  for (const pattern of patterns) {
+    const value = resolved.get(pattern.resourceType);
+    if (value === undefined) {
+      continue;
+    }
+    pattern.regex.lastIndex = 0;
+    result = result.replace(pattern.regex, value);
+  }
+  return result;
+}
+
+/**
  * Guardrail scanner that resolves known credentials through the
  * CredentialBroker.
  *
@@ -129,18 +147,16 @@ export class CredentialReferenceScanner implements GuardrailScanner {
     this.#credentialTtlSeconds = options?.credentialTtlSeconds ?? 60;
   }
 
-  async evaluate(input: string, context?: Record<string, unknown>): Promise<GuardrailResult> {
-    const sessionId = (context?.sessionId as string) ?? 'unknown';
-    const toolName = (context?.toolName as string) ?? 'unknown';
-
-    // Early exit: check any pattern matches before touching the broker
+  /**
+   * Collect which resource types are both matched by patterns AND available
+   * in the broker. Queries the broker once per distinct resource type.
+   */
+  async #collectAvailable(input: string): Promise<Set<string>> {
     const sorted = [...this.#patterns].sort((a, b) => a.order - b.order);
     const applicable = sorted.filter(p => p.regex.test(input));
     if (applicable.length === 0) {
-      return { status: 'pass', phase: 'tool-input' };
+      return new Set();
     }
-
-    // Check broker availability for each matched resource type
     const available = new Set<string>();
     for (const pattern of applicable) {
       if (!available.has(pattern.resourceType)) {
@@ -150,14 +166,20 @@ export class CredentialReferenceScanner implements GuardrailScanner {
         }
       }
     }
+    return available;
+  }
 
-    if (available.size === 0) {
-      return { status: 'pass', phase: 'tool-input' };
-    }
-
-    // Issue + resolve credentials for each available resource type
+  /**
+   * Issue + resolve credentials for the given set of resource types.
+   * Returns a map of resourceType → resolved value, or empty on error.
+   */
+  async #resolveCredentials(
+    resourceTypes: Set<string>,
+    sessionId: string,
+    toolName: string
+  ): Promise<Map<string, string>> {
     const resolved = new Map<string, string>();
-    for (const resourceType of available) {
+    for (const resourceType of resourceTypes) {
       try {
         const request = {
           resourceType,
@@ -173,21 +195,27 @@ export class CredentialReferenceScanner implements GuardrailScanner {
         // Broker threw (expired, missing) — skip
       }
     }
+    return resolved;
+  }
 
+  async evaluate(input: string, context?: Record<string, unknown>): Promise<GuardrailResult> {
+    const sessionId = (context?.sessionId as string) ?? 'unknown';
+    const toolName = (context?.toolName as string) ?? 'unknown';
+
+    // Collect which credential types are available
+    const available = await this.#collectAvailable(input);
+    if (available.size === 0) {
+      return { status: 'pass', phase: 'tool-input' };
+    }
+
+    // Issue + resolve credentials
+    const resolved = await this.#resolveCredentials(available, sessionId, toolName);
     if (resolved.size === 0) {
       return { status: 'pass', phase: 'tool-input' };
     }
 
     // Replace raw secrets with resolved values in the input
-    let result = input;
-    for (const pattern of applicable) {
-      const value = resolved.get(pattern.resourceType);
-      if (value === undefined) {
-        continue;
-      }
-      pattern.regex.lastIndex = 0;
-      result = result.replace(pattern.regex, value);
-    }
+    const result = replaceSecrets(input, this.#patterns, resolved);
 
     return {
       status: 'transform',

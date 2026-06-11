@@ -16,7 +16,7 @@ export function createShellTool(): ToolDefinition {
       { name: 'workdir', type: 'string', required: false, description: 'Working directory' }
     ],
     handler: input => {
-      const command = String(input.command ?? '');
+      const command = typeof input.command === 'string' ? input.command : '';
       if (!command) {
         return { ok: false, data: null, error: 'Missing required parameter: command' };
       }

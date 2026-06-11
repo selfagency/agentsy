@@ -16,7 +16,7 @@ export function createHttpTool(): ToolDefinition {
       { name: 'timeout', type: 'number', required: false, description: 'Timeout in ms' }
     ],
     handler: input => {
-      const url = String(input.url ?? '');
+      const url = typeof input.url === 'string' ? input.url : '';
       if (!url) {
         return { ok: false, data: null, error: 'Missing required parameter: url' };
       }
