@@ -1,0 +1,28 @@
+```xml
+<output>
+<compartments>
+<compartment start="1113" end="1198" title="Continued PR #108 CI fixes — remaining SonarCloud/Codacy/Fallow issues" episode_type="bug,refactor,infra" importance="80">
+<p1>
+Continued fixing remaining CI failures: fixed unnecessary cast on `scheme` in hub.ts (line 41), `exactOptionalPropertyTypes` issue with `version: undefined` using conditional spread, `let` → `const` in credential-scanner.ts (rest is reassigned later so safe). Ran full validation across all 5 Phase 5 packages: 0 type errors, 0 lint errors. All 935 tests across 70 files pass. Pushed 2 commits to `feature/phase-5-guardrails`, posted PR comment with summary table showing all gates resolved.
+</p1>
+<p2>
+Fixed remaining CI issues: hub.ts cast, exactOptionalPropertyTypes spread, credential-scanner let→const. All 5 packages: 0 lint/type errors. 935 tests across 70 files pass. Committed and pushed to `feature/phase-5-guardrails`, PR #108 now at 18 commits. Awaiting CI re-run confirmation.
+</p2>
+<p3>
+Completed all remaining PR #108 CI fixes and pushed. 935 tests passing, 0 errors across all Phase 5 packages.
+</p3>
+<p4>PR #108; 18 commits; 935 tests; feature/phase-5-guardrails</p4>
+</compartment>
+</compartments>
+<facts>
+</facts>
+<events>
+</events>
+<user_observations>
+</user_observations>
+<meta>
+<messages_processed>1174-1198</messages_processed>
+<unprocessed_from>1199</unprocessed_from>
+</meta>
+</output>
+```

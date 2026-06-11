@@ -1,0 +1,49 @@
+```xml
+<output>
+<compartments>
+<compartment start="753" end="763" title="User approved PII/secret scanning improvement plan; began Batch 1 implementation" episode_type="feature" importance="72">
+<p1>
+U: approved
+
+User approved the 6-batch PII/secret scanning improvement plan (compartments 753-762). Implementation begins on `feature/phase-5-guardrails`.
+
+**Batch 1 scope** (~3h):
+1. `scrubMessagesForModel(input)` — applies PII/secret scanners to `role: 'user'` messages only; `system` and `assistant` messages pass through unchanged. Prevents accidental sanitization of model-generated content.
+2. `scrubPiiDeep(input)` — recursive object/array walk, applies scrubbing to every string value, returns a structural clone (no mutation of caller state). Handles nested objects, arrays, and mixed structures.
+
+These two primitives are the foundation for all subsequent batches. B2+ will expand patterns; B1 establishes the correct architectural shape.
+
+Plan revision (from compartment 753-762) was committed in the prior batch. Implementation proceeds in commit order matching the plan.
+</p1>
+<p2>
+U: approved
+
+Batch 1 implementation started on `feature/phase-5-guardrails`: `scrubMessagesForModel` (scans user-role messages only, preserves system/assistant) + `scrubPiiDeep` (recursive structural clone scrub, no mutation). ~3h scope.
+</p2>
+<p3>
+Batch 1 of 6-batch PII/secret improvement plan approved and begun on `feature/phase-5-guardrails`. `scrubMessagesForModel` + `scrubPiiDeep` as foundation primitives.
+</p3>
+<p4/>
+</compartment>
+</compartments>
+<facts>
+<PROJECT_RULES>
+- Plan revisions are committed to the feature branch before implementation begins (per Phase 5 workflow).
+</PROJECT_RULES>
+</facts>
+<events>
+<trajectory_correction at_compartment="1">
+<summary>Plan approved and B1 implementation begins</summary>
+<before_strategy>Planning phase: gap analysis vs 10 codebases, 6-batch plan drafted (~21h), awaiting approval</before_strategy>
+<correction_source>user</correction_source>
+<correction_signal>U: approved</correction_signal>
+<after_strategy>Implementation phase: Batch 1 (~3h) — scrubMessagesForModel + scrubPiiDeep on feature/phase-5-guardrails</after_strategy>
+<evidence>User approved the 6-batch plan from compartment 753-762 and implementation began immediately.</evidence>
+</trajectory_correction>
+</events>
+<meta>
+<messages_processed>763-763</messages_processed>
+<unprocessed_from>764</unprocessed_from>
+</meta>
+</output>
+```

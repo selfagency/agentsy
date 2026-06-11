@@ -41,6 +41,12 @@ export {
   CommandPalette,
   type CommandPaletteProps
 } from './components/command-palette/index.js';
+export { type DiffHunk, type DiffLine, DiffViewer, type DiffViewerProps } from './components/diff-viewer/index.tsx';
+export {
+  DocumentViewer,
+  type DocumentViewerProps,
+  type LineRange
+} from './components/document-viewer/index.tsx';
 export { Dropdown, type DropdownOption, type DropdownProps } from './components/dropdown/index.ts';
 /* ── Agent picker (TASK-SIA-013) ────────────────────────────────────── */
 export { FramedPanel, type FramedPanelProps } from './components/framed-panel.tsx';

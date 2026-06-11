@@ -230,10 +230,15 @@ async function handleLbStatusCommand(rest: readonly string[], io: CliIO): Promis
   return runLbStatusCommand(rest, io);
 }
 
+async function handleGuardrailsCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runGuardrailsCommand } = await import('./commands/guardrails.js');
+  return runGuardrailsCommand(rest, io);
+}
+
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
-    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, setup, doctor, sandbox-diagnostics, content-address-stats, lb'
+    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, setup, doctor, sandbox-diagnostics, content-address-stats, lb, guardrails'
   );
   (io.stderr ?? DEFAULT_IO.stderr)('Chat flags: --agent <name> --plan --mock --model <id> --provider <id>');
   return 1;
@@ -291,6 +296,10 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
     (io.stderr ?? DEFAULT_IO.stderr)(`Unknown lb subcommand: ${rest[0] ?? '(none)'}`);
     (io.stderr ?? DEFAULT_IO.stderr)('Supported: lb status');
     return 1;
+  }
+
+  if (command === 'guardrails') {
+    return await handleGuardrailsCommand(rest, io);
   }
 
   return handleUnknownCommand(command, io);

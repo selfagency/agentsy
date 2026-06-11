@@ -1,6 +1,10 @@
 export type { McpDiagnosticsReport, McpSetupGuide } from './diagnostics.js';
 export { getMcpSetupGuide, runMcpDiagnostics } from './diagnostics.js';
 export type {
+  CallToolRequest,
+  EmbeddedResource,
+  ImageContent,
+  JsonSchema,
   McpCapabilities,
   McpPrompt,
   McpResource,
@@ -8,5 +12,10 @@ export type {
   McpServerConfig,
   McpTool,
   McpToolInvocation,
-  McpToolResult
+  McpToolResult,
+  ResourceContents,
+  TextContent,
+  ToolAnnotations,
+  ToolContent,
+  ToolUri
 } from './types.js';

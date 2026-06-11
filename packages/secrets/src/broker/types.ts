@@ -4,8 +4,11 @@
  * Credentials are short-lived, task-scoped, encrypted, and audited.
  */
 
-/** Discriminated union of supported resource types. */
-export type ResourceType = 'github' | 'aws' | 'openai' | 'anthropic' | 'custom';
+/** Built-in resource types — extensible via the union with `string`. */
+type KnownResourceType = 'github' | 'aws' | 'openai' | 'anthropic' | 'custom';
+
+/** Supported resource types, extensible via pattern matching in CredentialReferenceScanner. */
+export type ResourceType = KnownResourceType | (string & {});
 
 /** A request to issue a credential for a specific tool call. */
 export interface CredentialRequest {
@@ -17,8 +20,8 @@ export interface CredentialRequest {
   resourceType: ResourceType;
   /** Session that owns the tool call. */
   sessionId: string;
-  /** ID of the tool call requesting the credential. */
-  toolCallId: string;
+  /** ID of the tool call requesting the credential (optional for auto-resolution). */
+  toolCallId?: string;
   /** TTL override in seconds (defaults to 300 / 5 min). */
   ttlSeconds?: number;
 }

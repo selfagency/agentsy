@@ -73,6 +73,15 @@ export class CredentialBroker {
     this.defaultTtlSeconds = options.defaultTtlSeconds ?? 300;
   }
 
+  /**
+   * Check whether a credential is available for the given resource type,
+   * without issuing or auditing.
+   */
+  async check(resourceType: string): Promise<boolean> {
+    const rawValue = await this.keyring.get(resourceType);
+    return rawValue !== undefined;
+  }
+
   /** Issue a credential for the given request.
    *  Throws MissingCredentialError if no secret is available for the resource type. */
   async issue(request: CredentialRequest): Promise<IssuedCredential> {
