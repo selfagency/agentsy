@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-
-import { createSessionState, type SessionState } from './schema.js';
 import { reduceSessionState } from './reducers.js';
+import { createSessionState, type SessionState } from './schema.js';
 
 function freshState(): SessionState {
   return createSessionState('session_1', 'thread_1');
@@ -17,7 +16,7 @@ describe('reduceSessionState', () => {
         message: { role: 'user', content: 'hello' }
       });
       expect(next.messages).toHaveLength(1);
-      expect(next.messages[0]!.content).toBe('hello');
+      expect(next.messages[0]?.content).toBe('hello');
     });
 
     it('does not mutate the original state', () => {
@@ -50,8 +49,8 @@ describe('reduceSessionState', () => {
         index: 0,
         message: { content: 'updated' }
       });
-      expect(next.messages[0]!.content).toBe('updated');
-      expect(next.messages[0]!.role).toBe('user'); // unchanged
+      expect(next.messages[0]?.content).toBe('updated');
+      expect(next.messages[0]?.role).toBe('user'); // unchanged
     });
 
     it('returns state unchanged for out-of-bounds index', () => {
@@ -76,7 +75,7 @@ describe('reduceSessionState', () => {
         ]
       });
       expect(next.messages).toHaveLength(2);
-      expect(next.messages[0]!.role).toBe('system');
+      expect(next.messages[0]?.role).toBe('system');
     });
   });
 
@@ -97,8 +96,8 @@ describe('reduceSessionState', () => {
         keepCount: 2
       });
       expect(next.messages).toHaveLength(2);
-      expect(next.messages[0]!.content).toBe('sys');
-      expect(next.messages[1]!.content).toBe('a');
+      expect(next.messages[0]?.content).toBe('sys');
+      expect(next.messages[1]?.content).toBe('a');
     });
   });
 
@@ -111,7 +110,7 @@ describe('reduceSessionState', () => {
         toolCall: { id: 'tc_1', name: 'read_file', input: {}, status: 'pending' }
       });
       expect(next.toolCallQueue).toHaveLength(1);
-      expect(next.toolCallQueue[0]!.name).toBe('read_file');
+      expect(next.toolCallQueue[0]?.name).toBe('read_file');
     });
   });
 
@@ -127,7 +126,7 @@ describe('reduceSessionState', () => {
         id: 'tc_1',
         updates: { status: 'running' }
       });
-      expect(next.toolCallQueue[0]!.status).toBe('running');
+      expect(next.toolCallQueue[0]?.status).toBe('running');
     });
 
     it('does not affect other tool calls', () => {
@@ -147,8 +146,8 @@ describe('reduceSessionState', () => {
         id: 'tc_1',
         updates: { status: 'completed' }
       });
-      expect(next.toolCallQueue[0]!.status).toBe('completed');
-      expect(next.toolCallQueue[1]!.status).toBe('pending');
+      expect(next.toolCallQueue[0]?.status).toBe('completed');
+      expect(next.toolCallQueue[1]?.status).toBe('pending');
     });
   });
 
@@ -167,7 +166,7 @@ describe('reduceSessionState', () => {
         }
       });
       expect(next.checkpoints).toHaveLength(1);
-      expect(next.checkpoints[0]!.id).toBe('cp_1');
+      expect(next.checkpoints[0]?.id).toBe('cp_1');
     });
   });
 
@@ -263,7 +262,7 @@ describe('reduceSessionState', () => {
         }
       });
       expect(forked.messages).toHaveLength(1);
-      expect(forked.messages[0]!.content).toBe('hello');
+      expect(forked.messages[0]?.content).toBe('hello');
     });
   });
 

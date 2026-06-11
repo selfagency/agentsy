@@ -4,36 +4,6 @@
  * @module
  */
 
-export {
-  BranchMetaSchema,
-  CheckpointSchema,
-  ContentPartSchema,
-  ImagePartSchema,
-  MessageSchema,
-  SessionStateSchema,
-  TextPartSchema,
-  ToolCallPartSchema,
-  ToolCallSchema,
-  ToolCallStateSchema,
-  ToolResultPartSchema,
-  createSessionState
-} from './schema.js';
-
-export type {
-  BranchMeta,
-  Checkpoint,
-  ContentPart,
-  ImagePart,
-  Message,
-  SessionState,
-  TextPart,
-  ToolCall,
-  ToolCallState,
-  ToolResultPart
-} from './schema.js';
-
-export { reduceSessionState } from './reducers.js';
-
 export type {
   AddCheckpointAction,
   AddToolCallAction,
@@ -49,3 +19,30 @@ export type {
   UpdateTimestampsAction,
   UpdateToolCallAction
 } from './reducers.js';
+export { reduceSessionState } from './reducers.js';
+export type {
+  BranchMeta,
+  Checkpoint,
+  ContentPart,
+  ImagePart,
+  Message,
+  SessionState,
+  TextPart,
+  ToolCall,
+  ToolCallState,
+  ToolResultPart
+} from './schema.js';
+export {
+  BranchMetaSchema,
+  CheckpointSchema,
+  ContentPartSchema,
+  createSessionState,
+  ImagePartSchema,
+  MessageSchema,
+  SessionStateSchema,
+  TextPartSchema,
+  ToolCallPartSchema,
+  ToolCallSchema,
+  ToolCallStateSchema,
+  ToolResultPartSchema
+} from './schema.js';

@@ -5,7 +5,7 @@
  * the requested mutation applied — they never mutate the original.
  */
 
-import type { Checkpoint, ContentPart, Message, SessionState, ToolCall } from './schema.js';
+import type { Checkpoint, Message, SessionState, ToolCall } from './schema.js';
 
 // ---------------------------------------------------------------------------
 // Reducer action types
@@ -55,8 +55,8 @@ export interface AddToolCallAction {
 
 export interface UpdateToolCallAction {
   id: string;
-  updates: Partial<ToolCall>;
   type: 'updateToolCall';
+  updates: Partial<ToolCall>;
 }
 
 export interface AddCheckpointAction {
@@ -66,8 +66,8 @@ export interface AddCheckpointAction {
 
 export interface SetMetaAction {
   key: string;
-  value: unknown;
   type: 'setMeta';
+  value: unknown;
 }
 
 export interface PinMessageAction {
@@ -215,7 +215,7 @@ export function reduceSessionState(state: SessionState, action: ReducerAction): 
           parentSessionId: state.sessionId,
           parentThreadId: state.threadId,
           forkedAt: now,
-          forkReason: action.branchMeta.forkReason
+          forkReason: action.branchMeta?.forkReason
         },
         updatedAt: now
       };
@@ -227,7 +227,7 @@ export function reduceSessionState(state: SessionState, action: ReducerAction): 
     }
 
     default: {
-      action satisfies never;
+      const _exhaustive: never = action;
       return state;
     }
   }

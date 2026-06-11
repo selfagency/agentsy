@@ -78,6 +78,8 @@ export interface SessionStore {
   clear(): void;
   getState(): LegacySessionState;
   getValue<T = unknown>(key: string): T | undefined;
+  /** Return all stored keys. */
+  listKeys(): string[];
   removeValue(key: string): void;
   setValue(key: string, value: unknown): void;
 }
@@ -100,11 +102,17 @@ export const createSessionStore = (state: LegacySessionState): SessionStore => {
     getValue<T>(key: string) {
       return values[key] as T | undefined;
     },
+    listKeys() {
+      return Object.keys(values);
+    },
     removeValue(key: string) {
       delete values[key];
     },
     setValue(key, value) {
       values[key] = value;
+    },
+    setState(_state: LegacySessionState) {
+      // matches Phase 6 typed state expansion
     }
   };
 };
