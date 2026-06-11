@@ -70,8 +70,10 @@ const STREET_SUFFIXES = [
   'Hwy'
 ] as const;
 
+// nosemgrep: detect-non-literal-regexp — VAT_COUNTRY_CODES is a hardcoded as-const array
 const VAT_PATTERN = new RegExp(String.raw`\b(?:${VAT_COUNTRY_CODES.join('|')})\s?\d{4,12}\b`, 'g');
 
+// nosemgrep: detect-non-literal-regexp — STREET_SUFFIXES is a hardcoded as-const array
 const STREET_PATTERN = new RegExp(
   String.raw`\b\d{1,5}\s+[A-Za-z]+(?:\s+[A-Za-z]+)*\s+(?:${STREET_SUFFIXES.join('|')})\b`,
   'g'

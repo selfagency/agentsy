@@ -44,11 +44,16 @@ export function collectRegexMatches(
  * Reduce a list of detections to the highest severity label.
  */
 export function getHighestSeverity(detections: Detection[]): string {
-  const order: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
+  const order = new Map<string, number>([
+    ['low', 1],
+    ['medium', 2],
+    ['high', 3],
+    ['critical', 4]
+  ]);
   return detections.reduce<string>((max, d) => {
-    // nosemgrep: detect-object-injection — order is a hardcoded constant with 4 known keys
-    const rank = order[d.severity] ?? 0;
-    return rank > (order[max] ?? 0) ? d.severity : max;
+    const rank = order.get(d.severity) ?? 0;
+    const maxRank = order.get(max) ?? 0;
+    return rank > maxRank ? d.severity : max;
   }, 'low');
 }
 
@@ -56,10 +61,14 @@ export function getHighestSeverity(detections: Detection[]): string {
  * Sort detections by severity (highest first), then by position.
  */
 export function sortDetections(detections: Detection[]): Detection[] {
-  const order: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
+  const order = new Map<string, number>([
+    ['low', 1],
+    ['medium', 2],
+    ['high', 3],
+    ['critical', 4]
+  ]);
   return [...detections].sort((a, b) => {
-    // nosemgrep: detect-object-injection — order is a hardcoded constant with 4 known keys
-    const sevDiff = (order[b.severity] ?? 0) - (order[a.severity] ?? 0);
+    const sevDiff = (order.get(b.severity) ?? 0) - (order.get(a.severity) ?? 0);
     if (sevDiff !== 0) {
       return sevDiff;
     }

@@ -27,7 +27,9 @@
     "@agentsy/ui"
   ],
   // Explicit entry points for packages when package.json exports are insufficient.
-  "entry": [],
+  "entry": [
+    "packages/runtime/src/approval/index.ts"
+  ],
   // Preserve class members that are used via runtime reflection or host integrations.
   "usedClassMembers": [],
   // Duplicate detection tuning (reduce noise for trivial/script duplication during cleanup).
