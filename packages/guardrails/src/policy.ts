@@ -134,7 +134,7 @@ function tryStripParens(trimmed: string): string | null {
  * Supported operators: starts_with, contains, equals, matches.
  */
 function tryEvaluateBinary(trimmed: string, context: PolicyContext): boolean | null {
-  const match = /^(.+?)\s+(starts_with|contains|equals|matches)\s+'(.+)'$/.exec(trimmed);
+  const match = /^([^\s]+)\s+(starts_with|contains|equals|matches)\s+'([^']+)'$/.exec(trimmed);
   if (!match) {
     return null;
   }
@@ -177,7 +177,7 @@ function tryEvaluateBinary(trimmed: string, context: PolicyContext): boolean | n
  * Format: <path-or-literal> == <literal>
  */
 function tryEvaluateEquals(trimmed: string, context: PolicyContext): boolean | null {
-  const match = /^(.+?)\s+==\s+(.+)$/.exec(trimmed);
+  const match = /^([^\s]+)\s+==\s+([^\n]+)$/.exec(trimmed);
   if (!match) {
     return null;
   }

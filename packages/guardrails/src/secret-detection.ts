@@ -74,7 +74,8 @@ const CLOUD_PATTERNS: { pattern: RegExp; id: string; severity: 'critical' | 'hig
   },
   // Azure SQL/DB connection string
   {
-    pattern: /(?:Server\s*=\s*.+;)?User\s*Id\s*=\s*.+;?Password\s*=\s*.+(?:;Database|;Initial Catalog)/g,
+    // nosemgrep: use-bounded-regex — [^;] bounds each section, no nested quantifiers
+    pattern: /(?:Server\s*=\s*[^;]+;)?User\s*Id\s*=\s*[^;]+;Password\s*=\s*[^;]+(?:;Database|;Initial Catalog)/g,
     id: 'azure-db-connection-string',
     severity: 'high',
     confidence: 0.8

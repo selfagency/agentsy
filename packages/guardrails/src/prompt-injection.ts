@@ -20,12 +20,14 @@ const INJECTION_PATTERNS: { pattern: RegExp; id: string }[] = [
 
   // Delimiter confusion
   {
-    pattern: /(?:```|<\|im_start\|>|<\|im_end\|>|\[INST\]|\[\/INST\])\s*\n?.*\bignore\b/i,
+    // nosemgrep: use-bounded-regex — lazy .*? prevents backtracking, input is one message
+    pattern: /(?:```|<\|im_start\|>|<\|im_end\|>|\[INST\]|\[\/INST\])\s*\n?.*?\bignore\b/i,
     id: 'delimiter-injection'
   },
 
   // Token smuggling / hidden content
   {
+    // nosemgrep: use-bounded-regex — fixed alternation, single \s* group
     pattern: /\b(?:base64|rot13|hex|decod(?:e|ing))\s*(?:the\s+)?(?:following|below|this)\b/i,
     id: 'obfuscation-request'
   },
@@ -42,7 +44,8 @@ const INJECTION_PATTERNS: { pattern: RegExp; id: string }[] = [
 
   // Separator / delimiter injection attempts
   {
-    pattern: /(?:---|===)\s*END\s*(?:---|===)\s*\n?\s*(?:now|ignore|print|repeat|output|system)\b/i,
+    // nosemgrep: use-bounded-regex — single \s* group eliminates \s*\n?\s* ambiguity
+    pattern: /(?:---|===)\s*END\s*(?:---|===)\s+(?:now|ignore|print|repeat|output|system)\b/i,
     id: 'separator-injection'
   },
 

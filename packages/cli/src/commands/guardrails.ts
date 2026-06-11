@@ -240,14 +240,14 @@ interface PolicyParseState {
 /**
  * Patterns that can appear indented under a rule entry.
  */
-const RULE_FIELD_PATTERN = /^\s+(name|condition|action|description|phase|severity):\s*(.+)$/;
+const RULE_FIELD_PATTERN = /^\s+(name|condition|action|description|phase|severity):\s*([^\n]+)$/;
 
 /**
  * Try to parse a top-level key-value line (version, description).
  * Returns true if the line was consumed as a top-level key.
  */
 function tryParseTopLevel(line: string, state: PolicyParseState): boolean {
-  const versionMatch = /^version:\s*(.+)$/.exec(line);
+  const versionMatch = /^version:\s*([^\n]+)$/.exec(line);
   if (versionMatch) {
     const val = versionMatch[1];
     if (val !== undefined) {
@@ -256,7 +256,7 @@ function tryParseTopLevel(line: string, state: PolicyParseState): boolean {
     return true;
   }
 
-  const descriptionMatch = /^description:\s*(.+)$/.exec(line);
+  const descriptionMatch = /^description:\s*([^\n]+)$/.exec(line);
   if (descriptionMatch) {
     const val = descriptionMatch[1];
     if (val !== undefined) {
@@ -282,7 +282,7 @@ function tryParseRuleStart(line: string, state: PolicyParseState): boolean {
   }
   state.currentRule = {};
 
-  const nameMatch = /^\s*-\s+name:\s*(.+)$/.exec(line);
+  const nameMatch = /^\s*-\s+name:\s*([^\n]+)$/.exec(line);
   if (nameMatch) {
     const val = nameMatch[1];
     if (val !== undefined) {

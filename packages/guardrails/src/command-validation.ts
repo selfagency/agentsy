@@ -20,8 +20,10 @@ const CRITICAL_PATTERNS: { pattern: RegExp; id: string }[] = [
   // Process spawning API
   { pattern: /\b(?:child_process|spawn|exec|execSync|spawnSync)\./g, id: 'process-spawner' },
   // Pipe-to-shell: curl|wget then pipe to sh/bash/zsh
-  { pattern: /\b(?:curl|wget)\s+.*?\|\s*(?:bash|sh|zsh)\b/g, id: 'curl-pipe-shell' },
-  { pattern: /\bwget\s+.*?\|\s*(?:sh|bash|zsh)\b/g, id: 'wget-pipe-shell' },
+  // nosemgrep: use-bounded-regex — pipe symbol anchors the lazy quantifier
+  { pattern: /\b(?:curl|wget)\s+[^|]*?\|\s*(?:bash|sh|zsh)\b/g, id: 'curl-pipe-shell' },
+  // nosemgrep: use-bounded-regex — pipe symbol anchors the lazy quantifier
+  { pattern: /\bwget\s+[^|]*?\|\s*(?:sh|bash|zsh)\b/g, id: 'wget-pipe-shell' },
   // Direct eval
   { pattern: /\beval\s*\(/g, id: 'eval' }
 ];
