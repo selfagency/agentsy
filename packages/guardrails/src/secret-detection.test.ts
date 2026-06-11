@@ -12,28 +12,28 @@ describe('SecretDetectionScanner', () => {
   });
 
   it('blocks GitHub token', async () => {
-    const r = await assertBlock(scanner, 'ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'Secret detected');
+    const r = await assertBlock(scanner, 'ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'Critical secrets detected');
     assertDetections(r, ['github-token']);
   });
 
   it('blocks AWS access key', async () => {
-    const r = await assertBlock(scanner, 'AKIAIOSFODNN7EXAMPLE', 'Secret detected');
+    const r = await assertBlock(scanner, 'AKIAIOSFODNN7EXAMPLE', 'Critical secrets detected');
     assertDetections(r, ['aws-access-key']);
   });
 
   it('blocks Slack webhook', async () => {
-    const r = await assertBlock(scanner, 'https://hooks.slack.com/services/T00/B00/xxxxx', 'Secret detected');
+    const r = await assertBlock(scanner, 'https://hooks.slack.com/services/T00/B00/xxxxx', 'Critical secrets detected');
     assertDetections(r, ['slack-webhook']);
   });
 
   it('blocks Stripe live key', async () => {
-    const r = await assertBlock(scanner, 'sk_live_xxxxxxxxxxxxxxxxxxxx', 'Secret detected');
+    const r = await assertBlock(scanner, 'sk_live_xxxxxxxxxxxxxxxxxxxx', 'Critical secrets detected');
     assertDetections(r, ['stripe-live-key']);
   });
 
-  it('blocks generic API key pattern', async () => {
-    const r = await assertBlock(scanner, 'api_key=sk-xxxxxxxxxxxxxxxxxxxx', 'Secret detected');
-    assertDetections(r, ['generic-api-key']);
+  it('detects OpenAI API key', async () => {
+    const r = await assertBlock(scanner, 'api_key=sk-xxxxxxxxxxxxxxxxxxxx', 'Critical secrets detected');
+    assertDetections(r, ['openai-api-key']);
   });
 
   it('has correct metadata', () => {

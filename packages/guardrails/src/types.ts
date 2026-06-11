@@ -45,11 +45,17 @@ export type GuardrailPhase =
  */
 export interface Detection {
   readonly category?: OWASPCategory;
+  /** Confidence score 0–1 (1 = certain). Derived from pattern specificity + entropy. */
+  readonly confidence?: number;
   readonly description: string;
+  /** End offset in the original input string (exclusive). Enables UI highlighting. */
+  readonly end?: number;
   readonly id: string;
   readonly location?: string;
   readonly severity: 'low' | 'medium' | 'high' | 'critical';
   readonly snippet?: string;
+  /** Start offset in the original input string (inclusive). Enables UI highlighting. */
+  readonly start?: number;
 }
 
 /**

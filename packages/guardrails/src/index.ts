@@ -52,6 +52,35 @@ export type {
 } from './types.js';
 
 // ---------------------------------------------------------------------------
+// Message scrubbing — LLM input / deep object scrubbing (Phase 5.2)
+// ---------------------------------------------------------------------------
+
+export type { ScrubOptions } from './deep-scrub.js';
+export { scrubPiiDeep } from './deep-scrub.js';
+export type { ChatMessage, MessageScrubResult, ScrubbedMessage } from './message-scrubbing.js';
+export { scrubMessage, scrubMessagesDetailed, scrubMessagesForModel } from './message-scrubbing.js';
+
+// ---------------------------------------------------------------------------
+// Entropy detection — Shannon entropy scanner (Phase 5.2)
+// ---------------------------------------------------------------------------
+
+export { EntropyScanner, entropyOf } from './entropy.js';
+
+// ---------------------------------------------------------------------------
+// Baseline suppression — known-finding fingerprinting (Phase 5.2)
+// ---------------------------------------------------------------------------
+
+export type { BaselineDocument, BaselineEntry } from './baseline.js';
+export { BaselineManager, fingerprint } from './baseline.js';
+
+// ---------------------------------------------------------------------------
+// Inline ignore directives — source-level suppression (Phase 5.2)
+// ---------------------------------------------------------------------------
+
+export type { IgnoreDirectives } from './inline-ignore.js';
+export { parseIgnoreDirectives, shouldIgnore } from './inline-ignore.js';
+
+// ---------------------------------------------------------------------------
 // Legacy error classes (Phase 3.7)
 // ---------------------------------------------------------------------------
 
