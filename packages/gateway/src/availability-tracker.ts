@@ -82,7 +82,8 @@ export class ModelAvailabilityTracker {
     const breaker = entry as Required<CircuitBreakerEntry>;
 
     if (breaker.state === 'half-open') {
-      // Half-open + failure → reopen
+      // Half-open + failure → reopen the circuit
+      breaker.state = 'open';
       breaker.openedAt = Date.now();
       breaker.halfOpenStartedAt = undefined;
     } else if (breaker.consecutiveFailures >= this.#circuitFailureThreshold && breaker.state !== 'open') {
