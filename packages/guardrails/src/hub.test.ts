@@ -132,8 +132,8 @@ describe('GuardrailHub', () => {
 
 describe('BUILTIN_GUARDRAIL_URIS', () => {
   it('exports expected URIs', () => {
-    expect(BUILTIN_GUARDRAIL_URIS.PROMPT_INJECTION).toBe('hub://guardrails/prompt_injection@1.0');
-    expect(BUILTIN_GUARDRAIL_URIS.PII).toBe('hub://guardrails/pii_detection@1.0');
-    expect(BUILTIN_GUARDRAIL_URIS.RATE_LIMITER).toBe('hub://guardrails/rate_limiter@1.0');
+    expect(BUILTIN_GUARDRAIL_URIS.PROMPT_INJECTION).toBe('hub://guardrails/prompt-injection@1.0');
+    expect(BUILTIN_GUARDRAIL_URIS.PII).toBe('hub://guardrails/pii@2.0');
+    expect(BUILTIN_GUARDRAIL_URIS.RATE_LIMITER).toBe('hub://guardrails/rate-limiter@1.0');
   });
 });

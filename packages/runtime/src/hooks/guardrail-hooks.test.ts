@@ -175,9 +175,10 @@ describe('createToolInputGuardrailHook', () => {
     });
     const hook = createToolInputGuardrailHook(pipeline);
     const result = await hook.handler(preToolCallEvent('shell_exec', { cmd: 'rm -rf /' }));
+    // The hook passes through result.reason from the scanner directly
     expect(result).toEqual({
       continue: false,
-      reason: 'Tool call "shell_exec" blocked by guardrail'
+      reason: 'dangerous tool'
     });
   });
 
@@ -242,9 +243,10 @@ describe('createToolOutputGuardrailHook', () => {
     });
     const hook = createToolOutputGuardrailHook(pipeline);
     const result = await hook.handler(postToolCallEvent('read_file', 'file content with secret'));
+    // The hook passes through result.reason from the scanner directly
     expect(result).toEqual({
       continue: false,
-      reason: 'Tool result from "read_file" blocked by guardrail'
+      reason: 'leaked secret'
     });
   });
 

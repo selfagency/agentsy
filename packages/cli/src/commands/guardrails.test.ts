@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { createBuiltinScanners, GuardrailHub } from '@agentsy/guardrails';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { CliIO } from '../index.js';
 import {
   type GuardrailCliOptions,
   handleInstall,
@@ -26,15 +27,12 @@ vi.mock('node:fs/promises', () => ({
 // ---------------------------------------------------------------------------
 
 interface IoSpy {
-  stderr: ReturnType<typeof vi.fn>;
   stdout: ReturnType<typeof vi.fn>;
+  stderr: ReturnType<typeof vi.fn>;
 }
 
-function createIoSpy(): IoSpy {
-  return {
-    stdout: vi.fn(),
-    stderr: vi.fn()
-  };
+function createIoSpy(): CliIO & IoSpy {
+  return { stdout: vi.fn(), stderr: vi.fn() } as unknown as CliIO & IoSpy;
 }
 
 describe('parseSimplePolicy', () => {
@@ -191,9 +189,9 @@ describe('runGuardrailsCommand', () => {
     const exitCode = await runGuardrailsCommand(['list', '--json'], io);
     expect(exitCode).toBe(0);
     // Should output parseable JSON
-    const jsonCall = io.stdout.mock.calls.find(([msg]: [string]) => msg.startsWith('['));
+    const jsonCall = io.stdout.mock.calls.find(call => (call[0] as string).startsWith('['));
     expect(jsonCall).toBeDefined();
-    const entries = JSON.parse(jsonCall[0] as string);
+    const entries = JSON.parse(jsonCall![0] as string);
     expect(Array.isArray(entries)).toBe(true);
     expect(entries.length).toBeGreaterThanOrEqual(7);
     expect(entries[0]).toHaveProperty('uri');
@@ -306,9 +304,9 @@ describe('runGuardrailsCommand', () => {
     const exitCode = await runGuardrailsCommand(['policy', '--json', '/tmp/test-policy.json'], io);
     expect(exitCode).toBe(0);
     // Should output parseable JSON
-    const jsonCall = io.stdout.mock.calls.find(([msg]: [string]) => msg.startsWith('{'));
+    const jsonCall = io.stdout.mock.calls.find(call => (call[0] as string).startsWith('{'));
     expect(jsonCall).toBeDefined();
-    const doc = JSON.parse(jsonCall[0] as string);
+    const doc = JSON.parse(jsonCall![0] as string);
     expect(doc).toHaveProperty('version', '1.0');
     expect(doc.rules).toHaveLength(1);
     expect(doc.rules[0].name).toBe('test-rule');
