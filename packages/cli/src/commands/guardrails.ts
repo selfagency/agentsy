@@ -35,9 +35,20 @@ const defaultIo: Required<CliIO> = {
 // Built-in hub registration
 // =============================================================================
 
-/**
- * Seed a hub with all built-in scanners, returning the hub.
- */
+// =============================================================================
+// Subcommand handlers (exported for testing)
+// =============================================================================
+
+export interface GuardrailCliOptions {
+  hub: GuardrailHub;
+  json: boolean;
+  noColor: boolean;
+  stderr: (msg: string) => void;
+  stdout: (msg: string) => void;
+}
+
+const BUILTIN_URI_VALUES: readonly string[] = Object.values(BUILTIN_GUARDRAIL_URIS);
+
 function createSeededHub(): GuardrailHub {
   const hub = new GuardrailHub();
 
@@ -49,21 +60,7 @@ function createSeededHub(): GuardrailHub {
   return hub;
 }
 
-// =============================================================================
-// Subcommand handlers
-// =============================================================================
-
-interface GuardrailCliOptions {
-  hub: GuardrailHub;
-  json: boolean;
-  noColor: boolean;
-  stderr: (msg: string) => void;
-  stdout: (msg: string) => void;
-}
-
-const BUILTIN_URI_VALUES: readonly string[] = Object.values(BUILTIN_GUARDRAIL_URIS);
-
-function handleList(_argv: readonly string[], opts: GuardrailCliOptions): number {
+export function handleList(_argv: readonly string[], opts: GuardrailCliOptions): number {
   const entries = opts.hub.listInstalled();
 
   if (opts.json) {
@@ -99,7 +96,7 @@ function handleList(_argv: readonly string[], opts: GuardrailCliOptions): number
   return 0;
 }
 
-function handleInstall(argv: readonly string[], opts: GuardrailCliOptions): number {
+export function handleInstall(argv: readonly string[], opts: GuardrailCliOptions): number {
   const uri = argv[0];
   if (uri === undefined || uri.length === 0) {
     opts.stderr('Usage: agentsy guardrails install <hub-uri>');
@@ -123,12 +120,21 @@ function handleInstall(argv: readonly string[], opts: GuardrailCliOptions): numb
     return 0;
   }
 
-  // Try to match against known builtin scanners
-  const matchKey = BUILTIN_URI_VALUES.find(u => u === uri || u.startsWith(uri.split('@')[0] ?? uri));
+  // Try to match against known builtin scanners by name component
+  const matchKey = BUILTIN_URI_VALUES.find(u => {
+    if (u === uri) {
+      return true;
+    }
+    // Compare the name segment (last path component, ignoring @version)
+    const builtinName = u.split('/').pop()?.split('@')[0];
+    const inputName = uri.split('/').pop()?.split('@')[0];
+    return builtinName !== undefined && builtinName === inputName;
+  });
   if (matchKey !== undefined) {
     // Create a new hub instance seeded with builtins, then copy the matching entry
     const tempHub = createSeededHub();
-    const entry = tempHub.listInstalled().find(e => e.uri === matchKey);
+    const namePart = matchKey.split('/').pop()?.split('@')[0];
+    const entry = tempHub.listInstalled().find(e => e.uri.split('/').pop() === namePart);
     if (entry) {
       opts.hub.install(uri, entry.name, entry.description, entry.factory);
       opts.stdout(`Installed: ${uri}`);
@@ -142,7 +148,7 @@ function handleInstall(argv: readonly string[], opts: GuardrailCliOptions): numb
   return 1;
 }
 
-function handleUninstall(argv: readonly string[], opts: GuardrailCliOptions): number {
+export function handleUninstall(argv: readonly string[], opts: GuardrailCliOptions): number {
   const uri = argv[0];
   if (uri === undefined || uri.length === 0) {
     opts.stderr('Usage: agentsy guardrails uninstall <hub-uri>');
@@ -158,7 +164,7 @@ function handleUninstall(argv: readonly string[], opts: GuardrailCliOptions): nu
   return 1;
 }
 
-async function handlePolicy(argv: readonly string[], opts: GuardrailCliOptions): Promise<number> {
+export async function handlePolicy(argv: readonly string[], opts: GuardrailCliOptions): Promise<number> {
   const filePath = argv[0] ?? './.agentsy/policy.yaml';
 
   if (!existsSync(filePath)) {

@@ -151,13 +151,19 @@ export class GuardrailHub {
 /**
  * Built-in hub URI constants shared across the codebase.
  */
+/**
+ * Built-in guardrail URIs keyed by scanner metadata.id with @version suffix.
+ *
+ * Each URI matches a scanner's `metadata.id` field plus a semver suffix.
+ * For example, the prompt-injection scanner has `id: hub://guardrails/prompt-injection`
+ * and version 1.0.0, so the builtin URI is `hub://guardrails/prompt-injection@1.0`.
+ */
 export const BUILTIN_GUARDRAIL_URIS = {
-  PROMPT_INJECTION: 'hub://guardrails/prompt_injection@1.0',
-  PII: 'hub://guardrails/pii_detection@1.0',
-  SECRET_DETECTION: 'hub://guardrails/secret_detection@1.0',
-  OUTPUT_PII: 'hub://guardrails/output_pii_redaction@1.0',
-  PATH_SANITIZATION: 'hub://guardrails/path_sanitization@1.0',
-  COMMAND_VALIDATION: 'hub://guardrails/command_validation@1.0',
-  TOXICITY: 'hub://guardrails/toxicity_filter@1.0',
-  RATE_LIMITER: 'hub://guardrails/rate_limiter@1.0'
+  PROMPT_INJECTION: 'hub://guardrails/prompt-injection@1.0',
+  PII: 'hub://guardrails/pii@2.0',
+  SECRET_DETECTION: 'hub://guardrails/secret-detection@2.0',
+  PATH_SANITIZATION: 'hub://guardrails/path-sanitization@1.0',
+  COMMAND_VALIDATION: 'hub://guardrails/command-validation@1.0',
+  TOXICITY: 'hub://guardrails/toxicity@1.0',
+  RATE_LIMITER: 'hub://guardrails/rate-limiter@1.0'
 } as const;
