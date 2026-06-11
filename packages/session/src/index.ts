@@ -1,96 +1,23 @@
-// @agentsy/session — Session persistence, serialization, and branching
-// Initial API scaffold. For broader roadmap context, see plan/MASTER-IMPLEMENTATION-PLAN.md.
+/**
+ * @agentsy/session — Session persistence, serialization, and branching
+ *
+ * ## Packages
+ *
+ * - {@link ./state/index.ts | state } — Zod-validated typed state schema + immutable reducers
+ * - {@link ./store.ts | store }     — Key-value session store backed by in-memory maps
+ *
+ * @module
+ */
 
-import { createHash } from 'node:crypto';
+export {
+  createSessionSnapshot,
+  createSessionStore,
+  type CreateSessionSnapshotInput,
+  type ReusableSessionSegment,
+  type SessionSnapshot,
+  type SessionState as LegacySessionState,
+  type SessionStore
+} from './store.js';
 
-/** A segment of a prior session that can be reused (hot/warm/cold cache classification). */
-export interface ReusableSessionSegment {
-  fingerprint: string;
-  invalidations: string[];
-  reuseClass: 'hot' | 'warm' | 'cold';
-}
-
-/** Serializable state of an agent session at a point in time. */
-export interface SessionState {
-  id: string;
-  modelFamily?: string;
-  reusableSegments?: ReusableSessionSegment[];
-  values: Record<string, unknown>;
-}
-
-/** Checksummed, versioned snapshot of a session for caching and branching. */
-export interface SessionSnapshot {
-  checksum: string;
-  schemaVersion: number;
-  sessionId: string;
-  state: SessionState;
-  timestamp: Date;
-}
-
-/** Input parameters for constructing a SessionSnapshot. */
-export interface CreateSessionSnapshotInput {
-  id: string;
-  modelFamily?: string;
-  reusableSegments?: ReusableSessionSegment[];
-  values: Record<string, unknown>;
-}
-
-export function createSessionSnapshot(input: CreateSessionSnapshotInput): SessionSnapshot {
-  const inferredModelFamily =
-    input.modelFamily ?? (typeof input.values.modelFamily === 'string' ? input.values.modelFamily : undefined);
-  const snapshotState: SessionState = {
-    id: input.id,
-    values: { ...input.values },
-    ...(inferredModelFamily === undefined ? {} : { modelFamily: inferredModelFamily }),
-    ...(input.reusableSegments === undefined
-      ? {}
-      : {
-          reusableSegments: input.reusableSegments.map(segment => ({
-            fingerprint: segment.fingerprint,
-            invalidations: [...segment.invalidations],
-            reuseClass: segment.reuseClass
-          }))
-        })
-  };
-
-  const checksumSource = JSON.stringify({
-    id: snapshotState.id,
-    modelFamily: snapshotState.modelFamily ?? null,
-    reusableSegments: snapshotState.reusableSegments ?? null,
-    values: snapshotState.values
-  });
-
-  return {
-    checksum: `sha256:${createHash('sha256').update(checksumSource).digest('hex')}`,
-    schemaVersion: 1,
-    sessionId: input.id,
-    state: snapshotState,
-    timestamp: new Date()
-  };
-}
-
-/** In-memory key-value store for session state with snapshot isolation. */
-export interface SessionStore {
-  getState(): SessionState;
-  getValue(key: string): unknown;
-  setValue(key: string, value: unknown): void;
-}
-
-export const createSessionStore = (state: SessionState): SessionStore => {
-  const values = { ...state.values };
-
-  return {
-    getState() {
-      return {
-        id: state.id,
-        values: { ...values }
-      };
-    },
-    getValue(key: string) {
-      return values[key];
-    },
-    setValue(key, value) {
-      values[key] = value;
-    }
-  };
-};
+// Typed state layer (Phase 6)
+export * from './state/index.js';
