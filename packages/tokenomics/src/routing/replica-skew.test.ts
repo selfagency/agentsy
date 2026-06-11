@@ -32,14 +32,14 @@ describe('computeReplicaSkew', () => {
       snapshot({ replicaId: 'b', remainingTokensMinute: 100 })
     ]);
 
-    const a = signals.find(s => s.replicaId === 'a')!;
-    expect(a.share).toBeGreaterThan(0.7);
-    expect(a.isHot).toBe(true);
-    expect(a.isCold).toBe(false);
+    const a = signals.find(s => s.replicaId === 'a');
+    expect(a?.share).toBeGreaterThan(0.7);
+    expect(a?.isHot).toBe(true);
+    expect(a?.isCold).toBe(false);
 
-    const b = signals.find(s => s.replicaId === 'b')!;
-    expect(b.share).toBeLessThan(0.3);
-    expect(b.isCold).toBe(true);
+    const b = signals.find(s => s.replicaId === 'b');
+    expect(b?.share).toBeLessThan(0.3);
+    expect(b?.isCold).toBe(true);
   });
 
   it('treats even distribution as neutral', () => {
