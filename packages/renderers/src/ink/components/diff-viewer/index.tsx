@@ -3,6 +3,10 @@ import { useMemo } from 'react';
 
 import type { AcidPalette } from '../../theme/palette.ts';
 
+// =============================================================================
+// Types
+// =============================================================================
+
 /** A single diff hunk. */
 export interface DiffHunk {
   readonly index: number;
@@ -28,17 +32,18 @@ export interface DiffViewerProps {
   readonly palette: AcidPalette;
 }
 
-/**
- * Compute a simple line-based diff between two strings.
- * Uses Myers-like longest-common-subsequence approach
- * on line arrays.
- */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Myers LCS with 3 sequential phases (build table, backtrack, group hunks) — tightly coupled by algorithm structure
-function computeDiff(original: string, modified: string): DiffHunk[] {
-  const origLines = original.split('\n');
-  const modLines = modified.split('\n');
+// =============================================================================
+// Myers LCS diff — 3 isolated phases
+// =============================================================================
 
-  // Build LCS table
+/**
+ * Phase 1: Build the LCS DP table.
+ *
+ * Returns an (m+1) × (n+1) matrix where dp[i][j] = length of LCS
+ * between origLines[0..i-1] and modLines[0..j-1].
+ */
+// nosemgrep: array-indexing — DP table addresses bounded by m,n; no user input
+function buildLcsTable(origLines: string[], modLines: string[]): number[][] {
   const m = origLines.length;
   const n = modLines.length;
   const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
@@ -55,12 +60,18 @@ function computeDiff(original: string, modified: string): DiffHunk[] {
       }
     }
   }
+  return dp;
+}
 
-  // Backtrack to create diff
+/**
+ * Phase 2: Backtrack through the LCS table to produce a reverse diff.
+ */
+// nosemgrep: array-indexing — DP table addresses bounded by m,n; no user input
+function backtrackDiff(dp: number[][], origLines: string[], modLines: string[]): DiffLine[] {
   const reverseLines: DiffLine[] = [];
+  let i = origLines.length;
+  let j = modLines.length;
 
-  let i = m;
-  let j = n;
   while (i > 0 || j > 0) {
     const row = dp[i] as number[];
     const prevRow = dp[i - 1] as number[];
@@ -78,10 +89,13 @@ function computeDiff(original: string, modified: string): DiffHunk[] {
     }
   }
 
-  // Reverse to chronological order
-  const allLines = reverseLines.reverse();
+  return reverseLines.reverse();
+}
 
-  // Group into hunks (max 5 context lines between changes)
+/**
+ * Phase 3: Group diff lines into hunks with at most 5 context lines between changes.
+ */
+function groupIntoHunks(allLines: DiffLine[]): DiffHunk[] {
   const hunks: DiffHunk[] = [];
   let currentHunk: DiffLine[] = [];
   let hunkIndex = 0;
@@ -122,8 +136,20 @@ function computeDiff(original: string, modified: string): DiffHunk[] {
       location: `@@ -${1 + currentHunk.length} +${1 + currentHunk.length} @@`
     });
   }
-
   return hunks;
+}
+
+/**
+ * Compute a simple line-based diff between two strings.
+ * Uses Myers-like longest-common-subsequence approach.
+ * Decomposed into 3 isolated phases for testability and maintainability.
+ */
+function computeDiff(original: string, modified: string): DiffHunk[] {
+  const origLines = original.split('\n');
+  const modLines = modified.split('\n');
+  const dp = buildLcsTable(origLines, modLines);
+  const allLines = backtrackDiff(dp, origLines, modLines);
+  return groupIntoHunks(allLines);
 }
 
 /**

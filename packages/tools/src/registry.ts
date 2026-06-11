@@ -72,6 +72,7 @@ export class ToolRegistry {
   }
 
   listByAnnotation(key: keyof ToolAnnotations): ToolRegistration[] {
+    // nosemgrep: key is typed as keyof ToolAnnotations — caller-controlled but type-constrained
     return this.list().filter(t => t.annotations?.[key]);
   }
 

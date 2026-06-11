@@ -1,4 +1,5 @@
-import type { Detection, GuardrailResult, GuardrailScanner } from './types.js';
+import { collectRegexMatches } from './_internal.js';
+import type { GuardrailResult, GuardrailScanner } from './types.js';
 
 // =============================================================================
 // Secret pattern categories — 45+ provider patterns across 6 categories
@@ -397,26 +398,7 @@ export class SecretDetectionScanner implements GuardrailScanner {
   };
 
   evaluate(input: string, _context?: Record<string, unknown>): Promise<GuardrailResult> {
-    const detections: Detection[] = [];
-
-    for (const { pattern, id, severity, confidence } of ALL_PATTERNS) {
-      pattern.lastIndex = 0;
-      let match: RegExpExecArray | null;
-      // biome-ignore lint/suspicious/noAssignInExpressions: standard exec loop with global regex
-      while ((match = pattern.exec(input)) !== null) {
-        detections.push({
-          id,
-          description: `Secret detected: ${id}`,
-          severity,
-          confidence,
-          start: match.index,
-          end: match.index + match[0].length
-        });
-        if (match.index === pattern.lastIndex) {
-          pattern.lastIndex++;
-        }
-      }
-    }
+    const detections = collectRegexMatches(input, ALL_PATTERNS, 'Secret');
 
     if (detections.length === 0) {
       return Promise.resolve({ status: 'pass', phase: 'output' });

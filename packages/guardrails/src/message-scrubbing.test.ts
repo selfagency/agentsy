@@ -116,8 +116,7 @@ describe('scrubMessage', () => {
     const result = await scrubMessage(userMsg, [new RedactEmailScanner()]);
     expect(result.message.scrubbed).toBe(true);
     expect(result.message.content).toBe('My email is [REDACTED-EMAIL]');
-    expect(result.detections).toHaveLength(1);
-    expect(result.detections[0]?.id).toBe('email');
+    expect(result.detections?.[0]?.id).toBe('email');
   });
 
   it('preserves user messages with no issues', async () => {

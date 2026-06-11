@@ -128,39 +128,47 @@ function tryStripParens(trimmed: string): string | null {
 }
 
 /**
- * Try to evaluate a `starts_with` operator expression.
- * Format: <path> starts_with '<literal>'
+ * Evaluate a binary operator expression by dispatching on the operator name.
+ * Format: <path> <operator> '<literal>'
+ *
+ * Supported operators: starts_with, contains, equals, matches.
  */
-function tryEvaluateStartsWith(trimmed: string, context: PolicyContext): boolean | null {
-  const match = /^(.+?)\s+starts_with\s+'(.+)'$/.exec(trimmed);
+function tryEvaluateBinary(trimmed: string, context: PolicyContext): boolean | null {
+  const match = /^(.+?)\s+(starts_with|contains|equals|matches)\s+'(.+)'$/.exec(trimmed);
   if (!match) {
     return null;
   }
   const leftPath = match[1];
-  const rightVal = match[2];
-  if (leftPath === undefined || rightVal === undefined) {
+  const operator = match[2];
+  const rightVal = match[3];
+  if (leftPath === undefined || operator === undefined || rightVal === undefined) {
     return false;
   }
   const value = resolvePath(leftPath, context);
-  return typeof value === 'string' && value.startsWith(rightVal);
-}
-
-/**
- * Try to evaluate a `contains` operator expression.
- * Format: <path> contains '<literal>'
- */
-function tryEvaluateContains(trimmed: string, context: PolicyContext): boolean | null {
-  const match = /^(.+?)\s+contains\s+'(.+)'$/.exec(trimmed);
-  if (!match) {
-    return null;
-  }
-  const leftPath = match[1];
-  const rightVal = match[2];
-  if (leftPath === undefined || rightVal === undefined) {
+  if (typeof value !== 'string') {
     return false;
   }
-  const value = resolvePath(leftPath, context);
-  return typeof value === 'string' && value.includes(rightVal);
+  switch (operator) {
+    case 'starts_with': {
+      return value.startsWith(rightVal);
+    }
+    case 'contains': {
+      return value.includes(rightVal);
+    }
+    case 'equals': {
+      return value === rightVal;
+    }
+    case 'matches': {
+      try {
+        return new RegExp(rightVal).test(value);
+      } catch {
+        return false;
+      }
+    }
+    default: {
+      return false;
+    }
+  }
 }
 
 /**
@@ -204,14 +212,9 @@ export function evaluateCondition(condition: string, context: PolicyContext): bo
   }
 
   // Simple operator expressions
-  const startsWithResult = tryEvaluateStartsWith(trimmed, context);
-  if (startsWithResult !== null) {
-    return startsWithResult;
-  }
-
-  const containsResult = tryEvaluateContains(trimmed, context);
-  if (containsResult !== null) {
-    return containsResult;
+  const binaryResult = tryEvaluateBinary(trimmed, context);
+  if (binaryResult !== null) {
+    return binaryResult;
   }
 
   const equalsResult = tryEvaluateEquals(trimmed, context);
@@ -228,7 +231,50 @@ export function evaluateCondition(condition: string, context: PolicyContext): bo
  * Split a string by a delimiter only at the top level (not inside parentheses
  * or single/double-quoted strings). Used for && and || splitting.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: state machine with necessary quote/paren/delimiter tracking
+/**
+ * Track quote/paren state for a character, returning updated state.
+ */
+function updateParenState(
+  ch: string,
+  depth: number,
+  inSingleQuote: boolean,
+  inDoubleQuote: boolean
+): { depth: number; inSingleQuote: boolean; inDoubleQuote: boolean } {
+  let newDepth = depth;
+  let newSingle = inSingleQuote;
+  let newDouble = inDoubleQuote;
+
+  if (ch === "'" && !newDouble) {
+    newSingle = !newSingle;
+  }
+  if (ch === '"' && !newSingle) {
+    newDouble = !newDouble;
+  }
+  if (!(newSingle || newDouble)) {
+    if (ch === '(') {
+      newDepth++;
+    }
+    if (ch === ')') {
+      newDepth--;
+    }
+  }
+
+  return { depth: newDepth, inSingleQuote: newSingle, inDoubleQuote: newDouble };
+}
+
+/**
+ * Check whether a delimiter match occurs at the current position (not inside quotes or parens).
+ */
+function isSplitPoint(
+  lookahead: string,
+  delimiter: string,
+  depth: number,
+  inSingleQuote: boolean,
+  inDoubleQuote: boolean
+): boolean {
+  return !(inSingleQuote || inDoubleQuote) && depth === 0 && lookahead === delimiter;
+}
+
 function splitAtTopLevel(input: string, delimiter: '&&' | '||'): string[] {
   if (!input.includes(delimiter)) {
     return [input];
@@ -244,22 +290,12 @@ function splitAtTopLevel(input: string, delimiter: '&&' | '||'): string[] {
     const ch = input[i] as string;
     const lookahead = input.slice(i, i + delimiter.length);
 
-    if (ch === "'" && !inDoubleQuote) {
-      inSingleQuote = !inSingleQuote;
-    }
-    if (ch === '"' && !inSingleQuote) {
-      inDoubleQuote = !inDoubleQuote;
-    }
-    if (!(inSingleQuote || inDoubleQuote)) {
-      if (ch === '(') {
-        depth++;
-      }
-      if (ch === ')') {
-        depth--;
-      }
-    }
+    const nextState = updateParenState(ch, depth, inSingleQuote, inDoubleQuote);
+    depth = nextState.depth;
+    inSingleQuote = nextState.inSingleQuote;
+    inDoubleQuote = nextState.inDoubleQuote;
 
-    if (!(inSingleQuote || inDoubleQuote) && depth === 0 && lookahead === delimiter) {
+    if (isSplitPoint(lookahead, delimiter, depth, inSingleQuote, inDoubleQuote)) {
       results.push(current.trim());
       current = '';
       i += delimiter.length - 1;
@@ -276,6 +312,11 @@ function splitAtTopLevel(input: string, delimiter: '&&' | '||'): string[] {
 }
 
 /**
+ * Prototype pollution guard — keys that could traverse up the prototype chain.
+ */
+const PROTOTYPE_POLLUTION_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+/**
  * Resolve a dot-separated path against a policy context.
  */
 function resolvePath(path: string, context: PolicyContext): unknown {
@@ -286,7 +327,11 @@ function resolvePath(path: string, context: PolicyContext): unknown {
     if (current === null || current === undefined) {
       return;
     }
+    if (PROTOTYPE_POLLUTION_KEYS.has(part)) {
+      return;
+    }
     if (typeof current === 'object' && part in (current as Record<string, unknown>)) {
+      // nosemgrep: part is validated against PROTOTYPE_POLLUTION_KEYS blocklist
       current = (current as Record<string, unknown>)[part];
     } else {
       return;

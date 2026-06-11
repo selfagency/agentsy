@@ -25,7 +25,11 @@ export type {
   RuntimeWorkflowExecutor,
   RuntimeWorkflowTask
 } from '@agentsy/types';
-
+export type { PolicyApprovalHookOptions, ToolPolicyRule } from './approval/approval-hook.js';
+export { createPolicyApprovalHook } from './approval/approval-hook.js';
+// Approval subpath — re-export so the ./approval entry point code is reachable
+export type { ApprovalManagerOptions, PendingApproval } from './approval/approval-manager.js';
+export { ApprovalManager } from './approval/approval-manager.js';
 export {
   type BuildRuntimeContextInput,
   buildRuntimeContext,

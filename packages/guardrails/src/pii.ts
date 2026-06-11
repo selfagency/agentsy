@@ -1,3 +1,4 @@
+import { collectRegexMatches } from './_internal.js';
 import type { Detection, GuardrailPhase, GuardrailResult, GuardrailScanner } from './types.js';
 
 // =============================================================================
@@ -190,26 +191,7 @@ export class PIIScanner implements GuardrailScanner {
   }
 
   evaluate(input: string, _context?: Record<string, unknown>): Promise<GuardrailResult> {
-    const detections: Detection[] = [];
-
-    for (const { pattern, id, severity, confidence } of ALL_PII_PATTERNS) {
-      pattern.lastIndex = 0;
-      let match: RegExpExecArray | null;
-      // biome-ignore lint/suspicious/noAssignInExpressions: standard exec loop with global regex
-      while ((match = pattern.exec(input)) !== null) {
-        detections.push({
-          id,
-          description: `PII detected: ${id}`,
-          severity,
-          confidence,
-          start: match.index,
-          end: match.index + match[0].length
-        });
-        if (match.index === pattern.lastIndex) {
-          pattern.lastIndex++;
-        }
-      }
-    }
+    const detections = collectRegexMatches(input, ALL_PII_PATTERNS, 'PII');
 
     if (detections.length === 0) {
       return Promise.resolve({ status: 'pass', phase: this.#phase });

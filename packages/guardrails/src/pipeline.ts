@@ -57,39 +57,86 @@ export class GuardrailPipeline {
    * Returns the first `block` result (if shortCircuitOnBlock is true), or
    * collects all detections and returns the most severe non-pass result.
    */
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: evaluate maps 4 status outcomes per scanner — unavoidable branches
   async evaluate(input: string, phase: GuardrailPhase, context?: Record<string, unknown>): Promise<GuardrailResult> {
     const detections: Detection[] = [];
+    let currentInput = input;
     let blockResult: GuardrailResult | undefined;
     let transformResult: GuardrailResult | undefined;
     let escalateResult: GuardrailResult | undefined;
 
     for (const scanner of this.#scanners) {
-      const result = await scanner.evaluate(input, context);
+      const result = await scanner.evaluate(currentInput, context);
       this.#collectResult(result, detections);
+
+      const ps = this.#applyResult(result, blockResult, transformResult, escalateResult, currentInput);
+      blockResult = ps.blockResult;
+      transformResult = ps.transformResult;
+      escalateResult = ps.escalateResult;
+      currentInput = ps.input;
+
       if (result.status === 'block' && (this.#config.shortCircuitOnBlock ?? true)) {
         return result;
       }
-      if (result.status === 'block') {
-        blockResult ??= result;
-      }
-      if (result.status === 'transform') {
-        transformResult = result;
-        // Chain sanitized output as input for subsequent scanners
-        if (result.sanitized !== undefined) {
-          // biome-ignore lint/style/noParameterAssign: intentional — chains sanitized output through pipeline
-          input = result.sanitized;
-        }
-      }
-      if (
-        result.status === 'escalate' &&
-        (result.riskScore ?? 0) > ((escalateResult?.status === 'escalate' ? escalateResult.riskScore : 0) ?? 0)
-      ) {
-        escalateResult = result;
-      }
     }
 
-    // Priority: block > transform > escalate > pass (non-short-circuit, with chained transforms)
+    return this.#resolvePriority(blockResult, transformResult, escalateResult, detections, phase);
+  }
+
+  /**
+   * Apply a single scanner result, updating priority accumulators and chaining transforms.
+   */
+  #applyResult(
+    result: GuardrailResult,
+    blockResult: GuardrailResult | undefined,
+    transformResult: GuardrailResult | undefined,
+    escalateResult: GuardrailResult | undefined,
+    currentInput: string
+  ): {
+    blockResult: GuardrailResult | undefined;
+    transformResult: GuardrailResult | undefined;
+    escalateResult: GuardrailResult | undefined;
+    input: string;
+  } {
+    let escalated = escalateResult;
+    let transformed = transformResult;
+    let blocked = blockResult;
+    let nextInput = currentInput;
+
+    if (result.status === 'block') {
+      blocked ??= result;
+    }
+    if (result.status === 'transform') {
+      transformed = result;
+      if (result.sanitized !== undefined) {
+        nextInput = result.sanitized;
+      }
+    }
+    if (
+      result.status === 'escalate' &&
+      (result.riskScore ?? 0) > ((escalated?.status === 'escalate' ? escalated.riskScore : 0) ?? 0)
+    ) {
+      escalated = result;
+    }
+
+    return {
+      blockResult: blocked,
+      input: nextInput,
+      transformResult: transformed,
+      escalateResult: escalated
+    };
+  }
+
+  /**
+   * Resolve the most severe result across all scanners.
+   * Priority: block > transform > escalate > pass.
+   */
+  #resolvePriority(
+    blockResult: GuardrailResult | undefined,
+    transformResult: GuardrailResult | undefined,
+    escalateResult: GuardrailResult | undefined,
+    detections: Detection[],
+    phase: GuardrailPhase
+  ): GuardrailResult {
     if (blockResult) {
       return detections.length > 0 ? ({ ...blockResult, detections } as GuardrailResult) : blockResult;
     }

@@ -81,6 +81,13 @@ export type { IgnoreDirectives } from './inline-ignore.js';
 export { parseIgnoreDirectives, shouldIgnore } from './inline-ignore.js';
 
 // ---------------------------------------------------------------------------
+// Credential Reference Scanner — resolves known credentials via broker (Phase 5.2)
+// ---------------------------------------------------------------------------
+
+export type { CredentialPattern, CredentialReferenceScannerOptions } from './credential-scanner.js';
+export { CredentialReferenceScanner } from './credential-scanner.js';
+
+// ---------------------------------------------------------------------------
 // Legacy error classes (Phase 3.7)
 // ---------------------------------------------------------------------------
 

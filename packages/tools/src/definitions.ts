@@ -17,7 +17,7 @@ export interface ToolAnnotations {
 /**
  * Tool execution handler signature.
  */
-export type ToolHandler = (input: Record<string, unknown>) => Promise<ToolResult>;
+export type ToolHandler = (input: Record<string, unknown>) => ToolResult | Promise<ToolResult>;
 
 /**
  * Invocation argument describing a tool parameter with JSON Schema-like properties.

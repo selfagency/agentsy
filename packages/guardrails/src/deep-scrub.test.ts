@@ -152,7 +152,7 @@ describe('scrubPiiDeep', () => {
 
     const result = await scrubPiiDeep(input, [scanner]);
 
-    expect(result.items?.[0]?.email).toBe('[REDACTED-EMAIL]');
+    expect((result.items?.[0] as { email: string } | undefined)?.email).toBe('[REDACTED-EMAIL]');
     expect(result.items?.[1]).toBe('[REDACTED-EMAIL]');
     expect(result.items?.[2]).toBe(42);
     expect(result.items?.[3]).toBeNull();
