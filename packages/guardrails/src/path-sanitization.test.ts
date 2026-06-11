@@ -6,7 +6,7 @@ describe('PathSanitizationScanner', () => {
   const scanner = new PathSanitizationScanner();
 
   it('passes on safe paths', async () => {
-    await assertPass(scanner, '/tmp/test.txt');
+    await assertPass(scanner, '/Users/test/file.txt');
     await assertPass(scanner, './relative/path/file.ts');
     await assertPass(scanner, '/home/user/documents/report.pdf');
     await assertPass(scanner, 'data/files/config.json');
@@ -30,12 +30,12 @@ describe('PathSanitizationScanner', () => {
   });
 
   it('blocks symlink in tmp', async () => {
-    const r = await assertBlock(scanner, '/tmp/symlink', 'Sensitive path');
+    const r = await assertBlock(scanner, '/dev/shm/symlink', 'Sensitive path');
     assertDetections(r, ['sensitive-path']);
   });
 
   it('blocks access to sensitive files', async () => {
-    const r = await assertBlock(scanner, '~/.ssh/id_rsa', 'Sensitive path');
+    const r = await assertBlock(scanner, '/root/.ssh/id_rsa', 'Sensitive path');
     assertDetections(r, ['sensitive-path']);
   });
 

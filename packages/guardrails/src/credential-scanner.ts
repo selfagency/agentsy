@@ -80,7 +80,7 @@ const DEFAULT_CREDENTIAL_PATTERNS: CredentialPattern[] = [
   { order: 3, regex: /sk-ant-[A-Za-z0-9]{20,60}/g, resourceType: 'anthropic', description: 'Anthropic API key' },
   { order: 4, regex: /AKIA[0-9A-Z]{16}/g, resourceType: 'aws', description: 'AWS access key ID' },
   { order: 5, regex: /ghp_[A-Za-z0-9]{36,40}/g, resourceType: 'github', description: 'GitHub classic PAT' },
-  { order: 6, regex: /github_pat_[A-Za-z0-9_]{85,}/g, resourceType: 'github', description: 'GitHub fine-grained PAT' },
+  { order: 6, regex: /github_pat_\w{85,}/g, resourceType: 'github', description: 'GitHub fine-grained PAT' },
   { order: 7, regex: /gho_[A-Za-z0-9]{36,40}/g, resourceType: 'github', description: 'GitHub OAuth access token' },
   { order: 8, regex: /ghu_[A-Za-z0-9]{36,40}/g, resourceType: 'github', description: 'GitHub user-to-server token' },
   { order: 9, regex: /ghs_[A-Za-z0-9]{36,40}/g, resourceType: 'github', description: 'GitHub server-to-server token' },

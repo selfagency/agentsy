@@ -88,11 +88,11 @@ describe('EntropyScanner', () => {
 
   it('respects custom threshold', async () => {
     // Lower threshold = more sensitive
-    const scanner = new EntropyScanner({ threshold: 3.0 });
+    const scanner = new EntropyScanner({ threshold: 3 });
     // 'abcdefgh' has entropy ~3.0 (log2(8) = 3)
     const _result = await scanner.evaluate('token: abcdefgh');
     // May or may not trigger depending on exact threshold
-    const lowScanner = new EntropyScanner({ threshold: 5.0 });
+    const lowScanner = new EntropyScanner({ threshold: 5 });
     const lowResult = await lowScanner.evaluate('Gx8pQmZwN3yB6rKtV2cL');
     // With threshold 5.0, should still not pass for a diverse string
     // (max possible entropy for alphanumeric = log2(62) ≈ 5.95)

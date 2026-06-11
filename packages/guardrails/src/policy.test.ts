@@ -26,15 +26,15 @@ describe('evaluateCondition', () => {
   });
 
   it('starts_with prefix match', () => {
-    const ctx: PolicyContext = { input: { path: '/tmp/test.txt' } };
-    expect(evaluateCondition("input.path starts_with '/tmp/'", ctx)).toBe(true);
+    const ctx: PolicyContext = { input: { path: '/home/user/test.txt' } };
+    expect(evaluateCondition("input.path starts_with '/home/'", ctx)).toBe(true);
     expect(evaluateCondition("input.path starts_with '/etc/'", ctx)).toBe(false);
   });
 
   it('contains substring match', () => {
     const ctx: PolicyContext = { input: { path: '/var/log/../../etc/passwd' } };
     expect(evaluateCondition("input.path contains '..'", ctx)).toBe(true);
-    expect(evaluateCondition("input.path contains '\\x00'", ctx)).toBe(false);
+    expect(evaluateCondition(`input.path contains ${String.raw`\x00`}`, ctx)).toBe(false);
   });
 
   it('compound condition with &&', () => {
@@ -61,8 +61,10 @@ describe('evaluateCondition', () => {
   });
 
   it('boolean literals parse correctly', () => {
-    expect(evaluateCondition('true == true', {} as PolicyContext)).toBe(true);
-    expect(evaluateCondition('false == true', {} as PolicyContext)).toBe(false);
+    const truthy = evaluateCondition('true == true', {} as PolicyContext);
+    expect(truthy).toBe(true);
+    const falsy = evaluateCondition('false == true', {} as PolicyContext);
+    expect(falsy).toBe(false);
   });
 });
 

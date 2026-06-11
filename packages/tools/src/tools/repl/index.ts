@@ -14,7 +14,7 @@ export function createReplTool(): ToolDefinition {
       { name: 'timeout', type: 'number', required: false, description: 'Execution timeout in ms' }
     ],
     handler: input => {
-      const code = String(input.code ?? '');
+      const code = typeof input.code === 'string' ? input.code : '';
       if (!code) {
         return { ok: false, data: null, error: 'Missing required parameter: code' };
       }

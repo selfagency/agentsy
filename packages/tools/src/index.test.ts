@@ -178,7 +178,7 @@ describe('Baseline tool handlers', () => {
     if (!readTool) {
       throw new Error('fs_read not found');
     }
-    const result = await readTool.handler({ path: '/tmp/test.txt' });
+    const result = await readTool.handler({ path: '/Users/test/file.txt' });
     expect(result.ok).toBe(true);
   });
 
@@ -199,7 +199,7 @@ describe('Baseline tool handlers', () => {
     if (!writeTool) {
       throw new Error('fs_write not found');
     }
-    const result = await writeTool.handler({ path: '/tmp/test.txt', content: 'hello' });
+    const result = await writeTool.handler({ path: '/Users/test/file.txt', content: 'hello' });
     expect(result.ok).toBe(true);
     expect(result.data).toHaveProperty('written', true);
   });

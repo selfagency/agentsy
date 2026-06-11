@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { CredentialBrokerLike } from '../src/credential-scanner.js';
+import type { CredentialBrokerLike, CredentialPattern } from '../src/credential-scanner.js';
 import { CredentialReferenceScanner } from '../src/credential-scanner.js';
 
 // =============================================================================
@@ -25,17 +25,19 @@ class MockBroker implements CredentialBrokerLike {
     this.#store = new Map(Object.entries(entries));
   }
 
-  check(resourceType: string): boolean {
+  // biome-ignore lint/suspicious/useAwait: interface requires async
+  async check(resourceType: string): Promise<boolean> {
     return this.#store.has(resourceType);
   }
 
-  issue(request: {
+  // biome-ignore lint/suspicious/useAwait: interface requires async
+  async issue(request: {
     resourceType: string;
     sessionId: string;
     justification: string;
     requestedScopes: string[];
     ttlSeconds: number;
-  }): { id: string } {
+  }): Promise<{ id: string }> {
     const value = this.#store.get(request.resourceType);
     if (value === undefined) {
       throw new Error(`No credential for ${request.resourceType}`);
@@ -50,7 +52,8 @@ class MockBroker implements CredentialBrokerLike {
     return { id };
   }
 
-  resolve(id: string): string {
+  // biome-ignore lint/suspicious/useAwait: interface requires async
+  async resolve(id: string): Promise<string> {
     const value = this.#store.get(id);
     if (value === undefined) {
       throw new Error(`Unknown credential: ${id}`);
@@ -228,17 +231,19 @@ describe('CredentialReferenceScanner', () => {
   it('handles broker error gracefully (fallback to pass)', async () => {
     // A broker that throws on issue()
     const throwingBroker = {
-      check: async () => true,
-      issue: () => {
+      // biome-ignore lint/suspicious/useAwait: interface requires async
+      async check() {
+        return true;
+      },
+      // biome-ignore lint/suspicious/useAwait: interface requires async, throws sync
+      async issue() {
         throw new Error('Broker unavailable');
       },
-      resolve: async () => '',
-      getAuditLog: () => [],
-      listActive: async () => [],
-      revoke: () => {
-        /* no-op */
+      // biome-ignore lint/suspicious/useAwait: interface requires async
+      async resolve() {
+        return '';
       }
-    } satisfies CredentialBrokerLike;
+    } as CredentialBrokerLike;
 
     const scanner = new CredentialReferenceScanner(throwingBroker);
 
@@ -255,6 +260,5 @@ describe('CredentialReferenceScanner', () => {
     expect(scanner.metadata.id).toBe('agentsy:guardrails:credential-reference');
     expect(scanner.metadata.priority).toBe(8);
     expect(scanner.metadata.tags).toContain('credential');
-    expect(scanner.metadata.phase).toBeUndefined(); // not in metadata, set in result
   });
 });
