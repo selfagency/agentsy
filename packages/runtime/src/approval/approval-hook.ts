@@ -68,44 +68,54 @@ export function createPolicyApprovalHook(options: PolicyApprovalHookOptions): {
       if (event.type !== 'PreToolCall') {
         return Promise.resolve(allowResult());
       }
-
-      // After the type check, TypeScript narrows event to PreToolCallEvent
-      const preToolCall = event;
-
-      try {
-        // Evaluate policy rules in order, first match wins
-        const matchedRule = findFirstMatchingRule(rules, preToolCall);
-
-        if (matchedRule !== null) {
-          // biome-ignore lint/style/useDefaultSwitchClause: all 3 actions explicitly handled — default unreachable
-          switch (matchedRule.action) {
-            case 'allow': {
-              return Promise.resolve(allowResult());
-            }
-            case 'deny': {
-              return Promise.resolve(
-                denyResult(
-                  `Policy denies: "${preToolCall.toolName}" matches rule "${matchedRule.label ?? matchedRule.pattern}"`
-                )
-              );
-            }
-            case 'require_approval': {
-              return requireApprovalResult(
-                approvalManager,
-                preToolCall.toolName,
-                preToolCall.args as Record<string, unknown>
-              );
-            }
-          }
-        }
-
-        // No rule matched — use default action
-        return applyDefaultAction(defaultAction, approvalManager, preToolCall);
-      } catch {
-        return Promise.resolve(denyResult('Policy evaluation error — denied by default'));
-      }
+      return evaluatePolicy(rules, defaultAction, approvalManager, event);
     }
   };
+}
+
+/**
+ * Evaluate tool policy rules and return the appropriate HookResult.
+ */
+function evaluatePolicy(
+  rules: ToolPolicyRule[],
+  defaultAction: PolicyApprovalAction,
+  approvalManager: ApprovalManager,
+  event: PreToolCallEvent
+): Promise<HookResult> {
+  try {
+    const matchedRule = findFirstMatchingRule(rules, event.toolName);
+
+    if (matchedRule !== null) {
+      return executeRuleAction(matchedRule, event, approvalManager);
+    }
+
+    // No rule matched — use default action
+    return applyDefaultAction(defaultAction, approvalManager, event);
+  } catch {
+    return Promise.resolve(denyResult('Policy evaluation error — denied by default'));
+  }
+}
+
+/**
+ * Execute the action for a matched rule.
+ */
+function executeRuleAction(
+  rule: ToolPolicyRule,
+  event: PreToolCallEvent,
+  approvalManager: ApprovalManager
+): Promise<HookResult> {
+  if (rule.action === 'allow') {
+    return Promise.resolve(allowResult());
+  }
+
+  if (rule.action === 'deny') {
+    return Promise.resolve(
+      denyResult(`Policy denies: "${event.toolName}" matches rule "${rule.label ?? rule.pattern}"`)
+    );
+  }
+
+  // rule.action === 'require_approval'
+  return requireApprovalResult(approvalManager, event.toolName, event.args as Record<string, unknown>);
 }
 
 /**
@@ -118,9 +128,9 @@ function allowResult(): HookResult {
 /**
  * Find the first policy rule whose pattern matches the event's tool name, or null.
  */
-function findFirstMatchingRule(rules: ToolPolicyRule[], event: PreToolCallEvent): ToolPolicyRule | null {
+function findFirstMatchingRule(rules: ToolPolicyRule[], toolName: string): ToolPolicyRule | null {
   for (const rule of rules) {
-    if (!matchToolPattern(rule.pattern, event.toolName)) {
+    if (!matchToolPattern(rule.pattern, toolName)) {
       continue;
     }
     return rule;
@@ -136,18 +146,16 @@ function applyDefaultAction(
   approvalManager: ApprovalManager,
   event: PreToolCallEvent
 ): Promise<HookResult> {
-  // biome-ignore lint/style/useDefaultSwitchClause: all 3 actions explicitly handled — default unreachable
-  switch (defaultAction) {
-    case 'allow': {
-      return Promise.resolve(allowResult());
-    }
-    case 'deny': {
-      return Promise.resolve(denyResult(`Policy denies (default): "${event.toolName}" is not explicitly allowed`));
-    }
-    case 'require_approval': {
-      return requireApprovalResult(approvalManager, event.toolName, event.args as Record<string, unknown>);
-    }
+  if (defaultAction === 'allow') {
+    return Promise.resolve(allowResult());
   }
+
+  if (defaultAction === 'deny') {
+    return Promise.resolve(denyResult(`Policy denies (default): "${event.toolName}" is not explicitly allowed`));
+  }
+
+  // defaultAction === 'require_approval'
+  return requireApprovalResult(approvalManager, event.toolName, event.args as Record<string, unknown>);
 }
 
 /**
