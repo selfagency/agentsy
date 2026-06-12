@@ -124,7 +124,7 @@ function createFreshWithCrashMeta(sessionId: string, threadId: string, crashReas
 }
 
 function persistState(store: SessionStore, sessionId: string, state: SessionState): void {
-  store.setValue(`session:${sessionId}`, state as unknown as Record<string, unknown>);
+  store.setValue(`session:${sessionId}`, state);
 }
 
 function fallbackToFresh(

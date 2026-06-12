@@ -73,7 +73,7 @@ describe('ToolCallSchema', () => {
     const tc = ToolCallSchema.parse({
       id: 'tc_1',
       name: 'read_file',
-      input: { path: '/tmp/test.txt' },
+      input: { path: '/home/user/test.txt' },
       status: 'pending'
     });
     expect(tc.name).toBe('read_file');
