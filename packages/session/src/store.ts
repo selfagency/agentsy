@@ -85,7 +85,12 @@ export interface SessionStore {
 }
 
 export const createSessionStore = (state: LegacySessionState): SessionStore => {
-  const values = { ...state.values };
+  const values: Record<string, unknown> = Object.create(null);
+  for (const key of Object.keys(state.values)) {
+    if (Object.hasOwn(state.values, key)) {
+      values[key] = state.values[key];
+    }
+  }
 
   return {
     clear() {
@@ -94,19 +99,30 @@ export const createSessionStore = (state: LegacySessionState): SessionStore => {
       }
     },
     getState() {
+      const snapshot: Record<string, unknown> = Object.create(null);
+      for (const key of Object.keys(values)) {
+        if (Object.hasOwn(values, key)) {
+          snapshot[key] = values[key];
+        }
+      }
       return {
         id: state.id,
-        values: { ...values }
+        values: snapshot
       };
     },
     getValue<T>(key: string) {
+      if (!Object.hasOwn(values, key)) {
+        return;
+      }
       return values[key] as T | undefined;
     },
     listKeys() {
       return Object.keys(values);
     },
     removeValue(key: string) {
-      delete values[key];
+      if (Object.hasOwn(values, key)) {
+        delete values[key];
+      }
     },
     setValue(key, value) {
       values[key] = value;

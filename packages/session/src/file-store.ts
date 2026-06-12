@@ -11,7 +11,7 @@ export function getDefaultSessionFilePath(): string {
 
 export function createFileStore(filePath?: string): SessionStore {
   const resolvedPath = resolve(filePath ?? DEFAULT_FILE_PATH);
-  const data: Record<string, unknown> = {};
+  const data: Record<string, unknown> = Object.create(null);
 
   function load(): void {
     if (!existsSync(resolvedPath)) {
@@ -21,7 +21,12 @@ export function createFileStore(filePath?: string): SessionStore {
       const raw = readFileSync(resolvedPath, 'utf-8');
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        Object.assign(data, parsed);
+        const source = parsed as Record<string, unknown>;
+        for (const key of Object.keys(source)) {
+          if (Object.hasOwn(source, key)) {
+            data[key] = source[key];
+          }
+        }
       }
     } catch {
       // Corrupted file — start fresh
@@ -52,13 +57,18 @@ export function createFileStore(filePath?: string): SessionStore {
       };
     },
     getValue<T = unknown>(key: string): T | undefined {
+      if (!Object.hasOwn(data, key)) {
+        return;
+      }
       return data[key] as T | undefined;
     },
     listKeys(): string[] {
       return Object.keys(data);
     },
     removeValue(key: string): void {
-      delete data[key];
+      if (Object.hasOwn(data, key)) {
+        delete data[key];
+      }
       flush();
     },
     setValue(key: string, value: unknown): void {

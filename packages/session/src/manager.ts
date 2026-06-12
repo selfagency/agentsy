@@ -1,4 +1,4 @@
-import { reduceSessionState, type SessionAction } from './state/reducers.js';
+import { type ReducerAction, reduceSessionState } from './state/reducers.js';
 import { createSessionState, type SessionState, SessionStateSchema } from './state/schema.js';
 import type { SessionStore } from './store.js';
 
@@ -25,7 +25,7 @@ export interface CheckpointInfo {
 
 export interface SessionManager {
   /** Apply a session action (immutable reducer), persist the new state. */
-  apply(action: SessionAction): Readonly<SessionState>;
+  apply(action: ReducerAction): Readonly<SessionState>;
 
   /** Remove a checkpoint. */
   clearCheckpoint(id: string): void;
@@ -142,7 +142,7 @@ export function createSessionManager(store: SessionStore, options?: SessionManag
       return currentState;
     },
 
-    apply(action: SessionAction): Readonly<SessionState> {
+    apply(action: ReducerAction): Readonly<SessionState> {
       const next = reduceSessionState(currentState, action);
       saveState(next);
       return next;

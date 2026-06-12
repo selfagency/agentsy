@@ -75,7 +75,8 @@ function handleSessionCheckpoint(sessionId: string, args: readonly string[], io:
       stdout('No checkpoints for this session.');
     } else {
       for (const cp of checkpoints) {
-        stdout(`  ${cp.id}${cp.label ? ` (${cp.label})` : ''} [${new Date(cp.timestamp).toISOString()}]`);
+        const label = cp.label ? ` (${cp.label})` : '';
+        stdout(`  ${cp.id}${label} [${new Date(cp.timestamp).toISOString()}]`);
       }
     }
     return 0;
@@ -134,9 +135,9 @@ function handleSessionResume(sessionId: string | undefined, io: CliIO): number {
       stdout('Run "agentsy doctor" to attempt recovery.');
       return 1;
     }
-    stdout(
-      `Session ${sessionId} is valid (${integrity.warnings.length > 0 ? `${integrity.warnings.length} warnings` : 'no warnings'}).`
-    );
+    const warnCount = integrity.warnings.length;
+    const status = warnCount > 0 ? `${warnCount} warnings` : 'no warnings';
+    stdout(`Session ${sessionId} is valid (${status}).`);
     stdout(`  Messages: ${(saved.messages as unknown[]).length}`);
     stdout(`  Last updated: ${new Date(saved.updatedAt as number).toISOString()}`);
     return 0;

@@ -94,7 +94,11 @@ function validateMessages(messages: Record<string, unknown>[], result: Integrity
     return;
   }
 
-  // Check individual message schema compliance
+  validateMessageSchemas(messages, result);
+  validateRoleAlternation(messages, result);
+}
+
+function validateMessageSchemas(messages: Record<string, unknown>[], result: IntegrityResult): void {
   for (let i = 0; i < messages.length; i++) {
     const msg = messages[i] as Record<string, unknown> | undefined;
     if (!msg) {
@@ -108,8 +112,9 @@ function validateMessages(messages: Record<string, unknown>[], result: Integrity
       result.valid = false;
     }
   }
+}
 
-  // Check role alternation: user ↔ assistant (tool messages follow assistant)
+function validateRoleAlternation(messages: Record<string, unknown>[], result: IntegrityResult): void {
   let expectedRole: 'user' | 'assistant' | 'tool' | undefined;
   for (let i = 0; i < messages.length; i++) {
     const msg = messages[i] as { role?: string } | undefined;
@@ -118,7 +123,7 @@ function validateMessages(messages: Record<string, unknown>[], result: Integrity
     }
 
     if (msg.role === 'system') {
-      continue; // system messages can appear anywhere
+      continue;
     }
 
     if (expectedRole && msg.role !== expectedRole) {

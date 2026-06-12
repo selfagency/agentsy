@@ -13,8 +13,6 @@ import type { Checkpoint, Message, SessionState, ToolCall } from './schema.js';
 
 export type { SessionState } from './schema.js';
 
-export type SessionAction = ReducerAction;
-
 export type ReducerAction =
   | AppendMessageAction
   | UpdateMessageAction
