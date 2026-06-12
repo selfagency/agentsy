@@ -1,6 +1,15 @@
-import type { TokenBudget } from '@agentsy/context';
-import { BudgetEnforcer } from '@agentsy/context';
+import { BudgetEnforcer } from '@agentsy/tokenomics';
 import type { HookResult, RuntimeHookEvent } from './types.js';
+
+// Local type alias — BudgetEnforcer expects the legacy TokenBudget shape (contextCap, inputCap, outputCap)
+// that differs from @agentsy/tokenomics' canonical TokenBudget type
+interface TokenBudget {
+  readonly contextCap: number;
+  readonly inputCap: number;
+  readonly outputCap: number;
+  readonly perSessionCap?: number;
+  readonly perTurnCap?: number;
+}
 
 /**
  * Options for {@link createBudgetHook}.

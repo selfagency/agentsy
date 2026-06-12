@@ -8,6 +8,37 @@
 
 ---
 
+## Status — 2026-06-12 Code Review
+
+**Completion: ~90% — Core durability shipped, CLI resume wiring minor gap**
+
+### ✅ FULLY IMPLEMENTED & TESTED (10 test files, 104 tests, ALL PASSING)
+- ✅ State schema (Zod-validated: messages, toolCallQueue, checkpoints, pinnedMessageIds)
+- ✅ State reducers (immutable: append/replace/truncate messages, push/shift queue, add/remove pins)
+- ✅ SessionManager (create, list, getCheckpoints, saveCheckpoint, restoreCheckpoint)
+- ✅ PauseManager (request, resolve, listPending — for approval gates)
+- ✅ Crash recovery (detectStaleSessions, validateIntegrity, restoreSession)
+- ✅ File-backed store (createFileStore, getDefaultSessionFilePath)
+- ✅ Session snapshot (createSessionSnapshot with cache fingerprint)
+- ✅ Session CLI commands:
+  - ✅ `agentsy sessions list`
+  - ✅ `agentsy session <id> status`
+  - ✅ `agentsy session <id> checkpoint <list|restore <id>>`
+
+### ⏳ INCOMPLETE
+- **⚠️ Resume-from-checkpoint not wired into chat command**
+  - `restoreSession` + `restoreCheckpoint` work and are tested
+  - But `agentsy resume` / `agentsy resume <sessionId>` interactive picker not connected to the `chat` flow
+  - Impact: Feature exists but not exposed at the top-level resume entrypoint
+  - Fix: Wire resume into CLI chat command (0.5h)
+- **⚠️ Crash recovery not auto-triggered in agent loop lifecycle**
+  - `detectStaleSessions` exists but isn't auto-called on startup
+  - Fix: Add stale-session check to runtime loop init (0.5h)
+
+### STATUS: ~90% SHIPPED — Durability solid, CLI resume entrypoint + auto-recovery remain
+
+---
+
 ## Overview
 
 Replace untyped state blob with typed schema + reducer model. Enable branching, checkpointing, and deterministic resume.

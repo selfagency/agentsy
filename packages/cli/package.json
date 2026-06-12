@@ -42,8 +42,8 @@
     "test:e2e:dev": "npx @microsoft/tui-test"
   },
   "dependencies": {
-    "@agentsy/context": "workspace:*",
     "@agentsy/core": "workspace:*",
+    "@agentsy/tokenomics": "workspace:*",
     "@agentsy/gateway": "workspace:*",
     "@agentsy/guardrails": "workspace:*",
     "@agentsy/memory": "workspace:*",
@@ -53,7 +53,9 @@
     "@agentsy/renderers": "workspace:*",
     "@agentsy/runtime": "workspace:*",
     "@agentsy/session": "workspace:*",
-    "@agentsy/types": "workspace:*"
+    "@agentsy/types": "workspace:*",
+    "@cortexkit/aft": "^0.37.1",
+    "@cortexkit/magic-context": "^0.23.0"
   },
   "devDependencies": {
     "@microsoft/tui-test": "^0.0.4",

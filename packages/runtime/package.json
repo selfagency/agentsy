@@ -47,10 +47,10 @@
     "coverage": "vitest --run --coverage --passWithNoTests"
   },
   "dependencies": {
-    "@agentsy/context": "workspace:*",
     "@agentsy/guardrails": "workspace:*",
     "@agentsy/memory": "workspace:*",
     "@agentsy/session": "workspace:*",
+    "@agentsy/tokenomics": "workspace:*",
     "@agentsy/types": "workspace:*",
     "tsx": "^4.22.4"
   },

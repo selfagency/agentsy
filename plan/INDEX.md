@@ -38,7 +38,9 @@
 | **24-PHASE-15-COUNCIL-MODE.md**             | Multi-model council collaboration                                      | 15 hours   |
 | **25-PHASE-16-SMALL-MODEL-PARITY.md**       | Make 7B-14B models rival cloud models                                  | 40 hours   |
 | **28-PHASE-19-CONTEXT-RENAME.md**           | Rename @agentsy/context → @agentsy/context                             | 1 hour     |
-| **29-PHASE-20-TOKENOMICS.md**               | Spend ledger, frustration, ROI, learning loop                          | 46 hours   |
+| **29-PHASE-20-TOKENOMICS.md**               | Spend ledger, frustration, ROI, learning loop                          | 49 hours   |
+| **35-CORTEXKIT-INTEGRATION.md**             | Magic Context + AFT integration; @agentsy/context deprecation          | 36 hours   |
+| **35-CORTEXKIT-INTEGRATION.md**             | CortexKit integration — Magic Context + AFT                           | 36 hours   |
 
 ---
 
@@ -67,10 +69,10 @@
 
 ## Quick Facts
 
-- **Total phases:** 0, R1, 1-12, 13-20 (22 phases total)
+- **Total phases:** 0, R1, 1-12, 13-20, 22 (23 phases total)
 - **Unblocked ready:** Phase 2 (TUI vertical slice)
 - **Critical path:** Phases 0 → R1 → 1 → 2 → 3 → 4 → 5
-- **Estimated total effort:** ~197 hours forward work
+- **Estimated total effort:** ~233 hours forward work
 - **Verified complete:** Phase 0 (foundation baseline)
 - **Key gates:** Phase 2 (dogfood), Phase 4 (before tools), Phase 9 (before GA)
 

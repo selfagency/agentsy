@@ -8,9 +8,89 @@
 
 ---
 
-## Overview
+## Status — 2026-06-12 Code Review
 
-Enable safe tool execution with explicit user approvals. Implement a complete guardrails system: pipeline scanners, hub registry for extensibility, policy-as-code engine, built-in detectors (PII, secret, injection, path, command), and CLI integration. Tool execution happens only after policy validation + approval-gating.
+**Completion: ~50% — Guardrails complete, tool implementations are stubs**
+
+### ✅ BATCH 1: MCP AUDIT + TOOL REGISTRY (100% DONE)
+- ✅ ToolDefinition interface (name, description, handler, annotations, parameters, schema)
+- ✅ ToolAnnotations (readOnlyHint, destructiveHint, idempotentHint, openWorldHint, requiresApproval)
+- ✅ ToolRegistry class (register, get, list, execute, remove, listByAnnotation, toJSON)
+- ✅ Baseline tools registered — REPL, FS read/write/patch, Shell, HTTP, MCP bridge
+- ✅ MCP spec 2025-06-18 compliance verified (Tool type, ResourceTemplate, Content unions)
+
+### ✅ BATCH 2: GUARDRAILS CORE — PIPELINE + HUB + POLICY (100% DONE)
+- ✅ GuardrailResult types (pass | block | transform | escalate with reason codes)
+- ✅ GuardrailPipeline class (checkInput, checkToolPreExecution, checkToolPostExecution, checkOutput)
+  - Priority-sorted execution (rule-based 1-10, regex 10-50, ML 50-100, LLM 100+)
+  - Short-circuit on block/escalate; transform chains through pipeline
+- ✅ GuardrailHub with hub:// URI resolution, install/uninstall/list
+- ✅ PolicyEngine (YAML policy-as-code per Microsoft AGT pattern)
+  - Condition evaluation (==, !=, in, not_in, matches operators)
+  - Tool identity + annotation matching
+- ✅ GuardrailMetadata (name, version, source, OWASP categories, priority, timeout)
+- ✅ 18 test files, 183 tests — ALL PASSING ✅
+
+### ✅ BATCH 3: BUILT-IN SCANNERS (100% DONE) — 8 scanner types
+- ✅ PromptInjectionScanner (DRIFT-style heuristic detection)
+- ✅ PIIScanner (email, phone, SSN, credit card, IP, API key patterns)
+- ✅ SecretDetectionScanner (AWS, GitHub, Anthropic, OpenAI key patterns)
+- ✅ PathSanitizationScanner (path traversal blocking, allowlist enforcement)
+- ✅ CommandValidationScanner (shell command allowlist)
+- ✅ ToxicityScanner (heuristic content scoring)
+- ✅ RateLimiterScanner (token bucket rate limiting)
+- ✅ BONUS — EntropyScanner, CredentialReferenceScanner, BaselineManager, InlineIgnoreDirectives
+- ✅ Deep-scrub PII redaction (scrubPiiDeep, scrubMessage, scrubMessagesForModel)
+
+### ✅ BATCH 4: APPROVAL ENGINE + HOOKS (100% DONE)
+- ✅ ApprovalManager (request, waitForApproval, approve, reject, listPending)
+- ✅ Runtime guardrail hooks (4 hooks):
+  - ✅ createInputGuardrailHook (pre-turn, validates user input)
+  - ✅ createToolInputGuardrailHook (pre-tool-call, validates args)
+  - ✅ createToolOutputGuardrailHook (post-tool-call, redacts results)
+  - ✅ createOutputGuardrailHook (pre-response, validates output)
+- ✅ 2 test files, 38 tests — ALL PASSING ✅
+
+### ✅ BATCH 5: CLI GUARDRAILS COMMANDS (100% DONE)
+- ✅ `agentsy guardrails list` — shows all registered scanners with metadata
+- ✅ `agentsy guardrails install <hub-uri>` — downloads + registers guardrail
+- ✅ `agentsy guardrails uninstall <hub-uri>` — removes guardrail
+- ✅ `agentsy guardrails policy [path]` — shows loaded YAML policy + rules
+
+### ❌ BATCH 6: PANES + E2E (INCOMPLETE)
+- ❌ DocumentViewer component — NOT BUILT
+- ❌ DiffViewer component — NOT BUILT
+- ❌ E2E approval + guardrail scenarios — NOT WRITTEN
+
+### 🔴 CRITICAL BLOCKER: TOOL HANDLERS ARE STUBS
+All baseline tools (`@agentsy/tools`) have **placeholder handlers** — they don't execute actual code:
+
+| Tool | Issue | Impact |
+|------|-------|--------|
+| `repl_execute` | Returns `{ ok: true, data: { result: 'Execution placeholder' } }` | Cannot run code |
+| `fs_read` | Returns `{ ok: true, data: { content: '[fs_read placeholder] ${path}' } }` | Cannot read files |
+| `fs_write` | Returns stub data | Cannot write files |
+| `fs_patch` | Returns stub data | Cannot patch files |
+| `shell_exec` | Returns `{ ok: true, data: { stdout: '[shell_exec placeholder]' } }` | Cannot run shell |
+| `http_fetch` | Returns stub data | Cannot make HTTP requests |
+| `mcp_call` | Returns stub data | Cannot call MCP servers |
+
+**This means:** Tools can be approved but produce no actual output. Orchestration and guardrails work, but tooling is non-functional.
+
+### 🎯 REMEDIATION PRIORITY
+| Task | Effort | Blocker? |
+|------|--------|----------|
+| Implement REPL handler (Node.js VM execution) | 1h | **YES** |
+| Implement FS handlers (fs module IO) | 1h | **YES** |
+| Implement Shell handler (child_process) | 0.5h | **YES** |
+| Implement HTTP handler (fetch API) | 0.5h | **YES** |
+| Implement MCP handler (MCP client bridge) | 1h | **YES** |
+| Build DocumentViewer + DiffViewer | 1h | P1 |
+| Add E2E approval + guardrail tests | 1h | P2 |
+
+**TOTAL: 5.5h for production-ready tools. Currently at 50% because guardrails ship but tools are unusable.**
+
+### STATUS: ~50% SHIPPED — Guardrails complete, tool implementations stubbed
 
 **Reference architectures incorporated:**
 

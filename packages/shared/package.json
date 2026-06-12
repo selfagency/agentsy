@@ -1,0 +1,37 @@
+{
+  "name": "@agentsy/shared",
+  "version": "0.0.0",
+  "description": "Shared CortexKit integration utilities for @agentsy",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./cortexkit": {
+      "types": "./dist/cortexkit/index.d.ts",
+      "import": "./dist/cortexkit/index.js",
+      "require": "./dist/cortexkit/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.9.0",
+    "tsup": "^8.5.1",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
