@@ -23,6 +23,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@cortexkit/aft-bridge": "^0.37.1",
     "better-sqlite3": "^12.1.0"
   },
   "devDependencies": {

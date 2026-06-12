@@ -662,6 +662,9 @@ importers:
         specifier: ^3.24.5
         version: 3.25.76
     devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^7.6.13
+        version: 7.6.13
       '@types/node':
         specifier: ^25.9.0
         version: 25.9.1
@@ -680,6 +683,9 @@ importers:
 
   packages/shared:
     dependencies:
+      '@cortexkit/aft-bridge':
+        specifier: ^0.37.1
+        version: 0.37.1
       better-sqlite3:
         specifier: ^12.1.0
         version: 12.10.0
