@@ -51,6 +51,7 @@
     "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",
     "@agentsy/runtime": "workspace:*",
+    "@agentsy/session": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {

@@ -133,8 +133,8 @@ export function createPauseManager(): PauseManager {
   };
 
   // Attach typed emitter for external listeners
-  (self as Record<string, unknown>).on = emitter.on.bind(emitter);
-  (self as Record<string, unknown>).off = emitter.off.bind(emitter);
+  (self as unknown as Record<string, unknown>).on = emitter.on.bind(emitter);
+  (self as unknown as Record<string, unknown>).off = emitter.off.bind(emitter);
 
   return self;
 }

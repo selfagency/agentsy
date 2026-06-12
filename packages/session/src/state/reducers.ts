@@ -13,6 +13,8 @@ import type { Checkpoint, Message, SessionState, ToolCall } from './schema.js';
 
 export type { SessionState } from './schema.js';
 
+export type SessionAction = ReducerAction;
+
 export type ReducerAction =
   | AppendMessageAction
   | UpdateMessageAction
@@ -153,7 +155,7 @@ export function reduceSessionState(state: SessionState, action: ReducerAction): 
     case 'updateToolCall': {
       return {
         ...state,
-        toolCallQueue: state.toolCallQueue.map(tc =>
+        toolCallQueue: state.toolCallQueue.map((tc: ToolCall) =>
           tc.id === action.id ? ({ ...tc, ...action.updates } as ToolCall) : tc
         ),
         updatedAt: now
@@ -198,7 +200,7 @@ export function reduceSessionState(state: SessionState, action: ReducerAction): 
       }
       return {
         ...state,
-        pinnedMessageIds: current.filter(id => id !== action.messageId),
+        pinnedMessageIds: current.filter((id: string) => id !== action.messageId),
         updatedAt: now
       };
     }

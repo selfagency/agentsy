@@ -8,17 +8,8 @@ import { createSessionStore } from './store.js';
 
 function createStore() {
   return createSessionStore({
-    values: {},
-    sessionId: 'test-session',
-    threadId: 'test-thread',
-    messages: [],
-    branchMeta: undefined,
-    toolCallQueue: [],
-    checkpoints: [],
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    meta: {},
-    pinnedMessages: []
+    id: 'test-session',
+    values: {}
   });
 }
 
@@ -58,8 +49,7 @@ describe('SessionManager', () => {
         checkpoints: [],
         createdAt: 100,
         updatedAt: 100,
-        meta: {},
-        pinnedMessages: []
+        meta: {}
       });
       const mgr = createSessionManager(store);
       expect(mgr.getState().sessionId).toBe('restored');

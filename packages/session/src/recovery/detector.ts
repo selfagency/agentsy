@@ -14,7 +14,7 @@ import type { SessionStore } from '../store.js';
 /** A session entry flagged by the detector as stale or unreachable. */
 export interface StaleEntry {
   /** Last known checkpoint id, if any. */
-  lastCheckpointId?: string;
+  lastCheckpointId?: string | undefined;
   /** Millisecond timestamp of the last heartbeat or state write. */
   lastSeenAt: number;
   /**

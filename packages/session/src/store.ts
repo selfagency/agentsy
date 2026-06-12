@@ -110,9 +110,6 @@ export const createSessionStore = (state: LegacySessionState): SessionStore => {
     },
     setValue(key, value) {
       values[key] = value;
-    },
-    setState(_state: LegacySessionState) {
-      // matches Phase 6 typed state expansion
     }
   };
 };

@@ -8,13 +8,13 @@ import type { SessionStore } from './store.js';
 
 export interface SessionManagerOptions {
   /** Parent session ID if this is a forked session. */
-  parentSessionId?: string;
+  parentSessionId?: string | undefined;
   /** Parent thread ID if this is a forked session. */
-  parentThreadId?: string;
+  parentThreadId?: string | undefined;
   /** Session ID to manage (auto-generated if omitted). */
-  sessionId?: string;
+  sessionId?: string | undefined;
   /** Thread ID to manage (auto-generated if omitted). */
-  threadId?: string;
+  threadId?: string | undefined;
 }
 
 export interface CheckpointInfo {
@@ -82,8 +82,11 @@ export function createSessionManager(store: SessionStore, options?: SessionManag
   const threadId = options?.threadId ?? nextSessionId();
 
   // Initialise state from store or create fresh
-  let currentState = hydrateState(store);
-  if (!currentState) {
+  const hydrated = hydrateState(store);
+  let currentState: SessionState;
+  if (hydrated) {
+    currentState = hydrated;
+  } else {
     currentState = createSessionState(sessionId, threadId);
     if (options?.parentSessionId) {
       currentState = { ...currentState, parentSessionId: options.parentSessionId };
@@ -148,16 +151,20 @@ export function createSessionManager(store: SessionStore, options?: SessionManag
     fork(parentStoreFactory?: () => SessionStore): SessionManager {
       const childStore = parentStoreFactory?.() ?? store;
       const forked = reduceSessionState(currentState, {
-        type: 'forkSession',
+        type: 'forkSession' as const,
         newSessionId: nextSessionId(),
-        newThreadId: nextSessionId()
+        newThreadId: nextSessionId(),
+        branchMeta: {
+          parentSessionId: currentState.sessionId,
+          parentThreadId: currentState.threadId
+        }
       });
       childStore.setValue(STATE_KEY, forked);
       return createSessionManager(childStore, {
         sessionId: forked.sessionId,
         threadId: forked.threadId,
-        parentSessionId: forked.parentSessionId,
-        parentThreadId: forked.parentThreadId
+        ...(forked.parentSessionId ? { parentSessionId: forked.parentSessionId } : {}),
+        ...(forked.parentThreadId ? { parentThreadId: forked.parentThreadId } : {})
       });
     },
 
@@ -203,8 +210,8 @@ export function createSessionManager(store: SessionStore, options?: SessionManag
       return createSessionManager(store, {
         sessionId: state.sessionId,
         threadId: state.threadId,
-        parentSessionId: state.parentSessionId,
-        parentThreadId: state.parentThreadId
+        ...(state.parentSessionId ? { parentSessionId: state.parentSessionId } : {}),
+        ...(state.parentThreadId ? { parentThreadId: state.parentThreadId } : {})
       });
     },
 

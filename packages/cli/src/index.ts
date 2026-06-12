@@ -230,6 +230,21 @@ async function handleLbStatusCommand(rest: readonly string[], io: CliIO): Promis
   return runLbStatusCommand(rest, io);
 }
 
+async function handleSessionsCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runSessionsCommand } = await import('./commands/session.js');
+  return runSessionsCommand(rest, io);
+}
+
+async function handleSessionCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runSessionCommand } = await import('./commands/session.js');
+  return runSessionCommand(rest, io);
+}
+
+async function handleResumeCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runResumeCommand } = await import('./commands/session.js');
+  return runResumeCommand(rest, io);
+}
+
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
@@ -291,6 +306,18 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
     (io.stderr ?? DEFAULT_IO.stderr)(`Unknown lb subcommand: ${rest[0] ?? '(none)'}`);
     (io.stderr ?? DEFAULT_IO.stderr)('Supported: lb status');
     return 1;
+  }
+
+  if (command === 'sessions') {
+    return await handleSessionsCommand(rest, io);
+  }
+
+  if (command === 'session') {
+    return await handleSessionCommand(rest, io);
+  }
+
+  if (command === 'resume') {
+    return await handleResumeCommand(rest, io);
   }
 
   return handleUnknownCommand(command, io);

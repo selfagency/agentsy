@@ -9,6 +9,8 @@
  * @module
  */
 
+// File-backed session store
+export { createFileStore, getDefaultSessionFilePath } from './file-store.js';
 // Session lifecycle management (Phase 6)
 export {
   type CheckpointInfo,
@@ -24,8 +26,8 @@ export {
   type CreateSessionSnapshotInput,
   createSessionSnapshot,
   createSessionStore,
+  type LegacySessionState,
   type ReusableSessionSegment,
   type SessionSnapshot,
-  type SessionState as LegacySessionState,
   type SessionStore
 } from './store.js';

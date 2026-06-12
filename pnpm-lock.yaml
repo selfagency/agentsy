@@ -84,6 +84,9 @@ importers:
       '@agentsy/runtime':
         specifier: workspace:*
         version: link:../runtime
+      '@agentsy/session':
+        specifier: workspace:*
+        version: link:../session
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types

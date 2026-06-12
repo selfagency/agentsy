@@ -12,6 +12,7 @@ export type {
   PinMessageAction,
   ReducerAction,
   ReplaceMessagesAction,
+  SessionAction,
   SetMetaAction,
   TruncateMessagesAction,
   UnpinMessageAction,
