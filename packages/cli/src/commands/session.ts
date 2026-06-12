@@ -118,29 +118,7 @@ function handleSessionResume(sessionId: string | undefined, io: CliIO): number {
   const stdout = io.stdout ?? console.log;
 
   if (sessionId) {
-    const saved = store.getValue<Record<string, unknown>>(`session:${sessionId}`);
-    if (!saved) {
-      (io.stderr ?? console.error)(`Session not found: ${sessionId}`);
-      return 1;
-    }
-    const integrity = validateIntegrity(saved);
-    if (!integrity.valid) {
-      stdout(`Session ${sessionId} has integrity issues:`);
-      for (const err of integrity.errors) {
-        stdout(`  [ERROR] ${err}`);
-      }
-      for (const warn of integrity.warnings) {
-        stdout(`  [WARN] ${warn}`);
-      }
-      stdout('Run "agentsy doctor" to attempt recovery.');
-      return 1;
-    }
-    const warnCount = integrity.warnings.length;
-    const status = warnCount > 0 ? `${warnCount} warnings` : 'no warnings';
-    stdout(`Session ${sessionId} is valid (${status}).`);
-    stdout(`  Messages: ${(saved.messages as unknown[]).length}`);
-    stdout(`  Last updated: ${new Date(saved.updatedAt as number).toISOString()}`);
-    return 0;
+    return validateAndReportSession(sessionId, store, io);
   }
 
   const stale = detectStaleSessions(store, 3_600_000);
@@ -155,6 +133,33 @@ function handleSessionResume(sessionId: string | undefined, io: CliIO): number {
     const result = restoreSession(store, entry);
     stdout(`    → ${result.summary}`);
   }
+  return 0;
+}
+
+function validateAndReportSession(sessionId: string, store: ReturnType<typeof createFileStore>, io: CliIO): number {
+  const stdout = io.stdout ?? console.log;
+  const saved = store.getValue<Record<string, unknown>>(`session:${sessionId}`);
+  if (!saved) {
+    (io.stderr ?? console.error)(`Session not found: ${sessionId}`);
+    return 1;
+  }
+  const integrity = validateIntegrity(saved);
+  if (!integrity.valid) {
+    stdout(`Session ${sessionId} has integrity issues:`);
+    for (const err of integrity.errors) {
+      stdout(`  [ERROR] ${err}`);
+    }
+    for (const warn of integrity.warnings) {
+      stdout(`  [WARN] ${warn}`);
+    }
+    stdout('Run "agentsy doctor" to attempt recovery.');
+    return 1;
+  }
+  const warnCount = integrity.warnings.length;
+  const status = warnCount > 0 ? `${warnCount} warnings` : 'no warnings';
+  stdout(`Session ${sessionId} is valid (${status}).`);
+  stdout(`  Messages: ${(saved.messages as unknown[]).length}`);
+  stdout(`  Last updated: ${new Date(saved.updatedAt as number).toISOString()}`);
   return 0;
 }
 

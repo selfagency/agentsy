@@ -10,7 +10,7 @@
  * @module
  */
 
-import type { SessionState } from '../state/schema.js';
+import type { Checkpoint, SessionState } from '../state/schema.js';
 import { MessageSchema, SessionStateSchema } from '../state/schema.js';
 
 // ---------------------------------------------------------------------------
@@ -142,37 +142,41 @@ function validateCheckpoints(state: SessionState, result: IntegrityResult): void
     return;
   }
 
-  // Verify each checkpoint references a valid message index
   for (let i = 0; i < checkpoints.length; i++) {
     const cp = checkpoints[i];
     if (!cp) {
       continue;
     }
-
-    // Checkpoint messageCount should be within bounds
-    if (cp.messageCount !== undefined && (cp.messageCount < 0 || cp.messageCount > messages.length)) {
-      result.warnings.push(`Checkpoint[${i}]: messageCount ${cp.messageCount} out of bounds (0-${messages.length})`);
-    }
-
-    // Checkpoint timestamps should not exceed state updatedAt
-    if (cp.createdAt > state.updatedAt) {
-      result.warnings.push(
-        `Checkpoint[${i}]: createdAt (${cp.createdAt}) exceeds state updatedAt (${state.updatedAt})`
-      );
-    }
-
-    // Checkpoint timestamps should not precede state createdAt
-    if (cp.createdAt < state.createdAt) {
-      result.warnings.push(
-        `Checkpoint[${i}]: createdAt (${cp.createdAt}) precedes state createdAt (${state.createdAt})`
-      );
-    }
+    validateCheckpointBounds(cp, i, messages.length, state, result);
   }
 
-  // Check for duplicate checkpoint timestamps
   const timestamps = checkpoints.map(c => c.createdAt);
   const duplicates = timestamps.filter((t, idx) => timestamps.indexOf(t) !== idx);
   if (duplicates.length > 0) {
     result.warnings.push(`Duplicate checkpoint timestamps detected: ${[...new Set(duplicates)].join(', ')}`);
+  }
+}
+
+function validateCheckpointBounds(
+  cp: Checkpoint,
+  index: number,
+  messageCount: number,
+  state: SessionState,
+  result: IntegrityResult
+): void {
+  if (cp.messageCount !== undefined && (cp.messageCount < 0 || cp.messageCount > messageCount)) {
+    result.warnings.push(`Checkpoint[${index}]: messageCount ${cp.messageCount} out of bounds (0-${messageCount})`);
+  }
+
+  if (cp.createdAt > state.updatedAt) {
+    result.warnings.push(
+      `Checkpoint[${index}]: createdAt (${cp.createdAt}) exceeds state updatedAt (${state.updatedAt})`
+    );
+  }
+
+  if (cp.createdAt < state.createdAt) {
+    result.warnings.push(
+      `Checkpoint[${index}]: createdAt (${cp.createdAt}) precedes state createdAt (${state.createdAt})`
+    );
   }
 }

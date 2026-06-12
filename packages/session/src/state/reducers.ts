@@ -110,15 +110,43 @@ export function reduceSessionState(state: SessionState, action: ReducerAction): 
   const now = Date.now();
 
   switch (action.type) {
-    // ---- Messages ---------------------------------------------------------
-    case 'appendMessage': {
-      return {
-        ...state,
-        messages: [...state.messages, action.message],
-        updatedAt: now
-      };
-    }
+    case 'appendMessage':
+    case 'updateMessage':
+    case 'replaceMessages':
+    case 'truncateMessages':
+      return reduceMessageAction(state, action, now);
 
+    case 'addToolCall':
+    case 'updateToolCall':
+      return reduceToolCallAction(state, action, now);
+
+    case 'addCheckpoint':
+      return { ...state, checkpoints: [...state.checkpoints, action.checkpoint], updatedAt: now };
+
+    case 'setMeta':
+      return { ...state, meta: { ...state.meta, [action.key]: action.value }, updatedAt: now };
+
+    case 'pinMessage':
+    case 'unpinMessage':
+      return reducePinAction(state, action, now);
+
+    case 'forkSession':
+      return reduceForkAction(state, action, now);
+
+    case 'updateTimestamps':
+      return { ...state, updatedAt: now };
+
+    default: {
+      const _exhaustive: never = action;
+      return state;
+    }
+  }
+}
+
+function reduceMessageAction(state: SessionState, action: ReducerAction, now: number): SessionState {
+  switch (action.type) {
+    case 'appendMessage':
+      return { ...state, messages: [...state.messages, action.message], updatedAt: now };
     case 'updateMessage': {
       const messages = [...state.messages];
       const existing = messages[action.index];
@@ -128,29 +156,20 @@ export function reduceSessionState(state: SessionState, action: ReducerAction): 
       messages[action.index] = { ...existing, ...action.message } as Message;
       return { ...state, messages, updatedAt: now };
     }
-
-    case 'replaceMessages': {
+    case 'replaceMessages':
       return { ...state, messages: [...action.messages], updatedAt: now };
-    }
+    case 'truncateMessages':
+      return { ...state, messages: state.messages.slice(0, action.keepCount), updatedAt: now };
+    default:
+      return state;
+  }
+}
 
-    case 'truncateMessages': {
-      return {
-        ...state,
-        messages: state.messages.slice(0, action.keepCount),
-        updatedAt: now
-      };
-    }
-
-    // ---- Tool calls -------------------------------------------------------
-    case 'addToolCall': {
-      return {
-        ...state,
-        toolCallQueue: [...state.toolCallQueue, action.toolCall],
-        updatedAt: now
-      };
-    }
-
-    case 'updateToolCall': {
+function reduceToolCallAction(state: SessionState, action: ReducerAction, now: number): SessionState {
+  switch (action.type) {
+    case 'addToolCall':
+      return { ...state, toolCallQueue: [...state.toolCallQueue, action.toolCall], updatedAt: now };
+    case 'updateToolCall':
       return {
         ...state,
         toolCallQueue: state.toolCallQueue.map((tc: ToolCall) =>
@@ -158,77 +177,48 @@ export function reduceSessionState(state: SessionState, action: ReducerAction): 
         ),
         updatedAt: now
       };
-    }
+    default:
+      return state;
+  }
+}
 
-    // ---- Checkpoints ------------------------------------------------------
-    case 'addCheckpoint': {
-      return {
-        ...state,
-        checkpoints: [...state.checkpoints, action.checkpoint],
-        updatedAt: now
-      };
-    }
-
-    // ---- Meta -------------------------------------------------------------
-    case 'setMeta': {
-      return {
-        ...state,
-        meta: { ...state.meta, [action.key]: action.value },
-        updatedAt: now
-      };
-    }
-
-    // ---- Pins -------------------------------------------------------------
+function reducePinAction(state: SessionState, action: ReducerAction, now: number): SessionState {
+  switch (action.type) {
     case 'pinMessage': {
       const pinned = state.pinnedMessageIds ?? [];
       if (pinned.includes(action.messageId)) {
         return state;
       }
-      return {
-        ...state,
-        pinnedMessageIds: [...pinned, action.messageId],
-        updatedAt: now
-      };
+      return { ...state, pinnedMessageIds: [...pinned, action.messageId], updatedAt: now };
     }
-
     case 'unpinMessage': {
       const current = state.pinnedMessageIds;
       if (current === undefined) {
         return state;
       }
-      return {
-        ...state,
-        pinnedMessageIds: current.filter((id: string) => id !== action.messageId),
-        updatedAt: now
-      };
+      return { ...state, pinnedMessageIds: current.filter((id: string) => id !== action.messageId), updatedAt: now };
     }
-
-    // ---- Branching --------------------------------------------------------
-    case 'forkSession': {
-      return {
-        ...state,
-        sessionId: action.newSessionId,
-        threadId: action.newThreadId,
-        parentSessionId: state.sessionId,
-        parentThreadId: state.threadId,
-        branchMeta: {
-          parentSessionId: state.sessionId,
-          parentThreadId: state.threadId,
-          forkedAt: now,
-          forkReason: action.branchMeta?.forkReason
-        },
-        updatedAt: now
-      };
-    }
-
-    // ---- Timestamps -------------------------------------------------------
-    case 'updateTimestamps': {
-      return { ...state, updatedAt: now };
-    }
-
-    default: {
-      const _exhaustive: never = action;
+    default:
       return state;
-    }
   }
+}
+
+function reduceForkAction(state: SessionState, action: ReducerAction, now: number): SessionState {
+  if (action.type !== 'forkSession') {
+    return state;
+  }
+  return {
+    ...state,
+    sessionId: action.newSessionId,
+    threadId: action.newThreadId,
+    parentSessionId: state.sessionId,
+    parentThreadId: state.threadId,
+    branchMeta: {
+      parentSessionId: state.sessionId,
+      parentThreadId: state.threadId,
+      forkedAt: now,
+      forkReason: action.branchMeta?.forkReason
+    },
+    updatedAt: now
+  };
 }
