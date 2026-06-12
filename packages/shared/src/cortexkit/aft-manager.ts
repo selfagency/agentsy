@@ -8,8 +8,8 @@
  * and starts the worker process.
  */
 
-import { BridgePool, findBinary } from '@cortexkit/aft-bridge';
 import type { PoolOptions } from '@cortexkit/aft-bridge';
+import { BridgePool, findBinary } from '@cortexkit/aft-bridge';
 
 let pool: BridgePool | null = null;
 let initialized = false;

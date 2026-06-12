@@ -1,3 +1,4 @@
+import { COMPARTMENTS_COLUMNS, PROJECT_STATE_COLUMNS } from '@agentsy/shared/cortexkit';
 import type { Database } from 'better-sqlite3';
 
 /**
@@ -15,11 +16,12 @@ export function createCortexKitSnapshotBridge(db: Database) {
       latestSeq: number;
       latestP1?: string;
     } {
+      const { seq, p1 } = COMPARTMENTS_COLUMNS;
       const row = db
         .prepare(
-          `SELECT seq, p1 FROM compartments
+          `SELECT ${seq}, ${p1} FROM compartments
            WHERE session_id = ?
-           ORDER BY seq DESC
+           ORDER BY ${seq} DESC
            LIMIT 1`
         )
         .get(sessionId) as { seq: number; p1: string } | undefined;
@@ -43,8 +45,9 @@ export function createCortexKitSnapshotBridge(db: Database) {
      * Read the current project memory epoch for integrity checks.
      */
     readMemoryEpoch(projectPath: string): number {
+      const { projectMemoryEpoch } = PROJECT_STATE_COLUMNS;
       const row = db
-        .prepare('SELECT project_memory_epoch FROM project_state WHERE project_path = ?')
+        .prepare(`SELECT ${projectMemoryEpoch} FROM project_state WHERE project_path = ?`)
         .get(projectPath) as { project_memory_epoch: number } | undefined;
       return row?.project_memory_epoch ?? 0;
     }

@@ -1,6 +1,6 @@
+import { existsSync, mkdirSync } from 'node:fs';
 import { homedir, platform } from 'node:os';
 import { join } from 'node:path';
-import { existsSync, mkdirSync } from 'node:fs';
 
 /**
  * Resolve the path to CortexKit's shared SQLite database.

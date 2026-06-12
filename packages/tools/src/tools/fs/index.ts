@@ -10,13 +10,12 @@ import type { ToolDefinition } from '../../definitions.js';
  * converts bare filenames to absolute paths relative to the cwd.
  */
 function safePath(raw: string): string {
-  const resolved = path.resolve(raw);
-  const normalised = path.normalize(resolved);
-  // After resolve + normalize, any remaining '..' segment means traversal
-  if (normalised.split(path.sep).includes('..')) {
-    throw new Error(`Path traversal detected: "${raw}" resolves outside the allowed scope`);
+  // Check raw input for path traversal segments before resolution
+  const segments = raw.split(path.sep);
+  if (segments.includes('..')) {
+    throw new Error(`Path traversal detected: "${raw}" contains '..' segments`);
   }
-  return normalised;
+  return path.resolve(path.normalize(raw));
 }
 
 /** TypeScript type guard: is `enc` a valid `BufferEncoding` literal? */

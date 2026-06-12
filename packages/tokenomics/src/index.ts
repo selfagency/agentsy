@@ -1,5 +1,14 @@
 // Phase 0 — Token counter & model-aware tokenizer resolution
 
+export type {
+  BudgetCategory,
+  BudgetWarning,
+  OutputCompressionLevel,
+  OutputCompressionOptions,
+  OutputCompressionResult
+} from './context-moved/index.js';
+// Inlined from @agentsy/context (Phase 22 — CortexKit integration)
+export { BudgetEnforcer, BudgetExceededError, compressOutput, createTokenLedger } from './context-moved/index.js';
 // Session ledger types & writer
 export type {
   ArtifactRecord,
@@ -70,14 +79,3 @@ export {
   TokenizerRegistry
 } from './tokenizers/index.js';
 export type { CountResult, Tokenizer, TokenizerEntry } from './tokenizers/types.js';
-
-// Inlined from @agentsy/context (Phase 22 — CortexKit integration)
-export { BudgetEnforcer, BudgetExceededError, createTokenLedger } from './context-moved/index.js';
-export type {
-  BudgetCategory,
-  BudgetWarning,
-  OutputCompressionLevel,
-  OutputCompressionOptions,
-  OutputCompressionResult
-} from './context-moved/index.js';
-export { compressOutput } from './context-moved/index.js';

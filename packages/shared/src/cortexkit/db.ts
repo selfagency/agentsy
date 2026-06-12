@@ -1,6 +1,6 @@
-import Database from 'better-sqlite3';
 import type { Database as DatabaseType } from 'better-sqlite3';
-import { resolveCortexKitDbPath, ensureCortexKitDbDir } from './db-path.js';
+import Database from 'better-sqlite3';
+import { ensureCortexKitDbDir, resolveCortexKitDbPath } from './db-path.js';
 
 export type CortexKitDb = DatabaseType;
 
@@ -52,7 +52,7 @@ export function openCortexKitDbReadOnly(): CortexKitDb | null {
 /**
  * Execute a query with retry on SQLITE_BUSY.
  */
-export function withRetry<T>(_db: CortexKitDb, fn: () => T, retries = MAX_BUSY_RETRIES): T {
+export function withRetry<T>(fn: () => T, retries = MAX_BUSY_RETRIES): T {
   let lastError: Error | undefined;
 
   for (let i = 0; i < retries; i++) {
@@ -62,7 +62,7 @@ export function withRetry<T>(_db: CortexKitDb, fn: () => T, retries = MAX_BUSY_R
       if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'SQLITE_BUSY') {
         lastError = error;
         // Backoff
-        const delay = BUSY_RETRY_MS * Math.pow(2, i);
+        const delay = BUSY_RETRY_MS * 2 ** i;
         // Synchronous wait — better-sqlite3 is sync, so keep it simple
         Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delay);
         continue;

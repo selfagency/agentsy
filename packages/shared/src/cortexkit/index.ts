@@ -1,10 +1,10 @@
-export { openCortexKitDb, openCortexKitDbReadOnly, withRetry } from './db.js';
 export type { CortexKitDb } from './db.js';
+export { openCortexKitDb, openCortexKitDbReadOnly, withRetry } from './db.js';
 export {
-  resolveCortexKitDbDir,
-  resolveCortexKitDbPath,
   ensureCortexKitDbDir,
-  isCortexKitDbPresent
+  isCortexKitDbPresent,
+  resolveCortexKitDbDir,
+  resolveCortexKitDbPath
 } from './db-path.js';
 export {
   COMPARTMENTS_COLUMNS,
