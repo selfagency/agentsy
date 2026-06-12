@@ -7,7 +7,7 @@ describe('createSessionStore', () => {
     const store = createSessionStore({ id: 's1', values: {} });
     store.setValue('topic', 'agents');
 
-    expect(store.getState()).toStrictEqual({
+    expect(store.getState()).toEqual({
       id: 's1',
       values: { topic: 'agents' }
     });

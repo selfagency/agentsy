@@ -289,4 +289,54 @@ describe('cli package scaffold', () => {
     expect(joined).toContain('--agent');
     expect(joined).toContain('--plan');
   });
+
+  it('runs sessions list command', async () => {
+    const stdout: string[] = [];
+    const code = await runCli(['sessions', 'list'], {
+      stdout: (message: string) => stdout.push(message),
+      stderr: () => undefined
+    });
+    expect(code).toBe(0);
+    expect(stdout.join(' ')).toContain('No sessions');
+  });
+
+  it('runs resume command without sessionId', async () => {
+    const stdout: string[] = [];
+    const code = await runCli(['resume'], {
+      stdout: (message: string) => stdout.push(message),
+      stderr: () => undefined
+    });
+    expect(code).toBe(0);
+    expect(stdout.join(' ')).toContain('healthy');
+  });
+
+  it('returns error for unknown session id', async () => {
+    const stderr: string[] = [];
+    const code = await runCli(['session', 'nonexistent-id'], {
+      stderr: (message: string) => stderr.push(message),
+      stdout: () => undefined
+    });
+    expect(code).toBe(1);
+    expect(stderr.join(' ')).toContain('Session not found');
+  });
+
+  it('returns error for sessions without subcommand', async () => {
+    const stderr: string[] = [];
+    const code = await runCli(['sessions'], {
+      stderr: (message: string) => stderr.push(message),
+      stdout: () => undefined
+    });
+    expect(code).toBe(1);
+    expect(stderr.join(' ')).toContain('Usage');
+  });
+
+  it('returns error for session without id', async () => {
+    const stderr: string[] = [];
+    const code = await runCli(['session'], {
+      stderr: (message: string) => stderr.push(message),
+      stdout: () => undefined
+    });
+    expect(code).toBe(1);
+    expect(stderr.join(' ')).toContain('Usage');
+  });
 });

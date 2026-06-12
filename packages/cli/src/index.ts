@@ -230,6 +230,21 @@ async function handleLbStatusCommand(rest: readonly string[], io: CliIO): Promis
   return runLbStatusCommand(rest, io);
 }
 
+async function handleSessionsCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runSessionsCommand } = await import('./commands/session.js');
+  return runSessionsCommand(rest, io);
+}
+
+async function handleSessionCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runSessionCommand } = await import('./commands/session.js');
+  return runSessionCommand(rest, io);
+}
+
+async function handleResumeCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runResumeCommand } = await import('./commands/session.js');
+  return runResumeCommand(rest, io);
+}
+
 async function handleGuardrailsCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runGuardrailsCommand } = await import('./commands/guardrails.js');
   return runGuardrailsCommand(rest, io);
@@ -244,63 +259,52 @@ function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   return 1;
 }
 
-// fallow-ignore-next-line complexity
+type CommandHandler = (rest: readonly string[], io: CliIO) => number | Promise<number>;
+
+interface CommandEntry {
+  handler: CommandHandler;
+  subcommands?: Record<string, CommandHandler>;
+}
+
+const COMMANDS: Record<string, CommandEntry> = {
+  tui: { handler: handleTuiCommand },
+  compress: { handler: handleCompressCommand },
+  'compress-memory': { handler: handleCompressMemoryCommand },
+  'memory-sync-dev': { handler: handleMemorySyncDevCommand },
+  setup: { handler: handleSetupCommand },
+  doctor: { handler: handleDoctorCommand },
+  'sandbox-diagnostics': { handler: handleSandboxDiagnosticsCommand },
+  chat: { handler: handleChatCommand },
+  'content-address-stats': { handler: handleContentAddressStatsCommand },
+  lb: { handler: handleLbStatusCommand, subcommands: { status: handleLbStatusCommand } },
+  sessions: { handler: handleSessionsCommand },
+  session: { handler: handleSessionCommand },
+  resume: { handler: handleResumeCommand },
+  guardrails: { handler: handleGuardrailsCommand }
+};
+
 export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
   const [command, ...rest] = argv;
 
-  // Default entry-point: no subcommand → Ink TUI agent IDE
   if (command === undefined) {
     return handleTuiCommand(argv, io);
   }
 
-  if (command === 'tui') {
-    return handleTuiCommand(rest, io);
+  const entry = COMMANDS[command];
+  if (!entry) {
+    return handleUnknownCommand(command, io);
   }
 
-  if (command === 'compress') {
-    return await handleCompressCommand(rest, io);
-  }
-
-  if (command === 'compress-memory') {
-    return await handleCompressMemoryCommand(rest, io);
-  }
-
-  if (command === 'memory-sync-dev') {
-    return handleMemorySyncDevCommand(rest, io);
-  }
-
-  if (command === 'setup') {
-    return await handleSetupCommand(rest, io);
-  }
-
-  if (command === 'doctor') {
-    return await handleDoctorCommand(rest, io);
-  }
-
-  if (command === 'sandbox-diagnostics') {
-    return await handleSandboxDiagnosticsCommand(rest, io);
-  }
-
-  if (command === 'chat') {
-    return await handleChatCommand(rest, io);
-  }
-
-  if (command === 'content-address-stats') {
-    return await handleContentAddressStatsCommand(rest, io);
-  }
-
-  if (command === 'lb') {
-    if (rest[0] === 'status') {
-      return await handleLbStatusCommand(rest.slice(1), io);
+  if (entry.subcommands) {
+    const sub = rest[0];
+    const subHandler = sub ? entry.subcommands[sub] : undefined;
+    if (subHandler) {
+      return await subHandler(rest.slice(1), io);
     }
-    (io.stderr ?? DEFAULT_IO.stderr)(`Unknown lb subcommand: ${rest[0] ?? '(none)'}`);
-    (io.stderr ?? DEFAULT_IO.stderr)('Supported: lb status');
+    (io.stderr ?? DEFAULT_IO.stderr)(`Unknown ${command} subcommand: ${sub ?? '(none)'}`);
+    (io.stderr ?? DEFAULT_IO.stderr)(`Supported: ${command} ${Object.keys(entry.subcommands).join('|')}`);
     return 1;
   }
 
-  if (command === 'guardrails') {
-    return await handleGuardrailsCommand(rest, io);
-  }
-
-  return handleUnknownCommand(command, io);
+  return await entry.handler(rest, io);
 }

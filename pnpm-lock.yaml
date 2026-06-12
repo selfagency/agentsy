@@ -87,6 +87,9 @@ importers:
       '@agentsy/runtime':
         specifier: workspace:*
         version: link:../runtime
+      '@agentsy/session':
+        specifier: workspace:*
+        version: link:../session
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -664,6 +667,9 @@ importers:
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
+      zod:
+        specifier: ^3.24.5
+        version: 3.25.76
     devDependencies:
       '@types/node':
         specifier: ^25.9.0

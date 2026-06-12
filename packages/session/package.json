@@ -32,7 +32,8 @@
     "coverage": "vitest --run --coverage"
   },
   "dependencies": {
-    "@agentsy/types": "workspace:*"
+    "@agentsy/types": "workspace:*",
+    "zod": "^3.24.5"
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
