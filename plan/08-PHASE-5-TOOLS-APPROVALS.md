@@ -10,9 +10,10 @@
 
 ## Status — 2026-06-12 Code Review
 
-**Completion: ~50% — Guardrails complete, tool implementations are stubs**
+## Completion: ~50% — Guardrails complete, tool implementations are stubs
 
 ### ✅ BATCH 1: MCP AUDIT + TOOL REGISTRY (100% DONE)
+
 - ✅ ToolDefinition interface (name, description, handler, annotations, parameters, schema)
 - ✅ ToolAnnotations (readOnlyHint, destructiveHint, idempotentHint, openWorldHint, requiresApproval)
 - ✅ ToolRegistry class (register, get, list, execute, remove, listByAnnotation, toJSON)
@@ -20,6 +21,7 @@
 - ✅ MCP spec 2025-06-18 compliance verified (Tool type, ResourceTemplate, Content unions)
 
 ### ✅ BATCH 2: GUARDRAILS CORE — PIPELINE + HUB + POLICY (100% DONE)
+
 - ✅ GuardrailResult types (pass | block | transform | escalate with reason codes)
 - ✅ GuardrailPipeline class (checkInput, checkToolPreExecution, checkToolPostExecution, checkOutput)
   - Priority-sorted execution (rule-based 1-10, regex 10-50, ML 50-100, LLM 100+)
@@ -32,6 +34,7 @@
 - ✅ 18 test files, 183 tests — ALL PASSING ✅
 
 ### ✅ BATCH 3: BUILT-IN SCANNERS (100% DONE) — 8 scanner types
+
 - ✅ PromptInjectionScanner (DRIFT-style heuristic detection)
 - ✅ PIIScanner (email, phone, SSN, credit card, IP, API key patterns)
 - ✅ SecretDetectionScanner (AWS, GitHub, Anthropic, OpenAI key patterns)
@@ -43,6 +46,7 @@
 - ✅ Deep-scrub PII redaction (scrubPiiDeep, scrubMessage, scrubMessagesForModel)
 
 ### ✅ BATCH 4: APPROVAL ENGINE + HOOKS (100% DONE)
+
 - ✅ ApprovalManager (request, waitForApproval, approve, reject, listPending)
 - ✅ Runtime guardrail hooks (4 hooks):
   - ✅ createInputGuardrailHook (pre-turn, validates user input)
@@ -52,17 +56,20 @@
 - ✅ 2 test files, 38 tests — ALL PASSING ✅
 
 ### ✅ BATCH 5: CLI GUARDRAILS COMMANDS (100% DONE)
+
 - ✅ `agentsy guardrails list` — shows all registered scanners with metadata
 - ✅ `agentsy guardrails install <hub-uri>` — downloads + registers guardrail
 - ✅ `agentsy guardrails uninstall <hub-uri>` — removes guardrail
 - ✅ `agentsy guardrails policy [path]` — shows loaded YAML policy + rules
 
 ### ❌ BATCH 6: PANES + E2E (INCOMPLETE)
+
 - ❌ DocumentViewer component — NOT BUILT
 - ❌ DiffViewer component — NOT BUILT
 - ❌ E2E approval + guardrail scenarios — NOT WRITTEN
 
 ### 🔴 CRITICAL BLOCKER: TOOL HANDLERS ARE STUBS
+
 All baseline tools (`@agentsy/tools`) have **placeholder handlers** — they don't execute actual code:
 
 | Tool | Issue | Impact |
@@ -78,6 +85,7 @@ All baseline tools (`@agentsy/tools`) have **placeholder handlers** — they don
 **This means:** Tools can be approved but produce no actual output. Orchestration and guardrails work, but tooling is non-functional.
 
 ### 🎯 REMEDIATION PRIORITY
+
 | Task | Effort | Blocker? |
 |------|--------|----------|
 | Implement REPL handler (Node.js VM execution) | 1h | **YES** |

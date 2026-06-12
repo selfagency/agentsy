@@ -1,6 +1,6 @@
 # Phases 05-09 Status Summary — 2026-06-12
 
-**Overall Completion: ~79% shipped code-forward across all packages (1,082 tests passing)**
+## Overall Completion: ~79% shipped code-forward across all packages (1,082 tests passing)
 
 ---
 
@@ -23,6 +23,7 @@
 **Tests:** 13 files, 31 passing, 1 failing
 
 ### ✅ What Works
+
 - ModelsDevClient (fetch, 24h cache, provider/model lookup)
 - ModelSelector (deterministic ranking, cost estimation, capability filtering)
 - LLMStatsClient (benchmark integration)
@@ -31,13 +32,14 @@
 - Search contracts (query normalization, refinement)
 
 ### ⏳ Known Issues
+
 | Issue | Cause | Fix |
 |-------|-------|-----|
 | Test regression: `estimatedCost = 0` | Fixture cloud models have $0 pricing | Update fixture costs (0.5h) |
 | No offline baseline fixture | Plan calls for it; missing implementation | Create fixture (1h) |
 | Live API tests | Direct hits to models.dev | Convert to mocks (1h) |
 
-**Remediation: 2.5h total (P0: 0.5h, P1+: 2h)**
+## Remediation: 2.5h total (P0: 0.5h, P1+: 2h)
 
 ---
 
@@ -46,6 +48,7 @@
 **Tests:** 26 files, 352 tests, **ALL PASSING ✅**
 
 ### ✅ Fully Shipped
+
 - Circuit breaker (closed/open/half-open state machine)
 - Health & latency tracking
 - Rate-limit parsing (OpenAI + Anthropic)
@@ -64,10 +67,11 @@
 - 26 test files, 352 tests
 
 ### ⏳ Minor Gaps (Non-Blocking)
+
 - No separate ADR on tier + replica routing (code works, docs sparse)
 - No explicit cross-refs to gateway ↔ orchestrator integration (works, undocumented)
 
-**Status: ✅ PRODUCTION READY — Zero regressions, all 352 tests pass**
+## Status: ✅ PRODUCTION READY — Zero regressions, all 352 tests pass
 
 ---
 
@@ -76,6 +80,7 @@
 **Tests:** 20 files, 199 tests, **ALL PASSING ✅**
 
 ### ✅ Fully Shipped
+
 - Hook registry + DAG compile (cycles detected, conflicts resolved, topological sort)
 - Context isolation + locking (ContextManager, pushContext/popContext/acquireLock/releaseLock)
 - Governance policy (PolicyEnforcer, condition evaluation, approval/escalate/deny)
@@ -92,12 +97,13 @@
 - Orchestrator-loop integration
 
 ### ❌ Missing
+
 | Item | Impact | Fix |
 |------|--------|-----|
 | AgentSpan + MultiAgentTracer (TASK-ORCH-034) | No multi-agent observability | Implement tracer class (1.5h) |
 | Agent CLI wiring incomplete | `/agent <name>`, `/skills` not fully connected | Wire to chat command (1h) |
 
-**Remediation: 2.5h total**
+## Remediation: 2.5h total
 
 ---
 
@@ -107,15 +113,18 @@
 **Tools:** 2 test files, 38 tests, **ALL PASSING ✅**
 
 ### ✅ Batch 1: Tool Registry (100% DONE)
+
 - ToolDefinition, ToolAnnotations, ToolRegistry
 - MCP spec compliance verified
 
 ### ✅ Batch 2: Guardrails Core (100% DONE)
+
 - GuardrailPipeline (priority-sorted, short-circuit on block/escalate, transform chains)
 - GuardrailHub (hub:// URI resolution, install/uninstall/list)
 - PolicyEngine (YAML policy-as-code, condition evaluation, tool+annotation matching)
 
 ### ✅ Batch 3: Built-in Scanners (100% DONE)
+
 - PromptInjectionScanner (DRIFT heuristic)
 - PIIScanner (email, phone, SSN, CC, IP, API keys)
 - SecretDetectionScanner (AWS, GitHub, Anthropic, OpenAI patterns)
@@ -127,10 +136,12 @@
 - Deep-scrub PII redaction (scrubMessage, scrubMessagesForModel)
 
 ### ✅ Batch 4: Approval Engine (100% DONE)
+
 - ApprovalManager (request, waitForApproval, approve, reject)
 - Runtime guardrail hooks (input, tool-input, tool-output, output)
 
 ### ✅ Batch 5: CLI Guardrails Commands (100% DONE)
+
 - `agentsy guardrails list`
 - `agentsy guardrails install <hub-uri>`
 - `agentsy guardrails uninstall <hub-uri>`
@@ -153,11 +164,13 @@ All baseline tools have **placeholder implementations** — they don't execute:
 **This is intentional per the code design** — stubs are placeholders for the next phase of implementation.
 
 ### ❌ Batch 6: Panes (NOT DONE)
+
 - DocumentViewer component — not built
 - DiffViewer component — not built
 - E2E approval scenarios — not written
 
 ### Remediation for Production
+
 | Task | Effort | Blocker? |
 |------|--------|----------|
 | Implement REPL handler (Node.js VM) | 1h | **YES** |
@@ -168,9 +181,9 @@ All baseline tools have **placeholder implementations** — they don't execute:
 | Build DocumentViewer + DiffViewer | 1h | P1 |
 | Add E2E approval + guardrail tests | 1h | P2 |
 
-**Total to production-ready tools: 5.5h (all P0)**
+## Total to production-ready tools: 5.5h (all P0)
 
-**Status: ~50% shipped — Guardrails complete, tooling non-functional (stubs)**
+## Status: ~50% shipped — Guardrails complete, tooling non-functional (stubs)
 
 ---
 
@@ -179,6 +192,7 @@ All baseline tools have **placeholder implementations** — they don't execute:
 **Tests:** 10 files, 104 tests, **ALL PASSING ✅**
 
 ### ✅ Fully Shipped
+
 - State schema (Zod-validated: messages, toolCallQueue, checkpoints, pinnedMessageIds)
 - State reducers (immutable append/replace/truncate, push/shift, add/remove)
 - SessionManager (create, list, getCheckpoints, saveCheckpoint, restoreCheckpoint)
@@ -192,14 +206,15 @@ All baseline tools have **placeholder implementations** — they don't execute:
   - `agentsy session <id> checkpoint <list|restore <id>>`
 
 ### ⏳ Minor Gaps
+
 | Item | Fix |
 |------|-----|
 | Resume-from-checkpoint not wired to chat | Wire to CLI chat command (0.5h) |
 | Crash recovery not auto-triggered on startup | Add stale-session check to loop init (0.5h) |
 
-**Remediation: 1h total (both P1)**
+## Remediation: 1h total (both P1)
 
-**Status: ~90% shipped — Durability solid, CLI wiring minor**
+## Status: ~90% shipped — Durability solid, CLI wiring minor
 
 ---
 
@@ -225,11 +240,12 @@ All baseline tools have **placeholder implementations** — they don't execute:
 | **09** | Auto-trigger crash recovery | 0.5h | P1 | This week |
 
 ### Critical Path (Blocking Production)
+
 1. **Tool handlers (5.5h)** — Without these, guardrails are useless
 2. **Models cost regression (0.5h)** — Unblocks CI
 3. **Agent observability (1.5h)** — Enables multi-agent tracing
 
-**Estimated production-ready: ~7.5 hours focused work**
+## Estimated production-ready: ~7.5 hours focused work
 
 ---
 

@@ -10,9 +10,10 @@
 
 ## Status — 2026-06-12 Code Review
 
-**Completion: ~85% — Core shipped, observability & CLI wiring incomplete**
+## Completion: ~85% — Core shipped, observability & CLI wiring incomplete
 
 ### ✅ FULLY IMPLEMENTED & TESTED (20 test files, 199 tests, ALL PASSING)
+
 - ✅ Hook registry + DAG compile (topological sort, cycle detection, conflict resolution) — 9 tests pass
 - ✅ Context isolation + resource locking (ContextManager with pushContext/popContext/acquireLock/releaseLock) — 15 tests pass
 - ✅ Governance policy engine (PolicyEnforcer, condition evaluation, approval/escalate/deny actions) — 12 tests pass
@@ -29,11 +30,12 @@
 - ✅ Orchestrator-loop integration (basic loop execution) — 1 test passes
 
 ### ⏳ INCOMPLETE
+
 - **❌ AgentSpan + MultiAgentTracer** (TASK-ORCH-034)
   - `AgentSpan` type defined in `types/plan.ts` but `MultiAgentTracer` class never built
   - Impact: Multi-agent observability missing (tracing parent-child relationships)
   - Fix: Implement `MultiAgentTracer` class (1.5h)
-  
+
 - **⚠️ Agent CLI wiring incomplete**
   - `createAgentSession` exists but not fully integrated into CLI `/agent` commands
   - Agent discovery/loader structure exists but no file-based agent discovery
@@ -41,6 +43,7 @@
   - Fix: Wire into CLI chat command, implement agent file loader (1h)
 
 ### ✅ DOCUMENTATION & EXPORTS
+
 - ✅ Barrel exports in `src/index.ts` — all major classes exported
 
 ### STATUS: ~85% SHIPPED — Core orchestration complete, observability tracing + CLI wiring remain

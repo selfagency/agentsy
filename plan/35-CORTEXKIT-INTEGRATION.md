@@ -27,7 +27,7 @@ Replace homegrown context/history management with direct integration of two matu
 
 ## Dependency Graph
 
-```
+```text
 @agentsy/session
   └── @cortexkit/magic-context  (hard: manages context history, compartments, compartments)
 
@@ -86,11 +86,13 @@ No optional/peer dependencies. No setup wizard. Everything is guaranteed present
 ```
 
 **Tasks:**
+
 1. Add deps to `packages/session/package.json`, `packages/memory/package.json`, `packages/cli/package.json`
 2. Run `pnpm install` — resolves JS dependencies
 3. Verify `node_modules` contains `@cortexkit/*` packages
 
 **Deliverables:**
+
 - Updated `packages/session/package.json`
 - Updated `packages/memory/package.json`
 - Updated `packages/cli/package.json`
@@ -117,6 +119,7 @@ AFT is a Rust binary. The JS deps give us the TS adapter packages, but the `aft`
    - Ensure it runs before any package that depends on AFT
 
 **Deliverables:**
+
 - `scripts/postinstall-aft.ts`
 - Updated root `package.json` (postinstall script)
 - Updated `turbo.json` (if needed for ordering)
@@ -150,6 +153,7 @@ MC's durable state lives in a local SQLite database at `~/.local/share/cortexkit
      - `project_memory_epoch` — version tracker
 
 **Deliverables:**
+
 - `packages/shared/src/cortexkit/db-path.ts`
 - `packages/shared/src/cortexkit/db.ts`
 - `packages/shared/src/cortexkit/schema.ts`
@@ -186,6 +190,7 @@ MC's durable state lives in a local SQLite database at `~/.local/share/cortexkit
    - Wraps them as `SessionSnapshot` objects (same interface, MC-backed)
 
 **Deliverables:**
+
 - `packages/session/src/cortexkit/session-store.ts`
 - `packages/session/src/cortexkit/snapshot-bridge.ts`
 - Updated `packages/session/src/index.ts`
@@ -212,6 +217,7 @@ MC's durable state lives in a local SQLite database at `~/.local/share/cortexkit
    - `packages/tokenomics/src/cortexkit/budget-provider.ts` — simple adapter
 
 **Deliverables:**
+
 - `packages/memory/src/cortexkit/memory-adapter.ts`
 - `packages/memory/src/cortexkit/types.ts`
 - `packages/tokenomics/src/cortexkit/budget-provider.ts`
@@ -244,6 +250,7 @@ AFT runs as a persistent Rust process per project root. The `@cortexkit/aft-brid
    - Sensible defaults: `bash_compress: true`, `semantic_search: "local"`
 
 **Deliverables:**
+
 - `packages/shared/src/cortexkit/aft-manager.ts`
 - `packages/shared/src/cortexkit/aft-config.ts`
 
@@ -263,6 +270,7 @@ Make AFT's `aft_inspect` and code health diagnostics available through our obser
    - Document which to use when: `aft_inspect` for quick LSP/complexity, `fallow` for deep dead-code/duplication
 
 **Deliverables:**
+
 - `packages/observability/src/cortexkit/health-bridge.ts`
 
 ### 22.3.3 — Import Management Integration (3h)
@@ -281,6 +289,7 @@ AFT's language-aware import add/remove/organize (`aft_import`) covers 20+ langua
    - Adds symbol-rename + import update in one step
 
 **Deliverables:**
+
 - `packages/tools/src/cortexkit/import-linter.ts` (or as part of `packages/tools/src`)
 
 ---
@@ -292,12 +301,14 @@ We're v0 — no backward compat. Just remove it.
 ### 22.4.1 — Audit + Remove (2h)
 
 **Tasks:**
+
 1. Search for all `from "@agentsy/context"` imports across the monorepo
 2. For each import: if it's something MC subsumes, delete the call. If it's `createTokenLedger` / `TokenLedgerBudget`, inline into the calling package or move to `@agentsy/tokenomics`
 3. Delete `packages/context/` directory
 4. Remove `packages/context` from any root workspace references (if any — already in `packages/*` glob so mostly no-op)
 
 **Expected survivors:**
+
 - `createTokenLedger` + `TokenLedgerBudget` → move to `@agentsy/tokenomics/shared/token-ledger.ts` if still imported externally. Likely zero internal consumers since phase 0 tokenizer already has its own counting.
 
 ---
@@ -307,6 +318,7 @@ We're v0 — no backward compat. Just remove it.
 ### 22.5.1 — Integration Tests (3h)
 
 **`packages/testing/src/cortexkit/`:**
+
 - `mc-db.test.ts` — open MC's SQLite, verify expected tables exist
 - `session-store.test.ts` — create CortexKitSessionStore, write/read/clear values
 - `snapshot-bridge.test.ts` — read compartments from a known fixture DB
@@ -349,7 +361,7 @@ We're v0 — no backward compat. Just remove it.
 
 ## Execution Order (Parallel Batches)
 
-```
+```text
 Batch 1 (parallel):
   22.1.1 — Workspace deps (2h)
   22.4.1 — Context audit (1h)

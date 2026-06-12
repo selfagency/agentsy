@@ -31,7 +31,7 @@ git-ai and entireio have established the open-standard patterns for AI attributi
 
 ### Architecture Philosophy
 
-```
+```text
 git-ai / entireio (external)        agentsy (internal)
 ┌──────────────────────┐           ┌─────────────────────────┐
 │ Line-level blame     │           │ Cost+quality attribution│

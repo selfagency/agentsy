@@ -9,9 +9,10 @@
 
 ## Status — 2026-06-12 Code Review
 
-**Completion: ~80% — Core logic complete, minor gaps remain**
+## Completion: ~80% — Core logic complete, minor gaps remain
 
 ### ✅ COMPLETED
+
 - ✅ ModelsDevClient — fetch + 24h cache from models.dev API
 - ✅ ModelSelector — deterministic ranking, cost estimation, capability matching
 - ✅ LLMStatsClient — llm-stats benchmark data integration
@@ -22,13 +23,15 @@
 - ✅ 13 test files, 31 passing tests
 
 ### ⏳ KNOWN ISSUES
-- **1 failing test:** `model-selector.test.ts` — "should select model for text task" 
+
+- **1 failing test:** `model-selector.test.ts` — "should select model for text task"
   - Cause: fixture cloud models have $0 pricing; test expects `estimatedCost > 0`
   - Fix: Update fixture costs or relax assertion (0.5h)
 - **No offline baseline fixture** — Plan calls for bundled fallback snapshot (missing)
 - **Live API tests** — Integration tests hit models.dev directly (not fixture-based)
 
 ### 🎯 Remediation
+
 | Task | Effort | Impact |
 |------|--------|--------|
 | Fix cost test regression | 0.5h | P0 — CI unblock |

@@ -10,9 +10,10 @@
 
 ## Status — 2026-06-12 Code Review
 
-**Completion: ~90% — Core durability shipped, CLI resume wiring minor gap**
+## Completion: ~90% — Core durability shipped, CLI resume wiring minor gap
 
 ### ✅ FULLY IMPLEMENTED & TESTED (10 test files, 104 tests, ALL PASSING)
+
 - ✅ State schema (Zod-validated: messages, toolCallQueue, checkpoints, pinnedMessageIds)
 - ✅ State reducers (immutable: append/replace/truncate messages, push/shift queue, add/remove pins)
 - ✅ SessionManager (create, list, getCheckpoints, saveCheckpoint, restoreCheckpoint)
@@ -26,6 +27,7 @@
   - ✅ `agentsy session <id> checkpoint <list|restore <id>>`
 
 ### ⏳ INCOMPLETE
+
 - **⚠️ Resume-from-checkpoint not wired into chat command**
   - `restoreSession` + `restoreCheckpoint` work and are tested
   - But `agentsy resume` / `agentsy resume <sessionId>` interactive picker not connected to the `chat` flow

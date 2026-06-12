@@ -10,9 +10,10 @@
 
 ## Status — 2026-06-12 Code Review
 
-**Completion: ✅ ~95% COMPLETE — All core routing logic shipped, integration with runtime/orchestrator partial**
+## Completion: ✅ ~95% COMPLETE — All core routing logic shipped, integration with runtime/orchestrator partial
 
 ### ✅ PHASE 1: GATEWAY FOUNDATION (100% DONE)
+
 - ✅ `LogicalModel` type — id, tier, useCases, capabilities, contextWindow, maxOutputTokens
 - ✅ `logical-models.ts` — 8 canonical models (llama3.2:1b, gpt-4o-mini, claude-3-5-haiku, gpt-4o, claude-3-5-sonnet, llama3.3:70b, qwen3-coder, o1-mini, claude-3-5-opus) with tiers
 - ✅ `ReplicaRegistry` — index by logicalModelId + providerId, phase tracking (active/draining/standby)
@@ -21,6 +22,7 @@
 - ✅ Availability tracking — existing probing logic reused
 
 ### ✅ PHASE 2: TOKENOMICS HEADROOM (100% DONE)
+
 - ✅ `ReplicaHeadroomSnapshot` type — remaining tokens/cost per window (minute/hour/week/month) + confidence
 - ✅ `ReplicaBudget` — max tokens/cost/requests per window per replica
 - ✅ `ReplicaUsageFields` extends TokenUsage — accountId, logicalModelId, replicaId (optional)
@@ -28,6 +30,7 @@
 - ✅ `HeadroomConfidence` type — 'header-derived' | 'tokenomics-derived' | 'estimated'
 
 ### ✅ PHASE 3: SELECTION + SPILLOVER (100% DONE)
+
 - ✅ `DefaultReplicaSelector` — filters by health/capability/quota, scores candidates, picks winner
 - ✅ `ReplicaSelectionContext` — tieraware scoring context with latencies, error rates, headroom, local preference
 - ✅ `computeReplicaScore()` — tunable weights: local bonus by tier (micro=100, small=80, mid=20, frontier=0), headroom bonus (>80%=+20, 50-80%=+10), latency penalty (-0.01/ms), error penalty (-5), cost penalty (-1)
@@ -38,6 +41,7 @@
   - ✅ `spillover()` — full chain with circuit-aware exclusion
 
 ### ⏳ PARTIAL: RUNTIME + ORCHESTRATOR INTEGRATION
+
 | Task | Status | Impact |
 |------|--------|--------|
 | Event emission (PreModelCall, PostModelCall, etc.) | ⏳ Partial | Events defined in plan but not fully emitted from orchestrator-loop |
@@ -46,6 +50,7 @@
 | RuntimeCheckpoint + InterruptionCheckpoint failover state | ✅ Done | Replica-aware state preserved across retries |
 
 ### ⏳ MINIMAL: GUARDRAILS + DIAGNOSTICS
+
 - ✅ `RoutingConstraint` type defined in guardrails (`localOnly`, `excludeProviders[]`, `requireReasoning`, etc.)
 - ✅ `evaluateConstraints()` called from `ReplicaSelector` — pre-filter applied before scoring
 - ⏳ Diagnostics (`gw/src/diagnostics.ts`) — structured routing reasons not shipped; gateway logs selection but diagnostics export not complete
@@ -53,12 +58,14 @@
 ### What This Means
 
 **Core replica routing is production-ready:**
+
 - One logical model `claude-sonnet-4` across `anthropic-main + anthropic-secondary + vertex-anthropic` will be routed based on health, latency, quota headroom, and cost
 - Local models preferred for micro/small tasks (configurable per tier)
 - Spillover chains work: same-model next-replica → same-tier next-model → escalate tier
 - Quota-aware scoring built in — high headroom replicas preferred
 
 **Integration gaps are minor and don't block:**
+
 - Orchestrator doesn't emit full model-call events (but checkpoints work)
 - Runtime doesn't populate failover history metadata (but routing works)
 - Diagnostics export not complete (selection logic works; explanation logging missing)

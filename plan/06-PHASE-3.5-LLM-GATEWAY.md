@@ -10,9 +10,10 @@
 
 ## Status — 2026-06-12 Code Review
 
-**Completion: ✅ ~98% COMPLETE — ALL CORE SHIPPED, PRODUCTION READY**
+## Completion: ✅ ~98% COMPLETE — ALL CORE SHIPPED, PRODUCTION READY
 
 ### ✅ FULLY IMPLEMENTED & TESTED
+
 - ✅ Circuit breaker (closed/open/half-open state machine) — 6 tests pass
 - ✅ Health & latency tracking per provider — 4 tests pass
 - ✅ Rate-limit header parsing (OpenAI + Anthropic) — verified
@@ -31,12 +32,14 @@
 - ✅ 26 test files, 352 total tests — ALL PASSING ✅
 
 ### ✅ DOCUMENTATION & EXPORTS
+
 - ✅ README.md rewritten with tier-aware examples
 - ✅ TSDoc on all public surfaces
 - ✅ Barrel exports in `src/index.ts` — all public APIs exposed
 - ✅ Subpath entry points planned (reserved for future use)
 
 ### ⏳ MINOR GAPS (NON-BLOCKING)
+
 - No separate ADR on model-tier + replica-aware routing (plan calls for it, code exists)
 - No explicit cross-reference docs to gateway <→ orchestrator tier integration (works, not documented)
 
