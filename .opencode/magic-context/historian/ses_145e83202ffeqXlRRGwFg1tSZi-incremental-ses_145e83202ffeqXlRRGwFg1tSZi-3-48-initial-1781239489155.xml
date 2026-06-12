@@ -1,0 +1,159 @@
+Based on my review of the VS Code documentation and the `@agentsy/vscode` package source code, here's a comprehensive assessment:
+
+---
+
+## VS Code Chat API Review: `@agentsy/vscode@0.2.0`
+
+### ✅ What's Properly Implemented
+
+**Core LanguageModelChatProvider API:**
+- `BaseLanguageModelChatProvider` correctly implements the three required methods: `provideLanguageModelChatInformation`, `provideLanguageModelChatResponse`, `provideTokenCount`
+- Model metadata via `LanguageModelChatInformation` with `id`, `name`, `family`, `version`, `maxInputTokens`, `maxOutputTokens`, `capabilities` (imageInput, toolCalling)
+- Provider registration via `contributes.languageModelChatProviders` + `vscode.lm.registerLanguageModelChatProvider`
+- Optional `managementCommand` support via `SettingsLoader` + `getVSCodeSetupGuide`
+
+**Message Handling:**
+- Full `LanguageModelChatRequestMessage` → `ChatMessage` conversion via `convertMessage`/`convertMessages`
+- Role conversion (`User=1`, `Assistant=2`), text extraction, tool call extraction, tool result extraction
+- Handles array content with mixed `LanguageModelTextPart`, `LanguageModelToolCallPart`, `LanguageModelToolResultPart`
+
+**Streaming & Response:**
+- `Progress<LanguageModelResponsePart>` streaming with `LanguageModelTextPart`, `LanguageModelToolCallPart`, `LanguageModelToolResultPart`
+- Tool call delta accumulation via `ToolCallDeltaAccumulator` with JSON repair for incomplete streaming chunks
+- Cancellation token → `AbortController` bridging
+
+**Renderer:**
+- Thinking block rendering (blockquote via `appendToBlockquote`, progress via `stream.progress`, or suppress)
+- Token usage reporting via `stream.usage({ promptTokens, completionTokens })`
+- Tool invocation lifecycle: `beginToolInvocation` → `updateToolInvocation`
+
+**MCP Integration:**
+- `VSCodeMCPBridgeHelper` bridges MCP transport events to `ChatResponseStream` methods (`markdown`, `progress`, `anchor`, `button`, `filetree`, `reference`, `push`)
+- `MCPChatBridge` factory for cleaner API
+
+**Extras:**
+- API key management via `ApiKeyManager` (VS Code secrets storage)
+- Retry logic with `isRetryableError`, `calculateRetryDelay`, `withRetry`
+- Error mapping via `errorToProviderCode`, `httpStatusToErrorCode`
+- Quota tracking via `UsageStatusBar`, `formatQuotaText`, `getQuotaStatus`
+
+---
+
+### ⚠️ Gaps vs. Full VS Code Chat API Surface
+
+**1. No ChatParticipant (Extended Chat)**
+The package only supports the `LanguageModelChatProvider` (BYOLM — Bring Your Own Language Model) API. It does **not** implement a `ChatParticipant` for extensions that want to handle chat requests directly (vs. routing to an external LLM). This is a different API surface:
+- `vscode.chat.createChatParticipant`
+- `ChatRequest`, `ChatResponse`, `ChatHandler`
+- `ChatContext`, `ChatFollowup`
+
+**Verdict:** Intentional — the package is specifically for **provider** use cases, not chat participants.
+
+---
+
+**2. No Chat Output Renderer (Custom Widgets)**
+The `chat-output-renderer-sample` shows a **proposed** API for custom rendered widgets. VS Code can render extensions' custom widgets in the chat view via `ChatResponseFragment`. The package does not implement this.
+
+**Verdict:** Proposed API — not stable, correctly omitted.
+
+---
+
+**3. `filetree` is Stubbed**
+```typescript
+// packages/vscode/src/mcp/vscode-bridge-helper.ts:236
+private handleFiletree(chatStream: ChatResponseStream): void {
+  chatStream.filetree?.([], Uri.file('/'));
+}
+```
+Always emits an empty filetree. Real implementation requires parsing `data.value` as the file tree structure and `data.baseUri` as the base URI.
+
+---
+
+**4. `anchor` Only Handles String Scheme**
+```typescript
+// packages/vscode/src/mcp/vscode-bridge-helper.ts:225
+if (typeof data.anchorData === 'string' && typeof data.title === 'string') {
+  chatStream.anchor(Uri.parse(data.anchorData), data.title);
+}
+```
+The actual VS Code `anchor` accepts a richer format including `uri` + `range`:
+```typescript
+anchor(
+  value: { scheme: string; path: string } | { uri: { scheme: string; path: string }; range: { start, end } },
+  title?: string
+): void;
+```
+Currently only handles the simple `{ scheme, path }` form.
+
+---
+
+**5. `button` Doesn't Handle Full Command Structure**
+```typescript
+// packages/vscode/src/mcp/vscode-bridge-helper.ts:230
+chatStream.button({ command: commandStr, title: titleStr });
+```
+The real `button` signature is:
+```typescript
+button(command: { command: string; title: string; arguments?: unknown[] }): void;
+```
+`arguments` is dropped — but this is likely fine since it comes from MCP side.
+
+---
+
+**6. `reference` is Under-implemented**
+```typescript
+// packages/vscode/src/mcp/vscode-bridge-helper.ts:241
+chatStream.reference(Uri.parse(uriStr));
+```
+VS Code `reference` accepts three forms (file, file+range, variable), plus `iconPath` (string or light/dark scheme pair). Current implementation only handles the URI string form.
+
+---
+
+**7. `LanguageModelChatRequest` Missing Fields**
+The provider's request interface:
+```typescript
+// packages/vscode/src/provider/base-language-model-chat-provider.ts:17-29
+export interface LanguageModelChatRequest {
+  justification?: string;
+  messages: unknown[];
+  model?: { id: string; [key: string]: unknown };
+  options?: {
+    temperature?: number;
+    stopSequences?: string[];
+    [key: string]: unknown;
+  };
+  toolMode?: unknown;
+  tools?: unknown[];
+  [key: string]: unknown;
+}
+```
+The VS Code API also has `request` (purpose), `sessionId`, and `model` includes `vendor`. These are minor — the `[key: string]: unknown` catch-all handles them.
+
+---
+
+**8. No `systemPrompt` or `implicitContext` in Messages**
+VS Code sends messages including a possible `systemPrompt` part and `implicitContext` attachments. The message adapter doesn't extract these specifically.
+
+---
+
+### Summary
+
+| VS Code Chat Feature | Status |
+|---|---|
+| `LanguageModelChatProvider` (BYOLM) | ✅ Full |
+| Multi-model support | ✅ Full |
+| Message conversion | ✅ Full |
+| Streaming responses | ✅ Full |
+| Tool calls + streaming deltas | ✅ Full |
+| Token counting | ✅ Full |
+| Thinking blocks | ✅ Full (3 styles) |
+| Cancellation | ✅ Full |
+| Usage reporting | ✅ Full |
+| MCP bridge | ✅ Full |
+| `filetree` output | ⚠️ Stubbed |
+| `anchor` with range | ⚠️ Partial |
+| `reference` variants | ⚠️ Partial |
+| ChatParticipant API | Not in scope |
+| Chat Output Renderer | Not applicable (proposed API) |
+
+The package covers the core `LanguageModelChatProvider` API thoroughly. The gaps are in the **output renderer** (`filetree`, richer `anchor`/`reference`) and the **ChatParticipant** API which is a separate use case entirely.
