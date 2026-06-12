@@ -224,6 +224,12 @@ describe('reduceSessionState', () => {
       const next = reduceSessionState(withPin, { type: 'unpinMessage', messageId: 'msg_1' });
       expect(next.pinnedMessageIds).toEqual([]);
     });
+
+    it('unpinMessage is no-op when pinnedMessageIds is undefined', () => {
+      const state = freshState();
+      const next = reduceSessionState(state, { type: 'unpinMessage', messageId: 'msg_1' });
+      expect(next.pinnedMessageIds).toBeUndefined();
+    });
   });
 
   // ---- Branching ----------------------------------------------------------

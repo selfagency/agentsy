@@ -49,4 +49,49 @@ describe('restoreSession', () => {
     expect(result.ok).toBe(true);
     expect(result.summary).toMatch(/fresh/i);
   });
+
+  it('restores from checkpoint when available', () => {
+    const state = createSessionState('ses-1', 'main');
+    store.setValue('checkpoint:cp-1', state);
+    const entryWithCp: StaleEntry = {
+      ...staleEntry,
+      lastCheckpointId: 'cp-1'
+    };
+    const result = restoreSession(store, entryWithCp);
+    expect(result.ok).toBe(true);
+    expect(result.restoredFromCheckpoint).toBe('cp-1');
+    expect(result.summary).toMatch(/Restored from checkpoint/);
+  });
+
+  it('falls back to fresh when checkpoint exists but integrity fails', () => {
+    const state = createSessionState('ses-1', 'main');
+    store.setValue('checkpoint:cp-1', state);
+    const entryWithCp: StaleEntry = {
+      ...staleEntry,
+      lastCheckpointId: 'cp-1'
+    };
+    const result = restoreSession(store, entryWithCp, { valid: false, errors: ['bad'], warnings: [] });
+    expect(result.ok).toBe(true);
+    expect(result.summary).toMatch(/fresh/i);
+  });
+
+  it('falls back to fresh when checkpoint key exists but value is missing', () => {
+    const entryWithCp: StaleEntry = {
+      ...staleEntry,
+      lastCheckpointId: 'cp-missing'
+    };
+    const result = restoreSession(store, entryWithCp);
+    expect(result.ok).toBe(true);
+    expect(result.summary).toMatch(/fresh/i);
+  });
+
+  it('includes crash reason in fresh state meta', () => {
+    const result = restoreSession(store, staleEntry, undefined, {
+      forceFresh: true,
+      crashReason: 'process killed'
+    });
+    const meta = result.state.meta as Record<string, unknown>;
+    const crashMeta = meta.crashMeta as Record<string, unknown>;
+    expect(crashMeta.reason).toBe('process killed');
+  });
 });
