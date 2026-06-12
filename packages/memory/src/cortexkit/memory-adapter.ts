@@ -13,11 +13,11 @@ const MC_TO_WIKI_CATEGORY: Record<string, string> = {
 
 /** A single record from MC's project_memories table. */
 interface McMemory {
-  id: number;
-  content: string;
   category: string;
-  importance: number;
+  content: string;
   created_at: string;
+  id: number;
+  importance: number;
   updated_at: string;
 }
 
@@ -49,7 +49,7 @@ export function createMemoryBridge(db: Database) {
      * Map MC category to wiki entity kind.
      */
     mapCategory(mcCategory: string): string {
-      return MC_TO_WIKI_CATEGORY[mcCategory] ?? 'note';
+      return Object.hasOwn(MC_TO_WIKI_CATEGORY, mcCategory) ? (MC_TO_WIKI_CATEGORY[mcCategory] as string) : 'note';
     },
 
     /**

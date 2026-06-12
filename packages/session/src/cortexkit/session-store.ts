@@ -50,9 +50,9 @@ export function createCortexKitSessionStore(sessionId: string, db: Database): Se
         const raw = getMetaValue(key);
         if (raw !== undefined) {
           try {
-            values[key] = JSON.parse(raw) as unknown;
+            Reflect.set(values, key, JSON.parse(raw) as unknown);
           } catch {
-            values[key] = raw;
+            Reflect.set(values, key, raw);
           }
         }
       }
@@ -61,7 +61,9 @@ export function createCortexKitSessionStore(sessionId: string, db: Database): Se
 
     getValue<T = unknown>(key: string): T | undefined {
       const raw = getMetaValue(key);
-      if (raw === undefined) return undefined;
+      if (raw === undefined) {
+        return;
+      }
       try {
         return JSON.parse(raw) as T;
       } catch {

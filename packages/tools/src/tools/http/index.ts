@@ -44,10 +44,7 @@ export function createHttpTool(): ToolDefinition {
         clearTimeout(timer);
 
         const responseBody = await response.text();
-        const responseHeaders: Record<string, string> = {};
-        response.headers.forEach((value, key) => {
-          responseHeaders[key] = value;
-        });
+        const responseHeaders: Record<string, string> = Object.fromEntries(response.headers.entries());
 
         return {
           ok: true,

@@ -1,5 +1,4 @@
 import type { Database } from 'better-sqlite3';
-import type { SessionSnapshot } from '../store.js';
 
 /**
  * Read Magic Context compartments and produce a SessionSnapshot.
@@ -25,7 +24,9 @@ export function createCortexKitSnapshotBridge(db: Database) {
         )
         .get(sessionId) as { seq: number; p1: string } | undefined;
 
-      if (!row) return { compartments: 0, latestSeq: 0 };
+      if (!row) {
+        return { compartments: 0, latestSeq: 0 };
+      }
 
       const count = db.prepare('SELECT COUNT(*) as cnt FROM compartments WHERE session_id = ?').get(sessionId) as {
         cnt: number;

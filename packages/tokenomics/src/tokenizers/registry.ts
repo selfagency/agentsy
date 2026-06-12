@@ -188,12 +188,11 @@ export class TokenizerRegistry {
 
   private matchEntry(modelName: string): Tokenizer | undefined {
     for (let i = this.entries.length - 1; i >= 0; i--) {
-      const entry: TokenizerEntry | undefined = this.entries[i];
+      const entry: TokenizerEntry | undefined = this.entries.at(i);
       if (entry !== undefined && this.matchesPattern(modelName, entry.pattern)) {
         return entry.factory(modelName);
       }
     }
-    return;
   }
 
   private matchFallback(modelName: string): Tokenizer | undefined {
@@ -203,7 +202,6 @@ export class TokenizerRegistry {
         return estimator;
       }
     }
-    return;
   }
 
   private matchesPattern(modelName: string, pattern: string): boolean {

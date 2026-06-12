@@ -16,7 +16,7 @@ export function createShellTool(): ToolDefinition {
       { name: 'timeout', type: 'number', required: false, description: 'Timeout in ms' },
       { name: 'workdir', type: 'string', required: false, description: 'Working directory' }
     ],
-    handler: async input => {
+    handler: (input: Record<string, unknown>) => {
       const command = typeof input.command === 'string' ? input.command : '';
       if (!command) {
         return { ok: false, data: null, error: 'Missing required parameter: command' };

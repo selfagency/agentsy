@@ -2,6 +2,23 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { ToolDefinition } from '../../definitions.js';
 
+/**
+ * Resolve and validate a file path to prevent traversal attacks.
+ *
+ * Normalises the path, rejects paths with unresolved `..` segments
+ * (indicating attempted escape from the intended directory), and
+ * converts bare filenames to absolute paths relative to the cwd.
+ */
+function safePath(raw: string): string {
+  const resolved = path.resolve(raw);
+  const normalised = path.normalize(resolved);
+  // After resolve + normalize, any remaining '..' segment means traversal
+  if (normalised.split(path.sep).includes('..')) {
+    throw new Error(`Path traversal detected: "${raw}" resolves outside the allowed scope`);
+  }
+  return normalised;
+}
+
 export function createFsTools(): ToolDefinition[] {
   return [
     {
@@ -18,10 +35,11 @@ export function createFsTools(): ToolDefinition[] {
           return { ok: false, data: null, error: 'Missing required parameter: path' };
         }
         try {
+          const resolved = safePath(filePath);
           const encoding = typeof input.encoding === 'string' ? input.encoding : 'utf-8';
-          const content = await fs.readFile(filePath, encoding as BufferEncoding);
-          const stat = await fs.stat(filePath);
-          return { ok: true, data: { content, size: stat.size, path: filePath } };
+          const content = await fs.readFile(resolved, encoding as BufferEncoding);
+          const stat = await fs.stat(resolved);
+          return { ok: true, data: { content, size: stat.size, path: resolved } };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           return { ok: false, data: null, error: `fs_read error: ${message}` };
@@ -44,13 +62,14 @@ export function createFsTools(): ToolDefinition[] {
           return { ok: false, data: null, error: 'Missing required parameter: path' };
         }
         try {
-          await fs.mkdir(path.dirname(filePath), { recursive: true });
+          const resolved = safePath(filePath);
+          await fs.mkdir(path.dirname(resolved), { recursive: true });
           if (input.append === true) {
-            await fs.appendFile(filePath, content, 'utf-8');
+            await fs.appendFile(resolved, content, 'utf-8');
           } else {
-            await fs.writeFile(filePath, content, 'utf-8');
+            await fs.writeFile(resolved, content, 'utf-8');
           }
-          return { ok: true, data: { path: filePath, written: true, append: input.append === true } };
+          return { ok: true, data: { path: resolved, written: true, append: input.append === true } };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           return { ok: false, data: null, error: `fs_write error: ${message}` };
@@ -76,16 +95,17 @@ export function createFsTools(): ToolDefinition[] {
           return { ok: false, data: null, error: 'Missing required parameter: oldString' };
         }
         try {
-          const current = await fs.readFile(filePath, 'utf-8');
+          const resolved = safePath(filePath);
+          const current = await fs.readFile(resolved, 'utf-8');
           if (!current.includes(oldString)) {
-            return { ok: false, data: null, error: `Pattern not found in ${filePath}` };
+            return { ok: false, data: null, error: `Pattern not found in ${resolved}` };
           }
           const newContent =
             typeof input.newString === 'string'
               ? current.replace(oldString, input.newString)
               : current.replace(oldString, '');
-          await fs.writeFile(filePath, newContent, 'utf-8');
-          return { ok: true, data: { path: filePath, patched: true, changed: current !== newContent } };
+          await fs.writeFile(resolved, newContent, 'utf-8');
+          return { ok: true, data: { path: resolved, patched: true, changed: current !== newContent } };
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           return { ok: false, data: null, error: `fs_patch error: ${message}` };
