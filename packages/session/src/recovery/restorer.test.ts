@@ -37,14 +37,14 @@ describe('restoreSession', () => {
 
   it('retains existing state when valid and no checkpoint', () => {
     const state = createSessionState('ses-1', 'main');
-    store.setValue('session:ses-1', state as unknown as Record<string, unknown>);
+    store.setValue('session:ses-1', state);
     const result = restoreSession(store, staleEntry, { valid: true, errors: [], warnings: [] });
     expect(result.ok).toBe(true);
     expect(result.restoredFromCheckpoint).toBeUndefined();
   });
 
   it('falls back to fresh when existing state is invalid', () => {
-    store.setValue('session:ses-1', { sessionId: 'ses-1' } as unknown as Record<string, unknown>);
+    store.setValue('session:ses-1', { sessionId: 'ses-1' });
     const result = restoreSession(store, staleEntry, { valid: false, errors: ['missing fields'], warnings: [] });
     expect(result.ok).toBe(true);
     expect(result.summary).toMatch(/fresh/i);

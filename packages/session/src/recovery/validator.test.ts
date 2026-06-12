@@ -9,7 +9,7 @@ function validState(): SessionState {
 
 describe('validateIntegrity', () => {
   it('passes a valid minimal state', () => {
-    const result = validateIntegrity(validState() as unknown as Record<string, unknown>);
+    const result = validateIntegrity(validState());
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
@@ -24,14 +24,13 @@ describe('validateIntegrity', () => {
     const state = validState();
     state.createdAt = 2000;
     state.updatedAt = 1000;
-    const result = validateIntegrity(state as unknown as Record<string, unknown>);
+    const result = validateIntegrity(state);
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.includes('Timeline violation'))).toBe(true);
   });
 
   it('warns on out-of-bounds checkpoint messageCount', () => {
     const state = validState();
-    // Override checkpoints array — use 5 for messageCount but state has 0 messages
     state.checkpoints = [
       {
         id: 'cp-1',
@@ -41,8 +40,7 @@ describe('validateIntegrity', () => {
         threadId: 'thread-1'
       }
     ];
-    const result = validateIntegrity(state as unknown as Record<string, unknown>);
-    // valid remains true (warning only)
+    const result = validateIntegrity(state);
     expect(result.warnings.some(w => w.includes('out of bounds'))).toBe(true);
   });
 });

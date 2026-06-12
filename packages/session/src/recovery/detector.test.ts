@@ -20,7 +20,7 @@ describe('detectStaleSessions', () => {
 
   it('flags stale sessions beyond maxAgeMs', () => {
     store.setValue('hb:ses-1', String(Date.now() - 120_000));
-    store.setValue('session:ses-1', { sessionId: 'ses-1', threadId: 'main' } as unknown as Record<string, unknown>);
+    store.setValue('session:ses-1', { sessionId: 'ses-1', threadId: 'main' });
 
     const result = detectStaleSessions(store, 60_000);
     expect(result).toHaveLength(1);
@@ -30,7 +30,7 @@ describe('detectStaleSessions', () => {
 
   it('skips recent heartbeat entries', () => {
     store.setValue('hb:ses-1', String(Date.now() - 5000));
-    store.setValue('session:ses-1', { sessionId: 'ses-1' } as unknown as Record<string, unknown>);
+    store.setValue('session:ses-1', { sessionId: 'ses-1' });
     const result = detectStaleSessions(store, 60_000);
     expect(result).toHaveLength(0);
   });

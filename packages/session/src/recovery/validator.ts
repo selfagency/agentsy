@@ -100,7 +100,7 @@ function validateMessages(messages: Record<string, unknown>[], result: Integrity
 
 function validateMessageSchemas(messages: Record<string, unknown>[], result: IntegrityResult): void {
   for (let i = 0; i < messages.length; i++) {
-    const msg = messages[i] as Record<string, unknown> | undefined;
+    const msg = messages[i];
     if (!msg) {
       continue;
     }

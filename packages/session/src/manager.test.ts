@@ -120,7 +120,7 @@ describe('SessionManager', () => {
       const _child = mgr.fork(() => childStore);
       // Child store has forked state
       const childState = childStore.getValue('session_state') as Record<string, unknown>;
-      expect(childState.messages as unknown[]).toHaveLength(1);
+      expect((childState.messages as unknown[]).length).toBe(1);
       // Parent store unchanged by fork
       expect(parentStore.getValue('session_state')).toBeDefined();
     });

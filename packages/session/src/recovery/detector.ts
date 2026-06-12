@@ -83,9 +83,7 @@ function checkHeartbeat(store: SessionStore, sessionId: string, now: number, max
 
   const stateRaw = store.getValue<Record<string, unknown>>(`session:${sessionId}`);
   const threadId =
-    stateRaw && typeof stateRaw === 'object'
-      ? String((stateRaw as Record<string, unknown>).threadId ?? 'main')
-      : 'main';
+    stateRaw && typeof stateRaw === 'object' ? ((stateRaw.threadId as string | undefined) ?? 'main') : 'main';
 
   return {
     sessionId,
