@@ -1,5 +1,6 @@
 packages:
   - 'packages/*'
+  - '!packages/DEAD_DEPS.*'
 
 allowBuilds:
   es5-ext: true

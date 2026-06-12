@@ -75,6 +75,18 @@ packages/tokenomics/src/
 │   └── headroom-provider.ts
 ```
 
+Phase 0 — Tokenizer infrastructure:
+
+```text
+packages/tokenomics/src/tokenizers/
+├── types.ts                 — Tokenizer interface, TokenizerEntry, CountResult
+├── tiktoken.ts              — OpenAI BPE via tiktoken WASM (TiktokenTokenizer, TiktokenPool)
+├── estimate.ts              — Fallback char-ratio estimator (EstimatorTokenizer)
+├── registry.ts              — Model-aware tokenizer resolution (TokenizerRegistry)
+├── registry.test.ts         — Tests covering exact, prefix, and fallback resolution
+└── index.ts                 — barrel export
+```
+
 ```text
 packages/tokenomics/
 ├── src/
@@ -147,7 +159,8 @@ packages/tokenomics/
     "@agentsy/types": "workspace:*",
     "@agentsy/observability": "workspace:*",
     "@agentsy/context": "workspace:*",
-    "better-sqlite3": "^9.x"
+    "better-sqlite3": "^9.x",
+    "tiktoken": "^1.0.22"            ← Phase 0 — OpenAI BPE tokenizer (WASM)
   },
   "optionalDependencies": {
     "@libsql/client": "^0.x"
@@ -179,6 +192,62 @@ Replica-aware identity fields used throughout tokenomics:
 ---
 
 ## 4. Implementation Phases
+
+---
+
+### Phase 0 — Tokenizer Infrastructure ✅ (COMPLETE)
+
+The tokenizer layer provides accurate token counting across all supported models. It resolves model names to their correct BPE tokenizer (OpenAI models via tiktoken WASM) and falls back to tuned character-ratio estimators for Claude, Llama, Mistral, Gemini, and other families.
+
+**Effort:** ~3h  
+**Gate:** `pnpm check-types` + `pnpm test` green; tiktoken WASM resolved correctly  
+**Blocks:** Phase 1 (accurate SpendRecord token counts)
+
+#### TASK-TKNM-000: Tokenizer foundation
+
+**Location:** `packages/tokenomics/src/tokenizers/`  
+**Files:**
+
+- `types.ts` — Tokenizer interface (count, encode, decode, free), TokenizerEntry, CountResult
+- `tiktoken.ts` — TiktokenTokenizer (WASM-backed BPE) + TiktokenPool (lazy cache with freeAll)
+- `estimate.ts` — EstimatorTokenizer (fallback via chars/token ratios), defaultEstimators, estimateTokenCount
+- `registry.ts` — TokenizerRegistry (model-name → tokenizer resolution with 3-tier fallback)
+- `registry.test.ts` — 12 tests: exact match, prefix pattern, family fallback, unknown model, resource lifecycle
+
+**Dependencies added:** `tiktoken@^1.0.22`
+
+**Resolution order:**  
+
+1. Exact model match → tiktoken WASM (e.g., `gpt-4` → cl100k_base)  
+2. Prefix/glob pattern → tiktoken WASM (e.g., `gpt-4o*` → o200k_base)  
+3. Known family fallback → EstimatorTokenizer (e.g., `claude-*` → 3.5 chars/token)  
+4. Unknown model → default estimator (4 chars/token)  
+
+**Pre-registered patterns:**
+
+- `o200k_base`: gpt-4o*, o1*, o3*, o4*, chatgpt-*, gpt-4.1*, gpt-4.5*, gpt-5*
+- `cl100k_base`: gpt-4*, gpt-3.5*, gpt-35*, text-embedding*
+- `p50k_base`: text-davinci*
+- **Family fallbacks**: claude (3.5), codestral (2), rest (4 chars/token)
+
+#### Integration with VS Code
+
+```typescript
+import { TokenizerRegistry } from '@agentsy/tokenomics';
+
+// In BaseLanguageModelChatProvider.provideTokenCount:
+export async function provideTokenCount(
+  model: LanguageModelChatInformation,
+  text: string | LanguageModelChatRequestMessage
+): Promise<number> {
+  const registry = new TokenizerRegistry();
+  const tokenizer = registry.resolve(model.id);
+  const content = typeof text === 'string' ? text : JSON.stringify(text);
+  const result = tokenizer.count(content);
+  tokenizer.free();
+  return result;
+}
+```
 
 ---
 
@@ -1057,7 +1126,8 @@ agentsy tokenomics adapters add <name>
 
 | Task          | Module                         | Effort   | Phase | Depends On           |
 | ------------- | ------------------------------ | -------- | ----- | -------------------- |
-| TASK-TKNM-001 | ledger/types                   | 1h       | 1     | —                    |
+| TASK-TKNM-000 | tokenizers/*                   | 3h ✅     | 0     | —                    |
+| TASK-TKNM-001 | ledger/types                   | 1h       | 1     | TKNM-000             |
 | TASK-TKNM-002 | ledger/store                   | 2h       | 1     | TKNM-001             |
 | TASK-TKNM-003 | ledger/writer                  | 2h       | 1     | TKNM-001, TKNM-002   |
 | TASK-TKNM-004 | ledger/query                   | 1h       | 1     | TKNM-002             |
@@ -1073,7 +1143,7 @@ agentsy tokenomics adapters add <name>
 | TASK-TKNM-014 | cache/prompt-cache             | 2h       | 4     | gateway (P3.5)       |
 | TASK-TKNM-015 | cache/semantic-cache           | 2h       | 4     | gateway (P3.5)       |
 | TASK-TKNM-016 | cache/efficiency               | 1h       | 4     | TKNM-014             |
-| TASK-TKNM-017 | analytics/\* (5 adapters)      | 4h       | 5     | TKNM-001             |
+| TASK-TKNM-017 | analytics/* (5 adapters)      | 4h       | 5     | TKNM-001             |
 | TASK-TKNM-018 | roi/calculator                 | 2h       | 5     | TKNM-003,012,016,017 |
 | TASK-TKNM-019 | roi/mcp-server                 | 2h       | 5     | TKNM-018             |
 | TASK-TKNM-020 | learning/types                 | 0.5h     | 6     | TKNM-001             |
@@ -1084,7 +1154,7 @@ agentsy tokenomics adapters add <name>
 | TASK-TKNM-025 | ui/status-bar                  | 1.5h     | 7     | TKNM-009,010         |
 | TASK-TKNM-026 | ui/dashboard                   | 1.5h     | 7     | TKNM-018             |
 | TASK-TKNM-027 | cli commands (in @agentsy/cli) | 1h       | 7     | TKNM-018,022         |
-| **Total**     |                                | **~46h** |       |                      |
+| **Total**     |                                | **~49h** |       |                      |
 
 ---
 

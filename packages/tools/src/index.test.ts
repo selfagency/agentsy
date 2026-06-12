@@ -1,3 +1,7 @@
+import crypto from 'node:crypto';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   createFsTools,
@@ -178,8 +182,12 @@ describe('Baseline tool handlers', () => {
     if (!readTool) {
       throw new Error('fs_read not found');
     }
-    const result = await readTool.handler({ path: '/Users/test/file.txt' });
+    const tmp = join(tmpdir(), crypto.randomUUID(), 'read-test.txt');
+    mkdirSync(dirname(tmp), { recursive: true });
+    writeFileSync(tmp, 'test content', 'utf-8');
+    const result = await readTool.handler({ path: tmp });
     expect(result.ok).toBe(true);
+    expect(result.data).toHaveProperty('content', 'test content');
   });
 
   it('fs_write requires path parameter', async () => {
@@ -199,7 +207,9 @@ describe('Baseline tool handlers', () => {
     if (!writeTool) {
       throw new Error('fs_write not found');
     }
-    const result = await writeTool.handler({ path: '/Users/test/file.txt', content: 'hello' });
+    const tmp = join(tmpdir(), crypto.randomUUID(), 'write-test.txt');
+    mkdirSync(dirname(tmp), { recursive: true });
+    const result = await writeTool.handler({ path: tmp, content: 'hello' });
     expect(result.ok).toBe(true);
     expect(result.data).toHaveProperty('written', true);
   });

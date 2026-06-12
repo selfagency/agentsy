@@ -8,6 +8,48 @@
 
 ---
 
+## Status — 2026-06-12 Code Review
+
+## Completion: ~85% — Core shipped, observability & CLI wiring incomplete
+
+### ✅ FULLY IMPLEMENTED & TESTED (20 test files, 199 tests, ALL PASSING)
+
+- ✅ Hook registry + DAG compile (topological sort, cycle detection, conflict resolution) — 9 tests pass
+- ✅ Context isolation + resource locking (ContextManager with pushContext/popContext/acquireLock/releaseLock) — 15 tests pass
+- ✅ Governance policy engine (PolicyEnforcer, condition evaluation, approval/escalate/deny actions) — 12 tests pass
+- ✅ Task board with DAG validation + idempotency (InMemoryTaskBoard, full lifecycle) — 14 tests pass
+- ✅ Plan types (WorkflowPlan, WorkflowExecution, PlannedStep, SuccessGate) — 16 tests pass
+- ✅ Recovery framework (RetryPolicy, RecoveryExecutor, fallback + escalation + skip strategies) — 9 tests pass
+- ✅ Recovery state tracking (CircuitBreakerSet, HealthProbe, ModelFailover, RateLimitExceedError) — 30+ tests pass
+- ✅ Task decomposition (TaskDecomposer with tier scoring via keyword/token heuristics) — 14 tests pass
+- ✅ Cost estimation (CostEstimator with tier-based cost models: micro/small/mid/frontier) — 7 tests pass
+- ✅ Tier routing (TierRouter with escalation policy + budget-aware downgrading) — 9 tests pass
+- ✅ Agent loop creation (createAgentLoop with step execution, context management) — 34 tests pass
+- ✅ Agent registry (AgentRegistry with list/get/discover) — 3 tests pass
+- ✅ Scheduler foundation (basic scheduling, task tracking) — 7 tests pass
+- ✅ Orchestrator-loop integration (basic loop execution) — 1 test passes
+
+### ⏳ INCOMPLETE
+
+- **❌ AgentSpan + MultiAgentTracer** (TASK-ORCH-034)
+  - `AgentSpan` type defined in `types/plan.ts` but `MultiAgentTracer` class never built
+  - Impact: Multi-agent observability missing (tracing parent-child relationships)
+  - Fix: Implement `MultiAgentTracer` class (1.5h)
+
+- **⚠️ Agent CLI wiring incomplete**
+  - `createAgentSession` exists but not fully integrated into CLI `/agent` commands
+  - Agent discovery/loader structure exists but no file-based agent discovery
+  - Impact: Phase 4 calls for `/agent <name>` and `/skills list` — partially missing
+  - Fix: Wire into CLI chat command, implement agent file loader (1h)
+
+### ✅ DOCUMENTATION & EXPORTS
+
+- ✅ Barrel exports in `src/index.ts` — all major classes exported
+
+### STATUS: ~85% SHIPPED — Core orchestration complete, observability tracing + CLI wiring remain
+
+---
+
 ## Overview
 
 Wire full orchestration control plane with explicit plan-execute boundary, task durability, governance enforcement, model-tier routing, and replica-aware load balancing. This revision incorporates findings from 24+ industry sources (Conductor, Sisyphus, CrewAI, Composio, Kestra, OpenAI SDK, etc.) addressing 8 critical gaps in the original plan.

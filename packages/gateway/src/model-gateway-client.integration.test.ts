@@ -66,11 +66,8 @@ function registerReplica(
 ): ModelReplica {
   const replica: ModelReplica = {
     cost: CHEAP_COST,
-    id: overrides.id,
-    isLocal: overrides.isLocal ?? false,
-    logicalModelId: overrides.logicalModelId,
-    providerId: overrides.providerId,
-    upstreamModelName: overrides.upstreamModelName ?? overrides.id,
+    isLocal: false,
+    upstreamModelName: overrides.id,
     ...overrides
   };
   registry.register(replica);

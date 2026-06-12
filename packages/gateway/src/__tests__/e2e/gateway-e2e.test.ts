@@ -88,11 +88,11 @@ describe('E2E: 429 rate-limit failover', () => {
         { id: 'provider-a', name: 'Provider A', provider: 'openai', baseUrl: A_ENDPOINT },
         { id: 'provider-b', name: 'Provider B', provider: 'openai', baseUrl: B_ENDPOINT }
       ],
-      retry: { attempts: 1 },
+      retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 },
       strategy: 'priority-fallback'
     });
 
-    const response = await client.complete({ messages: [{ role: 'user', content: 'hi' }] });
+    const response = await client.complete({ model: 'test-model', messages: [{ role: 'user', content: 'hi' }] });
     expect(response.content).toBe('from-b');
     // First hit: provider-a got 429
     expect(hits[0]?.url).toBe(A_ENDPOINT);
@@ -126,11 +126,11 @@ describe('E2E: all providers exhausted', () => {
         { id: 'provider-a', name: 'Provider A', provider: 'openai', baseUrl: A_ENDPOINT },
         { id: 'provider-b', name: 'Provider B', provider: 'openai', baseUrl: B_ENDPOINT }
       ],
-      retry: { attempts: 1 },
+      retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 },
       strategy: 'priority-fallback'
     });
 
-    await expect(client.complete({ messages: [{ role: 'user', content: 'hi' }] })).rejects.toThrow(
+    await expect(client.complete({ model: 'test-model', messages: [{ role: 'user', content: 'hi' }] })).rejects.toThrow(
       AllProvidersExhaustedError
     );
     // Failure recorded in metrics
@@ -161,19 +161,19 @@ describe('E2E: circuit breaker', () => {
     const client = createLoadBalancedClient({
       circuitBreaker: { failureThreshold: 3, resetAfterMs: 60_000 },
       providers: [{ id: 'provider-a', name: 'Provider A', provider: 'openai', baseUrl: A_ENDPOINT }],
-      retry: { attempts: 1 },
+      retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 },
       strategy: 'priority-fallback'
     });
 
     // Drive three failures to open the circuit
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
     const callsBefore = callCount;
 
     // Next call — circuit is OPEN, so the strategy should
     // pre-filter this provider and skip the HTTP call entirely.
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
     expect(callCount).toBe(callsBefore);
 
     // Metrics reflect the circuit trip
@@ -201,7 +201,7 @@ describe('E2E: mid-session strategy change', () => {
         { id: 'provider-a', name: 'Provider A', provider: 'openai', baseUrl: A_ENDPOINT },
         { id: 'provider-b', name: 'Provider B', provider: 'openai', baseUrl: B_ENDPOINT }
       ],
-      retry: { attempts: 1 },
+      retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 },
       strategy: 'priority-fallback'
     });
 
@@ -213,7 +213,7 @@ describe('E2E: mid-session strategy change', () => {
     expect(client.getRoutingState().strategy).toBe('round-robin');
 
     // Calls should still work after the switch
-    const response = await client.complete({ messages: [{ role: 'user', content: 'go' }] });
+    const response = await client.complete({ model: 'test-model', messages: [{ role: 'user', content: 'go' }] });
     expect(response.content.length).toBeGreaterThan(0);
     expect(client.getMetricsSnapshot().requestCount).toBeGreaterThan(0);
   });
@@ -238,7 +238,7 @@ describe('E2E: cost-based selection', () => {
           { id: 'provider-a', name: 'Provider A', provider: 'openai', baseUrl: A_ENDPOINT },
           { id: 'provider-b', name: 'Provider B', provider: 'openai', baseUrl: B_ENDPOINT }
         ],
-        retry: { attempts: 1 },
+        retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 },
         strategy: 'cost-based'
       },
       {
@@ -246,7 +246,10 @@ describe('E2E: cost-based selection', () => {
       }
     );
 
-    const response = await client.complete({ messages: [{ role: 'user', content: 'pick cheap' }] });
+    const response = await client.complete({
+      model: 'test-model',
+      messages: [{ role: 'user', content: 'pick cheap' }]
+    });
     // Cheapest provider (provider-a) should be selected
     expect(response.content).toBe('cheap');
 
@@ -286,25 +289,25 @@ describe('E2E: circuit reset restores traffic', () => {
         { id: 'provider-a', name: 'Provider A', provider: 'openai', baseUrl: A_ENDPOINT },
         { id: 'provider-b', name: 'Provider B', provider: 'openai', baseUrl: B_ENDPOINT }
       ],
-      retry: { attempts: 1 },
+      retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 },
       strategy: 'priority-fallback'
     });
 
     // First three calls: provider-a fails, provider-b serves the fallback
     for (let i = 0; i < 3; i++) {
-      const resp = await client.complete({ messages: [] });
+      const resp = await client.complete({ model: 'test-model', messages: [] });
       expect(resp.content).toBe('fallback-ok');
     }
 
     // Circuit is now open on provider-a. provider-b still works.
-    const respB = await client.complete({ messages: [] });
+    const respB = await client.complete({ model: 'test-model', messages: [] });
     expect(respB.content).toBe('fallback-ok');
 
     // Reset the circuit on provider-a — it should now serve again
     client.markProviderHealthy('provider-a');
 
     // provider-a should now succeed
-    const respA = await client.complete({ messages: [] });
+    const respA = await client.complete({ model: 'test-model', messages: [] });
     expect(respA.content).toBe('restored');
   });
 });
@@ -336,11 +339,11 @@ describe('E2E: stream with real SSE transport', () => {
   it('returns chunked content from a real SSE response', async () => {
     const client = createLoadBalancedClient({
       providers: [{ id: 'provider-a', name: 'Provider A', provider: 'openai', baseUrl: A_ENDPOINT }],
-      retry: { attempts: 1 },
+      retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 },
       strategy: 'priority-fallback'
     });
 
-    const stream = await client.stream({ messages: [{ role: 'user', content: 'hi' }] });
+    const stream = await client.stream({ model: 'test-model', messages: [{ role: 'user', content: 'hi' }] });
     const chunks: NormalizedChunk[] = [];
     const reader = stream.getReader();
     while (true) {

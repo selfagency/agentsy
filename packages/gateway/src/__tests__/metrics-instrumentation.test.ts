@@ -41,12 +41,13 @@ function makeClient(responses: Map<string, ClientSlot>): UniversalClient {
         return Promise.reject(toError(slot.error));
       }
       if (slot?.response !== undefined) {
+        const resp: CompletionResponse = slot.response;
         if (slot.latencyMs !== undefined && slot.latencyMs > 0) {
           return new Promise(resolve => {
-            setTimeout(() => resolve(slot.response), slot.latencyMs);
+            setTimeout(() => resolve(resp), slot.latencyMs);
           });
         }
-        return Promise.resolve(slot.response);
+        return Promise.resolve(resp);
       }
       return Promise.resolve({
         content: 'ok',
@@ -90,7 +91,7 @@ describe('metrics auto-instrumentation', () => {
         clientFactory: () => makeClient(new Map([['__default__', { response: successResponse('gpt-4o', 10, 5) }]]))
       }
     );
-    await client.complete({ messages: [] });
+    await client.complete({ model: 'test-model', messages: [] });
     const snap = client.getMetricsSnapshot();
     expect(snap.requestCount).toBe(1);
     expect(snap.successCount).toBe(1);
@@ -105,13 +106,13 @@ describe('metrics auto-instrumentation', () => {
     const client = createLoadBalancedClient(
       {
         providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }],
-        retry: { attempts: 1 }
+        retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 }
       },
       {
         clientFactory: () => makeClient(new Map([['__default__', { error: new Error('boom') }]]))
       }
     );
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
     const snap = client.getMetricsSnapshot();
     expect(snap.requestCount).toBe(1);
     expect(snap.successCount).toBe(0);
@@ -136,12 +137,12 @@ describe('metrics auto-instrumentation', () => {
           { id: 'openai-1', name: 'OpenAI', provider: 'openai' },
           { id: 'anthropic-1', name: 'Anthropic', provider: 'anthropic' }
         ],
-        retry: { attempts: 1 },
+        retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 },
         strategy: 'priority-fallback'
       },
       { clientFactory: factory }
     );
-    const response = await client.complete({ messages: [] });
+    const response = await client.complete({ model: 'test-model', messages: [] });
     expect(response.content).toBe('hi');
     const snap = client.getMetricsSnapshot();
     expect(snap.requestCount).toBe(1);
@@ -158,12 +159,12 @@ describe('metrics auto-instrumentation', () => {
       {
         circuitBreaker: { failureThreshold: 2, resetAfterMs: 60_000 },
         providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }],
-        retry: { attempts: 1 }
+        retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 }
       },
       { clientFactory: factory }
     );
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
     const snap = client.getMetricsSnapshot();
     expect(snap.circuitTrips).toBe(1);
     const aggregate = client.getMetricsProviderAggregate('openai-1');
@@ -177,17 +178,17 @@ describe('metrics auto-instrumentation', () => {
       {
         circuitBreaker: { failureThreshold: 2, resetAfterMs: 60_000 },
         providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }],
-        retry: { attempts: 1 }
+        retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 }
       },
       { clientFactory: factory }
     );
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
     expect(client.getMetricsSnapshot().circuitTrips).toBe(1);
     // Reset the circuit and re-trip; we expect a second event, not zero.
     client.markProviderHealthy('openai-1');
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
-    await expect(client.complete({ messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
+    await expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
     expect(client.getMetricsSnapshot().circuitTrips).toBe(2);
   });
 
@@ -203,7 +204,7 @@ describe('metrics auto-instrumentation', () => {
     );
     const switcher = client.createModelSwitcher();
     switcher.switch({ model: 'gpt-4o-mini' });
-    await client.complete({ messages: [] });
+    await client.complete({ model: 'test-model', messages: [] });
     const aggregate = client.getMetricsProviderAggregate('openai-1');
     expect(aggregate).toBeDefined();
     // Total across all (provider, model) buckets on this provider = 6 tokens.
@@ -220,17 +221,17 @@ describe('metrics auto-instrumentation', () => {
       {
         circuitBreaker: { failureThreshold: 1, resetAfterMs: 60_000 },
         providers: [{ id: 'openai-1', name: 'OpenAI', provider: 'openai' }],
-        retry: { attempts: 1 }
+        retry: { attempts: 1, backoff: 'exponential', initialMs: 1000 }
       },
       { clientFactory: factory }
     );
     // Drive the failure path twice to confirm no unhandled rejection.
-    return expect(client.complete({ messages: [] })).rejects.toThrow();
+    return expect(client.complete({ model: 'test-model', messages: [] })).rejects.toThrow();
   });
 });
 
 function chunk(content: string): NormalizedChunk {
-  return { content, type: 'text' as const };
+  return { content };
 }
 
 async function drainChunks<T>(stream: ReadableStream<T>): Promise<T[]> {
@@ -257,7 +258,7 @@ describe('stream auto-instrumentation', () => {
         clientFactory: () => makeClient(new Map([['__default__', { chunks: [chunk('hi '), chunk('there')] }]]))
       }
     );
-    const stream = await client.stream({ messages: [] });
+    const stream = await client.stream({ model: 'test-model', messages: [] });
     const chunks = await drainChunks(stream);
     expect(chunks.length).toBe(2);
     // Yield a microtask so the `closed` promise's `flush` callback
@@ -279,7 +280,7 @@ describe('stream auto-instrumentation', () => {
         clientFactory: () => makeClient(new Map([['__default__', { streamError: new Error('stream broken') }]]))
       }
     );
-    const stream = await client.stream({ messages: [] });
+    const stream = await client.stream({ model: 'test-model', messages: [] });
     await expect(drainChunks(stream)).rejects.toThrow('stream broken');
     await new Promise(resolve => setTimeout(resolve, 0));
     const snap = client.getMetricsSnapshot();
@@ -295,7 +296,7 @@ describe('stream auto-instrumentation', () => {
         clientFactory: () => makeClient(new Map([['__default__', { chunks: [] }]]))
       }
     );
-    const stream = await client.stream({ messages: [] });
+    const stream = await client.stream({ model: 'test-model', messages: [] });
     const drained = await drainChunks(stream);
     expect(drained).toEqual([]);
     await new Promise(resolve => setTimeout(resolve, 0));

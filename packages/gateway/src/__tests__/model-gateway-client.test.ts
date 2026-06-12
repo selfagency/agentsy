@@ -28,14 +28,15 @@ import { getLogicalModel } from '../logical-models.js';
 // Test helpers
 // ---------------------------------------------------------------------------
 
-const makeReplica = (overrides: Partial<ModelReplica> = {}): ModelReplica => ({
-  id: 'test-replica',
-  logicalModelId: 'gpt-4o-mini',
-  providerId: 'test',
-  upstreamModelName: 'gpt-4o-mini',
-  cost: { inputPer1MTokens: 0.15, outputPer1MTokens: 0.6 },
-  ...overrides
-});
+const makeReplica = (overrides: Partial<ModelReplica> = {}): ModelReplica =>
+  ({
+    id: 'test-replica',
+    logicalModelId: 'gpt-4o-mini',
+    providerId: 'test',
+    upstreamModelName: 'gpt-4o-mini',
+    cost: { inputPer1MTokens: 0.15, outputPer1MTokens: 0.6 },
+    ...(overrides as Record<string, unknown>)
+  }) as ModelReplica;
 
 const makeModelEntry = (overrides: Partial<ModelEntry> = {}): ModelEntry => ({
   id: 'test-provider/gpt-4o-mini',

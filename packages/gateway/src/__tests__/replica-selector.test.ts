@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DefaultReplicaSelector } from '../replica-selector.js';
-import type { ModelReplica, ReplicaSelectionContext } from '../types.js';
+import { DefaultReplicaSelector, type ReplicaSelectionContext } from '../replica-selector.js';
+import type { ModelReplica } from '../types.js';
 
 vi.mock('@agentsy/guardrails', () => ({
   evaluateConstraints: vi.fn()
@@ -94,7 +94,13 @@ describe('DefaultReplicaSelector', () => {
     it('passes replicas that meet constraints, excludes violating ones, populates denials', () => {
       mockedEvaluateConstraints.mockReturnValueOnce({ pass: true, violations: [] }).mockReturnValueOnce({
         pass: false,
-        violations: [{ code: 'provider_excluded', details: 'Provider excluded by constraint' }]
+        violations: [
+          {
+            code: 'provider-excluded',
+            constraint: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
+            details: 'Provider excluded by constraint'
+          }
+        ]
       });
 
       const replicas: ModelReplica[] = [
@@ -108,8 +114,6 @@ describe('DefaultReplicaSelector', () => {
         makeContext({
           routingConstraints: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
           modelCapabilities: {
-            audio: false,
-            embeddings: false,
             jsonMode: true,
             reasoning: false,
             tools: true,
@@ -123,7 +127,7 @@ describe('DefaultReplicaSelector', () => {
       expect(result?.id).toBe('good-replica');
       expect(denials).toHaveLength(1);
       expect(denials[0]).toStrictEqual({
-        code: 'provider_excluded',
+        code: 'provider-excluded',
         details: 'Provider excluded by constraint'
       });
     });
@@ -131,7 +135,13 @@ describe('DefaultReplicaSelector', () => {
     it('returns undefined when all replicas are filtered by routing constraints', () => {
       mockedEvaluateConstraints.mockReturnValue({
         pass: false,
-        violations: [{ code: 'provider_excluded', details: 'All providers blocked' }]
+        violations: [
+          {
+            code: 'provider-excluded',
+            constraint: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
+            details: 'All providers blocked'
+          }
+        ]
       });
 
       const replicas: ModelReplica[] = [
@@ -145,8 +155,6 @@ describe('DefaultReplicaSelector', () => {
         makeContext({
           routingConstraints: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
           modelCapabilities: {
-            audio: false,
-            embeddings: false,
             jsonMode: true,
             reasoning: false,
             tools: true,
@@ -166,7 +174,7 @@ describe('DefaultReplicaSelector', () => {
         makeReplica({ id: 'r2', providerId: 'p2' })
       ];
 
-      const result = selector.selectReplica(replicas, makeContext({ routingConstraints: undefined }));
+      const result = selector.selectReplica(replicas, makeContext({ routingConstraints: undefined } as any));
 
       expect(result).toBeDefined();
       expect(mockedEvaluateConstraints).not.toHaveBeenCalled();
@@ -175,7 +183,13 @@ describe('DefaultReplicaSelector', () => {
     it('does not filter when modelCapabilities is undefined', () => {
       mockedEvaluateConstraints.mockReturnValue({
         pass: false,
-        violations: [{ code: 'provider_excluded', details: 'should not be reached' }]
+        violations: [
+          {
+            code: 'provider-excluded',
+            constraint: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
+            details: 'should not be reached'
+          }
+        ]
       });
 
       const replicas: ModelReplica[] = [makeReplica({ id: 'r1', providerId: 'p1' })];
@@ -185,7 +199,7 @@ describe('DefaultReplicaSelector', () => {
         makeContext({
           routingConstraints: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
           modelCapabilities: undefined
-        })
+        } as any)
       );
 
       expect(result).toBeDefined();

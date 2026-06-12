@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
-import type { OutputCompressionLevel } from '@agentsy/context';
-import { compressOutput } from '@agentsy/context';
 import { compressMemoryFile } from '@agentsy/core/context';
+import type { OutputCompressionLevel } from '@agentsy/tokenomics';
+import { compressOutput } from '@agentsy/tokenomics';
 
 export const name = 'cli';
 

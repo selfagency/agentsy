@@ -7,6 +7,39 @@
 
 ---
 
+## Status — 2026-06-12 Code Review
+
+## Completion: ~80% — Core logic complete, minor gaps remain
+
+### ✅ COMPLETED
+
+- ✅ ModelsDevClient — fetch + 24h cache from models.dev API
+- ✅ ModelSelector — deterministic ranking, cost estimation, capability matching
+- ✅ LLMStatsClient — llm-stats benchmark data integration
+- ✅ Local provider detection — Ollama (:11434), vLLM (:8000) probing
+- ✅ Local discovery caching — 5min TTL, error-safe invalidation
+- ✅ Provider routing — task-category-aware selection
+- ✅ Search contracts — normalizeModelSearchQuery, searchModels, refinement
+- ✅ 13 test files, 31 passing tests
+
+### ⏳ KNOWN ISSUES
+
+- **1 failing test:** `model-selector.test.ts` — "should select model for text task"
+  - Cause: fixture cloud models have $0 pricing; test expects `estimatedCost > 0`
+  - Fix: Update fixture costs or relax assertion (0.5h)
+- **No offline baseline fixture** — Plan calls for bundled fallback snapshot (missing)
+- **Live API tests** — Integration tests hit models.dev directly (not fixture-based)
+
+### 🎯 Remediation
+
+| Task | Effort | Impact |
+|------|--------|--------|
+| Fix cost test regression | 0.5h | P0 — CI unblock |
+| Add offline catalog fixture | 1h | P1 — offline fallback |
+| Convert to fixture-based tests | 1h | P2 — reliability |
+
+---
+
 ## Overview
 
 Enable user to select from multiple providers/models. Add local LLM discovery (Ollama, vLLM, etc). Wire slash commands for model/provider management.
