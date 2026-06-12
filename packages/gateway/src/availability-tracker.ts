@@ -13,7 +13,7 @@ export type CircuitState = 'closed' | 'open' | 'half-open';
 
 export interface CircuitBreakerEntry {
   consecutiveFailures: number;
-  halfOpenStartedAt?: number;
+  halfOpenStartedAt: number | undefined;
   openedAt?: number;
   state: CircuitState;
 }
@@ -62,6 +62,7 @@ export class ModelAvailabilityTracker {
   recordSuccess(replicaId: string): void {
     this.#circuitBreakers.set(replicaId, {
       consecutiveFailures: 0,
+      halfOpenStartedAt: undefined,
       state: 'closed'
     });
   }
@@ -70,22 +71,27 @@ export class ModelAvailabilityTracker {
   recordFailure(replicaId: string): void {
     const entry = this.#circuitBreakers.get(replicaId) ?? {
       consecutiveFailures: 0,
+      halfOpenStartedAt: undefined,
       state: 'closed' as CircuitState
     };
 
     entry.consecutiveFailures++;
 
-    if (entry.state === 'half-open') {
-      // Half-open + failure → reopen
-      entry.state = 'open';
-      entry.openedAt = Date.now();
-      delete entry.halfOpenStartedAt;
-    } else if (entry.consecutiveFailures >= this.#circuitFailureThreshold && entry.state !== 'open') {
-      entry.state = 'open';
-      entry.openedAt = Date.now();
+    // Cast to required property version to avoid union narrowing issues
+    // and exactOptionalPropertyTypes interactions
+    const breaker = entry as Required<CircuitBreakerEntry>;
+
+    if (breaker.state === 'half-open') {
+      // Half-open + failure → reopen the circuit
+      breaker.state = 'open';
+      breaker.openedAt = Date.now();
+      breaker.halfOpenStartedAt = undefined;
+    } else if (breaker.consecutiveFailures >= this.#circuitFailureThreshold && breaker.state !== 'open') {
+      breaker.state = 'open';
+      breaker.openedAt = Date.now();
     }
 
-    this.#circuitBreakers.set(replicaId, entry);
+    this.#circuitBreakers.set(replicaId, breaker);
   }
 
   /** Get the current circuit state for a replica. Performs half-open transitions. */

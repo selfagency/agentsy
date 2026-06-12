@@ -55,7 +55,7 @@ The gateway is the **single routing authority** — it owns all model-selection 
 
 Full automatic routing. The gateway selects a logical model using the tier-aware selector, then selects the best replica using the replica scorer. Normal execution path.
 
-```
+```text
 orchestrator → callByTier('mid', 'code', request)
   → tier-aware selector: resolve (mid, code) → logical model
   → replica registry: resolve logical model → candidate replicas
@@ -68,7 +68,7 @@ orchestrator → callByTier('mid', 'code', request)
 
 Pin a specific logical model but let the gateway select the replica. Use when the caller knows which model is needed.
 
-```
+```text
 callLogicalModel('claude-sonnet-4', request)
   → validate logical model exists
   → replica registry: resolve 'claude-sonnet-4' → candidate replicas
@@ -81,7 +81,7 @@ callLogicalModel('claude-sonnet-4', request)
 
 Direct pin — no model or replica selection. Use for debugging, testing, or explicit routing.
 
-```
+```text
 callReplica('anthropic-main/claude-sonnet-4', request)
   → look up replica by id
   → execute provider call directly

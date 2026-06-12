@@ -1,6 +1,95 @@
 /**
  * Safety and security guardrails for the Agentsy platform.
+ *
+ * ## Architecture
+ *
+ * - **GuardrailScanner** — individual policy checks (injection, PII, secrets, …)
+ * - **GuardrailPipeline** — priority-sorted sequential evaluation pipeline
+ * - **GuardrailHub** — local registry for `hub://` guardrail URI resolution
+ * - **PolicyEngine** — YAML-driven policy-as-code (Microsoft AGT pattern)
+ *
+ * ## Design principle
+ *
+ * Safety logic MUST be implemented in hooks or guardrails (deterministic),
+ * never in system prompts (probabilistic). A guardrail that returns
+ * `{status:'block'}` cannot be overridden by model output. A system prompt
+ * instruction can be.
  */
+
+export {
+  CommandValidationScanner,
+  createBuiltinScanners,
+  PathSanitizationScanner,
+  PIIScanner,
+  PromptInjectionScanner,
+  RateLimiterScanner,
+  SecretDetectionScanner,
+  ToxicityScanner
+} from './builtins.js';
+export type { GuardrailFactory, HubEntry, HubUri } from './hub.js';
+export { BUILTIN_GUARDRAIL_URIS, GuardrailHub, parseHubUri } from './hub.js';
+export { GuardrailPipeline } from './pipeline.js';
+export type {
+  PolicyAction,
+  PolicyContext,
+  PolicyDocument,
+  PolicyEvalResult,
+  PolicyRule
+} from './policy.js';
+export {
+  DEFAULT_POLICY,
+  evaluateCondition,
+  evaluatePolicy
+} from './policy.js';
+export type {
+  Detection,
+  GuardrailMetadata,
+  GuardrailPhase,
+  GuardrailResult,
+  GuardrailScanner,
+  OWASPCategory,
+  PipelineConfig
+} from './types.js';
+
+// ---------------------------------------------------------------------------
+// Message scrubbing — LLM input / deep object scrubbing (Phase 5.2)
+// ---------------------------------------------------------------------------
+
+export type { ScrubOptions } from './deep-scrub.js';
+export { scrubPiiDeep } from './deep-scrub.js';
+export type { ChatMessage, MessageScrubResult, ScrubbedMessage } from './message-scrubbing.js';
+export { scrubMessage, scrubMessagesDetailed, scrubMessagesForModel } from './message-scrubbing.js';
+
+// ---------------------------------------------------------------------------
+// Entropy detection — Shannon entropy scanner (Phase 5.2)
+// ---------------------------------------------------------------------------
+
+export { EntropyScanner, entropyOf } from './entropy.js';
+
+// ---------------------------------------------------------------------------
+// Baseline suppression — known-finding fingerprinting (Phase 5.2)
+// ---------------------------------------------------------------------------
+
+export type { BaselineDocument, BaselineEntry } from './baseline.js';
+export { BaselineManager, fingerprint } from './baseline.js';
+
+// ---------------------------------------------------------------------------
+// Inline ignore directives — source-level suppression (Phase 5.2)
+// ---------------------------------------------------------------------------
+
+export type { IgnoreDirectives } from './inline-ignore.js';
+export { parseIgnoreDirectives, shouldIgnore } from './inline-ignore.js';
+
+// ---------------------------------------------------------------------------
+// Credential Reference Scanner — resolves known credentials via broker (Phase 5.2)
+// ---------------------------------------------------------------------------
+
+export type { CredentialPattern, CredentialReferenceScannerOptions } from './credential-scanner.js';
+export { CredentialReferenceScanner } from './credential-scanner.js';
+
+// ---------------------------------------------------------------------------
+// Legacy error classes (Phase 3.7)
+// ---------------------------------------------------------------------------
 
 export class QuotaExceededError extends Error {
   constructor(message = 'Token quota exceeded') {
@@ -15,6 +104,10 @@ export class RetrievalBlockedError extends Error {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Routing constraints (Phase 3.7)
+// ---------------------------------------------------------------------------
+
 export type {
   ConstraintEvalResult,
   ConstraintViolation,
@@ -22,5 +115,4 @@ export type {
   GatewayModelInfo,
   RoutingConstraint
 } from './routing-constraints.js';
-// Routing constraints (Phase 3.7)
 export { evaluateConstraints } from './routing-constraints.js';

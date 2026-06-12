@@ -45,6 +45,7 @@
     "@agentsy/context": "workspace:*",
     "@agentsy/core": "workspace:*",
     "@agentsy/gateway": "workspace:*",
+    "@agentsy/guardrails": "workspace:*",
     "@agentsy/memory": "workspace:*",
     "@agentsy/models": "workspace:*",
     "@agentsy/plugins": "workspace:*",

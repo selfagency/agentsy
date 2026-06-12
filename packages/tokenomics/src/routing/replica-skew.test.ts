@@ -21,9 +21,9 @@ describe('computeReplicaSkew', () => {
   it('returns even shares for a single replica', () => {
     const signals = computeReplicaSkew([snapshot({ replicaId: 'a', remainingTokensMinute: 500 })]);
     expect(signals).toHaveLength(1);
-    expect(signals[0]!.share).toBe(1);
-    expect(signals[0]!.isHot).toBe(false);
-    expect(signals[0]!.isCold).toBe(false);
+    expect(signals[0]?.share).toBe(1);
+    expect(signals[0]?.isHot).toBe(false);
+    expect(signals[0]?.isCold).toBe(false);
   });
 
   it('detects hot replica with disproportionate headroom', () => {
@@ -32,14 +32,14 @@ describe('computeReplicaSkew', () => {
       snapshot({ replicaId: 'b', remainingTokensMinute: 100 })
     ]);
 
-    const a = signals.find(s => s.replicaId === 'a')!;
-    expect(a.share).toBeGreaterThan(0.7);
-    expect(a.isHot).toBe(true);
-    expect(a.isCold).toBe(false);
+    const a = signals.find(s => s.replicaId === 'a');
+    expect(a?.share).toBeGreaterThan(0.7);
+    expect(a?.isHot).toBe(true);
+    expect(a?.isCold).toBe(false);
 
-    const b = signals.find(s => s.replicaId === 'b')!;
-    expect(b.share).toBeLessThan(0.3);
-    expect(b.isCold).toBe(true);
+    const b = signals.find(s => s.replicaId === 'b');
+    expect(b?.share).toBeLessThan(0.3);
+    expect(b?.isCold).toBe(true);
   });
 
   it('treats even distribution as neutral', () => {
@@ -61,7 +61,7 @@ describe('computeReplicaSkew', () => {
       snapshot({ replicaId: 'b', remainingTokensHour: 200 })
     ]);
 
-    expect(signals[0]!.share).toBeCloseTo(0.8);
+    expect(signals[0]?.share).toBeCloseTo(0.8);
   });
 
   it('falls back to cost minute when no token data', () => {
@@ -70,6 +70,6 @@ describe('computeReplicaSkew', () => {
       snapshot({ replicaId: 'b', remainingCostMinute: 1 })
     ]);
 
-    expect(signals[0]!.share).toBeCloseTo(0.75);
+    expect(signals[0]?.share).toBeCloseTo(0.75);
   });
 });

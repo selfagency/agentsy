@@ -1,0 +1,13 @@
+version: "1.0"
+description: "Default policy for E2E testing"
+rules:
+  - name: deny-destructive
+    condition: "tool.annotations.destructiveHint == true"
+    action: deny
+    description: "Block destructive operations"
+    severity: critical
+  - name: require-approval-http
+    condition: "tool.name starts_with http"
+    action: require_approval
+    description: "Require approval for HTTP requests"
+    phase: tool-input

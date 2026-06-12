@@ -274,6 +274,7 @@ This makes every routing decision **explainable** — the consumer can see which
 | `callReplica` | Skips (replica specified) | Skips — direct pin | Debug/testing/explicit |
 
 For `callByTier`, the flow is:
+
 1. Tier-aware selector resolves `(tier, useCase)` → candidate models
 2. Replica registry resolves logical model → candidate replicas
 3. Replica selector scores replicas (health, quota, latency, cost, local bonus)

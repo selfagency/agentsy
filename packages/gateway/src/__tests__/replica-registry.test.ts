@@ -1,15 +1,14 @@
 import { describe, expect, it } from 'vitest';
-
-import type { ModelReplica } from '../types.js';
 import { ReplicaRegistry } from '../replica-registry.js';
+import type { ModelReplica } from '../types.js';
 
 interface MakeReplicaOverrides {
+  cost?: { inputPer1MTokens: number; outputPer1MTokens: number };
   id?: string;
+  isLocal?: boolean;
   logicalModelId?: string;
   providerId?: string;
   upstreamModelName?: string;
-  isLocal?: boolean;
-  cost?: { inputPer1MTokens: number; outputPer1MTokens: number };
 }
 
 function makeReplica(overrides: MakeReplicaOverrides = {}): ModelReplica {

@@ -50,7 +50,7 @@ function computeHeadroomFromAggregator(aggregator: UsageAggregator, replicaId: s
  * threshold (≤5) instead of inlining 9 `??` fallback operators.
  */
 export function firstMatchingHeadroom(snapshot: ReplicaHeadroomSnapshot, budget: ReplicaBudget): number | undefined {
-  const pairs: Array<[number | undefined, number | undefined]> = [
+  const pairs: [number | undefined, number | undefined][] = [
     [snapshot.remainingTokensMinute, budget.maxTokensMinute],
     [snapshot.remainingRequestsMinute, budget.maxRequestsMinute],
     [snapshot.remainingCostMinute, budget.maxCostMinute],

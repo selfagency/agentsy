@@ -23,6 +23,7 @@
     "jsxImportSource": "react",
     "paths": {
       "@agentsy/context": ["packages/context/src/index.ts"],
+      "@agentsy/guardrails": ["packages/guardrails/src/index.ts"],
       "@agentsy/models": ["packages/models/src/index.ts"],
       "@agentsy/models/local-providers": [
         "packages/models/src/local-providers/index.ts"

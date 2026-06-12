@@ -1,8 +1,13 @@
-export { interceptModelCall, type ModelCallInterceptorInput } from './model-call-interceptor.js';
 export type { ApprovalGate } from './approval-hook.js';
 export { createApprovalHook, isDestructiveTool } from './approval-hook.js';
 export type { BudgetHookOptions } from './budget-hook.js';
 export { createBudgetHook } from './budget-hook.js';
+export {
+  createInputGuardrailHook,
+  createOutputGuardrailHook,
+  createToolInputGuardrailHook,
+  createToolOutputGuardrailHook
+} from './guardrail-hooks.js';
 export type { InstructionFile, InstructionsDiscoverer } from './instructions-hook.js';
 export { createInstructionsHook } from './instructions-hook.js';
 export type {
@@ -16,6 +21,7 @@ export type {
   MemoryRetriever
 } from './memory-pre-turn.js';
 export { createMemoryPreTurnHook } from './memory-pre-turn.js';
+export { interceptModelCall, type ModelCallInterceptorInput } from './model-call-interceptor.js';
 // Plan mode — structured plan generation
 export type {
   AgentLoopHandle,

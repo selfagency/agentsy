@@ -24,6 +24,7 @@ export const createSecretStore = (): SecretStore => {
 };
 
 // Broker
+export type { Keyring } from './broker/index.js';
 export { CredentialBroker, InMemoryKeyring } from './broker/index.js';
 export type { AuditEntry, CredentialRequest, IssuedCredential, ResourceType } from './broker/types.js';
 export { MissingCredentialError } from './broker/types.js';

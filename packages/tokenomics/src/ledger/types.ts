@@ -11,19 +11,19 @@
 // =============================================================================
 
 export interface SpendRecord {
-  totalTokens: number;
-  totalCost: number;
   requestCount: number;
+  totalCost: number;
+  totalTokens: number;
 }
 
 export interface ArtifactRecord {
-  generated: number;
   cached: number;
+  generated: number;
 }
 
 export interface QualityRecord {
-  score: number;
   feedbackCount: number;
+  score: number;
 }
 
 export interface FrustrationRecord {
@@ -43,34 +43,20 @@ export interface FrustrationRecord {
  * that do not use replica routing omit them entirely.
  */
 export interface SessionLedgerEntry {
-  /** Unique ledger entry identifier. */
-  id: string;
-  /** The agent session this entry covers. */
-  sessionId: string;
   /** Agent that ran the session. */
   agentId: string;
-  /** Model deployed for the session (e.g. "claude-sonnet-4-20250514"). */
-  modelId: string;
-  /** Provider that served the session (e.g. "anthropic"). */
-  provider: string;
-  /** Wall-clock session start. */
-  startedAt: Date;
-  /** Wall-clock session end. */
-  endedAt: Date;
-  /** Duration in milliseconds. */
-  durationMs: number;
-  /** Token & cost summary. */
-  spend: SpendRecord;
   /** Artifact generation stats. */
   artifacts: ArtifactRecord;
-  /** Quality score & feedback. */
-  quality: QualityRecord;
+  /** Duration in milliseconds. */
+  durationMs: number;
+  /** Wall-clock session end. */
+  endedAt: Date;
+  /** Ordered list of replica IDs attempted before the session landed. */
+  failoverChain?: string[];
   /** Frustration signals detected during session. */
   frustration: FrustrationRecord;
-  /** Survival rate at 30 days (null if not yet calculable). */
-  survivalRate30d: number | null;
-  /** Arbitrary session tags. */
-  tags: string[];
+  /** Unique ledger entry identifier. */
+  id: string;
 
   // ---------------------------------------------------------------------------
   // Replica-aware routing fields (optional, for failover/headroom tracking)
@@ -78,10 +64,24 @@ export interface SessionLedgerEntry {
 
   /** Logical model identifier for replica-aware routing. */
   logicalModelId?: string;
-  /** Specific replica that handled this session. */
-  replicaId?: string;
+  /** Model deployed for the session (e.g. "claude-sonnet-4-20250514"). */
+  modelId: string;
+  /** Provider that served the session (e.g. "anthropic"). */
+  provider: string;
   /** Provider identifier from the replica budget context. */
   providerId?: string;
-  /** Ordered list of replica IDs attempted before the session landed. */
-  failoverChain?: string[];
+  /** Quality score & feedback. */
+  quality: QualityRecord;
+  /** Specific replica that handled this session. */
+  replicaId?: string;
+  /** The agent session this entry covers. */
+  sessionId: string;
+  /** Token & cost summary. */
+  spend: SpendRecord;
+  /** Wall-clock session start. */
+  startedAt: Date;
+  /** Survival rate at 30 days (null if not yet calculable). */
+  survivalRate30d: number | null;
+  /** Arbitrary session tags. */
+  tags: string[];
 }

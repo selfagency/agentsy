@@ -66,6 +66,9 @@ importers:
       '@agentsy/gateway':
         specifier: workspace:*
         version: link:../gateway
+      '@agentsy/guardrails':
+        specifier: workspace:*
+        version: link:../guardrails
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory
@@ -583,6 +586,9 @@ importers:
       '@agentsy/context':
         specifier: workspace:*
         version: link:../context
+      '@agentsy/guardrails':
+        specifier: workspace:*
+        version: link:../guardrails
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory
