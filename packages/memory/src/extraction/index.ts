@@ -15,6 +15,13 @@ export interface ExtractedFact {
 }
 
 /**
+ * Extractor surface — the object returned by createFactExtractor().
+ */
+export interface FactExtractor {
+  extract(turnContent: string): Promise<ExtractedFact[]>;
+}
+
+/**
  * Minimal LLM client interface for dependency injection.
  */
 export interface FactExtractorLlm {
@@ -50,7 +57,9 @@ Only extract facts with high confidence (≥0.6). Omit generic greetings.`;
  * Uses an injected LLM client to extract structured facts from conversation
  * turns. Falls back to empty array on any error to avoid breaking the turn.
  */
-export function createFactExtractor(options: FactExtractorOptions) {
+export function createFactExtractor(options: FactExtractorOptions): {
+  extract(turnContent: string): Promise<ExtractedFact[]>;
+} {
   const minConfidence = options.minConfidence ?? 0.5;
 
   return {
