@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isCortexKitDbPresent, resolveCortexKitDbDir, resolveCortexKitDbPath } from '../src/cortexkit/db-path.js';
+import { isCortexKitDbPresent, resolveCortexKitDbDir, resolveCortexKitDbPath } from './db-path.js';
 
 describe('CortexKit DB path resolution', () => {
   it('returns a non-empty directory path', () => {
