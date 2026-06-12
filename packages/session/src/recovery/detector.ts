@@ -47,49 +47,53 @@ export function detectStaleSessions(store: SessionStore, maxAgeMs: number): Stal
   const stale: StaleEntry[] = [];
 
   for (const key of store.listKeys()) {
-    // Session heartbeats are stored under `hb:<sessionId>`
     if (!key.startsWith('hb:')) {
       continue;
     }
 
     const sessionId = key.slice(3);
-    const raw = store.getValue<string>(key);
-    if (!raw) {
-      // Entry exists but value is null/undefined — treat as invalid
-      stale.push(makeDetectorEntry(sessionId, 'invalid-state', now));
-      continue;
-    }
-
-    let heartbeatTs: number;
-    try {
-      heartbeatTs = Number(raw);
-      if (Number.isNaN(heartbeatTs)) {
-        stale.push(makeDetectorEntry(sessionId, 'invalid-state', now));
-        continue;
-      }
-    } catch {
-      stale.push(makeDetectorEntry(sessionId, 'invalid-state', now));
-      continue;
-    }
-
-    if (now - heartbeatTs > maxAgeMs) {
-      // Pull the last checkpoint for context
-      const stateRaw = store.getValue<Record<string, unknown>>(`session:${sessionId}`);
-      const threadId =
-        stateRaw && typeof stateRaw === 'object'
-          ? String((stateRaw as Record<string, unknown>).threadId ?? 'main')
-          : 'main';
-      stale.push({
-        sessionId,
-        threadId,
-        reason: 'heartbeat-missed',
-        lastSeenAt: heartbeatTs,
-        lastCheckpointId: tryReadCheckpointId(store, sessionId)
-      });
+    const entry = checkHeartbeat(store, sessionId, now, maxAgeMs);
+    if (entry) {
+      stale.push(entry);
     }
   }
 
   return stale;
+}
+
+function checkHeartbeat(store: SessionStore, sessionId: string, now: number, maxAgeMs: number): StaleEntry | undefined {
+  const raw = store.getValue<string>(`hb:${sessionId}`);
+  if (!raw) {
+    return makeDetectorEntry(sessionId, 'invalid-state', now);
+  }
+
+  let heartbeatTs: number;
+  try {
+    heartbeatTs = Number(raw);
+    if (Number.isNaN(heartbeatTs)) {
+      return makeDetectorEntry(sessionId, 'invalid-state', now);
+    }
+  } catch {
+    return makeDetectorEntry(sessionId, 'invalid-state', now);
+  }
+
+  if (now - heartbeatTs <= maxAgeMs) {
+    return;
+  }
+
+  const stateRaw = store.getValue<Record<string, unknown>>(`session:${sessionId}`);
+  const threadId =
+    stateRaw && typeof stateRaw === 'object'
+      ? String((stateRaw as Record<string, unknown>).threadId ?? 'main')
+      : 'main';
+
+  return {
+    sessionId,
+    threadId,
+    reason: 'heartbeat-missed',
+    lastSeenAt: heartbeatTs,
+    lastCheckpointId: tryReadCheckpointId(store, sessionId)
+  };
 }
 
 // ---------------------------------------------------------------------------

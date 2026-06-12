@@ -20,6 +20,16 @@ export {
 } from './manager.js';
 // Pause/resume for approval gates and interruptions
 export { createPauseManager, type PauseEntry, type PauseManager } from './pause.js';
+// Crash recovery
+export {
+  detectStaleSessions,
+  type IntegrityResult,
+  type RestoreOptions,
+  type RestoreResult,
+  restoreSession,
+  type StaleEntry,
+  validateIntegrity
+} from './recovery/index.js';
 // Typed state layer (Phase 6)
 export * from './state/index.js';
 export {

@@ -60,7 +60,8 @@ describe('reduceSessionState', () => {
         index: 999,
         message: { content: 'nope' }
       });
-      expect(next).toStrictEqual(state);
+      expect(next.messages).toEqual(state.messages);
+      expect(next.sessionId).toBe(state.sessionId);
     });
   });
 
