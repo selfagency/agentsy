@@ -19,6 +19,11 @@ function safePath(raw: string): string {
   return normalised;
 }
 
+/** TypeScript type guard: is `enc` a valid `BufferEncoding` literal? */
+function isBufferEncoding(enc: string): enc is BufferEncoding {
+  return ['ascii', 'utf-8', 'utf16le', 'ucs-2', 'base64', 'base64url', 'latin1', 'binary', 'hex'].includes(enc);
+}
+
 export function createFsTools(): ToolDefinition[] {
   return [
     {
@@ -36,8 +41,9 @@ export function createFsTools(): ToolDefinition[] {
         }
         try {
           const resolved = safePath(filePath);
-          const encoding = typeof input.encoding === 'string' ? input.encoding : 'utf-8';
-          const content = await fs.readFile(resolved, encoding as BufferEncoding);
+          const encoding =
+            typeof input.encoding === 'string' && isBufferEncoding(input.encoding) ? input.encoding : 'utf-8';
+          const content = await fs.readFile(resolved, encoding);
           const stat = await fs.stat(resolved);
           return { ok: true, data: { content, size: stat.size, path: resolved } };
         } catch (error) {

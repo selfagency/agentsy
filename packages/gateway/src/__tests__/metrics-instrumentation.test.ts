@@ -41,12 +41,13 @@ function makeClient(responses: Map<string, ClientSlot>): UniversalClient {
         return Promise.reject(toError(slot.error));
       }
       if (slot?.response !== undefined) {
+        const resp: CompletionResponse = slot.response;
         if (slot.latencyMs !== undefined && slot.latencyMs > 0) {
           return new Promise(resolve => {
-            setTimeout(() => resolve(slot.response as CompletionResponse), slot.latencyMs);
+            setTimeout(() => resolve(resp), slot.latencyMs);
           });
         }
-        return Promise.resolve(slot.response as CompletionResponse);
+        return Promise.resolve(resp);
       }
       return Promise.resolve({
         content: 'ok',
