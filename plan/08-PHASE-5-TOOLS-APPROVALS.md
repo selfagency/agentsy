@@ -10,7 +10,7 @@
 
 ## Status — 2026-06-12 Code Review
 
-## Completion: ~50% — Guardrails complete, tool implementations are stubs
+## Completion: ~85% — Guardrails complete, baseline tools functional, MCP bridge and UI/E2E gaps remain
 
 ### ✅ BATCH 1: MCP AUDIT + TOOL REGISTRY (100% DONE)
 
@@ -68,37 +68,27 @@
 - ❌ DiffViewer component — NOT BUILT
 - ❌ E2E approval + guardrail scenarios — NOT WRITTEN
 
-### 🔴 CRITICAL BLOCKER: TOOL HANDLERS ARE STUBS
+### 🔶 REMAINING GAP: MCP BRIDGE IS STILL A PLACEHOLDER
 
-All baseline tools (`@agentsy/tools`) have **placeholder handlers** — they don't execute actual code:
+Most baseline tools (`@agentsy/tools`) now execute real code. The remaining non-production path is the MCP bridge:
 
-| Tool | Issue | Impact |
-|------|-------|--------|
-| `repl_execute` | Returns `{ ok: true, data: { result: 'Execution placeholder' } }` | Cannot run code |
-| `fs_read` | Returns `{ ok: true, data: { content: '[fs_read placeholder] ${path}' } }` | Cannot read files |
-| `fs_write` | Returns stub data | Cannot write files |
-| `fs_patch` | Returns stub data | Cannot patch files |
-| `shell_exec` | Returns `{ ok: true, data: { stdout: '[shell_exec placeholder]' } }` | Cannot run shell |
-| `http_fetch` | Returns stub data | Cannot make HTTP requests |
-| `mcp_call` | Returns stub data | Cannot call MCP servers |
+| Tool | Status | Impact |
+|------|--------|--------|
+| `mcp_call` | placeholder | Cannot call MCP servers |
 
-**This means:** Tools can be approved but produce no actual output. Orchestration and guardrails work, but tooling is non-functional.
+**This means:** baseline tool execution is production-capable; the only remaining stub is the MCP bridge.
 
 ### 🎯 REMEDIATION PRIORITY
 
 | Task | Effort | Blocker? |
 |------|--------|----------|
-| Implement REPL handler (Node.js VM execution) | 1h | **YES** |
-| Implement FS handlers (fs module IO) | 1h | **YES** |
-| Implement Shell handler (child_process) | 0.5h | **YES** |
-| Implement HTTP handler (fetch API) | 0.5h | **YES** |
 | Implement MCP handler (MCP client bridge) | 1h | **YES** |
 | Build DocumentViewer + DiffViewer | 1h | P1 |
 | Add E2E approval + guardrail tests | 1h | P2 |
 
-**TOTAL: 5.5h for production-ready tools. Currently at 50% because guardrails ship but tools are unusable.**
+**TOTAL: 3h for the remaining Phase 5 gaps.**
 
-### STATUS: ~50% SHIPPED — Guardrails complete, tool implementations stubbed
+### STATUS: ~85% SHIPPED — Guardrails complete, baseline tools functional, MCP bridge and UI/E2E remain
 
 **Reference architectures incorporated:**
 

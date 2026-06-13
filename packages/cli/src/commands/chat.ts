@@ -659,6 +659,18 @@ export async function runChatCommand(
     /* intentional no-op */
   }
 
+  /** Show current trace information (placeholder). */
+  function handleTraceCommand(): void {
+    stderr(dim('[trace] Trace recording is not yet wired.\n'));
+    stderr(dim('[trace] Enable a MetricsCollector or CostTracker to capture spans.\n'));
+  }
+
+  /** List recent spans/events (placeholder). */
+  function handleEventsCommand(): void {
+    stderr(dim('[events] Event recording is not yet wired.\n'));
+    stderr(dim('[events] Registered spans will appear here once observability is connected.\n'));
+  }
+
   function handleLbDispatch(trimmed: string): void {
     const args = trimmed.slice(4).trim().split(/\s+/u);
     const sub = args[0];
@@ -707,6 +719,20 @@ export async function runChatCommand(
 
     if (trimmed.startsWith('/skills ')) {
       await handleSkillsDispatch(trimmed.slice(8).trim().split(/\s+/u));
+      safePrompt(rl);
+      return false;
+    }
+
+    // /trace — show current trace info
+    if (trimmed === '/trace') {
+      handleTraceCommand();
+      safePrompt(rl);
+      return false;
+    }
+
+    // /events — list recent spans/events
+    if (trimmed === '/events') {
+      handleEventsCommand();
       safePrompt(rl);
       return false;
     }
