@@ -69,10 +69,12 @@ export class CostTracker {
   computeCost(provider: string, model: string, tokens: { input: number; output: number }): number {
     const providerPricing = PROVIDER_PRICING[provider];
     if (providerPricing === undefined) {
+      process.emitWarning(`Unknown provider "${provider}" — cost set to $0`, 'CostTracker');
       return 0;
     }
     const pricing = providerPricing[model];
     if (pricing === undefined) {
+      process.emitWarning(`Unknown model "${model}" for provider "${provider}" — cost set to $0`, 'CostTracker');
       return 0;
     }
     return (tokens.input / 1000) * pricing.inputPer1K + (tokens.output / 1000) * pricing.outputPer1K;

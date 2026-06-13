@@ -1,5 +1,7 @@
 # Observability — Production Troubleshooting
 
+> ⚠️ `/trace` and `/events` are placeholder commands. Real span emission requires wiring a `MetricsCollector` or `CostTracker` into the runtime. The examples below show the intended output format once observability is connected.
+
 ## Prerequisites
 
 Ensure the observability engine is initialized:

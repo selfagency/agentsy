@@ -66,13 +66,7 @@ export const DEFAULT_REDACTION_POLICY: RedactionPolicy = {
   globalPatterns: SECRET_PATTERNS,
   providerRules: new Map(),
   redact(value: string): string {
-    let result = value;
-    for (const rule of this.globalPatterns) {
-      if (rule.enabled) {
-        result = result.replace(rule.pattern, rule.replacement);
-      }
-    }
-    return result;
+    return applyRedaction(value, this.globalPatterns);
   }
 };
 
@@ -89,15 +83,19 @@ export function createRedactionPolicy(
     globalPatterns: overrides?.globalPatterns ?? patterns,
     providerRules: overrides?.providerRules ?? new Map(),
     redact(value: string): string {
-      let result = value;
-      for (const rule of this.globalPatterns) {
-        if (rule.enabled) {
-          result = result.replace(rule.pattern, rule.replacement);
-        }
-      }
-      return result;
+      return applyRedaction(value, this.globalPatterns);
     }
   };
+}
+
+function applyRedaction(value: string, patterns: readonly RedactionRule[]): string {
+  let result = value;
+  for (const rule of patterns) {
+    if (rule.enabled) {
+      result = result.replace(rule.pattern, rule.replacement);
+    }
+  }
+  return result;
 }
 
 /**
