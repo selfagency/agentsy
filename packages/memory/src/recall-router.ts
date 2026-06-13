@@ -26,30 +26,30 @@ const NEGATION_WINDOW = 20;
 
 const RULES: Rule[] = [
   // Exact phrase search — highest weight
-  { pattern: /"[^"]{3,}"/u, strategy: 'chunks', weight: 8.0 },
+  { pattern: /"[^"]{3,}"/u, strategy: 'chunks', weight: 8 },
 
   // Cypher/syntax patterns
-  { pattern: /\b(MATCH|RETURN|CREATE|WHERE)\b/u, strategy: 'chunks', weight: 10.0 },
+  { pattern: /\b(MATCH|RETURN|CREATE|WHERE)\b/u, strategy: 'chunks', weight: 10 },
 
   // Code patterns
   {
     pattern: /\b(def|return|async|await|import|export|class|interface|function|const)\b/u,
     strategy: 'code_rules',
-    weight: 3.0
+    weight: 3
   },
 
   // Code review/refactoring patterns
   {
     pattern: /\b(coding rules|code review|refactoring|code style|lint|best practice|pattern)\b/iu,
     strategy: 'code_rules',
-    weight: 5.0
+    weight: 5
   },
 
   // Relationship patterns
   {
     pattern: /\b(how is|how are|related to|connected to|linked to|relationship between)\b/iu,
     strategy: 'vector',
-    weight: 5.0
+    weight: 5
   },
 
   // Summary/overview patterns

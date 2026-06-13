@@ -270,6 +270,9 @@ importers:
 
   packages/memory:
     dependencies:
+      '@agentsy/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@agentsy/tokenomics':
         specifier: workspace:*
         version: link:../tokenomics

@@ -30,8 +30,8 @@ function makeSessionStore() {
 describe('createUnifiedMemory', () => {
   describe('remember', () => {
     it('stores a qa entry', async () => {
-      const engine = makeEngine() as ReturnType<typeof makeEngine>;
-      const wiki = makeWiki() as ReturnType<typeof makeWiki>;
+      const engine = makeEngine();
+      const wiki = makeWiki();
       const memory = createUnifiedMemory({ engine, wiki });
 
       const result = await memory.remember({ type: 'qa', question: 'What is X?', answer: 'X is Y' });
@@ -41,9 +41,9 @@ describe('createUnifiedMemory', () => {
     });
 
     it('stores to session cache when sessionId is provided', async () => {
-      const engine = makeEngine() as ReturnType<typeof makeEngine>;
-      const wiki = makeWiki() as ReturnType<typeof makeWiki>;
-      const sessionStore = makeSessionStore() as ReturnType<typeof makeSessionStore>;
+      const engine = makeEngine();
+      const wiki = makeWiki();
+      const sessionStore = makeSessionStore();
       const memory = createUnifiedMemory({ engine, wiki, sessionStore });
 
       await memory.remember(
@@ -56,8 +56,8 @@ describe('createUnifiedMemory', () => {
     });
 
     it('returns a RememberResult', async () => {
-      const engine = makeEngine() as ReturnType<typeof makeEngine>;
-      const wiki = makeWiki() as ReturnType<typeof makeWiki>;
+      const engine = makeEngine();
+      const wiki = makeWiki();
       const memory = createUnifiedMemory({ engine, wiki });
 
       const result = await memory.remember({
@@ -73,8 +73,8 @@ describe('createUnifiedMemory', () => {
     });
 
     it('extracts facts from qa entries when extractor is provided', async () => {
-      const engine = makeEngine() as ReturnType<typeof makeEngine>;
-      const wiki = makeWiki() as ReturnType<typeof makeWiki>;
+      const engine = makeEngine();
+      const wiki = makeWiki();
       const extractor = {
         extract: vi.fn().mockResolvedValue([{ content: 'X is Y', confidence: 0.9, kind: 'entity' }])
       };
@@ -83,14 +83,14 @@ describe('createUnifiedMemory', () => {
       await memory.remember({ type: 'qa', question: 'What is X?', answer: 'X is Y' });
 
       expect(extractor.extract).toHaveBeenCalled();
-      expect(engine.ingest).toHaveBeenCalledTimes(2); // QA + extracted fact
+      expect(engine.ingest).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('recall', () => {
     it('returns empty array when nothing matches', async () => {
-      const engine = makeEngine() as ReturnType<typeof makeEngine>;
-      const wiki = makeWiki() as ReturnType<typeof makeWiki>;
+      const engine = makeEngine();
+      const wiki = makeWiki();
       const memory = createUnifiedMemory({ engine, wiki });
 
       const results = await memory.recall('nothing exists');
@@ -99,68 +99,67 @@ describe('createUnifiedMemory', () => {
     });
 
     it('returns results from engine recall', async () => {
-      const engine = makeEngine() as ReturnType<typeof makeEngine>;
+      const engine = makeEngine();
       engine.recall = vi
         .fn()
         .mockReturnValue([{ tierName: 'stm', items: [{ id: '1', content: 'dark mode preferred', importance: 0.8 }] }]);
-      const wiki = makeWiki() as ReturnType<typeof makeWiki>;
+      const wiki = makeWiki();
       const memory = createUnifiedMemory({ engine, wiki });
 
       const results = await memory.recall('dark mode');
 
       expect(results.length).toBeGreaterThan(0);
-      expect(results[0]!._source).toBe('graph');
+      expect(results[0]?._source).toBe('graph');
     });
 
     it('routes query by strategy', async () => {
-      const engine = makeEngine() as ReturnType<typeof makeEngine>;
+      const engine = makeEngine();
       engine.recall = vi
         .fn()
         .mockReturnValue([
           { tierName: 'stm', items: [{ id: '1', content: 'function foo() { return 1 }', importance: 0.8 }] }
         ]);
-      const wiki = makeWiki() as ReturnType<typeof makeWiki>;
+      const wiki = makeWiki();
       const memory = createUnifiedMemory({ engine, wiki });
 
-      // Code query should match via code_rules strategy
       const results = await memory.recall('code review best practices');
 
       expect(results.length).toBeGreaterThan(0);
     });
 
     it('scopes to session when scope=session', async () => {
-      const engine = makeEngine() as ReturnType<typeof makeEngine>;
-      const wiki = makeWiki() as ReturnType<typeof makeWiki>;
-      const sessionStore = makeSessionStore() as ReturnType<typeof makeSessionStore>;
+      const engine = makeEngine();
+      const wiki = makeWiki();
+      const sessionStore = makeSessionStore();
       sessionStore.getRecent = vi.fn().mockResolvedValue([{ content: 'session data', id: 's1', score: 0.9 }]);
       const memory = createUnifiedMemory({ engine, wiki, sessionStore });
 
       const results = await memory.recall('dark mode', { sessionId: 's1', scope: 'session' });
 
       expect(results.length).toBe(1);
-      expect(results[0]!._source).toBe('session');
+      expect(results[0]?._source).toBe('session');
     });
   });
 
   describe('forget', () => {
-    it('resets the engine', async () => {
-      const engine = makeEngine() as ReturnType<typeof makeEngine>;
-      const wiki = makeWiki() as ReturnType<typeof makeWiki>;
+    it('resets the engine', () => {
+      const engine = makeEngine();
+      const wiki = makeWiki();
       const memory = createUnifiedMemory({ engine, wiki });
 
-      await memory.forget();
+      memory.forget();
 
       expect(engine.reset).toHaveBeenCalled();
     });
   });
 
   describe('improve', () => {
-    it('returns synced=0 (no-op for now)', async () => {
-      const engine = makeEngine() as ReturnType<typeof makeEngine>;
-      const wiki = makeWiki() as ReturnType<typeof makeWiki>;
+    it('returns synced=0 (no-op for now)', () => {
+      const engine = makeEngine();
+      const wiki = makeWiki();
       const memory = createUnifiedMemory({ engine, wiki });
 
-      const result = await memory.improve({ sessionIds: ['s1'] });
+      const result = memory.improve({ sessionIds: ['s1'] });
 
       expect(result.synced).toBe(0);
     });

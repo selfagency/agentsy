@@ -42,6 +42,8 @@ export interface RecallOptions {
   sessionId?: string;
 }
 
+export type ResolvedScope = RecallScope | 'session' | 'graph';
+
 export interface RecallOutput {
   _source: EntrySource;
   entry: MemoryEntry;
@@ -140,41 +142,44 @@ export function createUnifiedMemory(options: UnifiedMemoryOptions): {
     engine.reset();
   }
 
-  function improve(_opts?: { sessionIds?: string[]; runInBackground?: boolean }): { synced: number } {
-    return { synced: 0 };
-  }
+  return { remember, recall, forget, improve: createImprove(engine) };
+}
 
-  return { remember, recall, forget, improve };
+function createImprove(
+  _engine: MemoryEngine
+): (opts?: { sessionIds?: string[]; runInBackground?: boolean }) => { synced: number } {
+  return function improve(_opts?: { sessionIds?: string[]; runInBackground?: boolean }): { synced: number } {
+    return { synced: 0 };
+  };
 }
 
 // ---- Top-Level Helpers ----
 
-function querySessionImpl(
+async function querySessionImpl(
   store: UnifiedMemoryOptions['sessionStore'],
-  resolvedScope: RecallScope | 'session' | 'graph',
+  resolvedScope: ResolvedScope,
   sessionId: string | undefined,
   query: string,
   limit: number
 ): Promise<RecallOutput[]> {
   if (store && sessionId && (resolvedScope === 'session' || resolvedScope === 'auto' || resolvedScope === 'all')) {
     try {
-      return store.getRecent(query, sessionId, limit).then(results =>
-        results.map(sr => ({
-          entry: { type: 'fact' as const, content: sr.content, confidence: sr.score, kind: 'entity' as const },
-          _source: 'session' as EntrySource,
-          score: sr.score
-        }))
-      );
+      const results = await store.getRecent(query, sessionId, limit);
+      return results.map(sr => ({
+        entry: { type: 'fact', content: sr.content, confidence: sr.score, kind: 'entity' },
+        _source: 'session' as EntrySource,
+        score: sr.score
+      }));
     } catch {
-      return Promise.resolve([]);
+      return [];
     }
   }
-  return Promise.resolve([]);
+  return [];
 }
 
 function queryGraphImpl(
   engine: MemoryEngine,
-  resolvedScope: RecallScope | 'session' | 'graph',
+  resolvedScope: ResolvedScope,
   minScore: number,
   query: string,
   strategy: SearchStrategy,
@@ -189,7 +194,7 @@ function queryGraphImpl(
     for (const item of tr.items) {
       if (item.importance >= minScore && matchesStrategy(item.content, query, strategy)) {
         results.push({
-          entry: { type: 'fact' as const, content: item.content, confidence: item.importance, kind: 'entity' as const },
+          entry: { type: 'fact', content: item.content, confidence: item.importance, kind: 'entity' },
           _source: 'graph' as EntrySource,
           score: item.importance
         });
@@ -265,7 +270,7 @@ function summariseEntry(entry: MemoryEntry): string {
   }
 }
 
-function resolveScope(scope: RecallScope, sessionId?: string): RecallScope | 'session' | 'graph' {
+function resolveScope(scope: RecallScope, sessionId?: string): ResolvedScope {
   if (scope === 'auto') {
     return sessionId ? 'auto' : 'graph';
   }
