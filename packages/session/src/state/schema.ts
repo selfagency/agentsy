@@ -134,6 +134,7 @@ export type ToolCallState = z.infer<typeof ToolCallStateSchema>;
  * Creates a minimal valid session state with defaults.
  */
 export function createSessionState(sessionId: string, threadId: string): SessionState {
+  const now = Date.now();
   return SessionStateSchema.parse({
     sessionId,
     threadId,
@@ -141,7 +142,7 @@ export function createSessionState(sessionId: string, threadId: string): Session
     toolCallQueue: [],
     checkpoints: [],
     meta: {},
-    createdAt: Date.now(),
-    updatedAt: Date.now()
+    createdAt: now,
+    updatedAt: now
   });
 }
