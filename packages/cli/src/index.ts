@@ -316,7 +316,7 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
     const sub = rest[0];
     const subHandler = sub ? entry.subcommands[sub] : undefined;
     if (subHandler) {
-      return await subHandler(rest.slice(1), io);
+      return await subHandler(rest, io);
     }
     (io.stderr ?? DEFAULT_IO.stderr)(`Unknown ${command} subcommand: ${sub ?? '(none)'}`);
     (io.stderr ?? DEFAULT_IO.stderr)(`Supported: ${command} ${Object.keys(entry.subcommands).join('|')}`);
