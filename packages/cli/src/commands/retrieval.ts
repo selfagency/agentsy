@@ -13,33 +13,39 @@
 import type { CliIO } from '../index.js';
 
 export function runIndexCommand(argv: readonly string[], io: CliIO): number {
+  const stdout = io.stdout ?? console.log;
+  const stderr = io.stderr ?? console.error;
   const path = argv[0];
   if (path === undefined || path.length === 0) {
-    (io.stderr ?? console.error)('Usage: agentsy index <path>');
+    stderr('Usage: agentsy index <path>');
     return 1;
   }
 
-  (io.stdout ?? console.log)(`Indexed: ${path}`);
-  (io.stdout ?? console.log)('  Chunks: ~-');
-  (io.stdout ?? console.log)('  Strategy: semantic');
+  stdout('⚠ Indexing is a preview feature. No documents were actually indexed.');
+  stdout(`  Path: ${path}`);
+  stdout('  To enable real indexing, wire @agentsy/memory KnowledgeBaseManager into this command.');
   return 0;
 }
 
 export function runSearchCommand(argv: readonly string[], io: CliIO): number {
+  const stdout = io.stdout ?? console.log;
+  const stderr = io.stderr ?? console.error;
   const query = argv.join(' ');
   if (query.length === 0) {
-    (io.stderr ?? console.error)('Usage: agentsy search <query>');
+    stderr('Usage: agentsy search <query>');
     return 1;
   }
 
-  (io.stdout ?? console.log)(`Query: ${query}`);
-  (io.stdout ?? console.log)('  No indexed documents found.');
-  (io.stdout ?? console.log)("  Use 'agentsy index <path>' to index a document.");
+  stdout('⚠ Search is a preview feature. No indexed documents to search.');
+  stdout(`  Query: ${query}`);
+  stdout("  Use 'agentsy index <path>' to index a document.");
   return 0;
 }
 
 export function runSourcesCommand(_argv: readonly string[], io: CliIO): number {
-  (io.stdout ?? console.log)('Indexed sources (0):');
-  (io.stdout ?? console.log)('  No sources indexed yet.');
+  const stdout = io.stdout ?? console.log;
+  stdout('⚠ Sources is a preview feature. No index engine connected.');
+  stdout('Indexed sources (0):');
+  stdout('  No sources indexed yet.');
   return 0;
 }

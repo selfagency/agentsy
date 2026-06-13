@@ -10,6 +10,7 @@ export interface SparseIndex {
 }
 
 export interface DenseIndex {
+  /** Search by query string. Implementors are responsible for embedding the query internally. */
   search(query: string, topK: number): Promise<Array<{ id: string; score: number; content: string }>>;
 }
 

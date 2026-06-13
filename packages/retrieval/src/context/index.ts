@@ -76,14 +76,22 @@ export function lostInMiddleOrder(chunks: RerankedResult[]): RerankedResult[] {
   let right = sorted.length - 1;
 
   while (left <= right) {
-    if (left === right) {
-      result.push(sorted[left] as RerankedResult);
+    const leftItem = sorted[left];
+    if (leftItem === undefined) {
       break;
     }
-    result.push(sorted[left] as RerankedResult);
+    if (left === right) {
+      result.push(leftItem);
+      break;
+    }
+    result.push(leftItem);
     left++;
     if (left <= right) {
-      result.push(sorted[right] as RerankedResult);
+      const rightItem = sorted[right];
+      if (rightItem === undefined) {
+        break;
+      }
+      result.push(rightItem);
       right--;
     }
   }

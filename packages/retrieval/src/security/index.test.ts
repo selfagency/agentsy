@@ -13,18 +13,41 @@ describe('matchesPattern', () => {
     expect(matchesPattern('/home/docs/file.md', '/home/docs/other.md')).toBe(false);
   });
 
-  it('matches wildcard suffix', () => {
+  it('matches wildcard suffix with path boundary', () => {
     expect(matchesPattern('/home/docs/file.md', '/home/docs/*')).toBe(true);
+    expect(matchesPattern('/home/docs/', '/home/docs/*')).toBe(true);
     expect(matchesPattern('/home/other/file.md', '/home/docs/*')).toBe(false);
+  });
+
+  it('prevents path traversal with wildcard suffix', () => {
+    // /home/docs/* should NOT match /home/docs-elsewhere/
+    expect(matchesPattern('/home/docs-elsewhere/file.md', '/home/docs/*')).toBe(false);
+    expect(matchesPattern('/home/docs_backup/file.md', '/home/docs/*')).toBe(false);
   });
 
   it('matches global wildcard', () => {
     expect(matchesPattern('anything', '*')).toBe(true);
   });
 
-  it('matches wildcard prefix', () => {
-    expect(matchesPattern('file.md', '*.md')).toBe(true);
-    expect(matchesPattern('file.txt', '*.md')).toBe(false);
+  it('matches domain wildcard with dot boundary', () => {
+    expect(matchesPattern('sub.docs.example.com', '*.docs.example.com')).toBe(true);
+    expect(matchesPattern('docs.example.com', '*.docs.example.com')).toBe(false); // need subdomain dot
+  });
+
+  it('prevents domain bypass with wildcard prefix', () => {
+    // *.docs.example.com should NOT match evil.docs.example.com.evildomain.com
+    expect(matchesPattern('evil.docs.example.com.evildomain.com', '*.docs.example.com')).toBe(false);
+    expect(matchesPattern('notdocs.example.com', '*.docs.example.com')).toBe(false);
+  });
+
+  it('matches generic suffix wildcard', () => {
+    expect(matchesPattern('foobar', 'foo*')).toBe(true);
+    expect(matchesPattern('barfoo', 'foo*')).toBe(false);
+  });
+
+  it('matches generic prefix wildcard', () => {
+    expect(matchesPattern('bar.md', '*.md')).toBe(true);
+    expect(matchesPattern('bar.txt', '*.md')).toBe(false);
   });
 });
 
@@ -38,6 +61,16 @@ describe('verifySource', () => {
     const result = verifySource('/home/docs/file.md', allowlist);
     expect(result.allowed).toBe(true);
     expect(result.sourceType).toBe('local');
+  });
+
+  it('denies path traversal attempt', () => {
+    const result = verifySource('/home/docs-elsewhere/evil.sh', allowlist);
+    expect(result.allowed).toBe(false);
+  });
+
+  it('denies domain bypass attempt', () => {
+    const result = verifySource('evil.docs.example.com.evildomain.com', allowlist);
+    expect(result.allowed).toBe(false);
   });
 
   it('denies non-matching source', () => {

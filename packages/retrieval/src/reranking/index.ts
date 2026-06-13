@@ -36,15 +36,11 @@ export class PassthroughReranker implements Reranker {
 export type RerankerStrategy = 'passthrough' | 'bge';
 
 export function createReranker(config: RerankerConfig = {}, strategy: RerankerStrategy = 'passthrough'): Reranker {
-  switch (strategy) {
-    case 'bge': {
-      if (!config.modelPath) {
-        return new PassthroughReranker();
-      }
-      // Placeholder: BGEReranker would load ONNX model
-      return new PassthroughReranker();
+  if (strategy === 'bge') {
+    if (config.modelPath) {
+      process.emitWarning('BGE reranker not yet implemented; falling back to passthrough');
     }
-    default:
-      return new PassthroughReranker();
+    return new PassthroughReranker();
   }
+  return new PassthroughReranker();
 }

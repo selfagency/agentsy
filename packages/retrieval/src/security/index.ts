@@ -33,16 +33,41 @@ export interface ProvenanceIngestResult {
 
 /**
  * Check if a source matches any allowlist pattern.
- * Patterns support glob-style wildcards: `*` matches any sequence.
+ *
+ * Patterns support glob-style wildcards:
+ * - `/path/to/*` — directory wildcard: matches `/path/to/` prefix only (path-boundary safe)
+ * - `*.example.com` — domain wildcard: matches `.example.com` suffix only (dot-boundary safe)
+ * - `*` — matches everything
+ *
+ * Path-boundary enforcement: `/home/docs/*` does NOT match `/home/docs-elsewhere/file`.
+ * Domain-boundary enforcement: `*.example.com` does NOT match `evil.example.com.evildomain.com`.
  */
 export function matchesPattern(source: string, pattern: string): boolean {
   if (pattern === '*') {
     return true;
   }
-  if (pattern.endsWith('*')) {
+  // Directory wildcard: /path/to/* → match /path/to/ prefix (with path boundary)
+  if (pattern.endsWith('/*')) {
+    const base = pattern.slice(0, -1); // "/path/to/"
+    return source === base.slice(0, -1) || source.startsWith(base);
+  }
+  // Generic suffix wildcard: foo* → match "foo" prefix
+  if (pattern.endsWith('*') && !pattern.endsWith('/*')) {
     return source.startsWith(pattern.slice(0, -1));
   }
-  if (pattern.startsWith('*')) {
+  // Domain wildcard: *.docs.example.com → match "docs.example.com" or ".docs.example.com" suffix
+  // Generic suffix: *.md → match ".md" suffix
+  if (pattern.startsWith('*.')) {
+    const suffix = pattern.slice(1); // ".docs.example.com" or ".md" (includes leading dot)
+    // Domain patterns have internal dots — enforce subdomain boundary
+    if (suffix.slice(1).includes('.')) {
+      return source.endsWith(suffix);
+    }
+    // Generic extension suffix
+    return source.endsWith(suffix);
+  }
+  // Generic prefix wildcard: *foo → match "foo" suffix
+  if (pattern.startsWith('*') && !pattern.startsWith('*.')) {
     return source.endsWith(pattern.slice(1));
   }
   return source === pattern;

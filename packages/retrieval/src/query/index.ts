@@ -37,6 +37,54 @@ const CLASS_PATTERNS: Array<{ pattern: RegExp; class: QueryClass }> = [
   { pattern: /\b(and also|then|after that|subsequently|chain|sequence|connect)\b/iu, class: 'multi_hop' }
 ];
 
+const STOP_WORDS = new Set([
+  'the',
+  'and',
+  'for',
+  'are',
+  'but',
+  'not',
+  'you',
+  'all',
+  'can',
+  'had',
+  'her',
+  'was',
+  'one',
+  'our',
+  'out',
+  'has',
+  'have',
+  'been',
+  'its',
+  'who',
+  'may',
+  'way',
+  'how',
+  'did',
+  'get',
+  'use',
+  'see',
+  'new',
+  'now',
+  'any',
+  'put',
+  'let',
+  'say',
+  'try',
+  'ask',
+  'too',
+  'own',
+  'set',
+  'end',
+  'why',
+  'yet',
+  'she',
+  'his',
+  'him',
+  'old'
+]);
+
 export class QueryProcessor {
   private readonly model: QueryLlm | undefined;
 
@@ -90,57 +138,10 @@ function classifyQuery(query: string): QueryClass {
 function extractKeywords(query: string): string[] {
   const cleaned = query.replace(/[^\w\s]/gu, '');
   const words = cleaned.split(/\s+/).filter(w => w.length > 2);
-  const stopWords = new Set([
-    'the',
-    'and',
-    'for',
-    'are',
-    'but',
-    'not',
-    'you',
-    'all',
-    'can',
-    'had',
-    'her',
-    'was',
-    'one',
-    'our',
-    'out',
-    'has',
-    'have',
-    'been',
-    'its',
-    'who',
-    'may',
-    'way',
-    'how',
-    'did',
-    'get',
-    'use',
-    'see',
-    'new',
-    'now',
-    'any',
-    'put',
-    'let',
-    'say',
-    'try',
-    'ask',
-    'too',
-    'own',
-    'set',
-    'end',
-    'why',
-    'yet',
-    'she',
-    'his',
-    'him',
-    'old'
-  ]);
   const unique = new Set<string>();
   for (const word of words) {
     const lower = word.toLowerCase();
-    if (!stopWords.has(lower) && lower.length >= 3) {
+    if (!STOP_WORDS.has(lower) && lower.length >= 3) {
       unique.add(lower);
     }
   }
