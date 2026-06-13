@@ -1,5 +1,21 @@
+export type { BuiltContext, CitationEntry, ContextBuilderOptions, ContextOrdering } from './context/index.js';
+export { ContextBuilder, lostInMiddleOrder } from './context/index.js';
 export { IndexingPipeline } from './indexing/index.js';
+export type { ProcessedQuery, QueryClass, QueryLlm } from './query/index.js';
+export { QueryProcessor } from './query/index.js';
+export type { RerankedResult, Reranker, RerankerConfig, RerankerStrategy } from './reranking/index.js';
+export { createReranker, PassthroughReranker } from './reranking/index.js';
+export type { DenseIndex, HybridOptions, RetrievalResult, SparseIndex } from './retrieval/index.js';
+export { hybridRetrieve } from './retrieval/index.js';
 export { RetrievalEngine } from './search/index.js';
+export type { AllowlistEntry, ProvenanceIngestResult, ProvenanceTag } from './security/index.js';
+export {
+  ingestWithProvenance,
+  matchesPattern,
+  redactUnverifiedSources,
+  SourceNotAllowedError,
+  verifySource
+} from './security/index.js';
 export type {
   Chunk,
   ChunkMetadata,
