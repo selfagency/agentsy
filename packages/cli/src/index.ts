@@ -255,10 +255,25 @@ async function handleMemoryCommand(rest: readonly string[], io: CliIO): Promise<
   return runMemoryCommand(rest, io);
 }
 
+async function handleIndexCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runIndexCommand } = await import('./commands/retrieval.js');
+  return Promise.resolve(runIndexCommand(rest, io));
+}
+
+async function handleSearchCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runSearchCommand } = await import('./commands/retrieval.js');
+  return Promise.resolve(runSearchCommand(rest, io));
+}
+
+async function handleSourcesCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runSourcesCommand } = await import('./commands/retrieval.js');
+  return Promise.resolve(runSourcesCommand(rest, io));
+}
+
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
-    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, setup, doctor, sandbox-diagnostics, content-address-stats, lb, guardrails'
+    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, setup, doctor, sandbox-diagnostics, content-address-stats, lb, guardrails, index, search, sources'
   );
   (io.stderr ?? DEFAULT_IO.stderr)('Chat flags: --agent <name> --plan --mock --model <id> --provider <id>');
   return 1;
@@ -297,7 +312,10 @@ const COMMANDS: Record<string, CommandEntry> = {
   memory: {
     handler: handleMemoryCommand,
     subcommands: { search: handleMemoryCommand, stats: handleMemoryCommand, lint: handleMemoryCommand }
-  }
+  },
+  index: { handler: handleIndexCommand },
+  search: { handler: handleSearchCommand },
+  sources: { handler: handleSourcesCommand }
 };
 
 export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {

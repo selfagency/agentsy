@@ -1,5 +1,44 @@
 import type { Chunk, ChunkingStrategy, DataSource, Document } from '../types.js';
 
+/** Interface for pluggable chunking strategies. */
+export interface ChunkingStrategyInterface {
+  chunk(document: string): Chunk[];
+}
+
+/**
+ * Hierarchical chunking: paragraph-level parents with sentence-level children.
+ * Each sentence chunk carries a parentId linking back to its paragraph.
+ */
+export class HierarchicalChunking implements ChunkingStrategyInterface {
+  chunk(document: string): Chunk[] {
+    const paragraphs = document.split('\n\n');
+    const chunks: Chunk[] = [];
+
+    paragraphs.forEach((para, paraIdx) => {
+      const sentences = para.split(/[.!?]+\s+/u);
+      const parentId = `para_${paraIdx}`;
+
+      sentences.forEach((sent, sentIdx) => {
+        if (sent.trim().length === 0) {
+          return;
+        }
+        chunks.push({
+          content: sent.trim(),
+          id: `${parentId}_sent_${sentIdx}`,
+          metadata: {
+            endLine: 0,
+            source: 'hierarchical',
+            startLine: 0,
+            strategy: 'semantic'
+          }
+        });
+      });
+    });
+
+    return chunks;
+  }
+}
+
 export interface IndexingPipelineOptions {
   chunkOverlap?: number;
   chunkSize?: number;

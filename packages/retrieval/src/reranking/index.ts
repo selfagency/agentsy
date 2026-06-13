@@ -24,7 +24,8 @@ export interface RerankerConfig {
  * Passthrough reranker — preserves retrieval order with default scores.
  */
 export class PassthroughReranker implements Reranker {
-  rerank(_query: string, chunks: RetrievalResult[], topN: number): Promise<RerankedResult[]> {
+  // biome-ignore lint/suspicious/useAwait: Interface requires Promise return type
+  async rerank(_query: string, chunks: RetrievalResult[], topN: number): Promise<RerankedResult[]> {
     return chunks.slice(0, topN).map(c => ({
       ...c,
       rerankScore: c.rrfScore
