@@ -10,5 +10,6 @@ export { registerBaselineTools } from './tools/baseline.js';
 export { createFsTools } from './tools/fs/index.js';
 export { createHttpTool } from './tools/http/index.js';
 export { createMcpBridgeTool } from './tools/mcp/index.js';
+export { createMemoryTools, type MemoryToolProvider } from './tools/memory/index.js';
 export { createReplTool } from './tools/repl/index.js';
 export { createShellTool } from './tools/shell/index.js';

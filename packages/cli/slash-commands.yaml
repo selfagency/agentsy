@@ -35,3 +35,10 @@ commands:
     description: Remove the last user/assistant exchange
   - name: /title
     description: Set a title for the current session
+  - name: /memory
+    description: Search and manage long-term memory
+    instructions: packages/cli/src/commands/memory.ts
+    hooks:
+      - onMemoryCommand
+    triggers:
+      - memory

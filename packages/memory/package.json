@@ -60,6 +60,7 @@
     "coverage": "vitest --run --coverage --passWithNoTests"
   },
   "dependencies": {
+    "@agentsy/shared": "workspace:*",
     "@agentsy/tokenomics": "workspace:*",
     "@agentsy/types": "workspace:*",
     "@cortexkit/aft-bridge": "^0.37.1",

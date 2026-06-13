@@ -250,6 +250,11 @@ async function handleGuardrailsCommand(rest: readonly string[], io: CliIO): Prom
   return runGuardrailsCommand(rest, io);
 }
 
+async function handleMemoryCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runMemoryCommand } = await import('./commands/memory.js');
+  return runMemoryCommand(rest, io);
+}
+
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
@@ -280,7 +285,19 @@ const COMMANDS: Record<string, CommandEntry> = {
   sessions: { handler: handleSessionsCommand },
   session: { handler: handleSessionCommand },
   resume: { handler: handleResumeCommand },
-  guardrails: { handler: handleGuardrailsCommand }
+  guardrails: {
+    handler: handleGuardrailsCommand,
+    subcommands: {
+      list: handleGuardrailsCommand,
+      install: handleGuardrailsCommand,
+      uninstall: handleGuardrailsCommand,
+      policy: handleGuardrailsCommand
+    }
+  },
+  memory: {
+    handler: handleMemoryCommand,
+    subcommands: { search: handleMemoryCommand, stats: handleMemoryCommand, lint: handleMemoryCommand }
+  }
 };
 
 export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
@@ -299,7 +316,7 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
     const sub = rest[0];
     const subHandler = sub ? entry.subcommands[sub] : undefined;
     if (subHandler) {
-      return await subHandler(rest.slice(1), io);
+      return await subHandler(rest, io);
     }
     (io.stderr ?? DEFAULT_IO.stderr)(`Unknown ${command} subcommand: ${sub ?? '(none)'}`);
     (io.stderr ?? DEFAULT_IO.stderr)(`Supported: ${command} ${Object.keys(entry.subcommands).join('|')}`);
