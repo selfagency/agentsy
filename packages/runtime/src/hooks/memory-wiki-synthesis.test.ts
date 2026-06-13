@@ -3,7 +3,7 @@ import { createWikiSynthesisHook } from './memory-wiki-synthesis.js';
 import type { RuntimeHookEvent } from './types.js';
 
 function makePostResponse(response: unknown = 'ok', sessionId = 'test-session'): RuntimeHookEvent {
-  return { type: 'PostResponse', response, sessionId } as RuntimeHookEvent;
+  return { type: 'PostResponse', response, sessionId };
 }
 
 describe('createWikiSynthesisHook', () => {

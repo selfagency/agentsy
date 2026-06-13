@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { FactExtractor } from './extraction/index.js';
 import { createUnifiedMemory } from './unified-api.js';
 
 function makeEngine() {
@@ -75,10 +76,10 @@ describe('createUnifiedMemory', () => {
     it('extracts facts from qa entries when extractor is provided', async () => {
       const engine = makeEngine();
       const wiki = makeWiki();
-      const extractor = {
+      const extractor: FactExtractor = {
         extract: vi.fn().mockResolvedValue([{ content: 'X is Y', confidence: 0.9, kind: 'entity' }])
       };
-      const memory = createUnifiedMemory({ engine, wiki, extractor: extractor as never });
+      const memory = createUnifiedMemory({ engine, wiki, extractor });
 
       await memory.remember({ type: 'qa', question: 'What is X?', answer: 'X is Y' });
 

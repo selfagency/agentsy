@@ -134,7 +134,7 @@ export function createUnifiedMemory(options: UnifiedMemoryOptions): {
       return sessionHits.slice(0, limit);
     }
 
-    await queryGraphImpl(engine, resolvedScope, minScore, query, route.strategy, limit, results);
+    queryGraphImpl(engine, resolvedScope, minScore, query, route.strategy, limit, results);
     return deduplicateAndSort(results, limit);
   }
 
@@ -165,11 +165,13 @@ async function querySessionImpl(
   if (store && sessionId && (resolvedScope === 'session' || resolvedScope === 'auto' || resolvedScope === 'all')) {
     try {
       const results = await store.getRecent(query, sessionId, limit);
-      return results.map(sr => ({
-        entry: { type: 'fact', content: sr.content, confidence: sr.score, kind: 'entity' },
-        _source: 'session' as EntrySource,
-        score: sr.score
-      }));
+      return results.map(
+        (sr): RecallOutput => ({
+          entry: { type: 'fact', content: sr.content, confidence: sr.score, kind: 'entity' },
+          _source: 'session',
+          score: sr.score
+        })
+      );
     } catch {
       return [];
     }
@@ -195,7 +197,7 @@ function queryGraphImpl(
       if (item.importance >= minScore && matchesStrategy(item.content, query, strategy)) {
         results.push({
           entry: { type: 'fact', content: item.content, confidence: item.importance, kind: 'entity' },
-          _source: 'graph' as EntrySource,
+          _source: 'graph',
           score: item.importance
         });
       }

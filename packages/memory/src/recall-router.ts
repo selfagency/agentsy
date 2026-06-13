@@ -56,32 +56,32 @@ const RULES: Rule[] = [
   {
     pattern: /\b(summarize|overview|tl;dr|give me the gist|what is|explain|why)\b/iu,
     strategy: 'graph_summary',
-    weight: 4.0
+    weight: 4
   },
 
   // Step-by-step / reasoning patterns
-  { pattern: /\b(step by step|walk me through|how do I|how to)\b/iu, strategy: 'hybrid', weight: 4.0 },
+  { pattern: /\b(step by step|walk me through|how do I|how to)\b/iu, strategy: 'hybrid', weight: 4 },
 
   // Temporal patterns
   {
     pattern: /\b(when did|when was|before|after|timeline|history|recently|earlier|yesterday)\b/iu,
     strategy: 'temporal',
-    weight: 3.0
+    weight: 3
   },
 
-  { pattern: /\b\d{4}s\b/u, strategy: 'temporal', weight: 6.0 }, // "2020s", "1990s"
+  { pattern: /\b\d{4}s\b/u, strategy: 'temporal', weight: 6 },
 
   // Session context
-  { pattern: /\b(what were we|what did I|last thing|earlier we|before that)\b/iu, strategy: 'session', weight: 4.0 },
+  { pattern: /\b(what were we|what did I|last thing|earlier we|before that)\b/iu, strategy: 'session', weight: 4 },
 
   // Exact/literal
-  { pattern: /\b(exact|verbatim|literal|precise wording)\b/iu, strategy: 'chunks', weight: 4.0 },
+  { pattern: /\b(exact|verbatim|literal|precise wording)\b/iu, strategy: 'chunks', weight: 4 },
 
   // Connection/extension
-  { pattern: /\b(connection|related|linked|associated with)\b/iu, strategy: 'vector', weight: 3.0 },
+  { pattern: /\b(connection|related|linked|associated with)\b/iu, strategy: 'vector', weight: 3 },
 
   // Reasoning (weaker signal)
-  { pattern: /\b(because|therefore|since|as a result)\b/iu, strategy: 'graph_summary', weight: 2.0 }
+  { pattern: /\b(because|therefore|since|as a result)\b/iu, strategy: 'graph_summary', weight: 2 }
 ];
 
 function hasNegation(query: string, matchIndex: number): boolean {
