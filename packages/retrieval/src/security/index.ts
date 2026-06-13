@@ -5,9 +5,11 @@
  * with provenance metadata. Unverified sources can be redacted from output.
  */
 
+export type SourceType = 'local' | 'web' | 'memory';
+
 export interface ProvenanceTag {
   sourceId: string;
-  sourceType: 'local' | 'web' | 'memory';
+  sourceType: SourceType;
   timestamp: Date;
   verified: boolean;
 }
@@ -21,7 +23,7 @@ export class SourceNotAllowedError extends Error {
 
 export interface AllowlistEntry {
   pattern: string;
-  sourceType: 'local' | 'web' | 'memory';
+  sourceType: SourceType;
 }
 
 export interface ProvenanceIngestResult {
@@ -52,7 +54,7 @@ export function matchesPattern(source: string, pattern: string): boolean {
 export function verifySource(
   source: string,
   allowlist: AllowlistEntry[]
-): { allowed: boolean; sourceType: 'local' | 'web' | 'memory' } {
+): { allowed: boolean; sourceType: SourceType } {
   for (const entry of allowlist) {
     if (matchesPattern(source, entry.pattern)) {
       return { allowed: true, sourceType: entry.sourceType };

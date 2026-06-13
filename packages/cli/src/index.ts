@@ -257,17 +257,17 @@ async function handleMemoryCommand(rest: readonly string[], io: CliIO): Promise<
 
 async function handleIndexCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runIndexCommand } = await import('./commands/retrieval.js');
-  return Promise.resolve(runIndexCommand(rest, io));
+  return runIndexCommand(rest, io);
 }
 
 async function handleSearchCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runSearchCommand } = await import('./commands/retrieval.js');
-  return Promise.resolve(runSearchCommand(rest, io));
+  return runSearchCommand(rest, io);
 }
 
 async function handleSourcesCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runSourcesCommand } = await import('./commands/retrieval.js');
-  return Promise.resolve(runSourcesCommand(rest, io));
+  return runSourcesCommand(rest, io);
 }
 
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {

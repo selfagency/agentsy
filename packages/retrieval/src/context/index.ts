@@ -33,15 +33,7 @@ export class ContextBuilder {
   build(chunks: RerankedResult[], options: ContextBuilderOptions = {}): BuiltContext {
     const maxTokens = options.maxTokens ?? 4000;
     const ordering = options.ordering ?? 'lost-in-middle';
-
-    let ordered = chunks;
-    if (ordering === 'lost-in-middle') {
-      ordered = lostInMiddleOrder(chunks);
-    } else if (ordering === 'recency') {
-      ordered = [...chunks].sort((a, b) => b.denseScore - a.denseScore);
-    } else {
-      ordered = [...chunks].sort((a, b) => b.rerankScore - a.rerankScore);
-    }
+    const ordered = orderChunks(chunks, ordering);
 
     const segments: string[] = [];
     const citations: Record<string, CitationEntry> = {};
@@ -52,16 +44,25 @@ export class ContextBuilder {
       if (tokenCount + segmentTokens > maxTokens) {
         break;
       }
-      segments.push(`[${chunk.id}] ${chunk.content}`);
-      citations[chunk.id] = {
-        chunkId: chunk.id,
-        source: chunk.id.split('-')[0] ?? chunk.id
-      };
+      const chunkId = chunk.id;
+      const source = chunkId.split('-')[0] ?? chunkId;
+      segments.push(`[${chunkId}] ${chunk.content}`);
+      citations[chunkId] = { chunkId, source };
       tokenCount += segmentTokens;
     }
 
     return { citations, text: segments.join('\n\n'), tokenCount };
   }
+}
+
+function orderChunks(chunks: RerankedResult[], ordering: ContextOrdering): RerankedResult[] {
+  if (ordering === 'lost-in-middle') {
+    return lostInMiddleOrder(chunks);
+  }
+  if (ordering === 'recency') {
+    return [...chunks].sort((a, b) => b.denseScore - a.denseScore);
+  }
+  return [...chunks].sort((a, b) => b.rerankScore - a.rerankScore);
 }
 
 /**
