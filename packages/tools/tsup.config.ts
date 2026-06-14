@@ -4,6 +4,7 @@ export default defineConfig({
   clean: true,
   dts: true,
   entry: { index: 'src/index.ts', 'cortexkit/import-linter': 'src/cortexkit/import-linter.ts' },
+  external: ['@agentsy/shared'],
   format: ['esm', 'cjs'],
   sourcemap: true,
   splitting: false,

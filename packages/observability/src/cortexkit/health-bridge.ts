@@ -7,7 +7,7 @@
  * @module @agentsy/observability/cortexkit
  */
 
-import { getAftSessionBridge } from '@agentsy/shared/cortexkit';
+import { getAftSessionBridge } from '@agentsy/shared';
 
 export interface HealthReport {
   complexity: number;
@@ -30,12 +30,12 @@ export function createHealthBridge(projectRoot: string) {
     async check(): Promise<HealthReport> {
       const bridge = await getAftSessionBridge({ projectRoot });
 
-      const result = await bridge.send({
-        tool: 'inspect',
-        params: { scope: projectRoot, sections: ['diagnostics', 'dead_code', 'unused_exports'] }
+      const result = await bridge.send('inspect', {
+        scope: projectRoot,
+        sections: ['diagnostics', 'dead_code', 'unused_exports']
       });
 
-      const data = (result as { diagnostics?: unknown[]; deadCode?: unknown[]; unusedExports?: unknown[] }) ?? {};
+      const data = result ?? {};
 
       return {
         complexity: 0,
@@ -52,7 +52,7 @@ export function createHealthBridge(projectRoot: string) {
     async ping(): Promise<boolean> {
       try {
         const bridge = await getAftSessionBridge({ projectRoot });
-        await bridge.send({ tool: 'ping', params: {} });
+        await bridge.send('ping');
         return true;
       } catch {
         return false;

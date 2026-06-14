@@ -39,6 +39,7 @@
     "coverage": "vitest --run --coverage"
   },
   "dependencies": {
+    "@agentsy/shared": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {

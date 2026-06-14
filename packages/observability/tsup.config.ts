@@ -10,6 +10,7 @@ export default defineConfig({
     spans: 'src/spans/agent-span.ts',
     'cortexkit/health-bridge': 'src/cortexkit/health-bridge.ts'
   },
+  external: ['@agentsy/shared'],
   format: ['esm', 'cjs'],
   sourcemap: true,
   splitting: false,

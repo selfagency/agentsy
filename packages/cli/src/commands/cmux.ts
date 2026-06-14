@@ -24,11 +24,7 @@ import type { CliIO } from '../index.js';
 let cmuxInitialized = false;
 let cmuxAvailable = false;
 
-/**
- * Initialize cmux detection. Must be called once at startup.
- * Returns true if cmux is available.
- */
-export async function initCmux(): Promise<boolean> {
+async function initCmux(): Promise<boolean> {
   if (cmuxInitialized) {
     return cmuxAvailable;
   }
@@ -39,18 +35,11 @@ export async function initCmux(): Promise<boolean> {
   return cmuxAvailable;
 }
 
-/**
- * Check whether cmux commands should be exposed.
- */
-export function isCmuxAvailable(): boolean {
-  return cmuxAvailable;
-}
-
 // =============================================================================
 // Handlers
 // =============================================================================
 
-export function handleCmuxStatusCommand(_argv: readonly string[], io: CliIO): number {
+function handleCmuxStatusCommand(_argv: readonly string[], io: CliIO): number {
   const stdout = io.stdout ?? console.log;
 
   const env = getCmuxEnv();
@@ -74,7 +63,7 @@ export function handleCmuxStatusCommand(_argv: readonly string[], io: CliIO): nu
   return transport ? 0 : 1;
 }
 
-export function handleCmuxWorkspaceCommand(_argv: readonly string[], io: CliIO): number {
+function handleCmuxWorkspaceCommand(_argv: readonly string[], io: CliIO): number {
   const stdout = io.stdout ?? console.log;
 
   if (!cmuxAvailable) {
@@ -94,7 +83,7 @@ export function handleCmuxWorkspaceCommand(_argv: readonly string[], io: CliIO):
   return 0;
 }
 
-export function handleCmuxSurfaceCommand(_argv: readonly string[], io: CliIO): number {
+function handleCmuxSurfaceCommand(_argv: readonly string[], io: CliIO): number {
   const stdout = io.stdout ?? console.log;
 
   if (!cmuxAvailable) {
@@ -106,7 +95,7 @@ export function handleCmuxSurfaceCommand(_argv: readonly string[], io: CliIO): n
   return 0;
 }
 
-export function handleCmuxNotifyCommand(argv: readonly string[], io: CliIO): number {
+function handleCmuxNotifyCommand(argv: readonly string[], io: CliIO): number {
   const stdout = io.stdout ?? console.log;
   const stderr = io.stderr ?? console.error;
 

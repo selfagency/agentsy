@@ -7,7 +7,7 @@
  * @module @agentsy/tools/cortexkit
  */
 
-import { getAftSessionBridge } from '@agentsy/shared/cortexkit';
+import { getAftSessionBridge } from '@agentsy/shared';
 
 export interface ImportLintResult {
   file: string;
@@ -32,22 +32,21 @@ export async function lintImports(options: ImportLintOptions): Promise<ImportLin
 
   for (const file of files) {
     try {
-      const result = await bridge.send({
-        tool: 'import',
-        params: { op: 'organize', filePath: file }
-      });
+      const result = await bridge.send('import', { op: 'organize', filePath: file });
 
-      const data = result as { format_skipped_reason?: string };
-      results.push({
-        file,
-        organized: !data.format_skipped_reason,
-        reason: data.format_skipped_reason
-      });
+      const data = (result as { format_skipped_reason?: string }) ?? {};
+      const skippedReason = data.format_skipped_reason;
+      if (skippedReason === undefined) {
+        results.push({ file, organized: true });
+      } else {
+        results.push({ file, organized: false, reason: skippedReason });
+      }
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       results.push({
         file,
         organized: false,
-        reason: error instanceof Error ? error.message : String(error)
+        reason: msg
       });
     }
   }

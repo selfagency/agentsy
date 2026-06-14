@@ -23,8 +23,6 @@
     "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",
     "@agentsy/session": "workspace:*",
-    "@agentsy/shared": "workspace:*",
-    "@agentsy/tools": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
