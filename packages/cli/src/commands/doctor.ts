@@ -4,7 +4,7 @@ import { type DiagnosticTarget, runAllDiagnostics, runDiagnosticsForTarget } fro
 import type { CliIO } from '../index.js';
 
 function isDiagnosticTarget(value: string | undefined): value is DiagnosticTarget {
-  return value === 'memory' || value === 'vscode';
+  return value === 'memory' || value === 'vscode' || value === 'config';
 }
 
 export async function runDoctorCommand(rest: readonly string[], io: CliIO): Promise<number> {

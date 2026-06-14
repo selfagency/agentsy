@@ -9,6 +9,7 @@ describe('runDoctorCommand', () => {
     expect(code).toBe(0);
     expect(stdout.join('\n')).toContain('memory');
     expect(stdout.join('\n')).toContain('vscode');
+    expect(stdout.join('\n')).toContain('config');
   });
 
   it('prints JSON when requested', async () => {

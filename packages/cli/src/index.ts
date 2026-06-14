@@ -250,6 +250,26 @@ async function handleGuardrailsCommand(rest: readonly string[], io: CliIO): Prom
   return runGuardrailsCommand(rest, io);
 }
 
+async function handleConfigCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { handleConfigCommand: cmd } = await import('./commands/config.js');
+  return cmd(rest, io);
+}
+
+async function handleSettingsCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { handleSettingsCommand: cmd } = await import('./commands/config.js');
+  return cmd(rest, io);
+}
+
+async function handleMcpCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runMcpCommand } = await import('./commands/mcp.js');
+  return runMcpCommand(rest, io);
+}
+
+async function handleConnectorsCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runConnectorsCommand } = await import('./commands/connectors.js');
+  return runConnectorsCommand(rest, io);
+}
+
 async function handleMemoryCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runMemoryCommand } = await import('./commands/memory.js');
   return runMemoryCommand(rest, io);
@@ -273,7 +293,7 @@ async function handleSourcesCommand(rest: readonly string[], io: CliIO): Promise
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
-    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, setup, doctor, sandbox-diagnostics, content-address-stats, lb, guardrails, index, search, sources'
+    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, setup, doctor, sandbox-diagnostics, content-address-stats, lb, guardrails, config, settings, mcp, connectors, index, search, sources'
   );
   (io.stderr ?? DEFAULT_IO.stderr)('Chat flags: --agent <name> --plan --mock --model <id> --provider <id>');
   return 1;
@@ -307,6 +327,24 @@ const COMMANDS: Record<string, CommandEntry> = {
       install: handleGuardrailsCommand,
       uninstall: handleGuardrailsCommand,
       policy: handleGuardrailsCommand
+    }
+  },
+  config: { handler: handleConfigCommand },
+  settings: { handler: handleSettingsCommand },
+  mcp: {
+    handler: handleMcpCommand,
+    subcommands: {
+      list: handleMcpCommand,
+      add: handleMcpCommand,
+      remove: handleMcpCommand,
+      check: handleMcpCommand
+    }
+  },
+  connectors: {
+    handler: handleConnectorsCommand,
+    subcommands: {
+      list: handleConnectorsCommand,
+      check: handleConnectorsCommand
     }
   },
   memory: {

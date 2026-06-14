@@ -99,6 +99,9 @@ importers:
       '@cortexkit/magic-context':
         specifier: ^0.23.0
         version: 0.23.0
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@microsoft/tui-test':
         specifier: ^0.0.4
