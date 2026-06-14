@@ -16,6 +16,7 @@
  */
 
 import type { CliIO } from '../index.js';
+import { parseMcpAddArgs } from './parse-mcp-args.js';
 
 // =============================================================================
 // In-memory MCP server registry (placeholder for config-backed storage)
@@ -92,73 +93,6 @@ function handleMcpAddCommand(argv: readonly string[], io: CliIO): number {
   stdout('Note: Server configurations are in-memory. To persist,');
   stdout('add them to your config file under the "mcpServers" key.');
   return 0;
-}
-
-interface ParsedMcpAddArgs {
-  name: string | undefined;
-  transport: 'stdio' | 'http';
-  uri: string;
-}
-
-function parseMcpAddArgs(argv: readonly string[], stderr: (msg: string) => void): ParsedMcpAddArgs | null {
-  let transport: 'stdio' | 'http' = 'http';
-  let name: string | undefined;
-  let uri: string | undefined;
-
-  for (let i = 0; i < argv.length; i++) {
-    const arg = String(argv.at(i) ?? '');
-
-    if (arg === '--transport') {
-      const result = parseTransportFlag(argv, i, stderr);
-      if (result === null) {
-        return null;
-      }
-      transport = result.transport;
-      i = result.nextIndex;
-      continue;
-    }
-
-    if (arg === '--name') {
-      name = String(argv.at(i + 1) ?? '');
-      i++;
-      continue;
-    }
-
-    uri ??= arg;
-  }
-
-  if (!uri) {
-    stderr('Usage: agentsy mcp add [--transport stdio|http] <uri> [--name <name>]');
-    stderr('');
-    stderr('Examples:');
-    stderr('  agentsy mcp add --transport http http://localhost:8080/mcp');
-    stderr('  agentsy mcp add --transport stdio file:///path/to/server');
-    stderr('  agentsy mcp add http://localhost:8080/mcp --name "local-dev"');
-    return null;
-  }
-
-  return { uri, transport, name };
-}
-
-interface TransportParseResult {
-  nextIndex: number;
-  transport: 'stdio' | 'http';
-}
-
-function parseTransportFlag(
-  argv: readonly string[],
-  i: number,
-  stderr: (msg: string) => void
-): TransportParseResult | null {
-  const raw = String(argv.at(i + 1) ?? '');
-  if (raw === 'stdio') {
-    return { transport: 'stdio', nextIndex: i + 1 };
-  }
-  if (raw === 'http') {
-    return { transport: 'http', nextIndex: i + 1 };
-  }
-  stderr(`Invalid transport: ${raw}. Must be 'stdio' or 'http'.`);
-  return null;
 }
 
 function handleMcpRemoveCommand(argv: readonly string[], io: CliIO): number {

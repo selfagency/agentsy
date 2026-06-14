@@ -164,7 +164,7 @@ class CmuxSocketTransport implements CmuxTransport {
   private async queryCapabilities(): Promise<CmuxCapabilities> {
     const response = await this.sendAndWait({ type: 'get_capabilities' });
     return {
-      version: String(response.version ?? '0.0.0'),
+      version: typeof response.version === 'string' ? response.version : '0.0.0',
       supportsMultiPane: Boolean(response.supportsMultiPane),
       supportsSidebar: Boolean(response.supportsSidebar),
       supportsWorkspace: Boolean(response.supportsWorkspace)

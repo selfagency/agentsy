@@ -23,37 +23,32 @@ export function createShellTool(): ToolDefinition {
 function handleShellExec(input: Record<string, unknown>): Promise<ToolResult> {
   const command = typeof input.command === 'string' ? input.command : '';
   if (!command) {
-    return { ok: false, data: null, error: 'Missing required parameter: command' };
+    return Promise.resolve({ ok: false, data: null, error: 'Missing required parameter: command' });
   }
 
   const timeout = typeof input.timeout === 'number' ? input.timeout : 30_000;
   const cwd = typeof input.workdir === 'string' ? input.workdir : undefined;
 
   try {
-    const output = execSync(command, {
-      encoding: 'utf-8',
-      timeout,
-      cwd,
-      maxBuffer: 10 * 1024 * 1024
-    });
-    return { ok: true, data: { stdout: output, stderr: '', exitCode: 0 } };
+    const output = execSync(command, { encoding: 'utf-8', timeout, cwd, maxBuffer: 10 * 1024 * 1024 });
+    return Promise.resolve({ ok: true, data: { stdout: output, stderr: '', exitCode: 0 } });
   } catch (error) {
-    if (error instanceof Error && 'stdout' in error && 'stderr' in error) {
-      return formatExecError(error);
-    }
-    const message = error instanceof Error ? error.message : String(error);
-    return { ok: false, data: null, error: `shell_exec error: ${message}` };
+    return Promise.resolve(parseShellError(error));
   }
 }
 
-function formatExecError(error: Error): ToolResult {
-  const execError = error as unknown as { stdout: Buffer; stderr: Buffer; status: number | null };
-  return {
-    ok: true,
-    data: {
-      stdout: execError.stdout?.toString() ?? '',
-      stderr: execError.stderr?.toString() ?? '',
-      exitCode: execError.status ?? 1
-    }
-  };
+function parseShellError(error: unknown): ToolResult {
+  if (error instanceof Error && 'stdout' in error && 'stderr' in error) {
+    const execErr = error as unknown as { stdout: Buffer; stderr: Buffer; status: number | null };
+    return {
+      ok: true,
+      data: {
+        stdout: execErr.stdout?.toString() ?? '',
+        stderr: execErr.stderr?.toString() ?? '',
+        exitCode: execErr.status ?? 1
+      }
+    };
+  }
+  const message = error instanceof Error ? error.message : String(error);
+  return { ok: false, data: null, error: `shell_exec error: ${message}` };
 }
