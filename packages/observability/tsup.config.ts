@@ -7,7 +7,8 @@ export default defineConfig({
     index: 'src/index.ts',
     instrumentation: 'src/instrumentation/index.ts',
     exporters: 'src/exporters/index.ts',
-    spans: 'src/spans/agent-span.ts'
+    spans: 'src/spans/agent-span.ts',
+    'cortexkit/health-bridge': 'src/cortexkit/health-bridge.ts'
   },
   format: ['esm', 'cjs'],
   sourcemap: true,

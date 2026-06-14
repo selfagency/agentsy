@@ -23,6 +23,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./cortexkit": {
+      "types": "./dist/cortexkit/import-linter.d.ts",
+      "import": "./dist/cortexkit/import-linter.js",
+      "require": "./dist/cortexkit/import-linter.cjs"
     }
   },
   "scripts": {

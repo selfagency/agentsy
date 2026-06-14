@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   clean: true,
   dts: true,
-  entry: { index: 'src/index.ts' },
+  entry: { index: 'src/index.ts', 'cortexkit/import-linter': 'src/cortexkit/import-linter.ts' },
   format: ['esm', 'cjs'],
   sourcemap: true,
   splitting: false,
