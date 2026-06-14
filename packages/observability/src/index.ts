@@ -42,7 +42,19 @@ export * from './core/meter.js';
 export * from './core/observability.js';
 export * from './core/tracer.js';
 export type * from './core/types.js';
-
+export type { RedactionRule } from './core/types.js';
+export type { CostSnapshot, CostTrackerOptions } from './cost-tracker.js';
+// Cost tracking
+export { CostTracker } from './cost-tracker.js';
+// Redaction
+export {
+  createRedactionPolicy,
+  DEFAULT_REDACTION_POLICY,
+  redactSecrets,
+  SECRET_PATTERNS
+} from './redaction.js';
 // Multi-agent span exports
 export type { AgentSpan, AgentToolCall, CostAttribution, SpanStatus } from './spans/agent-span.js';
 export { MultiAgentTracer } from './spans/agent-span.js';
+// Semantic conventions
+export { SemanticAttributes, SpanNames } from './spans/semantic-conventions.js';

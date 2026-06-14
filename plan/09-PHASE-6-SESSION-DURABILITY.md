@@ -10,7 +10,7 @@
 
 ## Status — 2026-06-12 Code Review
 
-## Completion: ~90% — Core durability shipped, CLI resume wiring minor gap
+## Completion: ~95% — Core durability shipped, top-level resume command wired, chat-flow picker remains a minor gap
 
 ### ✅ FULLY IMPLEMENTED & TESTED (10 test files, 104 tests, ALL PASSING)
 

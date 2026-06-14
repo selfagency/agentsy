@@ -12,7 +12,7 @@
 
 Integrate memory capture/retrieval hooks into runtime. Implement fact extraction. Optionally migrate to AgentFS schema (Phase 8a/8b/8c, deferred).
 
-**Foundation:** Memory layer production-ready from Phase 0 (98% complete).
+**Foundation:** Memory integration complete; AgentFS migration deferred.
 
 ---
 
