@@ -44,6 +44,21 @@ export {
 export { resolveCredentials } from './injection/resolver.js';
 export type { ResolutionContext, ResolvedSecret, SecretToken } from './injection/types.js';
 export { parseSecretTokens } from './injection/types.js';
+export type {
+  ApplePMConfig,
+  BitwardenConfig,
+  DashlaneConfig,
+  LastPassConfig,
+  OnePasswordConfig
+} from './provider/local/index.js';
+// Local CLI providers (B3)
+export {
+  createApplePMKeyring,
+  createBitwardenKeyring,
+  createDashlaneKeyring,
+  createLastPassKeyring,
+  createOnePasswordKeyring
+} from './provider/local/index.js';
 export { ProviderRegistry } from './provider/registry.js';
 // Provider (B2)
 export type { KeyringProvider, ProviderCapabilities, ProviderHealth } from './provider/types.js';
