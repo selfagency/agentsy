@@ -62,9 +62,6 @@ export function createMcpHandlers(options?: McpHandlerOptions): HttpHandler[] {
   const delay = options?.delay ?? 0;
 
   return [
-    // -----------------------------------------------------------------------
-    // MCP server health check
-    // -----------------------------------------------------------------------
     http.get(`${baseUrl}/mcp`, async () => {
       if (delay > 0) {
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -75,9 +72,6 @@ export function createMcpHandlers(options?: McpHandlerOptions): HttpHandler[] {
       return HttpResponse.json({ status: 'ok' }, { status: 200 });
     }),
 
-    // -----------------------------------------------------------------------
-    // MCP JSON-RPC endpoint — tools/list and tools/call
-    // -----------------------------------------------------------------------
     http.post(`${baseUrl}/mcp`, async ({ request }) => {
       if (delay > 0) {
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -92,54 +86,42 @@ export function createMcpHandlers(options?: McpHandlerOptions): HttpHandler[] {
       const requestId = payload.id ?? 1;
 
       if (method === 'tools/list') {
-        return HttpResponse.json(
-          {
-            id: requestId,
-            result: { tools: state.tools },
-            jsonrpc: '2.0'
-          },
-          { status: 200 }
-        );
+        return handleMcpListRequest(requestId, state);
       }
 
       if (method === 'tools/call') {
-        const toolName = (payload.params as { name?: string } | undefined)?.name ?? 'unknown';
-
-        const tool = state.tools.find(t => t.name === toolName);
-
-        if (!tool) {
-          return HttpResponse.json(
-            {
-              error: { code: -32_602, message: `Tool not found: ${toolName}` },
-              id: requestId,
-              jsonrpc: '2.0'
-            },
-            { status: 200 }
-          );
-        }
-
-        return HttpResponse.json(
-          {
-            id: requestId,
-            result: {
-              content: [{ text: 'result', type: 'text' }],
-              isError: false
-            },
-            jsonrpc: '2.0'
-          },
-          { status: 200 }
-        );
+        return handleMcpCallRequest(requestId, payload, state);
       }
 
-      // Unknown method
-      return HttpResponse.json(
-        {
-          error: { code: -32_601, message: `Method not found: ${method}` },
-          id: requestId,
-          jsonrpc: '2.0'
-        },
-        { status: 200 }
-      );
+      return handleMcpUnknownMethod(requestId, method);
     })
   ];
+}
+
+function handleMcpListRequest(requestId: number | string, state: MockMcpState) {
+  return HttpResponse.json({ id: requestId, result: { tools: state.tools }, jsonrpc: '2.0' }, { status: 200 });
+}
+
+function handleMcpCallRequest(requestId: number | string, payload: Record<string, unknown>, state: MockMcpState) {
+  const toolName = (payload.params as { name?: string } | undefined)?.name ?? 'unknown';
+  const tool = state.tools.find(t => t.name === toolName);
+
+  if (!tool) {
+    return HttpResponse.json(
+      { error: { code: -32_602, message: `Tool not found: ${toolName}` }, id: requestId, jsonrpc: '2.0' },
+      { status: 200 }
+    );
+  }
+
+  return HttpResponse.json(
+    { id: requestId, result: { content: [{ text: 'result', type: 'text' }], isError: false }, jsonrpc: '2.0' },
+    { status: 200 }
+  );
+}
+
+function handleMcpUnknownMethod(requestId: number | string, method: string) {
+  return HttpResponse.json(
+    { error: { code: -32_601, message: `Method not found: ${method}` }, id: requestId, jsonrpc: '2.0' },
+    { status: 200 }
+  );
 }

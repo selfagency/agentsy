@@ -135,20 +135,18 @@ export async function handleSlackCommand(argv: readonly string[], io: CliIO): Pr
   const subcommand = argv[0];
   const rest = argv.slice(1);
 
-  switch (subcommand) {
-    case 'post-message': {
-      return await handleSlackPostMessageCommand(rest, io);
-    }
-    case 'read-thread': {
-      return await handleSlackReadThreadCommand(rest, io);
-    }
-    default: {
-      const stderr = io.stderr ?? console.error;
-      stderr(`Unknown slack subcommand: ${subcommand ?? '(none)'}`);
-      stderr('Supported: post-message, read-thread');
-      return 1;
-    }
+  if (subcommand === 'post-message') {
+    return await handleSlackPostMessageCommand(rest, io);
   }
+
+  if (subcommand === 'read-thread') {
+    return await handleSlackReadThreadCommand(rest, io);
+  }
+
+  const stderr = io.stderr ?? console.error;
+  stderr(`Unknown slack subcommand: ${subcommand ?? '(none)'}`);
+  stderr('Supported: post-message, read-thread');
+  return 1;
 }
 
 // =============================================================================

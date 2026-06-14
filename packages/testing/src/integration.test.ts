@@ -347,9 +347,7 @@ describe('Guardrail interception path', () => {
         const text = payload.text ?? '';
         const redacted = text
           .replace(/sk-[a-zA-Z0-9]{32,}/g, 'sk-***REDACTED***')
-          .replace(/(api[_-]?key|password|secret|token)[^a-zA-Z0-9]+[a-zA-Z0-9]{16,}/gi, match =>
-            match.replace(/[a-zA-Z0-9]{16,}$/g, '***REDACTED***')
-          );
+          .replace(/(api[-_]?key|password|secret|token)\s*[:=]\s*\S+/gi, '$1 ***REDACTED***');
         return HttpResponse.json({ original: text, redacted }, { status: 200 });
       })
     );

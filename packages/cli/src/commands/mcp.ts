@@ -78,7 +78,7 @@ export function handleMcpAddCommand(argv: readonly string[], io: CliIO): number 
   let uri: string | undefined;
 
   for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i] as string;
+    const arg = String(argv.at(i) ?? '');
 
     if (arg === '--transport') {
       const raw = String(argv.at(i + 1) ?? '');
@@ -101,9 +101,7 @@ export function handleMcpAddCommand(argv: readonly string[], io: CliIO): number 
     }
 
     // First non-flag argument is the URI
-    if (uri === undefined) {
-      uri = arg;
-    }
+    uri ??= arg;
   }
   if (!uri) {
     stderr('Usage: agentsy mcp add [--transport stdio|http] <uri> [--name <name>]');
@@ -173,8 +171,13 @@ export async function handleMcpCheckCommand(argv: readonly string[], io: CliIO):
   stdout(`Checking ${serversToCheck.length} MCP server(s)...`);
   stdout('');
 
+  const allHealthy = await checkMcpServers(serversToCheck, stdout);
+  return allHealthy ? 0 : 1;
+}
+
+async function checkMcpServers(servers: McpServerEntry[], stdout: (msg: string) => void): Promise<boolean> {
   let allHealthy = true;
-  for (const server of serversToCheck) {
+  for (const server of servers) {
     if (server.transport === 'stdio') {
       stdout(`  ⚠  ${server.id} — ${server.uri} (stdio transport — cannot check remotely)`);
       continue;
@@ -193,8 +196,7 @@ export async function handleMcpCheckCommand(argv: readonly string[], io: CliIO):
       allHealthy = false;
     }
   }
-
-  return allHealthy ? 0 : 1;
+  return allHealthy;
 }
 
 // =============================================================================
