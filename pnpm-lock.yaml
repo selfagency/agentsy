@@ -69,9 +69,6 @@ importers:
       '@agentsy/guardrails':
         specifier: workspace:*
         version: link:../guardrails
-      '@agentsy/mcp':
-        specifier: workspace:*
-        version: link:../mcp
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory
@@ -102,12 +99,6 @@ importers:
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
-      '@cortexkit/aft':
-        specifier: ^0.37.1
-        version: 0.37.1
-      '@cortexkit/magic-context':
-        specifier: ^0.23.0
-        version: 0.23.0
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -819,6 +810,9 @@ importers:
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
+      '@cortexkit/aft-bridge':
+        specifier: ^0.37.1
+        version: 0.37.1
     devDependencies:
       '@types/node':
         specifier: ^25.9.0
@@ -1125,10 +1119,6 @@ packages:
 
   '@cortexkit/aft-bridge@0.37.1':
     resolution: {integrity: sha512-H9R8hvGmY96pdtrfAtJkvXST1/zhg1l5EPf2bZwYkbLu7ev+83o4oCU/w0sLGYG9bQI3fRcpTcPlC3w4FHZiTg==}
-
-  '@cortexkit/aft@0.37.1':
-    resolution: {integrity: sha512-26nf5jyBUVQFYgiB2zRIIUiaElWdu3/EsV5QTpp/g7dRzjVrTxLJz1kRQqkMun9KsDZ/s9UQEOxC5fNt3qJt+Q==}
-    hasBin: true
 
   '@cortexkit/magic-context@0.23.0':
     resolution: {integrity: sha512-FZdh2fwGebQZzQ5kfgHaC9gumZ3k2YK19g/uymujxnFnorwTmOOY8kxHQKKz2+Mj3AZdbmD5NJj9Q9edf9V+HQ==}
@@ -4821,12 +4811,6 @@ snapshots:
   '@cortexkit/aft-bridge@0.37.1':
     dependencies:
       undici: 7.27.2
-
-  '@cortexkit/aft@0.37.1':
-    dependencies:
-      '@clack/prompts': 1.5.1
-      '@cortexkit/aft-bridge': 0.37.1
-      comment-json: 4.6.2
 
   '@cortexkit/magic-context@0.23.0':
     dependencies:

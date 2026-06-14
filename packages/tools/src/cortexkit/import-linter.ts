@@ -28,28 +28,23 @@ export interface ImportLintOptions {
 export async function lintImports(options: ImportLintOptions): Promise<ImportLintResult[]> {
   const { projectRoot, files } = options;
   const bridge = await getAftSessionBridge({ projectRoot });
-  const results: ImportLintResult[] = [];
 
-  for (const file of files) {
-    try {
-      const result = await bridge.send('import', { op: 'organize', filePath: file });
+  const settled = await Promise.allSettled(files.map(file => lintFile(bridge, file)));
+  return settled
+    .filter((r): r is PromiseFulfilledResult<ImportLintResult> => r.status === 'fulfilled')
+    .map(r => r.value);
+}
 
-      const data = (result as { format_skipped_reason?: string }) ?? {};
-      const skippedReason = data.format_skipped_reason;
-      if (skippedReason === undefined) {
-        results.push({ file, organized: true });
-      } else {
-        results.push({ file, organized: false, reason: skippedReason });
-      }
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      results.push({
-        file,
-        organized: false,
-        reason: msg
-      });
+async function lintFile(bridge: import('@cortexkit/aft-bridge').BinaryBridge, file: string): Promise<ImportLintResult> {
+  try {
+    const result = await bridge.send('import', { op: 'organize', filePath: file });
+    const data = (result as { format_skipped_reason?: string }) ?? {};
+    const skippedReason = data.format_skipped_reason;
+    if (skippedReason === undefined) {
+      return { file, organized: true };
     }
+    return { file, organized: false, reason: skippedReason };
+  } catch (error) {
+    return { file, organized: false, reason: error instanceof Error ? error.message : String(error) };
   }
-
-  return results;
 }
