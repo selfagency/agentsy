@@ -19,7 +19,6 @@ function makeMutableDb(initialEpoch: number) {
         if (sql.includes('project_memory_epoch')) {
           return epoch > 0 ? { project_memory_epoch: epoch } : undefined;
         }
-        return;
       }),
       all: vi.fn(() => {
         if (sql.includes('project_memories')) {
