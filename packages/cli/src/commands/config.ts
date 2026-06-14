@@ -61,14 +61,14 @@ function formatUi(ui: Config['ui']): string[] {
   if (!ui) {
     return [];
   }
-  const lines = ['', '  ui:'];
+  const items: string[] = [];
   if (ui.colorScheme) {
-    lines.push(`    colorScheme: ${ui.colorScheme}`);
+    items.push(`    colorScheme: ${ui.colorScheme}`);
   }
   if (ui.reduceMotion !== undefined) {
-    lines.push(`    reduceMotion: ${ui.reduceMotion}`);
+    items.push(`    reduceMotion: ${ui.reduceMotion}`);
   }
-  return lines;
+  return items.length > 0 ? ['', '  ui:', ...items] : [];
 }
 
 // =============================================================================
