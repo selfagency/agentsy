@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "@agentsy/shared": "workspace:*",
-    "@agentsy/types": "workspace:*"
+    "@agentsy/types": "workspace:*",
+    "@cortexkit/aft-bridge": "^0.37.1"
   },
   "devDependencies": {
     "@types/node": "^25.9.0",

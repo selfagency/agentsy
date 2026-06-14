@@ -20,7 +20,7 @@ import type { CliIO } from '../index.js';
 // Handlers — existing
 // =============================================================================
 
-export async function handleConnectorsListCommand(_argv: readonly string[], io: CliIO): Promise<number> {
+async function handleConnectorsListCommand(_argv: readonly string[], io: CliIO): Promise<number> {
   const stdout = io.stdout ?? console.log;
 
   stdout('Available connectors:');
@@ -37,7 +37,7 @@ export async function handleConnectorsListCommand(_argv: readonly string[], io: 
   return 0;
 }
 
-export async function handleConnectorsCheckCommand(_argv: readonly string[], io: CliIO): Promise<number> {
+async function handleConnectorsCheckCommand(_argv: readonly string[], io: CliIO): Promise<number> {
   const stdout = io.stdout ?? console.log;
 
   stdout('Checking connector availability...');

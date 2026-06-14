@@ -51,7 +51,6 @@
     "@agentsy/core": "workspace:*",
     "@agentsy/gateway": "workspace:*",
     "@agentsy/guardrails": "workspace:*",
-    "@agentsy/mcp": "workspace:*",
     "@agentsy/memory": "workspace:*",
     "@agentsy/models": "workspace:*",
     "@agentsy/plugins": "workspace:*",
@@ -62,8 +61,6 @@
     "@agentsy/session": "workspace:*",
     "@agentsy/tokenomics": "workspace:*",
     "@agentsy/types": "workspace:*",
-    "@cortexkit/aft": "^0.37.1",
-    "@cortexkit/magic-context": "^0.23.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {

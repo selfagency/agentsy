@@ -13,7 +13,7 @@
 
 import { existsSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
-import { type Config, loadConfig, userConfigPath } from '../config/index.js';
+import { type Config, loadConfig, type ProviderConfig, userConfigPath } from '../config/index.js';
 import type { CliIO } from '../index.js';
 
 // =============================================================================
@@ -36,7 +36,15 @@ function formatConfig(config: Config): string[] {
     `  providers: ${config.providers.length > 0 ? '' : '(none configured)'}`
   );
 
-  for (const p of config.providers) {
+  lines.push(...formatProviders(config.providers));
+  lines.push(...formatUi(config.ui));
+
+  return lines;
+}
+
+function formatProviders(providers: ProviderConfig[]): string[] {
+  const lines: string[] = [];
+  for (const p of providers) {
     lines.push(`    - ${p.id} (${p.type})`);
     if (p.model) {
       lines.push(`      model: ${p.model}`);
@@ -48,17 +56,20 @@ function formatConfig(config: Config): string[] {
       lines.push(`      secretId: ${p.secretId}`);
     }
   }
+  return lines;
+}
 
-  if (config.ui) {
-    lines.push('', '  ui:');
-    if (config.ui.colorScheme) {
-      lines.push(`    colorScheme: ${config.ui.colorScheme}`);
-    }
-    if (config.ui.reduceMotion !== undefined) {
-      lines.push(`    reduceMotion: ${config.ui.reduceMotion}`);
-    }
+function formatUi(ui: Config['ui']): string[] {
+  if (!ui) {
+    return [];
   }
-
+  const lines: string[] = ['', '  ui:'];
+  if (ui.colorScheme) {
+    lines.push(`    colorScheme: ${ui.colorScheme}`);
+  }
+  if (ui.reduceMotion !== undefined) {
+    lines.push(`    reduceMotion: ${ui.reduceMotion}`);
+  }
   return lines;
 }
 

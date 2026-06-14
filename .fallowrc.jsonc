@@ -98,6 +98,11 @@
     { "file": "packages/orchestrator/src/hooks/governance-gate.ts", "exports": ["*"] },
     { "file": "packages/orchestrator/src/hooks/observability.ts", "exports": ["*"] },
     { "file": "packages/orchestrator/src/hooks/recovery-gate.ts", "exports": ["*"] },
-    { "file": "packages/gateway/src/types.ts", "exports": ["*"] }
+    { "file": "packages/gateway/src/types.ts", "exports": ["*"] },
+    { "file": "packages/cli/src/config/index.ts", "exports": ["*"] },
+    { "file": "packages/cli/src/config/paths.ts", "exports": ["*"] },
+    { "file": "packages/cli/src/config/resolve-credentials.ts", "exports": ["*"] },
+    { "file": "packages/cli/src/config/schema.ts", "exports": ["BudgetConfig", "ProviderConfig", "ConfigSchema", "DEFAULT_CONFIG", "deepMerge", "loadFromEnv", "loadFromFile"] },
+    { "file": "packages/cli/src/config/migrate.ts", "exports": ["CURRENT_CONFIG_VERSION", "migrateConfigFile", "migrateAndLoad"] }
   ]
 }

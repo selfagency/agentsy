@@ -68,51 +68,16 @@ function handleMcpListCommand(argv: readonly string[], io: CliIO): number {
   return 0;
 }
 
-export function handleMcpAddCommand(argv: readonly string[], io: CliIO): number {
+function handleMcpAddCommand(argv: readonly string[], io: CliIO): number {
   const stdout = io.stdout ?? console.log;
   const stderr = io.stderr ?? console.error;
 
-  // Parse flags and positional args
-  let transport: 'stdio' | 'http' = 'http';
-  let name: string | undefined;
-  let uri: string | undefined;
-
-  for (let i = 0; i < argv.length; i++) {
-    const arg = String(argv.at(i) ?? '');
-
-    if (arg === '--transport') {
-      const raw = String(argv.at(i + 1) ?? '');
-      if (raw === 'stdio') {
-        transport = 'stdio';
-      } else if (raw === 'http') {
-        transport = 'http';
-      } else {
-        stderr(`Invalid transport: ${raw}. Must be 'stdio' or 'http'.`);
-        return 1;
-      }
-      i++; // skip value
-      continue;
-    }
-
-    if (arg === '--name') {
-      name = String(argv.at(i + 1) ?? '');
-      i++; // skip value
-      continue;
-    }
-
-    // First non-flag argument is the URI
-    uri ??= arg;
-  }
-  if (!uri) {
-    stderr('Usage: agentsy mcp add [--transport stdio|http] <uri> [--name <name>]');
-    stderr('');
-    stderr('Examples:');
-    stderr('  agentsy mcp add --transport http http://localhost:8080/mcp');
-    stderr('  agentsy mcp add --transport stdio file:///path/to/server');
-    stderr('  agentsy mcp add http://localhost:8080/mcp --name "local-dev"');
+  const parsed = parseMcpAddArgs(argv, stderr);
+  if (!parsed) {
     return 1;
   }
 
+  const { uri, transport, name } = parsed;
   const id = name ?? `mcp-${mcpServers.length + 1}`;
 
   const entry: McpServerEntry = { id, uri, transport, addedAt: new Date().toISOString() };
@@ -129,7 +94,74 @@ export function handleMcpAddCommand(argv: readonly string[], io: CliIO): number 
   return 0;
 }
 
-export function handleMcpRemoveCommand(argv: readonly string[], io: CliIO): number {
+interface ParsedMcpAddArgs {
+  name: string | undefined;
+  transport: 'stdio' | 'http';
+  uri: string;
+}
+
+function parseMcpAddArgs(argv: readonly string[], stderr: (msg: string) => void): ParsedMcpAddArgs | null {
+  let transport: 'stdio' | 'http' = 'http';
+  let name: string | undefined;
+  let uri: string | undefined;
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = String(argv.at(i) ?? '');
+
+    if (arg === '--transport') {
+      const result = parseTransportFlag(argv, i, stderr);
+      if (result === null) {
+        return null;
+      }
+      transport = result.transport;
+      i = result.nextIndex;
+      continue;
+    }
+
+    if (arg === '--name') {
+      name = String(argv.at(i + 1) ?? '');
+      i++;
+      continue;
+    }
+
+    uri ??= arg;
+  }
+
+  if (!uri) {
+    stderr('Usage: agentsy mcp add [--transport stdio|http] <uri> [--name <name>]');
+    stderr('');
+    stderr('Examples:');
+    stderr('  agentsy mcp add --transport http http://localhost:8080/mcp');
+    stderr('  agentsy mcp add --transport stdio file:///path/to/server');
+    stderr('  agentsy mcp add http://localhost:8080/mcp --name "local-dev"');
+    return null;
+  }
+
+  return { uri, transport, name };
+}
+
+interface TransportParseResult {
+  nextIndex: number;
+  transport: 'stdio' | 'http';
+}
+
+function parseTransportFlag(
+  argv: readonly string[],
+  i: number,
+  stderr: (msg: string) => void
+): TransportParseResult | null {
+  const raw = String(argv.at(i + 1) ?? '');
+  if (raw === 'stdio') {
+    return { transport: 'stdio', nextIndex: i + 1 };
+  }
+  if (raw === 'http') {
+    return { transport: 'http', nextIndex: i + 1 };
+  }
+  stderr(`Invalid transport: ${raw}. Must be 'stdio' or 'http'.`);
+  return null;
+}
+
+function handleMcpRemoveCommand(argv: readonly string[], io: CliIO): number {
   const stdout = io.stdout ?? console.log;
   const stderr = io.stderr ?? console.error;
 
