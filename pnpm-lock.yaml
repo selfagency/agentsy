@@ -744,12 +744,6 @@ importers:
       '@agentsy/session':
         specifier: workspace:*
         version: link:../session
-      '@agentsy/shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@agentsy/tools':
-        specifier: workspace:*
-        version: link:../tools
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -819,6 +813,9 @@ importers:
 
   packages/tools:
     dependencies:
+      '@agentsy/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
