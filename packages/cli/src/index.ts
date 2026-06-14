@@ -265,6 +265,11 @@ async function handleMcpCommand(rest: readonly string[], io: CliIO): Promise<num
   return runMcpCommand(rest, io);
 }
 
+async function handleCmuxCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runCmuxCommand } = await import('./commands/cmux.js');
+  return runCmuxCommand(rest, io);
+}
+
 async function handleConnectorsCommand(rest: readonly string[], io: CliIO): Promise<number> {
   const { runConnectorsCommand } = await import('./commands/connectors.js');
   return runConnectorsCommand(rest, io);
@@ -345,6 +350,15 @@ const COMMANDS: Record<string, CommandEntry> = {
     subcommands: {
       list: handleConnectorsCommand,
       check: handleConnectorsCommand
+    }
+  },
+  cmux: {
+    handler: handleCmuxCommand,
+    subcommands: {
+      status: handleCmuxCommand,
+      workspace: handleCmuxCommand,
+      surface: handleCmuxCommand,
+      notify: handleCmuxCommand
     }
   },
   memory: {

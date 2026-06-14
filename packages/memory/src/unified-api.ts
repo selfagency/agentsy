@@ -142,14 +142,38 @@ export function createUnifiedMemory(options: UnifiedMemoryOptions): {
     engine.reset();
   }
 
-  return { remember, recall, forget, improve: createImprove(engine) };
+  return { remember, recall, forget, improve: createImprove(engine, wiki, actorId ?? 'memory-system') };
 }
 
 function createImprove(
-  _engine: MemoryEngine
+  engine: MemoryEngine,
+  wiki: WikiUpserter,
+  actorId: string
 ): (opts?: { sessionIds?: string[]; runInBackground?: boolean }) => { synced: number } {
   return function improve(_opts?: { sessionIds?: string[]; runInBackground?: boolean }): { synced: number } {
-    return { synced: 0 };
+    const tierResults = engine.recall({ crossTier: true });
+    let synced = 0;
+
+    for (const tierResult of tierResults) {
+      for (const item of tierResult.items) {
+        try {
+          const pageId = `improve-${Date.now()}-${synced}`;
+          wiki.upsertPage({
+            actorId,
+            body: item.content,
+            format: 'text',
+            pageId,
+            tags: ['improve-synced', item.kind],
+            title: `improve: ${item.content.slice(0, 60)}`
+          });
+          synced++;
+        } catch {
+          // Skip failed upserts
+        }
+      }
+    }
+
+    return { synced };
   };
 }
 

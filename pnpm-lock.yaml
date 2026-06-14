@@ -362,6 +362,9 @@ importers:
 
   packages/observability:
     dependencies:
+      '@agentsy/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -729,12 +732,18 @@ importers:
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory
+      '@agentsy/observability':
+        specifier: workspace:*
+        version: link:../observability
       '@agentsy/providers':
         specifier: workspace:*
         version: link:../providers
       '@agentsy/renderers':
         specifier: workspace:*
         version: link:../renderers
+      '@agentsy/session':
+        specifier: workspace:*
+        version: link:../session
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types
@@ -742,6 +751,9 @@ importers:
       '@copilotkit/aimock':
         specifier: ^1.29.0
         version: 1.29.0(vitest@4.1.8)
+      '@types/better-sqlite3':
+        specifier: ^7.6.13
+        version: 7.6.13
       '@types/node':
         specifier: ^25.9.0
         version: 25.9.1
@@ -801,6 +813,9 @@ importers:
 
   packages/tools:
     dependencies:
+      '@agentsy/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@agentsy/types':
         specifier: workspace:*
         version: link:../types

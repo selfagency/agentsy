@@ -43,7 +43,7 @@
   },
   // Health threshold tuning (will be refined after regenerating coverage).
   "health": {
-    "threshold": 15,
+    "maxCyclomatic": 15,
     // Functions with acceptable complexity for their domain
     "ignore": [
       "**/governance/policy.ts",

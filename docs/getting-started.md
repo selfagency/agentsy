@@ -381,9 +381,59 @@ const processor = new LLMStreamProcessor({
 
 ## Next Steps
 
+- [Configuration & CLI](#configuration--cli) — Config system, MCP CLI, connectors CLI
 - [API Reference](/api) - Complete API documentation
 - [Developer Guide](/developers/) - Local development and testing
 - [Copilot Chat Integration](/developers/integration-copilot) - Integration patterns
+
+## Configuration & CLI
+
+The `@agentsy/cli` package provides a full configuration system and management commands.
+
+### Configuration commands
+
+```bash
+# View and manage configuration
+agentsy config list                    # List all config values
+agentsy config get <key>               # Get a specific config value
+agentsy config set <key> <value>       # Set a config value
+agentsy config unset <key>             # Remove a config value
+
+# Settings management
+agentsy settings                       # Interactive settings editor
+agentsy settings list                  # List all settings
+agentsy settings set <key> <value>     # Set a setting
+
+# Diagnostics
+agentsy doctor                         # Full system diagnostics
+agentsy doctor config                  # Validate configuration
+agentsy doctor network                 # Check network connectivity
+```
+
+### MCP and connectors management
+
+```bash
+# MCP server management
+agentsy mcp list                       # List registered MCP servers
+agentsy mcp add <name> <command>       # Register an MCP server
+agentsy mcp remove <name>             # Remove an MCP server
+agentsy mcp status                     # Check MCP server health
+
+# Connectors management
+agentsy connectors list                # List configured connectors
+agentsy connectors add <type>          # Add a connector (discord, slack, telegram)
+agentsy connectors remove <name>       # Remove a connector
+agentsy connectors status              # Check connector health
+```
+
+### Configuration file
+
+Configuration is stored in `~/.config/agentsy/config.json` by default. The config system supports:
+
+- **Profiles**: Switch between named configuration profiles
+- **Environment overrides**: `AGENTSY_*` environment variables override file config
+- **Validation**: Schema-validated on read with clear error messages
+- **Secrets**: Sensitive values stored via `@agentsy/secrets` (1Password integration)
 
 ## Troubleshooting
 

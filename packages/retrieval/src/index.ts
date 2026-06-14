@@ -1,5 +1,7 @@
 export type { BuiltContext, CitationEntry, ContextBuilderOptions, ContextOrdering } from './context/index.js';
 export { ContextBuilder, lostInMiddleOrder } from './context/index.js';
+export type { RagEngineOptions, RagResult } from './engine.js';
+export { initRag, RagEngine } from './engine.js';
 export { IndexingPipeline } from './indexing/index.js';
 export type { ProcessedQuery, QueryClass, QueryLlm } from './query/index.js';
 export { QueryProcessor } from './query/index.js';

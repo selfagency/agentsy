@@ -1,3 +1,10 @@
+export {
+  type AftBridgeOptions,
+  getAftBridge,
+  getAftSessionBridge,
+  isAftAvailable,
+  shutdownAftBridge
+} from './aft-manager.js';
 export type { CortexKitDb } from './db.js';
 export { openCortexKitDb, openCortexKitDbReadOnly, withRetry } from './db.js';
 export {

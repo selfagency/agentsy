@@ -25,6 +25,7 @@ interface McpServerEntry {
   addedAt: string;
   id: string;
   name?: string;
+  transport: 'stdio' | 'http';
   uri: string;
 }
 
@@ -34,8 +35,15 @@ const mcpServers: McpServerEntry[] = [];
 // Handlers
 // =============================================================================
 
-export function handleMcpListCommand(_argv: readonly string[], io: CliIO): number {
+function handleMcpListCommand(argv: readonly string[], io: CliIO): number {
   const stdout = io.stdout ?? console.log;
+
+  const useJson = argv.includes('--json');
+
+  if (useJson) {
+    stdout(JSON.stringify(mcpServers, null, 2));
+    return 0;
+  }
 
   if (mcpServers.length === 0) {
     stdout('No MCP servers configured.');
@@ -50,6 +58,7 @@ export function handleMcpListCommand(_argv: readonly string[], io: CliIO): numbe
   for (const server of mcpServers) {
     stdout(`  ${server.id}`);
     stdout(`    URI:   ${server.uri}`);
+    stdout(`    Type:  ${server.transport}`);
     if (server.name) {
       stdout(`    Name:  ${server.name}`);
     }
@@ -63,27 +72,57 @@ export function handleMcpAddCommand(argv: readonly string[], io: CliIO): number 
   const stdout = io.stdout ?? console.log;
   const stderr = io.stderr ?? console.error;
 
-  const uri = argv[0];
+  // Parse flags and positional args
+  let transport: 'stdio' | 'http' = 'http';
+  let name: string | undefined;
+  let uri: string | undefined;
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = String(argv.at(i) ?? '');
+
+    if (arg === '--transport') {
+      const raw = String(argv.at(i + 1) ?? '');
+      if (raw === 'stdio') {
+        transport = 'stdio';
+      } else if (raw === 'http') {
+        transport = 'http';
+      } else {
+        stderr(`Invalid transport: ${raw}. Must be 'stdio' or 'http'.`);
+        return 1;
+      }
+      i++; // skip value
+      continue;
+    }
+
+    if (arg === '--name') {
+      name = String(argv.at(i + 1) ?? '');
+      i++; // skip value
+      continue;
+    }
+
+    // First non-flag argument is the URI
+    uri ??= arg;
+  }
   if (!uri) {
-    stderr('Usage: agentsy mcp add <uri> [--name <name>]');
+    stderr('Usage: agentsy mcp add [--transport stdio|http] <uri> [--name <name>]');
     stderr('');
     stderr('Examples:');
-    stderr('  agentsy mcp add http://localhost:8080/mcp');
+    stderr('  agentsy mcp add --transport http http://localhost:8080/mcp');
+    stderr('  agentsy mcp add --transport stdio file:///path/to/server');
     stderr('  agentsy mcp add http://localhost:8080/mcp --name "local-dev"');
     return 1;
   }
 
-  const nameIndex = argv.indexOf('--name');
-  const name = nameIndex >= 0 ? String(argv.at(nameIndex + 1) ?? '') : undefined;
   const id = name ?? `mcp-${mcpServers.length + 1}`;
 
-  const entry: McpServerEntry = { id, uri, addedAt: new Date().toISOString() };
+  const entry: McpServerEntry = { id, uri, transport, addedAt: new Date().toISOString() };
   if (name) {
     entry.name = name;
   }
   mcpServers.push(entry);
   stdout(`Added MCP server: ${id}`);
-  stdout(`  URI: ${uri}`);
+  stdout(`  URI:       ${uri}`);
+  stdout(`  Transport: ${transport}`);
   stdout('');
   stdout('Note: Server configurations are in-memory. To persist,');
   stdout('add them to your config file under the "mcpServers" key.');
@@ -112,20 +151,38 @@ export function handleMcpRemoveCommand(argv: readonly string[], io: CliIO): numb
   return 0;
 }
 
-export async function handleMcpCheckCommand(_argv: readonly string[], io: CliIO): Promise<number> {
+async function handleMcpCheckCommand(argv: readonly string[], io: CliIO): Promise<number> {
   const stdout = io.stdout ?? console.log;
+  const stderr = io.stderr ?? console.error;
 
-  if (mcpServers.length === 0) {
+  const targetId = argv[0];
+  const serversToCheck = targetId ? mcpServers.filter(s => s.id === targetId) : mcpServers;
+
+  if (serversToCheck.length === 0) {
+    if (targetId) {
+      stderr(`MCP server not found: ${targetId}`);
+      return 1;
+    }
     stdout('No MCP servers to check.');
     stdout('Use `agentsy mcp add <uri>` to register a server first.');
     return 0;
   }
 
-  stdout(`Checking ${mcpServers.length} MCP server(s)...`);
+  stdout(`Checking ${serversToCheck.length} MCP server(s)...`);
   stdout('');
 
+  const allHealthy = await checkMcpServers(serversToCheck, stdout);
+  return allHealthy ? 0 : 1;
+}
+
+async function checkMcpServers(servers: McpServerEntry[], stdout: (msg: string) => void): Promise<boolean> {
   let allHealthy = true;
-  for (const server of mcpServers) {
+  for (const server of servers) {
+    if (server.transport === 'stdio') {
+      stdout(`  ⚠  ${server.id} — ${server.uri} (stdio transport — cannot check remotely)`);
+      continue;
+    }
+
     try {
       const response = await fetch(server.uri, { method: 'GET', signal: AbortSignal.timeout(5000) });
       if (response.ok) {
@@ -139,8 +196,7 @@ export async function handleMcpCheckCommand(_argv: readonly string[], io: CliIO)
       allHealthy = false;
     }
   }
-
-  return allHealthy ? 0 : 1;
+  return allHealthy;
 }
 
 // =============================================================================
