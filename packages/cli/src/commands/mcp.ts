@@ -72,18 +72,39 @@ export function handleMcpAddCommand(argv: readonly string[], io: CliIO): number 
   const stdout = io.stdout ?? console.log;
   const stderr = io.stderr ?? console.error;
 
-  const transportIndex = argv.indexOf('--transport');
-  const transport = transportIndex >= 0 ? (String(argv.at(transportIndex + 1) ?? '') as 'stdio' | 'http') : 'http';
+  // Parse flags and positional args
+  let transport: 'stdio' | 'http' = 'http';
+  let name: string | undefined;
+  let uri: string | undefined;
 
-  if (transport !== 'stdio' && transport !== 'http') {
-    stderr(`Invalid transport: ${transport}. Must be 'stdio' or 'http'.`);
-    return 1;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i] as string;
+
+    if (arg === '--transport') {
+      const raw = String(argv.at(i + 1) ?? '');
+      if (raw === 'stdio') {
+        transport = 'stdio';
+      } else if (raw === 'http') {
+        transport = 'http';
+      } else {
+        stderr(`Invalid transport: ${raw}. Must be 'stdio' or 'http'.`);
+        return 1;
+      }
+      i++; // skip value
+      continue;
+    }
+
+    if (arg === '--name') {
+      name = String(argv.at(i + 1) ?? '');
+      i++; // skip value
+      continue;
+    }
+
+    // First non-flag argument is the URI
+    if (uri === undefined) {
+      uri = arg;
+    }
   }
-
-  // Filter out --transport and its value from the positional args
-  const positional = argv.filter((_, i) => i !== transportIndex && i !== transportIndex + 1);
-
-  const uri = positional[0];
   if (!uri) {
     stderr('Usage: agentsy mcp add [--transport stdio|http] <uri> [--name <name>]');
     stderr('');
@@ -94,8 +115,6 @@ export function handleMcpAddCommand(argv: readonly string[], io: CliIO): number 
     return 1;
   }
 
-  const nameIndex = argv.indexOf('--name');
-  const name = nameIndex >= 0 ? String(argv.at(nameIndex + 1) ?? '') : undefined;
   const id = name ?? `mcp-${mcpServers.length + 1}`;
 
   const entry: McpServerEntry = { id, uri, transport, addedAt: new Date().toISOString() };
