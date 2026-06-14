@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "onAgentWaiting": "~/.config/opencode/hooks.sh agent-waiting",
+    "onComplete": "~/.config/opencode/hooks.sh agent-complete",
+    "onError": "~/.config/opencode/hooks.sh agent-error"
+  }
+}

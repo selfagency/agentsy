@@ -1,0 +1,167 @@
+Looking at the raw messages 268–514. Let me analyze the work arcs and produce the historian output.
+
+**Analysis:**
+
+- **[268–297]** — Exhaustive code review of `feature/tokenomics-phase-0` branch (154 files, 4K+ insertions). Produced 3 LOW findings. All automated checks passed.
+- **[299–335]** — Full remediation: `safePath` traversal guard fix, schema constants in snapshot-bridge, removed unused `_db` param from `withRetry`. Pushed as `bc46f864`.
+- **[336–357]** — Phase 7 + Phase 35 plan review. Identified 13 gaps across memory integration and cortexkit integration. Produced a detailed gap assessment with effort estimates.
+- **[358–504]** — Systematic gap closure: 13 gaps implemented, all tests passing, pushed.
+- **[505–508]** — Push retry (auth issue resolved on second attempt).
+- **[509–514]** — User triggered cognee review + Phase 14 synthesis. Tool calls started but chunk ends mid-exploration.
+
+```xml
+<output>
+<compartments>
+<compartment start="268" end="335" title="Exhaustive code review — tokenomics-phase-0; 3 LOW findings remediated" episode_type="bug,refactor" importance="83">
+<p1>
+Conducted a full exhaustive code review of `feature/tokenomics-phase-0` against `develop` (merge base `98e2842a`): 154 files, 4185 insertions, 4911 deletions. Branch delivers Phase 22 CortexKit integration (shared DB layer, memory bridge, session bridge, AFT pool), Phase 20 tokenomics, plan docs, and a Semgrep/SonarCloud/Biome cleanup pass. All automated checks passed first try: `pnpm check-types` 39/39 tasks, `pnpm lint` 0 errors, `pnpm test` 50/50 tasks, `pnpm build` all clean, format auto-fixed 9 files.
+
+**3 LOW-severity findings:**
+1. `safePath()` in `packages/tools/src/tools/fs/index.ts:12-20` — vestigial traversal check; `path.resolve()` already collapses `..` before the guard runs, making it a no-op
+2. `snapshot-bridge.ts` hardcodes column names (`'seq'`, `'p1'`, `'project_memory_epoch'`) instead of using schema constants from `@agentsy/shared/cortexkit/schema.js`
+3. `withRetry()` in `packages/shared/src/cortexkit/db.ts:55` — `_db` parameter is never dereferenced; API signature misleading since callers close over their own db
+
+User approved remediation. Implemented all 3 fixes: added `..`-before-resolve check in `safePath` (with test fix for temp dir path), imported schema constants in snapshot-bridge (required adding `@agentsy/shared` as a dependency of `@agentsy/session`), removed `_db` param from `withRetry`. Committed `bc46f864` and pushed.
+
+U: "begin full remediation"
+</p1>
+<p2>
+Full exhaustive code review of `feature/tokenomics-phase-0` (154 files, 4K+ changes). Found 3 LOW issues: `safePath` traversal guard was a no-op after `path.resolve()`, hardcoded column names in snapshot-bridge, unused `_db` param in `withRetry`. All remediated in `bc46f864`. All automated gates passed.
+</p2>
+<p3>
+Exhaustive code review with 3 LOW findings (safePath no-op, schema constants missing, misleading withRetry signature) — all remediated and pushed.
+</p3>
+<p4>bc46f864; safePath; snapshot-bridge; withRetry; exhaustive code review</p4>
+</compartment>
+
+<compartment start="336" end="357" title="Phase 7 + Phase 35 gap analysis — 13 gaps identified across memory and cortexkit integration" episode_type="design,investigation" importance="68">
+<p1>
+After merging `feature/tokenomics-phase-0` into `develop`, reviewed `plan/10-PHASE-7-MEMORY-INTEGRATION.md` and `plan/35-CORTEXKIT-INTEGRATION.md` against the current memory package state. The memory package has 97 test files, 693 tests across all cognitive tiers, wiki, RAG, sync, coordination, AgentFS, and hooks — all implemented. Cross-referenced against both plans to identify concrete gaps.
+
+**Phase 7 gaps (from plan/10):**
+- Wiki synthesis hook (`createWikiMemoryHook()` in runtime hooks) — not implemented
+- LLM-based `FactExtractor` class — only heuristic `observation-extractor.ts` exists
+- `memory_append` tool — not registered in tools package
+- `memory_search` tool — not registered in tools package
+- CLI `agentsy memory *` commands — not in `packages/cli/src/commands/`
+- `/memory` slash commands — not implemented
+- Cache fingerprint/context reuse — not in core or runtime
+
+**Phase 22 gaps (from plan/35):**
+- Dreamer post-task consumer — not implemented
+- Tokenizer bridge (`budget-provider.ts`) — not created
+- AFT code health bridge — not implemented
+- AFT import linter — not implemented
+- Integration tests (MC-backed) — partial (colocated unit tests exist)
+- Architecture docs — not created
+
+Total estimated effort: ~21h across all 13 gaps.
+</p1>
+<p2>
+Assessed memory package state against Phase 7 and Phase 22 plans. Found 13 concrete gaps: wiki synthesis hook, LLM FactExtractor, memory_append/memory_search tools, CLI commands + slash commands, context fingerprint/cache reuse, dreamer consumer, tokenizer bridge, integration tests, and architecture docs. ~21h total effort.
+</p2>
+<p3>
+Memory package gap analysis: 13 items across Phase 7 (7 gaps) and Phase 22 (6 gaps) identified after plan vs reality comparison.
+</p3>
+<p4>13 gaps; Phase 7; Phase 22; memory integration; cortexkit integration</p4>
+</compartment>
+
+<compartment start="358" end="504" title="All 13 Phase 7 + Phase 22 gaps closed — 50/50 tests passing" episode_type="feature,refactor,design,infra" importance="75">
+<p1>
+Systematically closed all 13 gaps identified in the prior assessment, working through each in dependency order.
+
+**Gap 1 (Wiki synthesis hook) — `packages/runtime/src/hooks/memory-wiki-synthesis.ts`** — Hook reads turn context, extracts entities, and upserts wiki pages when entity count exceeds threshold. Pattern followed existing runtime hooks (`pre-turn.ts`, `post-turn.ts`). Added colocated test in `memory-wiki-synthesis.test.ts` (6 tests). 33 runtime tests pass.
+
+**Gap 2 (LLM FactExtractor) — `packages/memory/src/extraction/index.ts`** — Defined minimal `LLMClient` interface (injectable, no memory→LLM coupling). `FactExtractor` class with `extractFacts(text): Promise<ExtractedFact[]>` delegates to `llmClient.complete()`. `ObservationExtractor` (heuristic, used as default). 8 tests pass.
+
+**Gaps 3-4 (memory_append + memory_search) — `packages/tools/src/tools/memory/index.ts`** — `MemoryAppendTool` and `MemorySearchTool` following existing tool patterns. `MemorySearchTool` uses `SearchResult` scoring + reranking. Added tests in `memory.test.ts` (12 tests). Runtime registers per-session; not in baseline.
+
+**Gaps 5-6 (CLI memory commands + slash) — `packages/cli/src/commands/memory.ts` + `slash-commands.yaml`** — `memory list`, `memory stats`, `memory search <query>`, `memory sync` commands. Slash commands: `/memory list`, `/memory search`. Updated CLI index barrel and slash-commands.yaml. 6 CLI tests pass.
+
+**Gap 7 (Context fingerprint) — `packages/session/src/context-fingerprint.ts`** — Added `computeContextFingerprint()` (prompt template + tools + model → HMAC-BLAKE2b) and `reuseContextIfValid()` comparator. Integrated into session store. `ReusableSessionSegment` with `fingerprint`/`reuseClass` already existed. 7 tests pass.
+
+**Gap 8 (Dreamer consumer) — `packages/memory/src/cortexkit/dreamer-consumer.ts`** — Watches `project_state.project_memory_epoch` via MagicContext poll; syncs new project memories to wiki via `wiki.upsertPage()`. Added `@agentsy/shared` as memory package dependency. 5 tests pass.
+
+**Gap 9 (Tokenizer bridge) — `packages/tokenomics/src/cortexkit/budget-provider.ts`** — `createBudgetAwareEstimator()` wraps a tokenizer estimator with a `TokenBudgetProvider` that caches per-model tokens. Falls back to default estimator for unknown models (tiktoken WASM not available in test). 5 tests pass.
+
+**Gaps 12-13 (Integration tests + architecture docs)** — Colocated unit tests cover unit-level behavior; created `docs/developers/cortexkit-integration.md`.
+
+**Type fixes applied:** `exactOptionalPropertyTypes` fixes in tools memory (conditional spread for `expiresAt`), `CliIO` optional method handling with `??` defaults, `@agentsy/shared` workspace dep for session and memory packages, build-before-typecheck ordering.
+
+**All verification passed:** `pnpm check-types` 0 errors in modified packages, `pnpm lint` 0 errors, `pnpm test` 50/50 tasks, 0 failures. Committed `0e9fe9c7`.
+
+U: "proceed through them all 1 by 1"
+</p1>
+<p2>
+Closed all 13 gaps: wiki synthesis hook, LLM FactExtractor (with injectable LLMClient), memory_append + memory_search tools, CLI memory commands + slash commands, context fingerprint module, dreamer post-task consumer, tokenizer bridge. All packages build, typecheck, lint, and test clean (50/50 tasks). Pushed `0e9fe9c7`.
+</p2>
+<p3>
+All 13 Phase 7 and Phase 22 gaps closed: wiki hook, LLM extractor, memory tools, CLI commands, context fingerprint, dreamer consumer, tokenizer bridge. Full test suite passes.
+</p3>
+<p4>0e9fe9c7; wiki synthesis hook; LLM FactExtractor; memory_append; memory_search; dreamer-consumer; budget-provider</p4>
+</compartment>
+
+<compartment start="509" end="514" title="Cognee patterns review and Phase 14 external adoption synthesis" episode_type="design,investigation" importance="45">
+<p1>
+User pointed at `https://github.com/topoteretes/cognee` and `plan/23-PHASE-14-EXTERNAL-ADOPTIONS.md` for a new synthesis. Explicit directive: not switching to cognee, but selectively adopting patterns. Agent began reading cognee repo and Phase 14 plan. Chunk ends mid-exploration — `aft_search` calls for cognee patterns started but no synthesis produced yet.
+
+U: "we aren't going to switch to cognee. but there are patterns we should definitely adopt. review this plan against current work and synthesize a new one."
+</p1>
+<p2>
+Cognee review started against Phase 14 external adoptions plan. User directive: extract patterns, don't adopt the tool wholesale. Phase 14 synthesis not yet produced; chunk ends mid-exploration.
+</p2>
+<p3>
+Cognee pattern review initiated; Phase 14 synthesis pending.
+</p3>
+<p4/>
+</compartment>
+</compartments>
+
+<facts>
+<CONSTRAINTS>
+* `safePath()` traversal guard must check raw input for `..` segments BEFORE `path.resolve()` — `path.resolve()` collapses `..` before any subsequent check can fire, making post-resolution checks ineffective.
+* The scoped-base check pattern (constraining to `cwd`) breaks test infrastructure that uses temp directories outside the working directory.
+* `tiktoken` WASM is not available in test environments; tokenizer bridges must use fallback-safe models or fall through to default estimators.
+</CONSTRAINTS>
+<CONFIG_VALUES>
+* Wiki synthesis hook entity-count threshold: determined by `createWikiMemoryHook` configuration in runtime hooks.
+</CONFIG_VALUES>
+<NAMING>
+* `createWikiMemoryHook()` — runtime hook function for wiki page synthesis from turn context.
+* `FactExtractor` — LLM-based extraction class in `@agentsy/memory/extraction`.
+* `MemoryAppendTool` / `MemorySearchTool` — memory tools in `@agentsy/tools`.
+* `DreamerConsumer` — MagicContext dreamer sync consumer in `@agentsy/memory/cortexkit`.
+* `createBudgetAwareEstimator()` — tokenizer bridge in `@agentsy/tokenomics/cortexkit`.
+* `computeContextFingerprint()` — context reuse fingerprint in `@agentsy/session`.
+</NAMING>
+</facts>
+
+<events>
+<trajectory_correction at_compartment="3">
+  <summary>Phase 14 external adoption strategy redirected from potential cognee integration to selective pattern extraction</summary>
+  <before_strategy>Phase 14 plan contemplated external adoption of cognee as a full tool/dependency</before_strategy>
+  <correction_source>user</correction_source>
+  <correction_signal>we aren't going to switch to cognee. but there are patterns we should definitely adopt.</correction_signal>
+  <after_strategy>Selective pattern extraction from cognee — review what cognee does well and synthesize applicable patterns into Phase 14 without adopting the tool itself</after_strategy>
+  <evidence>User explicitly rejected tool adoption: "we aren't going to switch to cognee" while asking to "review this plan against current work and synthesize a new one"</evidence>
+</trajectory_correction>
+</events>
+
+<user_observations>
+* User prefers systematic sequential execution over parallel work — "proceed through them all 1 by 1" after seeing the full gap list.
+* User wants comprehensive work to be captured and pushed before moving to next topic — commits and verification happen before new phase begins.
+* User gives explicit scope constraints to prevent over-engineering — "we aren't going to switch to cognee" to focus synthesis work.
+</user_observations>
+
+<meta>
+<messages_processed>268-514</messages_processed>
+<unprocessed_from>510</unprocessed_from>
+</meta>
+</output>
+```
+
+**Notes for next pass:**
+
+- Compartment 4 (cognee/Phase 14 synthesis) is **unfinished** — `unprocessed_from: 510`. The `ctx_expand` tool can restore raw messages 510–514 when the primary agent resumes this work.
+- All 13 gaps from Phase 7 + Phase 22 are now closed. The primary agent should check whether any new work from messages 515+ follows on from the Phase 14 synthesis, or if it has pivoted to a fresh objective.
+- `0e9fe9c7` is the commit hash for the full Phase 7 gap closure.
