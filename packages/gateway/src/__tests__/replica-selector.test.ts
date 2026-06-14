@@ -97,7 +97,7 @@ describe('DefaultReplicaSelector', () => {
         violations: [
           {
             code: 'provider-excluded',
-            constraint: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
+            constraint: { localOnly: true },
             details: 'Provider excluded by constraint'
           }
         ]
@@ -112,7 +112,7 @@ describe('DefaultReplicaSelector', () => {
       const result = selector.selectReplica(
         replicas,
         makeContext({
-          routingConstraints: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
+          routingConstraints: { localOnly: true },
           modelCapabilities: {
             jsonMode: true,
             reasoning: false,
@@ -138,7 +138,7 @@ describe('DefaultReplicaSelector', () => {
         violations: [
           {
             code: 'provider-excluded',
-            constraint: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
+            constraint: { localOnly: true },
             details: 'All providers blocked'
           }
         ]
@@ -153,7 +153,7 @@ describe('DefaultReplicaSelector', () => {
       const result = selector.selectReplica(
         replicas,
         makeContext({
-          routingConstraints: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
+          routingConstraints: { localOnly: true },
           modelCapabilities: {
             jsonMode: true,
             reasoning: false,
@@ -186,7 +186,7 @@ describe('DefaultReplicaSelector', () => {
         violations: [
           {
             code: 'provider-excluded',
-            constraint: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
+            constraint: { localOnly: true },
             details: 'should not be reached'
           }
         ]
@@ -197,7 +197,7 @@ describe('DefaultReplicaSelector', () => {
       const result = selector.selectReplica(
         replicas,
         makeContext({
-          routingConstraints: { localOnly: true } as import('@agentsy/guardrails').RoutingConstraint,
+          routingConstraints: { localOnly: true },
           modelCapabilities: undefined
         } as any)
       );
