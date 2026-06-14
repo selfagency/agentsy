@@ -1,7 +1,7 @@
 /**
  * @agentsy/secrets/config — Config schema and loader.
- *
- * This module will be implemented in B2.
  */
 
-export {};
+export { discoverConfigPath, loadConfig } from './loader.js';
+export type { SecretsConfig } from './schema.js';
+export { secretsConfigSchema } from './schema.js';

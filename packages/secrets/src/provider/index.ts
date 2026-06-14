@@ -1,7 +1,6 @@
 /**
  * @agentsy/secrets/provider — Provider interface and registry.
- *
- * This module will be implemented in B2.
  */
 
-export {};
+export { ProviderRegistry } from './registry.js';
+export type { KeyringProvider, ProviderCapabilities, ProviderHealth } from './types.js';
