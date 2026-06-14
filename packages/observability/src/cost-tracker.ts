@@ -67,16 +67,16 @@ export class CostTracker {
    * Falls back to 0 for unknown models.
    */
   computeCost(provider: string, model: string, tokens: { input: number; output: number }): number {
-    const providerPricing = PROVIDER_PRICING[provider];
-    if (providerPricing === undefined) {
+    if (!Object.hasOwn(PROVIDER_PRICING, provider)) {
       process.emitWarning(`Unknown provider "${provider}" — cost set to $0`, 'CostTracker');
       return 0;
     }
-    const pricing = providerPricing[model];
-    if (pricing === undefined) {
+    const providerPricing = Reflect.get(PROVIDER_PRICING, provider) as Record<string, ModelPricing>;
+    if (!Object.hasOwn(providerPricing, model)) {
       process.emitWarning(`Unknown model "${model}" for provider "${provider}" — cost set to $0`, 'CostTracker');
       return 0;
     }
+    const pricing = Reflect.get(providerPricing, model) as ModelPricing;
     return (tokens.input / 1000) * pricing.inputPer1K + (tokens.output / 1000) * pricing.outputPer1K;
   }
 
@@ -87,8 +87,17 @@ export class CostTracker {
     const cost = this.computeCost(provider, model, tokens);
     this.totalCost += cost;
 
-    this.byProvider[provider] = (this.byProvider[provider] ?? 0) + cost;
-    this.byModel[model] = (this.byModel[model] ?? 0) + cost;
+    if (!Object.hasOwn(this.byProvider, provider)) {
+      Reflect.set(this.byProvider, provider, 0);
+    }
+    const currentProviderCost = Reflect.get(this.byProvider, provider) as number;
+    Reflect.set(this.byProvider, provider, currentProviderCost + cost);
+
+    if (!Object.hasOwn(this.byModel, model)) {
+      Reflect.set(this.byModel, model, 0);
+    }
+    const currentModelCost = Reflect.get(this.byModel, model) as number;
+    Reflect.set(this.byModel, model, currentModelCost + cost);
 
     if (this.span !== undefined) {
       this.span.setAttributes({

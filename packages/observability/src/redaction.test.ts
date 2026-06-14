@@ -8,7 +8,8 @@ describe('SECRET_PATTERNS', () => {
   });
 
   it('redacts AWS access keys', () => {
-    const result = redactSecrets('AKIA0123456789ABCDEF');
+    // AKIA prefix with non-functional filler — not a real credential
+    const result = redactSecrets('AKIA0123XXXXEXAMPLEXXXX');
     expect(result).toContain('AKIA[REDACTED]');
   });
 
