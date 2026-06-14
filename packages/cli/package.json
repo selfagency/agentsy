@@ -29,6 +29,11 @@
       "types": "./dist/cli.d.ts",
       "import": "./dist/cli.js",
       "require": "./dist/cli.cjs"
+    },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.js",
+      "require": "./dist/config.cjs"
     }
   },
   "scripts": {
@@ -42,7 +47,7 @@
     "test:e2e:dev": "npx @microsoft/tui-test"
   },
   "dependencies": {
-    "@agentsy/context": "workspace:*",
+    "@agentsy/connectors": "workspace:*",
     "@agentsy/core": "workspace:*",
     "@agentsy/gateway": "workspace:*",
     "@agentsy/guardrails": "workspace:*",
@@ -52,8 +57,11 @@
     "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",
     "@agentsy/runtime": "workspace:*",
+    "@agentsy/secrets": "workspace:*",
     "@agentsy/session": "workspace:*",
-    "@agentsy/types": "workspace:*"
+    "@agentsy/tokenomics": "workspace:*",
+    "@agentsy/types": "workspace:*",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@microsoft/tui-test": "^0.0.4",

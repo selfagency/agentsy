@@ -38,6 +38,7 @@
     "format": "rumdl fmt && turbo run format",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --write",
+    "postinstall": "node scripts/postinstall-aft.mjs",
     "precommit": "turbo run precommit",
     "prepare": "husky",
     "release": "pnpm -C packages/scripts run release",

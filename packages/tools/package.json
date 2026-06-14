@@ -23,6 +23,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./cortexkit": {
+      "types": "./dist/cortexkit/import-linter.d.ts",
+      "import": "./dist/cortexkit/import-linter.js",
+      "require": "./dist/cortexkit/import-linter.cjs"
     }
   },
   "scripts": {
@@ -34,7 +39,9 @@
     "coverage": "vitest --run --coverage"
   },
   "dependencies": {
-    "@agentsy/types": "workspace:*"
+    "@agentsy/shared": "workspace:*",
+    "@agentsy/types": "workspace:*",
+    "@cortexkit/aft-bridge": "^0.37.1"
   },
   "devDependencies": {
     "@types/node": "^25.9.0",

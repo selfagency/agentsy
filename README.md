@@ -60,6 +60,34 @@ pnpm format
 
 The repository now follows `plan/DOGFOOD-PLAN.md` as the active production sequence for CLI-first delivery. Start there when implementing the next vertical slice.
 
+## Configuration
+
+The `@agentsy/cli` package provides a full configuration system:
+
+```bash
+# Configuration management
+agentsy config list                    # List all config values
+agentsy config set <key> <value>       # Set a config value
+agentsy doctor                         # Full system diagnostics
+
+# MCP and connectors
+agentsy mcp list                       # List registered MCP servers
+agentsy connectors list                # List configured connectors
+```
+
+Configuration is stored in `~/.config/agentsy/config.json` with support for profiles, environment overrides (`AGENTSY_*`), schema validation, and secrets integration.
+
+## Phase 10+11 capabilities
+
+The following capabilities were completed in Phases 10 and 11:
+
+- **Configuration system**: `agentsy config`, `agentsy settings`, `agentsy doctor config`
+- **MCP CLI**: Register, list, and manage MCP servers from the CLI
+- **Connectors CLI**: Add, remove, and manage platform connectors (Discord, Slack, Telegram)
+- **Guardrails CLI**: Safety and validation boundary management
+- **All plan-only domains promoted**: `connectors`, `guardrails`, `mcp`, `retrieval` are now manifest-backed packages
+- **Integration tests**: All networked integration tests pass with MSW mocks
+
 ## License
 
 [MIT](LICENSE.md)

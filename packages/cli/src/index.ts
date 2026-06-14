@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
-import type { OutputCompressionLevel } from '@agentsy/context';
-import { compressOutput } from '@agentsy/context';
 import { compressMemoryFile } from '@agentsy/core/context';
+import type { OutputCompressionLevel } from '@agentsy/tokenomics';
+import { compressOutput } from '@agentsy/tokenomics';
 
 export const name = 'cli';
 
@@ -250,10 +250,55 @@ async function handleGuardrailsCommand(rest: readonly string[], io: CliIO): Prom
   return runGuardrailsCommand(rest, io);
 }
 
+async function handleConfigCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { handleConfigCommand: cmd } = await import('./commands/config.js');
+  return cmd(rest, io);
+}
+
+async function handleSettingsCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { handleSettingsCommand: cmd } = await import('./commands/config.js');
+  return cmd(rest, io);
+}
+
+async function handleMcpCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runMcpCommand } = await import('./commands/mcp.js');
+  return runMcpCommand(rest, io);
+}
+
+async function handleCmuxCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runCmuxCommand } = await import('./commands/cmux.js');
+  return runCmuxCommand(rest, io);
+}
+
+async function handleConnectorsCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runConnectorsCommand } = await import('./commands/connectors.js');
+  return runConnectorsCommand(rest, io);
+}
+
+async function handleMemoryCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runMemoryCommand } = await import('./commands/memory.js');
+  return runMemoryCommand(rest, io);
+}
+
+async function handleIndexCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runIndexCommand } = await import('./commands/retrieval.js');
+  return runIndexCommand(rest, io);
+}
+
+async function handleSearchCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runSearchCommand } = await import('./commands/retrieval.js');
+  return runSearchCommand(rest, io);
+}
+
+async function handleSourcesCommand(rest: readonly string[], io: CliIO): Promise<number> {
+  const { runSourcesCommand } = await import('./commands/retrieval.js');
+  return runSourcesCommand(rest, io);
+}
+
 function handleUnknownCommand(command: string | undefined, io: CliIO): number {
   (io.stderr ?? DEFAULT_IO.stderr)(`Unknown command: ${command ?? '(none)'}`);
   (io.stderr ?? DEFAULT_IO.stderr)(
-    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, setup, doctor, sandbox-diagnostics, content-address-stats, lb, guardrails'
+    'Supported commands: tui (default), chat, compress, compress-memory, memory-sync-dev, setup, doctor, sandbox-diagnostics, content-address-stats, lb, guardrails, config, settings, mcp, connectors, index, search, sources'
   );
   (io.stderr ?? DEFAULT_IO.stderr)('Chat flags: --agent <name> --plan --mock --model <id> --provider <id>');
   return 1;
@@ -280,7 +325,49 @@ const COMMANDS: Record<string, CommandEntry> = {
   sessions: { handler: handleSessionsCommand },
   session: { handler: handleSessionCommand },
   resume: { handler: handleResumeCommand },
-  guardrails: { handler: handleGuardrailsCommand }
+  guardrails: {
+    handler: handleGuardrailsCommand,
+    subcommands: {
+      list: handleGuardrailsCommand,
+      install: handleGuardrailsCommand,
+      uninstall: handleGuardrailsCommand,
+      policy: handleGuardrailsCommand
+    }
+  },
+  config: { handler: handleConfigCommand },
+  settings: { handler: handleSettingsCommand },
+  mcp: {
+    handler: handleMcpCommand,
+    subcommands: {
+      list: handleMcpCommand,
+      add: handleMcpCommand,
+      remove: handleMcpCommand,
+      check: handleMcpCommand
+    }
+  },
+  connectors: {
+    handler: handleConnectorsCommand,
+    subcommands: {
+      list: handleConnectorsCommand,
+      check: handleConnectorsCommand
+    }
+  },
+  cmux: {
+    handler: handleCmuxCommand,
+    subcommands: {
+      status: handleCmuxCommand,
+      workspace: handleCmuxCommand,
+      surface: handleCmuxCommand,
+      notify: handleCmuxCommand
+    }
+  },
+  memory: {
+    handler: handleMemoryCommand,
+    subcommands: { search: handleMemoryCommand, stats: handleMemoryCommand, lint: handleMemoryCommand }
+  },
+  index: { handler: handleIndexCommand },
+  search: { handler: handleSearchCommand },
+  sources: { handler: handleSourcesCommand }
 };
 
 export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): Promise<number> {
@@ -299,7 +386,7 @@ export async function runCli(argv: readonly string[], io: CliIO = DEFAULT_IO): P
     const sub = rest[0];
     const subHandler = sub ? entry.subcommands[sub] : undefined;
     if (subHandler) {
-      return await subHandler(rest.slice(1), io);
+      return await subHandler(rest, io);
     }
     (io.stderr ?? DEFAULT_IO.stderr)(`Unknown ${command} subcommand: ${sub ?? '(none)'}`);
     (io.stderr ?? DEFAULT_IO.stderr)(`Supported: ${command} ${Object.keys(entry.subcommands).join('|')}`);

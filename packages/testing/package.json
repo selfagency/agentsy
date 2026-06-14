@@ -19,12 +19,15 @@
   "dependencies": {
     "@agentsy/core": "workspace:*",
     "@agentsy/memory": "workspace:*",
+    "@agentsy/observability": "workspace:*",
     "@agentsy/providers": "workspace:*",
     "@agentsy/renderers": "workspace:*",
+    "@agentsy/session": "workspace:*",
     "@agentsy/types": "workspace:*"
   },
   "devDependencies": {
     "@copilotkit/aimock": "^1.29.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.8",
     "msw": "^2.14.6",

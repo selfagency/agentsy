@@ -781,7 +781,9 @@ export class ModelSelector {
   private estimateModelCost(model: ModelsDevModel): number {
     const { cost } = model;
     // Rough estimate assuming 1000 input and 1000 output tokens
-    return (cost?.input ?? 0) + (cost?.output ?? 0) * 10;
+    const raw = ((cost?.input ?? 0) + (cost?.output ?? 0)) * 10;
+    // Floor at a tiny baseline so models with missing cost data still register
+    return Math.max(raw, 0.0001);
   }
 
   /**

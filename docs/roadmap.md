@@ -26,12 +26,12 @@ The monorepo has active manifest-backed packages for:
 
 ### Plan-only domains to promote
 
-The following domains exist as implementation plans but are not yet manifest-backed packages:
+The following domains existed as implementation plans and are now manifest-backed packages (Phase 11 complete):
 
-- connectors
-- guardrails
-- mcp
-- retrieval
+- ✅ `packages/connectors` — Platform connectors (Discord, Slack, Telegram)
+- ✅ `packages/guardrails` — Safety and validation boundaries
+- ✅ `packages/mcp` — Model Context Protocol types and utilities
+- ✅ `packages/retrieval` — RAG retrieval and indexing
 
 ## Execution priorities
 
@@ -42,16 +42,16 @@ The following domains exist as implementation plans but are not yet manifest-bac
 - Preserve runtime/orchestrator split and session durability invariants.
 - Follow `plan/DOGFOOD-PLAN.md` for CLI-first implementation order.
 
-### Priority 2 — domain promotion
+### Priority 2 — domain promotion (complete)
 
-Promote plan-only domains into full package units:
+All plan-only domains have been promoted to manifest-backed packages (Phase 11):
 
-1. `packages/connectors`
-2. `packages/guardrails`
-3. `packages/mcp`
-4. `packages/retrieval`
+- ✅ `packages/connectors`
+- ✅ `packages/guardrails`
+- ✅ `packages/mcp`
+- ✅ `packages/retrieval`
 
-Each promotion includes:
+Each promotion included:
 
 - package manifest and exports
 - build/typecheck/test integration
@@ -83,3 +83,4 @@ And by architecture governance:
 - `plan/agentsy-platform-v2.md` was retired after consolidation.
 - Master planning authority moved to `plan/MASTER-IMPLEMENTATION-PLAN.md`.
 - Roadmap now reflects repository reality (manifest-backed vs plan-only domains) rather than historical package assumptions.
+- **Phase 11 complete**: All plan-only domains (`connectors`, `guardrails`, `mcp`, `retrieval`) promoted to manifest-backed packages. CLI config system, MCP CLI, connectors CLI, and guardrails CLI integrated. Integration tests pass with MSW mocks covering all network calls.

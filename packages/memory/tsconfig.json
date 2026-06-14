@@ -5,7 +5,7 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@agentsy/context": ["../context/src/index.ts"],
+      "@agentsy/tokenomics": ["../tokenomics/src/index.ts"],
       "@agentsy/types": ["../types/src/index.ts"]
     },
     "strictNullChecks": true

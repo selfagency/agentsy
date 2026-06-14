@@ -1,6 +1,6 @@
 # Phase 20 — @agentsy/tokenomics
 
-**Effort:** ~46h total (7 implementation phases)  
+**Effort:** ~49h total (8 implementation phases — Phase 20.0 complete)  
 **Milestone:** Spend accountability, frustration-aware ROI, and agent self-improvement loop operational  
 **Package:** `@agentsy/tokenomics` (new)  
 **Gate:** Session ledger persisted; frustration score computed; MCP server responding; patch review flow functional  
@@ -15,6 +15,7 @@
 
 ### What it does
 
+0. **Tokenizer layer** — resolves model names to accurate BPE tokenizers via tiktoken WASM, with tuned fallback estimation for all major model families. Provides `TokenizerRegistry` for model-aware token counting.
 1. **Ledger** — every session produces a `SessionLedgerEntry` recording spend, artifacts, quality gate results, and frustration score.
 2. **Signal collection** — 5 passive frustration detectors + 4 satisfaction detectors, all reading hook events with zero user friction.
 3. **Attribution** — git commit trailers link every AI-assisted commit to its session cost and quality.
@@ -136,7 +137,7 @@ Code survival:    82%    ↑ from 71% last week
 
 | Sub-phase | Module | Effort | Unblocks |
 |---|---|---|---|
-| 20.1 | `ledger/` | 6h | everything |
+| **20.0** | **tokenizers/** (tiktoken BPE + estimator fallback) | **3h** ✅ | accurate ledger |
 | 20.2 | `signals/` | 8h | learning loop, UI |
 | 20.3 | `attribution/` | 4h | ROI calculator |
 | 20.4 | `cache/` | 5h | efficiency metrics |

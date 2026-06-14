@@ -9,6 +9,13 @@
  * @module
  */
 
+// Context fingerprint for cache reuse
+export {
+  type ComputeFingerprintOptions,
+  type ContextFingerprint,
+  computeContextFingerprint,
+  isCacheValid
+} from './context-fingerprint.js';
 // File-backed session store
 export { createFileStore, getDefaultSessionFilePath } from './file-store.js';
 // Session lifecycle management (Phase 6)

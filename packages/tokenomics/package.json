@@ -38,9 +38,11 @@
     "coverage": "vitest --run --coverage --passWithNoTests"
   },
   "dependencies": {
+    "@agentsy/core": "workspace:*",
     "@agentsy/observability": "workspace:*",
     "@agentsy/types": "workspace:*",
-    "better-sqlite3": "^12.10.0"
+    "better-sqlite3": "^12.10.0",
+    "tiktoken": "1.0.22"
   },
   "optionalDependencies": {
     "@libsql/client": "^0.14.0"
