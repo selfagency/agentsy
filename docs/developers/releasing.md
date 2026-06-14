@@ -67,6 +67,19 @@ After bootstrap, configure trusted publisher on npmjs package settings:
 - **GitHub**: Token via `GH_TOKEN`, `GITHUB_TOKEN`, or `gh auth token`
 - **Runner**: GitHub-hosted runners (self-hosted not currently supported by npm trusted publishing)
 
+## Release Readiness Checklist
+
+Before cutting a release, verify:
+
+- [ ] `pnpm build` passes cleanly
+- [ ] `pnpm check-types` passes with no errors
+- [ ] `pnpm test` passes (all unit tests)
+- [ ] Integration tests pass with MSW mocks covering all network calls
+- [ ] No circular dependency regressions
+- [ ] All package exports resolve cleanly
+- [ ] CHANGELOG.md is up to date for the releasing package
+- [ ] Release state in `config/release-state.json` is correct (`oidc-ready` for CI publish)
+
 ## Release State Gate
 
 `config/release-state.json` controls whether a package may publish via CI:
