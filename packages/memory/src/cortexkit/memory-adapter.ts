@@ -49,7 +49,10 @@ export function createMemoryBridge(db: Database) {
      * Map MC category to wiki entity kind.
      */
     mapCategory(mcCategory: string): string {
-      return Object.hasOwn(MC_TO_WIKI_CATEGORY, mcCategory) ? (MC_TO_WIKI_CATEGORY[mcCategory] as string) : 'note';
+      if (Object.hasOwn(MC_TO_WIKI_CATEGORY, mcCategory)) {
+        return MC_TO_WIKI_CATEGORY[mcCategory] as string;
+      }
+      return 'note';
     },
 
     /**

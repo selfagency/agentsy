@@ -97,7 +97,9 @@ export function createDreamerConsumer(options: DreamerConsumerOptions): {
           continue;
         }
 
-        const kind = MC_TO_WIKI_KIND[memory.category] ?? 'note';
+        const mcCategory = memory.category;
+        // nosemgrep: typescript.lang.security.detect-object-injection.detect-object-injection
+        const kind = Object.hasOwn(MC_TO_WIKI_KIND, mcCategory) ? (MC_TO_WIKI_KIND[mcCategory] as string) : 'note';
         const pageId = `mc-memory-${memory.id}`;
 
         try {
