@@ -23,6 +23,7 @@
     "jsxImportSource": "react",
     "paths": {
       "@agentsy/context": ["packages/context/src/index.ts"],
+      "@agentsy/connectors": ["packages/connectors/src/index.ts"],
       "@agentsy/guardrails": ["packages/guardrails/src/index.ts"],
       "@agentsy/models": ["packages/models/src/index.ts"],
       "@agentsy/models/local-providers": [
@@ -33,6 +34,8 @@
       ],
       "@agentsy/observability": ["packages/observability/src/index.ts"],
       "@agentsy/observability/*": ["packages/observability/src/*"],
+      "@agentsy/mcp": ["packages/mcp/src/index.ts"],
+      "@agentsy/secrets": ["packages/secrets/src/index.ts"],
       "@agentsy/tokenomics": ["packages/tokenomics/src/index.ts"],
       "@agentsy/types": ["packages/types/src/index.ts"]
     },

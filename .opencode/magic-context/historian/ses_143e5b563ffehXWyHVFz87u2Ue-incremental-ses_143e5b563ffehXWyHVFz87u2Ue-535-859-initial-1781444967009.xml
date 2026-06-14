@@ -1,0 +1,178 @@
+```xml
+<output>
+<compartments>
+<compartment start="721" end="733" title="PR #112 opened — feature/phase-7-memory-integration → develop" episode_type="release" importance="70">
+<p1>
+User asked to open a PR for all changes on the current branch. First attempt at 722-725 failed — both `gh` CLI and GitHub MCP tool returned auth failures. User repeated the request at 726, second attempt succeeded via `gh` CLI at 730-733. PR #112 created: `feature/phase-7-memory-integration` → `develop`. Three commits on the branch: `0e9fe9c7` (Phase 7 gaps), `983c2ea3` (Phase 14 adoption plan), `880f2e4d` (Cognee-derived patterns). PR title: `Phase 7: Memory Integration — all gaps closed + Cognee-derived patterns`.
+</p1>
+<p2>
+PR #112 opened after auth retry: `feature/phase-7-memory-integration` → `develop`. Three commits: Phase 7 gaps, Phase 14 plan revision, Cognee patterns.
+</p2>
+<p3>
+PR #112 opened for Phase 7 branch.
+</p3>
+<p4/>
+</compartment>
+
+<compartment start="735" end="744" title="SonarCloud findings batch 1 — fixed; lockfile synced" episode_type="bug,refactor" importance="55">
+<p1>
+SonarCloud flagged two categories of issues on the new files plus a stale lockfile. Batch-fixed in 735-744:
+
+- `recall-router.ts`: zero fractions (`4.0` → `4`, `3.0` → `3`, etc.)
+- `unified-api.ts` + CLI test: removed unnecessary `as const` assertions, changed `async forget`/`improve` to sync (they return non-Promise)
+- `unified-api.ts`: moved `improve` to outer scope to fix cognitive-complexity SonarCloud complaint; added `ResolvedScope` type alias for inline union type
+- `unified-api.ts`: replaced `try { ... } then` with `try { await ... } catch` for `querySessionImpl`
+- `unified-api.test.ts`: `results[0]!` → `results[0]?` (non-null assertion → optional chaining)
+- `dreamer-consumer.test.ts`: redundant `return` → `return undefined`
+- `pnpm-lock.yaml`: synced for `@agentsy/shared` workspace dep
+
+Additionally, `pnpm install --frozen-lockfile` was failing because lockfile didn't account for `@agentsy/shared@workspace:*` added to memory package.
+</p1>
+<p2>
+SonarCloud batch 1 fixed: zero fractions, unnecessary `as const`, sync `forget`/`improve`, `improve` scope, union type alias, try+await, non-null assertions. Lockfile synced.
+</p2>
+<p3>
+SonarCloud batch 1 + stale lockfile fixed in `3e9a34c7`.
+</p3>
+<p4/>
+</compartment>
+
+<compartment start="746" end="759" title="opencode_sync failed — GITHUB_TOKEN stale in process env" episode_type="infra" importance="12">
+<p1>
+User triggered the opencode_sync tool to link a second machine to an existing sync repo. All attempts (746-759) failed because `GITHUB_TOKEN` is set as a process environment variable with an invalid token — the `gh` CLI and GitHub MCP read it before attempting auth. No fix was possible from within the session; user was advised to unset `GITHUB_TOKEN` in their shell before restarting opencode, or run `unset GITHUB_TOKEN && gh repo sync selfagency/opencode-sync` manually.
+</p1>
+<p2>
+opencode_sync failed: invalid `GITHUB_TOKEN` in process env prevents both opencode_sync and gh from authenticating. Manual `unset GITHUB_TOKEN && gh repo sync` recommended.
+</p2>
+<p3>
+opencode_sync blocked by stale GITHUB_TOKEN env var.
+</p3>
+<p4/>
+</compartment>
+
+<compartment start="761" end="797" title="SonarCloud findings batch 2 — all 14 issues fixed and pushed in 9fc3a3c0" episode_type="bug,refactor" importance="55">
+<p1>
+User listed 14 SonarCloud issues (18min estimated effort) across 4 files. All fixed in 761-797:
+
+**recall-router.ts (8 zero fractions):** `4.0` → `4`, `3.0` → `3`, `6.0` → `6`, `8.0` → `8`, `2.0` → `2`, `10.0` → `10`, `12.0` → `12`, `16.0` → `16` at lines 59, 63, 69, 72, 75, 78, 81, 84.
+
+**dreamer-consumer.test.ts (L22):** Added `// eslint-disable-line no-useless-return` to suppress `return undefined` / `return` redundancy lint.
+
+**unified-api.ts:**
+- L137: `await queryGraphImpl()` → `queryGraphImpl()` (non-Promise awaited)
+- L170, L198: Removed unnecessary `as EntrySource` assertions (inferred via `RecallOutput` return type)
+- `RecallOutput._source` type uses `EntrySource` — kept the import
+
+**unified-api.test.ts (L81):** Removed unnecessary `as never` on `FactExtractor` typed variable.
+
+**memory-wiki-synthesis.test.ts (L6):** Removed unnecessary `as RuntimeHookEvent` assertion (inferred from return type).
+
+**unified-api.test.ts (import order):** `type` imports reordered before value imports.
+
+All type checks and lint clean before push. Committed as `9fc3a3c0`.
+</p1>
+<p2>
+14 SonarCloud issues fixed: 8 zero fractions in recall-router, await/non-Promise, unnecessary assertions, eslint-disable, import order. Pushed `9fc3a3c0`.
+</p2>
+<p3>
+All 14 SonarCloud findings resolved in `9fc3a3c0`.
+</p3>
+<p4/>
+</compartment>
+
+<compartment start="798" end="808" title="E2E guardrails test failure — subcommand dispatch stripped subcommand name" episode_type="bug,refactor" importance="72">
+<p1>
+E2E test `guardrails.spec.ts` was failing on CI: `guardrails list` and `guardrails policy` both returned "Unknown guardrail subcommand: (none)" because the CLI subcommand dispatch was calling `handleGuardrailsCommand([], io)` — it sliced off the subcommand name before passing `rest` to the handler, so `['list']` arrived as `[]` and no subcommand matched. Fix: `rest.slice(1)` → `rest` in the dispatch, so `guardrails list` correctly passes `['list']` to `runGuardrailsCommand`. CLI unit tests (10/10) passed before commit. Pushed as `52e48c78`.
+
+U: "14issues 18min effort packages/memory/src/cortexkit/dreamer-consumer.test.ts ..."
+</p1>
+<p2>
+E2E guardrails test was failing because subcommand dispatch stripped the subcommand name (`rest.slice(1)` was eating `['list']` → `[]`). Fixed to `rest`, so `guardrails list` correctly routes. Pushed `52e48c78`. U: listed 14 SonarCloud issues with effort estimates.
+</p2>
+<p3>
+E2E guardrails subcommand dispatch bug: `rest.slice(1)` was consuming the subcommand name. Fixed to `rest`; unit tests 10/10; pushed `52e48c78`.
+</p3>
+<p4/>
+</compartment>
+
+<compartment start="809" end="843" title="Phase 8 review — retrieval package assessment; 14h plan" episode_type="design,investigation" importance="60">
+<p1>
+User directed review of `plan/11-*` and `packages/retrieval` before beginning Phase 8. Assessment at 845-851:
+
+**Plan:** `plan/11-PHASE-8-RAG-AUGMENTATION.md` (~14h)
+**Package:** `packages/retrieval/` — workspace package with `IndexingPipeline` and `RetrievalEngine`
+
+**What exists:**
+- Manifest + tsup config, types (Chunk, Document), hierarchical/fixed/code chunking, basic keyword + vector search
+- `RetrievalEngine` in `search/index.ts`, `IndexingPipeline` in `indexing/index.ts`
+
+**Gaps (vs plan):**
+1. Query Processor — classification, HyDE, keyword extraction (Stage 1) — MISSING
+2. Hybrid RRF retrieval (Stage 2) — MISSING (keyword/vector are separate, no RRF)
+3. Reranker interface + Passthrough (Stage 3) — MISSING
+4. Context Builder + lost-in-middle + citations (Stage 4) — MISSING
+5. Memory integration (`ingestDocument`, `queryRag`) — MISSING
+6. CLI commands (`/index`, `/search`, `/sources`) — MISSING
+7. Source allowlist + provenance — MISSING
+
+**Execution order:** Batch 1 (Query Processor + RRF, 3.5h) → Batch 2 (Reranker + Context Builder, 4h) → Batch 3 (Memory integration + CLI, 4h) → Batch 4 (Source allowlist + provenance + chunking alignment, 2.5h)
+
+U: "begin"
+</p1>
+<p2>
+Phase 8 retrieval package assessed: existing `IndexingPipeline` + `RetrievalEngine` cover chunking and basic search; missing Query Processor, RRF hybrid retrieval, Reranker, Context Builder, memory integration, CLI commands, and source allowlist. ~14h across 4 batches.
+</p2>
+<p3>
+Phase 8 plan reviewed: 7 gaps identified in retrieval package, ~14h estimated. User directed to begin.
+</p3>
+<p4/>
+</compartment>
+
+<compartment start="853" end="859" title="Phase 8 — Query Processor + HyDE pattern implementation (started)" episode_type="feature" importance="65">
+<p1>
+Began Phase 8 by implementing the Query Processor (Batch 1, parallel with RRF). Created `packages/retrieval/src/query/query-classifier.ts` and `packages/retrieval/src/query/hyde.ts`. Type-checked and lint-cleaned. Continued into context processor and index.ts barrel updates at 857-859.
+
+U: "begin"
+</p1>
+<p2>
+Phase 8 started: Query Processor (query-classifier + HyDE) being implemented in packages/retrieval/src/query/.
+</p2>
+<p3>
+Phase 8 implementation underway: Query Processor for retrieval package.
+</p3>
+<p4/>
+</compartment>
+</compartments>
+<facts>
+<PROJECT_RULES>
+* When fixing SonarCloud static analysis issues, batch-fix all occurrences across files before committing to minimize churn.
+</PROJECT_RULES>
+<CONSTRAINTS>
+* `GITHUB_TOKEN` set as a process-level environment variable is read by both `gh` CLI and GitHub MCP tool before attempting auth — it cannot be unset from within the session.
+* pnpm `frozen-lockfile` fails if `package.json` declares a workspace dep (`@agentsy/shared@workspace:*`) not yet in the lockfile.
+</CONSTRAINTS>
+<CONFIG_VALUES>
+* Phase 8 retrieval package: `packages/retrieval/src/query/` — query classifier + HyDE pattern.
+</CONFIG_VALUES>
+</facts>
+<events>
+<causal_incident at_compartment="5">
+  <summary>CLI guardrails subcommand dispatch ate the subcommand name.</summary>
+  <affected_surface>tool_protocol</affected_surface>
+  <symptom>E2E test `guardrails list` and `guardrails policy` both returned "Unknown guardrail subcommand: (none)".</symptom>
+  <cause_summary>Subcommand dispatch called `handleGuardrailsCommand(rest.slice(1), io)` — `slice(1)` consumed the subcommand name, so `['list']` arrived as `[]`.</cause_summary>
+  <disposition>fixed</disposition>
+  <evidence>Terminal output showed "Unknown guardrail subcommand: (none)" — `argv[0]` was undefined inside the handler.</evidence>
+  <fix_summary>Changed `rest.slice(1)` to `rest` in CLI subcommand dispatch so the subcommand name reaches the handler.</fix_summary>
+</causal_incident>
+</events>
+<user_observations>
+* User provides SonarCloud issues as a structured list with effort estimates — they expect efficient batch-fixing, not one-by-one remediation.
+* User is direct: "begin" is sufficient to start Phase 8 after review summary is provided.
+</user_observations>
+<meta>
+<messages_processed>535-859</messages_processed>
+<unprocessed_from>860</unprocessed_from>
+</meta>
+</output>
+```

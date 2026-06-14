@@ -1,8 +1,9 @@
 import { getMemorySetupGuide, runMemoryDiagnostics } from '../../../memory/src/diagnostics/index.js';
 
+import { getConfigSetupGuide, runConfigDiagnostics } from './config-diagnostics.js';
 import type { DiagnosticReport, SetupGuide } from './types.js';
 
-export type DiagnosticTarget = 'memory' | 'vscode';
+export type DiagnosticTarget = 'memory' | 'vscode' | 'config';
 
 async function loadVSCodeDiagnostics(): Promise<{
   getVSCodeSetupGuide: () => SetupGuide;
@@ -46,12 +47,20 @@ export async function runDiagnosticsForTarget(target: DiagnosticTarget): Promise
     return runMemoryDiagnostics();
   }
 
+  if (target === 'config') {
+    return runConfigDiagnostics();
+  }
+
   const vscode = await loadVSCodeDiagnostics();
   return vscode.runVSCodeSettingsDiagnostics();
 }
 
 export async function runAllDiagnostics(): Promise<DiagnosticReport[]> {
-  return [await runDiagnosticsForTarget('memory'), await runDiagnosticsForTarget('vscode')];
+  return [
+    await runDiagnosticsForTarget('memory'),
+    await runDiagnosticsForTarget('vscode'),
+    await runDiagnosticsForTarget('config')
+  ];
 }
 
 export async function getSetupGuide(target: DiagnosticTarget): Promise<SetupGuide> {
@@ -59,10 +68,14 @@ export async function getSetupGuide(target: DiagnosticTarget): Promise<SetupGuid
     return getMemorySetupGuide();
   }
 
+  if (target === 'config') {
+    return getConfigSetupGuide();
+  }
+
   const vscode = await loadVSCodeDiagnostics();
   return vscode.getVSCodeSetupGuide();
 }
 
 export async function getAllSetupGuides(): Promise<SetupGuide[]> {
-  return [await getSetupGuide('memory'), await getSetupGuide('vscode')];
+  return [await getSetupGuide('memory'), await getSetupGuide('vscode'), await getSetupGuide('config')];
 }

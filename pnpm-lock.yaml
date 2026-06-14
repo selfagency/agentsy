@@ -57,6 +57,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@agentsy/connectors':
+        specifier: workspace:*
+        version: link:../connectors
       '@agentsy/core':
         specifier: workspace:*
         version: link:../core
@@ -66,6 +69,9 @@ importers:
       '@agentsy/guardrails':
         specifier: workspace:*
         version: link:../guardrails
+      '@agentsy/mcp':
+        specifier: workspace:*
+        version: link:../mcp
       '@agentsy/memory':
         specifier: workspace:*
         version: link:../memory
@@ -84,6 +90,9 @@ importers:
       '@agentsy/runtime':
         specifier: workspace:*
         version: link:../runtime
+      '@agentsy/secrets':
+        specifier: workspace:*
+        version: link:../secrets
       '@agentsy/session':
         specifier: workspace:*
         version: link:../session
@@ -99,6 +108,9 @@ importers:
       '@cortexkit/magic-context':
         specifier: ^0.23.0
         version: 0.23.0
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@microsoft/tui-test':
         specifier: ^0.0.4
