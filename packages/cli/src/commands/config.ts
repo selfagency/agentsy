@@ -36,8 +36,7 @@ function formatConfig(config: Config): string[] {
     `  providers: ${config.providers.length > 0 ? '' : '(none configured)'}`
   );
 
-  lines.push(...formatProviders(config.providers));
-  lines.push(...formatUi(config.ui));
+  lines.push(...formatProviders(config.providers), ...formatUi(config.ui));
 
   return lines;
 }
