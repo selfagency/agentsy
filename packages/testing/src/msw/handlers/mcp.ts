@@ -63,9 +63,7 @@ export function createMcpHandlers(options?: McpHandlerOptions): HttpHandler[] {
 
   return [
     http.get(`${baseUrl}/mcp`, async () => {
-      if (delay > 0) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+      await sleep(delay);
       if (!state.healthy) {
         return HttpResponse.json({ status: 'error' }, { status: 503 });
       }
@@ -73,9 +71,7 @@ export function createMcpHandlers(options?: McpHandlerOptions): HttpHandler[] {
     }),
 
     http.post(`${baseUrl}/mcp`, async ({ request }) => {
-      if (delay > 0) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+      await sleep(delay);
 
       const payload = (await request.json()) as {
         id?: number | string;
@@ -96,6 +92,10 @@ export function createMcpHandlers(options?: McpHandlerOptions): HttpHandler[] {
       return handleMcpUnknownMethod(requestId, method);
     })
   ];
+}
+
+function sleep(ms: number): Promise<void> {
+  return ms > 0 ? new Promise(resolve => setTimeout(resolve, ms)) : Promise.resolve();
 }
 
 function handleMcpListRequest(requestId: number | string, state: MockMcpState) {

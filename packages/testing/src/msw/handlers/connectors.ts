@@ -64,9 +64,7 @@ export function createConnectorHandlers(options?: ConnectorHandlerOptions): Http
     // Slack — chat.postMessage
     // -----------------------------------------------------------------------
     http.post('https://slack.com/api/chat.postMessage', async ({ request }) => {
-      if (delay > 0) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+      await sleep(delay);
 
       const payload = (await request.json()) as { channel?: string; text?: string };
       const channel = payload.channel ?? 'C00000000';
@@ -97,9 +95,7 @@ export function createConnectorHandlers(options?: ConnectorHandlerOptions): Http
     // Slack — conversations.history
     // -----------------------------------------------------------------------
     http.get('https://slack.com/api/conversations.history', async () => {
-      if (delay > 0) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+      await sleep(delay);
 
       const messages = state.slackMessages.map(msg => ({
         channel: msg.channel,
@@ -125,9 +121,7 @@ export function createConnectorHandlers(options?: ConnectorHandlerOptions): Http
     // GitHub — get repository
     // -----------------------------------------------------------------------
     http.get('https://api.github.com/repos/:owner/:repo', async ({ params }) => {
-      if (delay > 0) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+      await sleep(delay);
 
       const owner = String(params.owner ?? 'test-owner');
       const repo = String(params.repo ?? 'test-repo');
@@ -160,9 +154,7 @@ export function createConnectorHandlers(options?: ConnectorHandlerOptions): Http
     // Linear — GraphQL API
     // -----------------------------------------------------------------------
     http.post('https://api.linear.app/graphql', async ({ request }) => {
-      if (delay > 0) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
+      await sleep(delay);
 
       const payload = (await request.json()) as {
         query?: string;
@@ -189,4 +181,8 @@ export function createConnectorHandlers(options?: ConnectorHandlerOptions): Http
       return HttpResponse.json({ data: {} }, { status: 200 });
     })
   ];
+}
+
+function sleep(ms: number): Promise<void> {
+  return ms > 0 ? new Promise(resolve => setTimeout(resolve, ms)) : Promise.resolve();
 }

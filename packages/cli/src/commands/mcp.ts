@@ -35,7 +35,7 @@ const mcpServers: McpServerEntry[] = [];
 // Handlers
 // =============================================================================
 
-export function handleMcpListCommand(argv: readonly string[], io: CliIO): number {
+function handleMcpListCommand(argv: readonly string[], io: CliIO): number {
   const stdout = io.stdout ?? console.log;
 
   const useJson = argv.includes('--json');
@@ -151,7 +151,7 @@ export function handleMcpRemoveCommand(argv: readonly string[], io: CliIO): numb
   return 0;
 }
 
-export async function handleMcpCheckCommand(argv: readonly string[], io: CliIO): Promise<number> {
+async function handleMcpCheckCommand(argv: readonly string[], io: CliIO): Promise<number> {
   const stdout = io.stdout ?? console.log;
   const stderr = io.stderr ?? console.error;
 

@@ -71,7 +71,7 @@ export async function handleConnectorsCheckCommand(_argv: readonly string[], io:
 // Handlers — Slack
 // =============================================================================
 
-export async function handleSlackPostMessageCommand(argv: readonly string[], io: CliIO): Promise<number> {
+async function handleSlackPostMessageCommand(argv: readonly string[], io: CliIO): Promise<number> {
   const stdout = io.stdout ?? console.log;
   const stderr = io.stderr ?? console.error;
 
@@ -99,7 +99,7 @@ export async function handleSlackPostMessageCommand(argv: readonly string[], io:
   return 0;
 }
 
-export async function handleSlackReadThreadCommand(argv: readonly string[], io: CliIO): Promise<number> {
+async function handleSlackReadThreadCommand(argv: readonly string[], io: CliIO): Promise<number> {
   const stdout = io.stdout ?? console.log;
   const stderr = io.stderr ?? console.error;
 
@@ -131,7 +131,7 @@ export async function handleSlackReadThreadCommand(argv: readonly string[], io: 
 // Handlers — Slack sub-router
 // =============================================================================
 
-export async function handleSlackCommand(argv: readonly string[], io: CliIO): Promise<number> {
+async function handleSlackCommand(argv: readonly string[], io: CliIO): Promise<number> {
   const subcommand = argv[0];
   const rest = argv.slice(1);
 
@@ -153,7 +153,7 @@ export async function handleSlackCommand(argv: readonly string[], io: CliIO): Pr
 // Handlers — Linear
 // =============================================================================
 
-export function handleLinearCreateIssueCommand(argv: readonly string[], io: CliIO): number {
+function handleLinearCreateIssueCommand(argv: readonly string[], io: CliIO): number {
   const stdout = io.stdout ?? console.log;
   const stderr = io.stderr ?? console.error;
 
@@ -181,7 +181,7 @@ export function handleLinearCreateIssueCommand(argv: readonly string[], io: CliI
 // Handlers — GitHub
 // =============================================================================
 
-export function handleGitHubCommand(argv: readonly string[], io: CliIO): number {
+function handleGitHubCommand(argv: readonly string[], io: CliIO): number {
   const stdout = io.stdout ?? console.log;
   const stderr = io.stderr ?? console.error;
 
