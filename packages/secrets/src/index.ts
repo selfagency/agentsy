@@ -31,3 +31,12 @@ export { MissingCredentialError } from './broker/types.js';
 export type { SecretMatch } from './detection/index.js';
 // Detection
 export { createSecretDetectionHook, detectSecrets, redactSecrets } from './detection/index.js';
+export { ExpiredCredentialError, MalformedTokenError, UnresolvedCredentialError } from './injection/error.js';
+export {
+  type CredentialResolverHookOptions,
+  createCredentialResolverHook
+} from './injection/hook.js';
+export { resolveCredentials } from './injection/resolver.js';
+// Injection
+export type { ResolutionContext, ResolvedSecret, SecretToken } from './injection/types.js';
+export { parseSecretTokens } from './injection/types.js';
