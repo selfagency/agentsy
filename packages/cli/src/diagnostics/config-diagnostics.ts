@@ -5,8 +5,10 @@ async function runConfigDiagnostics(): Promise<DiagnosticReport> {
   const checks: import('./types.js').DiagnosticCheck[] = [];
   try {
     const config = await loadCfg();
-    checks.push({ id: 'config-loaded', level: 'info', message: 'Configuration loaded successfully.' });
-    checks.push({ id: 'config-version', level: 'info', message: `Config schema version: ${config.version}` });
+    checks.push(
+      { id: 'config-loaded', level: 'info', message: 'Configuration loaded successfully.' },
+      { id: 'config-version', level: 'info', message: `Config schema version: ${config.version}` }
+    );
     if (config.providers.length === 0) {
       checks.push({ id: 'no-providers', level: 'warn', message: 'Use `agentsy settings` to add a provider.' });
     }

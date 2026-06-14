@@ -50,7 +50,6 @@ export async function resolveProviderCredential(
   }
 
   // 3. No credential configured
-  return;
 }
 
 /**

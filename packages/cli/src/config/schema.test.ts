@@ -25,26 +25,27 @@ describe('userConfigPath', () => {
 
 describe('projectConfigPath', () => {
   it('returns a path under .agentsy/', () => {
-    expect(projectConfigPath('/tmp/project')).toBe('/tmp/project/.agentsy/config.json');
+    expect(projectConfigPath('/home/user/project')).toBe('/home/user/project/.agentsy/config.json');
   });
 });
 
 describe('loadFromEnv', () => {
-  const OLD_ENV = process.env;
+  const OLD_ENV = new Map(Object.entries(process.env));
 
   beforeEach(() => {
-    process.env = { ...OLD_ENV };
+    // Clear AGENTSY_* vars for test isolation
+    for (const key of Object.keys(process.env)) {
+      if (key.startsWith('AGENTSY_')) {
+        delete process.env[key];
+      }
+    }
   });
 
   afterEach(() => {
-    process.env = OLD_ENV;
+    process.env = Object.fromEntries(OLD_ENV);
   });
 
   it('returns empty object when no AGENTSY_* vars are set', () => {
-    delete process.env.AGENTSY_MODEL;
-    delete process.env.AGENTSY_APPROVAL;
-    delete process.env.AGENTSY_BUDGET_INPUT;
-    delete process.env.AGENTSY_BUDGET_OUTPUT;
     expect(loadFromEnv()).toEqual({});
   });
 
@@ -73,34 +74,27 @@ describe('loadFromEnv', () => {
 
 describe('deepMerge', () => {
   it('merges defaults with overrides', () => {
-    const result = deepMerge(DEFAULT_CONFIG as Record<string, unknown>, {
-      model: 'claude-4'
-    });
+    const defaults = { ...DEFAULT_CONFIG } as unknown as Record<string, unknown>;
+    const result = deepMerge(defaults, { model: 'claude-4' });
     expect(result.model).toBe('claude-4');
     expect(result.version).toBe(1);
     expect(result.approvalPolicy).toBe('deny-destructive');
   });
 
   it('later sources override earlier ones', () => {
-    const result = deepMerge(
-      { approvalPolicy: 'deny-all' } as Record<string, unknown>,
-      { approvalPolicy: 'deny-none' } as Record<string, unknown>
-    );
+    const result = deepMerge({ approvalPolicy: 'deny-all' }, { approvalPolicy: 'deny-none' });
     expect(result.approvalPolicy).toBe('deny-none');
   });
 
   it('deep-merges nested objects', () => {
-    const result = deepMerge(
-      { budget: { inputCap: 128_000, outputCap: 16_384 } } as Record<string, unknown>,
-      { budget: { inputCap: 64_000 } } as Record<string, unknown>
-    );
+    const result = deepMerge({ budget: { inputCap: 128_000, outputCap: 16_384 } }, { budget: { inputCap: 64_000 } });
     expect(result.budget).toEqual({ inputCap: 64_000, outputCap: 16_384 });
   });
 
   it('replaces arrays rather than merging', () => {
     const result = deepMerge(
-      { providers: [{ id: 'a', type: 'openai' }] } as Record<string, unknown>,
-      { providers: [{ id: 'b', type: 'anthropic' }] } as Record<string, unknown>
+      { providers: [{ id: 'a', type: 'openai' }] },
+      { providers: [{ id: 'b', type: 'anthropic' }] }
     );
     expect(result.providers).toHaveLength(1);
     expect(result.providers[0]?.id).toBe('b');

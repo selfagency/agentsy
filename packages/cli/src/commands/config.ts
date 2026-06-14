@@ -22,16 +22,20 @@ import type { CliIO } from '../index.js';
 
 function formatConfig(config: Config): string[] {
   const lines: string[] = ['Current configuration (merged):', ''];
-  lines.push(`  version: ${config.version}`);
-  lines.push(`  model: ${config.model ?? '(not set)'}`);
-  lines.push(`  approvalPolicy: ${config.approvalPolicy}`);
-  lines.push(`  defaultAgent: ${config.defaultAgent ?? '(not set)'}`);
-  lines.push('');
-  lines.push('  budget:');
-  lines.push(`    inputCap: ${config.budget.inputCap.toLocaleString()}`);
-  lines.push(`    outputCap: ${config.budget.outputCap.toLocaleString()}`);
-  lines.push('');
-  lines.push(`  providers: ${config.providers.length > 0 ? '' : '(none configured)'}`);
+
+  lines.push(
+    `  version: ${config.version}`,
+    `  model: ${config.model ?? '(not set)'}`,
+    `  approvalPolicy: ${config.approvalPolicy}`,
+    `  defaultAgent: ${config.defaultAgent ?? '(not set)'}`,
+    '',
+    '  budget:',
+    `    inputCap: ${config.budget.inputCap.toLocaleString()}`,
+    `    outputCap: ${config.budget.outputCap.toLocaleString()}`,
+    '',
+    `  providers: ${config.providers.length > 0 ? '' : '(none configured)'}`
+  );
+
   for (const p of config.providers) {
     lines.push(`    - ${p.id} (${p.type})`);
     if (p.model) {
@@ -44,9 +48,9 @@ function formatConfig(config: Config): string[] {
       lines.push(`      secretId: ${p.secretId}`);
     }
   }
+
   if (config.ui) {
-    lines.push('');
-    lines.push('  ui:');
+    lines.push('', '  ui:');
     if (config.ui.colorScheme) {
       lines.push(`    colorScheme: ${config.ui.colorScheme}`);
     }
@@ -54,6 +58,7 @@ function formatConfig(config: Config): string[] {
       lines.push(`    reduceMotion: ${config.ui.reduceMotion}`);
     }
   }
+
   return lines;
 }
 
