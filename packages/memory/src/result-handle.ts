@@ -87,9 +87,9 @@ export class RememberResult {
   }
 
   /** Wait for background improve() to complete. Resolves when done. */
-  async wait(): Promise<void> {
+  wait(): Promise<void> {
     if (this.done) {
-      return;
+      return Promise.resolve();
     }
     return new Promise<void>(resolve => {
       const check = (): void => {

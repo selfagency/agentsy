@@ -654,23 +654,6 @@ export async function runChatCommand(
     }
   }
 
-  // NOSONAR -- Intentional no-op: unknown commands are silently ignored
-  function handleUnknownCommand(_command: string): void {
-    /* intentional no-op */
-  }
-
-  /** Show current trace information (placeholder). */
-  function handleTraceCommand(): void {
-    stderr(dim('[trace] Trace recording is not yet wired.\n'));
-    stderr(dim('[trace] Enable a MetricsCollector or CostTracker to capture spans.\n'));
-  }
-
-  /** List recent spans/events (placeholder). */
-  function handleEventsCommand(): void {
-    stderr(dim('[events] Event recording is not yet wired.\n'));
-    stderr(dim('[events] Registered spans will appear here once observability is connected.\n'));
-  }
-
   function handleLbDispatch(trimmed: string): void {
     const args = trimmed.slice(4).trim().split(/\s+/u);
     const sub = args[0];
@@ -688,6 +671,17 @@ export async function runChatCommand(
     }
   }
 
+  /** Show current trace information (placeholder). */
+  function handleObservabilityCommand(command: string): void {
+    if (command === '/trace') {
+      stderr(dim('[trace] Trace recording is not yet wired.\n'));
+      stderr(dim('[trace] Enable a MetricsCollector or CostTracker to capture spans.\n'));
+    } else {
+      stderr(dim('[events] Event recording is not yet wired.\n'));
+      stderr(dim('[events] Registered spans will appear here once observability is connected.\n'));
+    }
+  }
+
   /**
    * Dispatch a single trimmed input line — returns true when the caller should exit.
    */
@@ -699,48 +693,12 @@ export async function runChatCommand(
 
     // Slash commands with arguments (startsWith) are dispatched
     // before the exact-map lookup so the suffix can be parsed.
-    if (trimmed.startsWith('/model ')) {
-      handleModelCommand(trimmed.slice(7).trim().split(/\s+/u));
-      safePrompt(rl);
-      return false;
-    }
-
-    if (trimmed.startsWith('/provider ')) {
-      await handleProviderCommand(trimmed.slice(10).trim().split(/\s+/u));
-      safePrompt(rl);
-      return false;
-    }
-
-    if (trimmed.startsWith('/agent ')) {
-      await handleAgentDispatch(trimmed.slice(7).trim().split(/\s+/u));
-      safePrompt(rl);
-      return false;
-    }
-
-    if (trimmed.startsWith('/skills ')) {
-      await handleSkillsDispatch(trimmed.slice(8).trim().split(/\s+/u));
-      safePrompt(rl);
-      return false;
-    }
-
-    // /trace — show current trace info
-    if (trimmed === '/trace') {
-      handleTraceCommand();
-      safePrompt(rl);
-      return false;
-    }
-
-    // /events — list recent spans/events
-    if (trimmed === '/events') {
-      handleEventsCommand();
-      safePrompt(rl);
-      return false;
-    }
-
-    if (trimmed.startsWith('/lb ')) {
-      handleLbDispatch(trimmed);
-      safePrompt(rl);
-      return false;
+    if (trimmed.startsWith('/')) {
+      const handled = await dispatchSlashCommand(trimmed);
+      if (handled) {
+        safePrompt(rl);
+        return false;
+      }
     }
 
     const handler = commandHandlers.get(trimmed);
@@ -753,14 +711,47 @@ export async function runChatCommand(
       return false;
     }
 
-    if (trimmed.startsWith('/')) {
-      handleUnknownCommand(trimmed);
-      safePrompt(rl);
-      return false;
-    }
-
     await processUserMessage(trimmed);
     safePrompt(rl);
+    return false;
+  }
+
+  /**
+   * Route a slash command to its handler. Returns true if the command was handled.
+   */
+  async function dispatchSlashCommand(trimmed: string): Promise<boolean> {
+    if (trimmed.startsWith('/model ')) {
+      handleModelCommand(trimmed.slice(7).trim().split(/\s+/u));
+      return true;
+    }
+
+    if (trimmed.startsWith('/provider ')) {
+      await handleProviderCommand(trimmed.slice(10).trim().split(/\s+/u));
+      return true;
+    }
+
+    if (trimmed.startsWith('/agent ')) {
+      await handleAgentDispatch(trimmed.slice(7).trim().split(/\s+/u));
+      return true;
+    }
+
+    if (trimmed.startsWith('/skills ')) {
+      await handleSkillsDispatch(trimmed.slice(8).trim().split(/\s+/u));
+      return true;
+    }
+
+    // /trace and /events — observability commands
+    if (trimmed === '/trace' || trimmed === '/events') {
+      handleObservabilityCommand(trimmed);
+      return true;
+    }
+
+    if (trimmed.startsWith('/lb ')) {
+      handleLbDispatch(trimmed);
+      return true;
+    }
+
+    // Unknown slash command — handled by caller
     return false;
   }
 
