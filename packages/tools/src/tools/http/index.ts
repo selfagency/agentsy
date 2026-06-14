@@ -26,37 +26,41 @@ async function handleHttpFetch(input: Record<string, unknown>): Promise<ToolResu
   }
 
   const method = typeof input.method === 'string' ? input.method.toUpperCase() : 'GET';
-  const timeout = typeof input.timeout === 'number' ? input.timeout : 10_000;
-  const headers: Record<string, string> =
-    input.headers && typeof input.headers === 'object' ? (input.headers as Record<string, string>) : {};
-  const body = typeof input.body === 'string' ? input.body : undefined;
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
-
-    const requestInit: RequestInit = { method, headers, signal: controller.signal };
-    if (body !== undefined) {
-      requestInit.body = body;
-    }
-
-    const response = await fetch(url, requestInit);
-    clearTimeout(timer);
-
-    const responseBody = await response.text();
-    const responseHeaders: Record<string, string> = Object.fromEntries(response.headers.entries());
-
+    const response = await executeFetch(url, method, input);
+    const body = await response.text();
     return {
       ok: true,
       data: {
         status: response.status,
         statusText: response.statusText,
-        body: responseBody,
-        headers: responseHeaders
+        body,
+        headers: Object.fromEntries(response.headers.entries())
       }
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return { ok: false, data: null, error: `http_fetch error: ${message}` };
+  }
+}
+
+async function executeFetch(url: string, method: string, input: Record<string, unknown>): Promise<Response> {
+  const timeout = typeof input.timeout === 'number' ? input.timeout : 10_000;
+  const headers: Record<string, string> =
+    input.headers && typeof input.headers === 'object' ? (input.headers as Record<string, string>) : {};
+  const body = typeof input.body === 'string' ? input.body : undefined;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+
+  const init: RequestInit = { method, headers, signal: controller.signal };
+  if (body !== undefined) {
+    init.body = body;
+  }
+
+  try {
+    return await fetch(url, init);
+  } finally {
+    clearTimeout(timer);
   }
 }

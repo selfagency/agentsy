@@ -62,36 +62,39 @@ export function createMcpHandlers(options?: McpHandlerOptions): HttpHandler[] {
   const delay = options?.delay ?? 0;
 
   return [
-    http.get(`${baseUrl}/mcp`, async () => {
-      await sleep(delay);
-      if (!state.healthy) {
-        return HttpResponse.json({ status: 'error' }, { status: 503 });
-      }
-      return HttpResponse.json({ status: 'ok' }, { status: 200 });
-    }),
-
-    http.post(`${baseUrl}/mcp`, async ({ request }) => {
-      await sleep(delay);
-
-      const payload = (await request.json()) as {
-        id?: number | string;
-        method?: string;
-        params?: Record<string, unknown>;
-      };
-      const method = payload.method ?? '';
-      const requestId = payload.id ?? 1;
-
-      if (method === 'tools/list') {
-        return handleMcpListRequest(requestId, state);
-      }
-
-      if (method === 'tools/call') {
-        return handleMcpCallRequest(requestId, payload, state);
-      }
-
-      return handleMcpUnknownMethod(requestId, method);
-    })
+    http.get(`${baseUrl}/mcp`, () => handleMcpHealth(state, delay)),
+    http.post(`${baseUrl}/mcp`, req => handleMcpPost(req, state, delay))
   ];
+}
+
+async function handleMcpHealth(state: MockMcpState, delay: number) {
+  await sleep(delay);
+  if (!state.healthy) {
+    return HttpResponse.json({ status: 'error' }, { status: 503 });
+  }
+  return HttpResponse.json({ status: 'ok' }, { status: 200 });
+}
+
+async function handleMcpPost({ request }: { request: Request }, state: MockMcpState, delay: number) {
+  await sleep(delay);
+
+  const payload = (await request.json()) as {
+    id?: number | string;
+    method?: string;
+    params?: Record<string, unknown>;
+  };
+  const method = payload.method ?? '';
+  const requestId = payload.id ?? 1;
+
+  if (method === 'tools/list') {
+    return handleMcpListRequest(requestId, state);
+  }
+
+  if (method === 'tools/call') {
+    return handleMcpCallRequest(requestId, payload, state);
+  }
+
+  return handleMcpUnknownMethod(requestId, method);
 }
 
 function sleep(ms: number): Promise<void> {

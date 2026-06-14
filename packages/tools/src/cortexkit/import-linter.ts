@@ -37,14 +37,21 @@ export async function lintImports(options: ImportLintOptions): Promise<ImportLin
 
 async function lintFile(bridge: import('@cortexkit/aft-bridge').BinaryBridge, file: string): Promise<ImportLintResult> {
   try {
-    const result = await bridge.send('import', { op: 'organize', filePath: file });
-    const data = (result as { format_skipped_reason?: string }) ?? {};
-    const skippedReason = data.format_skipped_reason;
-    if (skippedReason === undefined) {
-      return { file, organized: true };
-    }
-    return { file, organized: false, reason: skippedReason };
+    return await lintSingleFile(bridge, file);
   } catch (error) {
     return { file, organized: false, reason: error instanceof Error ? error.message : String(error) };
   }
+}
+
+async function lintSingleFile(
+  bridge: import('@cortexkit/aft-bridge').BinaryBridge,
+  file: string
+): Promise<ImportLintResult> {
+  const result = await bridge.send('import', { op: 'organize', filePath: file });
+  const data = (result as { format_skipped_reason?: string }) ?? {};
+  const skippedReason = data.format_skipped_reason;
+  if (skippedReason === undefined) {
+    return { file, organized: true };
+  }
+  return { file, organized: false, reason: skippedReason };
 }

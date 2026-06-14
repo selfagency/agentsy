@@ -43,9 +43,8 @@ function formatConfig(config: Config): string[] {
 }
 
 function formatProviders(providers: ProviderConfig[]): string[] {
-  const lines: string[] = [];
-  for (const p of providers) {
-    lines.push(`    - ${p.id} (${p.type})`);
+  return providers.flatMap(p => {
+    const lines = [`    - ${p.id} (${p.type})`];
     if (p.model) {
       lines.push(`      model: ${p.model}`);
     }
@@ -55,15 +54,15 @@ function formatProviders(providers: ProviderConfig[]): string[] {
     if (p.secretId) {
       lines.push(`      secretId: ${p.secretId}`);
     }
-  }
-  return lines;
+    return lines;
+  });
 }
 
 function formatUi(ui: Config['ui']): string[] {
   if (!ui) {
     return [];
   }
-  const lines: string[] = ['', '  ui:'];
+  const lines = ['', '  ui:'];
   if (ui.colorScheme) {
     lines.push(`    colorScheme: ${ui.colorScheme}`);
   }

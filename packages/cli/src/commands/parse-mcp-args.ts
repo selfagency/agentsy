@@ -25,7 +25,8 @@ export function parseMcpAddArgs(argv: readonly string[], stderr: (msg: string) =
   let name: string | undefined;
   let uri: string | undefined;
 
-  for (let i = 0; i < argv.length; i++) {
+  let i = 0;
+  while (i < argv.length) {
     const arg = String(argv.at(i) ?? '');
 
     if (arg === '--transport') {
@@ -40,11 +41,12 @@ export function parseMcpAddArgs(argv: readonly string[], stderr: (msg: string) =
 
     if (arg === '--name') {
       name = String(argv.at(i + 1) ?? '');
-      i++;
+      i += 2;
       continue;
     }
 
     uri ??= arg;
+    i++;
   }
 
   if (!uri) {
