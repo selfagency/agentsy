@@ -136,22 +136,32 @@ export function loadFromEnv(): Record<string, unknown> {
     partial.defaultAgent = defaultAgent;
   }
 
-  const uiColor = process.env.AGENTSY_UI_COLOR;
-  const uiReduce = process.env.AGENTSY_UI_REDUCE_MOTION;
-  if (uiColor || uiReduce) {
-    const ui: Record<string, unknown> = {};
-    if (uiColor === 'auto' || uiColor === 'light' || uiColor === 'dark') {
-      ui.colorScheme = uiColor;
-    }
-    if (uiReduce === 'true') {
-      ui.reduceMotion = true;
-    } else if (uiReduce === 'false') {
-      ui.reduceMotion = false;
-    }
-    partial.ui = ui;
+  const uiFromEnv = loadUiFromEnv();
+  if (uiFromEnv) {
+    partial.ui = uiFromEnv;
   }
 
   return partial;
+}
+
+function loadUiFromEnv(): Record<string, unknown> | undefined {
+  const uiColor = process.env.AGENTSY_UI_COLOR;
+  const uiReduce = process.env.AGENTSY_UI_REDUCE_MOTION;
+  if (!(uiColor || uiReduce)) {
+    return;
+  }
+
+  const ui: Record<string, unknown> = {};
+  if (uiColor === 'auto' || uiColor === 'light' || uiColor === 'dark') {
+    ui.colorScheme = uiColor;
+  }
+  if (uiReduce === 'true') {
+    ui.reduceMotion = true;
+  } else if (uiReduce === 'false') {
+    ui.reduceMotion = false;
+  }
+
+  return ui;
 }
 
 // =============================================================================

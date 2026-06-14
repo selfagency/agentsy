@@ -74,7 +74,7 @@ export function handleMcpAddCommand(argv: readonly string[], io: CliIO): number 
   }
 
   const nameIndex = argv.indexOf('--name');
-  const name = nameIndex >= 0 && nameIndex < argv.length - 1 ? argv[nameIndex + 1] : undefined;
+  const name = nameIndex >= 0 ? String(argv.at(nameIndex + 1) ?? '') : undefined;
   const id = name ?? `mcp-${mcpServers.length + 1}`;
 
   const entry: McpServerEntry = { id, uri, addedAt: new Date().toISOString() };
