@@ -71,11 +71,26 @@ export function createConnectorHandlers(options?: ConnectorHandlerOptions): Http
       const payload = (await request.json()) as { channel?: string; text?: string };
       const channel = payload.channel ?? 'C00000000';
       const text = payload.text ?? '';
-      const ts = '1234567890.123456';
+      const ts = '1503435956.000247';
 
       state.slackMessages.push({ channel, text, ts });
 
-      return HttpResponse.json({ channel, ok: true, ts }, { status: 200 });
+      return HttpResponse.json(
+        {
+          channel,
+          ok: true,
+          ts,
+          message: {
+            bot_id: 'B00000000',
+            type: 'message',
+            subtype: 'bot_message',
+            text,
+            ts,
+            username: 'agentsy-bot'
+          }
+        },
+        { status: 200 }
+      );
     }),
 
     // -----------------------------------------------------------------------
@@ -94,7 +109,16 @@ export function createConnectorHandlers(options?: ConnectorHandlerOptions): Http
         user: 'U00000000'
       }));
 
-      return HttpResponse.json({ messages, ok: true }, { status: 200 });
+      return HttpResponse.json(
+        {
+          messages,
+          ok: true,
+          has_more: false,
+          pin_count: 0,
+          response_metadata: { next_cursor: '' }
+        },
+        { status: 200 }
+      );
     }),
 
     // -----------------------------------------------------------------------
@@ -113,9 +137,20 @@ export function createConnectorHandlers(options?: ConnectorHandlerOptions): Http
           id: 1,
           name: repo,
           full_name: `${owner}/${repo}`,
-          owner: { login: owner },
+          owner: { login: owner, id: 1, avatar_url: '', gravatar_id: '', url: '', html_url: '', type: 'User' },
           private: false,
-          description: 'Mock repository for testing'
+          description: 'Mock repository for testing',
+          fork: false,
+          url: `https://api.github.com/repos/${owner}/${repo}`,
+          html_url: `https://github.com/${owner}/${repo}`,
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-06-01T00:00:00Z',
+          pushed_at: '2024-06-01T00:00:00Z',
+          git_url: `git://github.com/${owner}/${repo}.git`,
+          ssh_url: `git@github.com:${owner}/${repo}.git`,
+          clone_url: `https://github.com/${owner}/${repo}.git`,
+          language: 'TypeScript',
+          default_branch: 'main'
         },
         { status: 200 }
       );
