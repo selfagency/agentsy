@@ -12,9 +12,7 @@ const noopCapabilities: ProviderCapabilities = {
   canTtl: false
 };
 
-function createMockProvider(
-  overrides: Partial<KeyringProvider> & { id: string; resourceTypes?: string[] }
-): KeyringProvider {
+function createMockProvider(overrides: Partial<KeyringProvider> & { id: string }): KeyringProvider {
   const { id, resourceTypes: rt, check, resolve, list, ...rest } = overrides;
   return {
     id,

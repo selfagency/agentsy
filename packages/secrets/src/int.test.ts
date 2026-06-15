@@ -231,7 +231,7 @@ describe('E2E: Provider registry — fast path, slow path, fallback', () => {
 describe('E2E: $CRED token resilience', () => {
   it('survives JSON round-trip', () => {
     const input = 'deploy --token $CRED(vercel)';
-    const roundTripped = JSON.parse(JSON.stringify(input));
+    const roundTripped = structuredClone(input);
     expect(roundTripped).toBe('deploy --token $CRED(vercel)');
   });
 

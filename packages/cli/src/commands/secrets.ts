@@ -126,6 +126,14 @@ const PROVIDER_FACTORIES: Record<string, ProviderFactory> = {
 // Helpers
 // =============================================================================
 
+/** Safe factory lookup that won't trigger Semgrep bracket-object-injection. */
+function getFactory(name: string): ProviderFactory | undefined {
+  if (!Object.hasOwn(PROVIDER_FACTORIES, name)) {
+    return;
+  }
+  return PROVIDER_FACTORIES[name as keyof typeof PROVIDER_FACTORIES];
+}
+
 const DEFAULT_IO: Required<CliIO> = {
   stderr: (msg: string): void => {
     console.error(msg);
@@ -192,9 +200,9 @@ async function initRegistryFromConfig(
   providerEntries: [string, { options?: Record<string, unknown> | undefined; resourceTypes?: string[] }][]
 ): Promise<import('@agentsy/secrets').ProviderRegistry> {
   const { ProviderRegistry: PR } = await import('@agentsy/secrets');
-  const registry = new PR() as import('@agentsy/secrets').ProviderRegistry;
+  const registry = new PR();
   for (const [name, providerCfg] of providerEntries) {
-    const factory = PROVIDER_FACTORIES[name];
+    const factory = getFactory(name);
     if (!factory) {
       continue;
     }
@@ -231,10 +239,10 @@ function detectProjectRoot(): string {
   return cwd;
 }
 
-export async function handleInit(_argv: readonly string[], opts: SecretsCliOptions): Promise<number> {
+async function handleInit(_argv: readonly string[], opts: SecretsCliOptions): Promise<number> {
   const { loadConfig } = await import('@agentsy/secrets');
 
-  const rootDir = await detectProjectRoot();
+  const rootDir = detectProjectRoot();
   const existing = await loadConfig(rootDir);
   const providerCount = Object.keys(existing.providers).length;
 
@@ -267,7 +275,7 @@ export async function handleInit(_argv: readonly string[], opts: SecretsCliOptio
 // agentsy secrets list
 // ---------------------------------------------------------------------------
 
-export async function handleList(_argv: readonly string[], opts: SecretsCliOptions): Promise<number> {
+async function handleList(_argv: readonly string[], opts: SecretsCliOptions): Promise<number> {
   const { loadConfig } = await import('@agentsy/secrets');
 
   const config = await loadConfig();
@@ -334,7 +342,7 @@ export async function handleList(_argv: readonly string[], opts: SecretsCliOptio
 // agentsy secrets lookup <name>
 // ---------------------------------------------------------------------------
 
-export async function handleLookup(argv: readonly string[], opts: SecretsCliOptions): Promise<number> {
+async function handleLookup(argv: readonly string[], opts: SecretsCliOptions): Promise<number> {
   const resourceType = argv[0];
   if (resourceType === undefined || resourceType.length === 0) {
     opts.stderr('Usage: agentsy secrets lookup <resource-type>');
@@ -400,52 +408,40 @@ export async function handleLookup(argv: readonly string[], opts: SecretsCliOpti
   }
 }
 
-// ---------------------------------------------------------------------------
-// agentsy secrets sync
-// ---------------------------------------------------------------------------
+interface SyncProviderConfig {
+  options?: Record<string, unknown> | undefined;
+}
 
-export async function handleSync(_argv: readonly string[], opts: SecretsCliOptions): Promise<number> {
-  const { loadConfig } = await import('@agentsy/secrets');
+interface SyncResult {
+  error?: string;
+  provider: string;
+  synced: boolean;
+}
 
-  const config = await loadConfig();
-  const providerEntries = Object.entries(config.providers);
-
-  if (providerEntries.length === 0) {
-    opts.stderr('No providers configured. Run `agentsy secrets init` first.');
-    return 1;
+async function syncProvider(name: string, providerCfg: SyncProviderConfig): Promise<SyncResult> {
+  const factory = getFactory(name);
+  if (!factory) {
+    return { provider: name, synced: false, error: 'unknown provider type' };
   }
 
-  const results: Array<{
-    provider: string;
-    synced: boolean;
-    error?: string;
-  }> = [];
+  try {
+    const provider = await factory(providerCfg.options);
 
-  for (const [name, providerCfg] of providerEntries) {
-    const factory = PROVIDER_FACTORIES[name];
-    if (!factory) {
-      results.push({ provider: name, synced: false, error: 'unknown provider type' });
-      continue;
+    if (provider.sync === undefined) {
+      return { provider: name, synced: false, error: 'sync not supported' };
     }
-
-    try {
-      const provider = await factory(providerCfg.options);
-
-      if (provider.sync === undefined) {
-        results.push({ provider: name, synced: false, error: 'sync not supported' });
-      } else {
-        await provider.sync();
-        results.push({ provider: name, synced: true });
-      }
-    } catch (error) {
-      results.push({
-        provider: name,
-        synced: false,
-        error: error instanceof Error ? error.message : String(error)
-      });
-    }
+    await provider.sync();
+    return { provider: name, synced: true };
+  } catch (error) {
+    return {
+      provider: name,
+      synced: false,
+      error: error instanceof Error ? error.message : String(error)
+    };
   }
+}
 
+function displaySyncResults(results: SyncResult[], opts: SecretsCliOptions): number {
   if (opts.json) {
     opts.stdout(JSON.stringify({ results }, null, 2));
     return 0;
@@ -463,6 +459,28 @@ export async function handleSync(_argv: readonly string[], opts: SecretsCliOptio
   }
 
   return failed > 0 ? 1 : 0;
+}
+
+// ---------------------------------------------------------------------------
+// agentsy secrets sync
+// ---------------------------------------------------------------------------
+
+async function handleSync(_argv: readonly string[], opts: SecretsCliOptions): Promise<number> {
+  const { loadConfig } = await import('@agentsy/secrets');
+
+  const config = await loadConfig();
+  const providerEntries = Object.entries(config.providers);
+
+  if (providerEntries.length === 0) {
+    opts.stderr('No providers configured. Run `agentsy secrets init` first.');
+    return 1;
+  }
+
+  const results = await Promise.all(
+    providerEntries.map(([name, providerCfg]) => syncProvider(name, providerCfg as SyncProviderConfig))
+  );
+
+  return displaySyncResults(results, opts);
 }
 
 // =============================================================================

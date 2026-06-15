@@ -130,7 +130,7 @@ export function createVaultKeyring(config?: VaultConfig): KeyringProvider {
     if (!val) {
       throw new Error(`Vault: no data at "${resourceType}"`);
     }
-    return String(val);
+    return typeof val === 'string' ? val : JSON.stringify(val);
   }
 
   function listCli(): Promise<string[]> {
