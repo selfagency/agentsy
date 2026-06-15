@@ -9,7 +9,14 @@ export default defineConfig({
     provider: 'src/provider/index.ts',
     config: 'src/config/index.ts'
   },
-  external: ['@agentsy/runtime', '@agentsy/types'],
+  external: [
+    '@agentsy/runtime',
+    '@agentsy/types',
+    '@aws-sdk/client-secrets-manager',
+    '@azure/identity',
+    '@azure/keyvault-secrets',
+    '@google-cloud/secret-manager'
+  ],
   format: ['esm', 'cjs'],
   sourcemap: true,
   splitting: false,

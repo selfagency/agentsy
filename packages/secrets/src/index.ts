@@ -44,6 +44,23 @@ export {
 export { resolveCredentials } from './injection/resolver.js';
 export type { ResolutionContext, ResolvedSecret, SecretToken } from './injection/types.js';
 export { parseSecretTokens } from './injection/types.js';
+// Cloud providers (B4)
+export type {
+  AwsSmConfig,
+  AzureKvConfig,
+  DopplerConfig,
+  GcpSmConfig,
+  InfisicalConfig,
+  VaultConfig
+} from './provider/cloud/index.js';
+export {
+  createAwsSmKeyring,
+  createAzureKvKeyring,
+  createDopplerKeyring,
+  createGcpSmKeyring,
+  createInfisicalKeyring,
+  createVaultKeyring
+} from './provider/cloud/index.js';
 export type {
   ApplePMConfig,
   BitwardenConfig,
